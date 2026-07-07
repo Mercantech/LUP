@@ -2,6 +2,50 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import TopNav from '../components/TopNav.astro';
 import { forlob } from '../data/forlob';
+
+function escapeHtml(s: string) {
+  return s
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function markdownToHtml(md: string) {
+  const lines = md.split('\n');
+  const out: string[] = [];
+  let inList = false;
+
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    if (line.startsWith('## ')) {
+      if (inList) {
+        out.push('</ul>');
+        inList = false;
+      }
+      out.push(`<h3>${escapeHtml(line.slice(3))}</h3>`);
+      continue;
+    }
+    if (line.startsWith('- ')) {
+      if (!inList) {
+        out.push('<ul>');
+        inList = true;
+      }
+      out.push(`<li>${escapeHtml(line.slice(2))}</li>`);
+      continue;
+    }
+    if (line.trim() === '') {
+      if (inList) {
+        out.push('</ul>');
+        inList = false;
+      }
+      continue;
+    }
+    out.push(`<p>${escapeHtml(line)}</p>`);
+  }
+
+  if (inList) out.push('</ul>');
+  return out.join('\n');
+}
 ---
 
 <BaseLayout title="LUP">
@@ -39,49 +83,49 @@ import { forlob } from '../data/forlob';
       </div>
     </section>
 
-    <section class="section stats">
-      <div class="container">
-        <div class="stats__grid">
-          <div class="stats__cell">
-            <div class="stats__icon mono">01</div>
-            <div class="stats__value serif">6</div>
-            <div class="stats__label mono">HOVEDFORLØB</div>
-          </div>
-          <div class="stats__cell">
-            <div class="stats__icon mono">02</div>
-            <div class="stats__value serif">2</div>
-            <div class="stats__label mono">THEMES</div>
-          </div>
-          <div class="stats__cell">
-            <div class="stats__icon mono">03</div>
-            <div class="stats__value serif">∞</div>
-            <div class="stats__label mono">ITERATIONER</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section class="section roadmap" id="roadmap">
       <div class="container roadmap__inner">
         <div class="roadmap__head">
-          <h2 class="serif">Hovedforløb</h2>
-          <p class="roadmap__sub">Klik for detaljer pr. forløb.</p>
+          <h2 class="serif">Hovedforløb (oversigt)</h2>
+          <p class="roadmap__sub">Scroll på siden eller hop direkte til et forløb.</p>
         </div>
 
         <div class="roadmap__list">
           {forlob.map((f) => (
-            <a class="roadmap__item" href={`/forlob/${f.slug}`}>
+            <a class="roadmap__item" href={`#${f.slug}`}>
               <div class="roadmap__n mono">{f.short}</div>
               <div class="roadmap__meta">
                 <div class="roadmap__title serif">{f.titel}</div>
                 <div class="roadmap__desc">{f.kort}</div>
               </div>
-              <div class="roadmap__arrow mono">--&gt;</div>
+              <div class="roadmap__arrow mono">↓</div>
             </a>
           ))}
         </div>
       </div>
     </section>
+
+    {forlob.map((f) => (
+      <section class="section forlob" id={f.slug}>
+        <div class="container forlob__inner">
+          <div class="forlob__head">
+            <div class="mono forlob__kicker">{f.short} / HOVEDFORLØB</div>
+            <h2 class="serif forlob__title">{f.titel}</h2>
+            <p class="forlob__lead">{f.kort}</p>
+            <div class="forlob__actions">
+              <a class="btn btn--primary" href={`/forlob/${f.slug}`}>
+                <span>ÅBN ISOLERET</span>
+              </a>
+              <a class="btn" href="#roadmap">
+                <span>TIL TOP</span>
+              </a>
+            </div>
+          </div>
+
+          <article class="forlob__content" set:html={markdownToHtml(f.markdown)} />
+        </div>
+      </section>
+    ))}
   </main>
 
   <footer class="section footer">
@@ -170,42 +214,6 @@ import { forlob } from '../data/forlob';
       text-shadow: var(--text-glow);
     }
 
-    .stats__grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      border-left: var(--border);
-      border-right: var(--border);
-    }
-
-    .stats__cell {
-      padding: 40px;
-      border-bottom: var(--border);
-      transition: background var(--dur-fast) var(--ease-editorial);
-    }
-
-    .stats__cell:hover {
-      background: color-mix(in oklab, #fff 65%, var(--bg));
-    }
-
-    html[data-theme='terminal'] .stats__cell:hover {
-      background: transparent;
-    }
-
-    .stats__icon {
-      width: 48px;
-      height: 48px;
-      display: grid;
-      place-items: center;
-      border: var(--border);
-      margin-bottom: 18px;
-    }
-
-    .stats__value {
-      font-size: 44px;
-      font-weight: 300;
-      margin-bottom: 6px;
-    }
-
     .roadmap__inner {
       padding: 56px 0;
     }
@@ -275,6 +283,81 @@ import { forlob } from '../data/forlob';
       opacity: 0.65;
     }
 
+    .forlob__inner {
+      padding: 56px 0;
+    }
+
+    .forlob__head {
+      border-left: var(--border);
+      border-right: var(--border);
+      border-bottom: var(--border);
+      padding: 22px;
+      border-radius: var(--radius);
+    }
+
+    html[data-theme='terminal'] .forlob__head {
+      border-radius: 0;
+      text-shadow: var(--text-glow);
+    }
+
+    .forlob__kicker {
+      opacity: 0.8;
+      margin-bottom: 10px;
+    }
+
+    .forlob__title {
+      font-weight: 300;
+      text-transform: uppercase;
+      margin: 0 0 10px;
+      font-size: clamp(28px, 3.2vw, 44px);
+    }
+
+    .forlob__lead {
+      margin: 0 0 14px;
+      opacity: 0.8;
+      max-width: 80ch;
+    }
+
+    .forlob__actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .forlob__content {
+      border-left: var(--border);
+      border-right: var(--border);
+      border-bottom: var(--border);
+      padding: 22px;
+      border-radius: var(--radius);
+      margin-top: 14px;
+    }
+
+    html[data-theme='terminal'] .forlob__content {
+      border-radius: 0;
+      text-shadow: var(--text-glow);
+    }
+
+    .forlob__content :global(h3) {
+      font-family: var(--font-serif);
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin: 26px 0 10px;
+    }
+
+    .forlob__content :global(p),
+    .forlob__content :global(li) {
+      line-height: 1.7;
+      opacity: 0.9;
+    }
+
+    .forlob__content :global(ul) {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+
     .footer__inner {
       padding: 18px 0;
       display: flex;
@@ -283,16 +366,8 @@ import { forlob } from '../data/forlob';
     }
 
     @media (min-width: 860px) {
-      .stats__grid {
-        grid-template-columns: repeat(3, 1fr);
-        border-top: var(--border);
-      }
-      .stats__cell {
-        border-right: var(--border);
-        border-bottom: none;
-      }
-      .stats__cell:last-child {
-        border-right: none;
+      .forlob__actions {
+        justify-content: flex-start;
       }
     }
   </style>
