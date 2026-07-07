@@ -1,0 +1,301 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TopNav from '../components/TopNav.astro';
+import { forlob } from '../data/forlob';
+---
+
+<BaseLayout title="LUP">
+  <TopNav currentPath={Astro.url.pathname} />
+
+  <main style="padding-top: 96px">
+    <section class="hero">
+      <div class="container hero__inner">
+        <div class="badge mono">
+          <span class="dot" aria-hidden="true"></span>
+          LOKAL UNDERVISNINGSPLAN
+        </div>
+
+        <h1 class="hero__title serif">
+          LUP<br />
+          <span class="hero__muted"><em>INFRA</em></span>
+          <span class="hero__muted"><em>STRUKTUR</em></span>
+        </h1>
+
+        <p class="hero__copy">
+          Dokumentation af hovedforløb 1–6 med mål, indhold, didaktiske principper og evaluering.
+        </p>
+
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="/forlob/hovedforlob-1">
+            <span>ÅBN H1</span>
+          </a>
+          <a class="btn" href="#roadmap">
+            <span>SE OVERSIGT</span>
+          </a>
+        </div>
+
+        <div class="terminal-line mono" aria-hidden="true">
+          <span>$</span> lup --help <span class="cursor"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section stats">
+      <div class="container">
+        <div class="stats__grid">
+          <div class="stats__cell">
+            <div class="stats__icon mono">01</div>
+            <div class="stats__value serif">6</div>
+            <div class="stats__label mono">HOVEDFORLØB</div>
+          </div>
+          <div class="stats__cell">
+            <div class="stats__icon mono">02</div>
+            <div class="stats__value serif">2</div>
+            <div class="stats__label mono">THEMES</div>
+          </div>
+          <div class="stats__cell">
+            <div class="stats__icon mono">03</div>
+            <div class="stats__value serif">∞</div>
+            <div class="stats__label mono">ITERATIONER</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section roadmap" id="roadmap">
+      <div class="container roadmap__inner">
+        <div class="roadmap__head">
+          <h2 class="serif">Hovedforløb</h2>
+          <p class="roadmap__sub">Klik for detaljer pr. forløb.</p>
+        </div>
+
+        <div class="roadmap__list">
+          {forlob.map((f) => (
+            <a class="roadmap__item" href={`/forlob/${f.slug}`}>
+              <div class="roadmap__n mono">{f.short}</div>
+              <div class="roadmap__meta">
+                <div class="roadmap__title serif">{f.titel}</div>
+                <div class="roadmap__desc">{f.kort}</div>
+              </div>
+              <div class="roadmap__arrow mono">--&gt;</div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="section footer">
+    <div class="container footer__inner">
+      <div class="mono">LUP</div>
+      <div class="mono">[OK]</div>
+    </div>
+  </footer>
+
+  <style>
+    .hero {
+      padding: 80px 0 64px;
+    }
+
+    .hero__inner {
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border: var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 18%, transparent);
+      animation: pulse 2.2s var(--ease-editorial) infinite;
+    }
+
+    @keyframes pulse {
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 0.9;
+      }
+      50% {
+        transform: scale(1.12);
+        opacity: 1;
+      }
+    }
+
+    .hero__title {
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      line-height: 0.92;
+      font-size: clamp(56px, 9vw, 120px);
+      margin: 0 0 18px;
+    }
+
+    .hero__muted {
+      color: var(--muted);
+      font-style: italic;
+      margin-inline: 8px;
+    }
+
+    .hero__copy {
+      max-width: 70ch;
+      margin: 0 auto 28px;
+      opacity: 0.8;
+    }
+
+    .hero__cta {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .terminal-line {
+      margin-top: 24px;
+      opacity: 0;
+      transition: opacity var(--dur-slow) var(--ease-editorial);
+    }
+
+    html[data-theme='terminal'] .terminal-line {
+      opacity: 1;
+      text-shadow: var(--text-glow);
+    }
+
+    .stats__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      border-left: var(--border);
+      border-right: var(--border);
+    }
+
+    .stats__cell {
+      padding: 40px;
+      border-bottom: var(--border);
+      transition: background var(--dur-fast) var(--ease-editorial);
+    }
+
+    .stats__cell:hover {
+      background: color-mix(in oklab, #fff 65%, var(--bg));
+    }
+
+    html[data-theme='terminal'] .stats__cell:hover {
+      background: transparent;
+    }
+
+    .stats__icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border: var(--border);
+      margin-bottom: 18px;
+    }
+
+    .stats__value {
+      font-size: 44px;
+      font-weight: 300;
+      margin-bottom: 6px;
+    }
+
+    .roadmap__inner {
+      padding: 56px 0;
+    }
+
+    .roadmap__head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 18px;
+      border-bottom: var(--border);
+      padding-bottom: 18px;
+      margin-bottom: 18px;
+    }
+
+    .roadmap__head h2 {
+      margin: 0;
+      font-weight: 300;
+      font-size: 32px;
+    }
+
+    .roadmap__sub {
+      margin: 0;
+      opacity: 0.7;
+    }
+
+    .roadmap__list {
+      display: grid;
+      gap: 0;
+      border: var(--border);
+    }
+
+    .roadmap__item {
+      display: grid;
+      grid-template-columns: 72px 1fr 60px;
+      gap: 16px;
+      padding: 18px;
+      border-bottom: var(--border);
+      transition: background var(--dur-fast) var(--ease-editorial), opacity var(--dur-fast) var(--ease-editorial);
+    }
+
+    .roadmap__item:last-child {
+      border-bottom: none;
+    }
+
+    .roadmap__item:hover {
+      background: color-mix(in oklab, #fff 65%, var(--bg));
+    }
+
+    html[data-theme='terminal'] .roadmap__item:hover {
+      background: transparent;
+    }
+
+    .roadmap__title {
+      font-weight: 300;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .roadmap__desc {
+      opacity: 0.75;
+      font-size: 14px;
+    }
+
+    .roadmap__arrow {
+      text-align: right;
+      align-self: center;
+      opacity: 0.65;
+    }
+
+    .footer__inner {
+      padding: 18px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    @media (min-width: 860px) {
+      .stats__grid {
+        grid-template-columns: repeat(3, 1fr);
+        border-top: var(--border);
+      }
+      .stats__cell {
+        border-right: var(--border);
+        border-bottom: none;
+      }
+      .stats__cell:last-child {
+        border-right: none;
+      }
+    }
+  </style>
+</BaseLayout>
+

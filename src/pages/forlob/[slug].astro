@@ -1,0 +1,246 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TopNav from '../../components/TopNav.astro';
+import { forlob } from '../../data/forlob';
+
+function escapeHtml(s: string) {
+  return s
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function markdownToHtml(md: string) {
+  const lines = md.split('\n');
+  const out: string[] = [];
+  let inList = false;
+
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    if (line.startsWith('## ')) {
+      if (inList) {
+        out.push('</ul>');
+        inList = false;
+      }
+      out.push(`<h2>${escapeHtml(line.slice(3))}</h2>`);
+      continue;
+    }
+    if (line.startsWith('- ')) {
+      if (!inList) {
+        out.push('<ul>');
+        inList = true;
+      }
+      out.push(`<li>${escapeHtml(line.slice(2))}</li>`);
+      continue;
+    }
+    if (line.trim() === '') {
+      if (inList) {
+        out.push('</ul>');
+        inList = false;
+      }
+      continue;
+    }
+    out.push(`<p>${escapeHtml(line)}</p>`);
+  }
+
+  if (inList) out.push('</ul>');
+  return out.join('\n');
+}
+
+export function getStaticPaths() {
+  return forlob.map((f) => ({ params: { slug: f.slug } }));
+}
+
+const { slug } = Astro.params;
+const current = forlob.find((f) => f.slug === slug);
+if (!current) {
+  throw new Error(`Ukendt forløb: ${slug}`);
+}
+---
+
+<BaseLayout title={`LUP · ${current.titel}`}>
+  <TopNav currentPath={Astro.url.pathname} />
+
+  <main style="padding-top: 96px">
+    <section class="section head">
+      <div class="container head__inner">
+        <div class="mono head__kicker">{current.short} / FORLØB</div>
+        <h1 class="serif head__title">{current.titel}</h1>
+        <p class="head__lead">{current.kort}</p>
+      </div>
+    </section>
+
+    <section class="section body">
+      <div class="container body__inner">
+        <article class="content" set:html={markdownToHtml(current.markdown)} />
+
+        <aside class="side">
+          <div class="pane">
+            <div class="pane__title mono">NAV</div>
+            <div class="pane__list">
+              {forlob.map((f) => (
+                <a class:list={['pane__item', f.slug === current.slug && 'is-active']} href={`/forlob/${f.slug}`}>
+                  <span class="mono">{f.short}</span>
+                  <span>{f.titel}</span>
+                  <span class="mono">--&gt;</span>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div class="pane">
+            <div class="pane__title mono">STATUS</div>
+            <div class="pane__list mono">
+              <div>[OK] dokumentation</div>
+              <div>[OK] tokens</div>
+              <div>[OK] themeswitch</div>
+            </div>
+            <div class="progress mono" aria-hidden="true">
+              [||||||||||.....]
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="section footer">
+    <div class="container footer__inner">
+      <a class="mono" href="/">← TILBAGE</a>
+      <div class="mono">LUP</div>
+    </div>
+  </footer>
+
+  <style>
+    .head__inner {
+      padding: 54px 0 28px;
+    }
+
+    .head__kicker {
+      opacity: 0.75;
+      margin-bottom: 12px;
+    }
+
+    .head__title {
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 300;
+      margin: 0 0 10px;
+      text-transform: uppercase;
+    }
+
+    .head__lead {
+      max-width: 80ch;
+      margin: 0;
+      opacity: 0.8;
+    }
+
+    .body__inner {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding: 34px 0 56px;
+    }
+
+    .content {
+      border: var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+
+    html[data-theme='terminal'] .content {
+      border-radius: 0;
+      text-shadow: var(--text-glow);
+    }
+
+    .content :global(h2) {
+      font-family: var(--font-serif);
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin: 26px 0 10px;
+    }
+
+    .content :global(p),
+    .content :global(li) {
+      line-height: 1.7;
+      opacity: 0.9;
+    }
+
+    .content :global(ul) {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+
+    .pane {
+      border: var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    html[data-theme='terminal'] .pane {
+      border-radius: 0;
+    }
+
+    .pane__title {
+      padding: 12px 14px;
+      border-bottom: var(--border);
+      opacity: 0.85;
+    }
+
+    html[data-theme='terminal'] .pane__title {
+      background: var(--fg);
+      color: #000;
+      text-shadow: none;
+    }
+
+    .pane__list {
+      padding: 12px 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .pane__item {
+      display: grid;
+      grid-template-columns: 48px 1fr 48px;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border-color);
+      opacity: 0.8;
+      transition: opacity var(--dur-fast) var(--ease-editorial);
+    }
+
+    .pane__item:last-child {
+      border-bottom: none;
+    }
+
+    .pane__item:hover,
+    .pane__item.is-active {
+      opacity: 1;
+    }
+
+    .progress {
+      margin-top: 10px;
+      opacity: 0.75;
+    }
+
+    .footer__inner {
+      padding: 18px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    @media (min-width: 980px) {
+      .body__inner {
+        grid-template-columns: 1.6fr 0.9fr;
+        align-items: start;
+      }
+      .side {
+        position: sticky;
+        top: 96px;
+        display: grid;
+        gap: 18px;
+      }
+    }
+  </style>
+</BaseLayout>

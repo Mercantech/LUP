@@ -1,42 +1,40 @@
-# sv
+# LUP - Lokal Undervisnings Plan
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+## Astro frontend
 
-## Creating a project
+Projektet er sat op som en **Astro** statisk side med **theme switch** mellem:
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Editorial** (Playfair Display + Space Grotesk + Space Mono)
+- **Terminal** (dark-only, monospace, scanlines/glow)
 
-```sh
-# create a new project
-npx sv create my-app
-```
+### Krav
 
-To recreate this project with the same configuration:
+Du skal have **Node.js LTS** installeret for at kunne køre Astro (derfor virkede `npm` ikke i terminalen før).
 
-```sh
-# recreate this project
-npx sv@0.12.5 create --template minimal --types ts --no-install .
-```
+### Kom i gang
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+```bash
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Byg statisk output:
 
-To create a production version of your app:
-
-```sh
+```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+## Docker + Traefik (Dokploy)
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Der er tilføjet `Dockerfile` + `docker-compose.yml` med Traefik labels til domænet **`lup.mercantec.tech`**.
+
+Kør lokalt (kræver Docker):
+
+```bash
+docker compose up --build
+```
+
+### Traefik forudsætninger
+
+- Compose-filen forventer et eksternt netværk der hedder `traefik`.
+- TLS er sat til `websecure` + `letsencrypt` resolveren (tilpas hvis jeres Traefik bruger andre navne).

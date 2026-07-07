@@ -1,0 +1,46 @@
+---
+const { title = 'LUP', description = 'Lokal Undervisnings Plan' } = Astro.props;
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="da" data-theme="editorial">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500&family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script is:inline>
+      (() => {
+        try {
+          const saved = localStorage.getItem('lup-theme');
+          if (saved === 'terminal' || saved === 'editorial') {
+            document.documentElement.dataset.theme = saved;
+          } else {
+            document.documentElement.dataset.theme = 'editorial';
+          }
+        } catch {
+          document.documentElement.dataset.theme = 'editorial';
+        }
+      })();
+    </script>
+
+  </head>
+  <body>
+    <div class="grid-bg" aria-hidden="true">
+      <div class="grid-bg__vlines"></div>
+      <div class="grid-bg__squares"></div>
+    </div>
+    <div class="crt" aria-hidden="true"></div>
+
+    <slot />
+  </body>
+</html>
+

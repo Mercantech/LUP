@@ -1,0 +1,158 @@
+---
+const { currentPath = '/' } = Astro.props;
+---
+
+<header class="nav" data-nav>
+  <div class="container nav__inner">
+    <a class="brand" href="/">
+      <span class="brand__bar brand__bar--sm"></span>
+      <span class="brand__word serif">SUPERDESIGN</span>
+      <span class="brand__bar brand__bar--lg"></span>
+    </a>
+
+    <nav class="nav__links mono" aria-label="Primær navigation">
+      <a class:list={['nav__link', currentPath === '/' && 'is-active']} href="/">OVERSIGT</a>
+      <a class:list={['nav__link', currentPath.startsWith('/forlob') && 'is-active']} href="/forlob/hovedforlob-1">H1</a>
+      <a class="nav__link" href="/forlob/hovedforlob-2">H2</a>
+      <a class="nav__link" href="/forlob/hovedforlob-3">H3</a>
+      <a class="nav__link" href="/forlob/hovedforlob-5">H5</a>
+      <a class="nav__link" href="/forlob/hovedforlob-6">H6</a>
+    </nav>
+
+    <button class="theme-toggle btn" type="button" data-theme-toggle>
+      <span class="mono">THEME</span>
+      <span aria-hidden="true">/</span>
+      <span class="mono" data-theme-label>EDITORIAL</span>
+    </button>
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const btn = document.querySelector('[data-theme-toggle]');
+    const label = document.querySelector('[data-theme-label]');
+    if (!btn || !label) return;
+
+    const getTheme = () => (root.dataset.theme === 'terminal' ? 'terminal' : 'editorial');
+    const setTheme = (t) => {
+      root.dataset.theme = t;
+      try {
+        localStorage.setItem('lup-theme', t);
+      } catch {}
+      label.textContent = t.toUpperCase();
+    };
+
+    setTheme(getTheme());
+    btn.addEventListener('click', () => setTheme(getTheme() === 'editorial' ? 'terminal' : 'editorial'));
+  })();
+</script>
+
+<script is:inline>
+  (() => {
+    const el = document.querySelector('[data-nav]');
+    if (!el) return;
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      el.classList.toggle('is-scrolled', y > 24);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  })();
+</script>
+
+<style>
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    padding-top: 32px;
+    transition: padding var(--dur-fast) var(--ease-editorial),
+      background var(--dur-fast) var(--ease-editorial),
+      border-color var(--dur-fast) var(--ease-editorial),
+      backdrop-filter var(--dur-fast) var(--ease-editorial);
+  }
+
+  .nav.is-scrolled {
+    padding-top: 0;
+    background: color-mix(in oklab, var(--bg) 80%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: var(--border);
+  }
+
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand__word {
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    font-weight: 300;
+  }
+
+  .brand__bar {
+    height: 1px;
+    background: var(--fg);
+    opacity: 0.7;
+  }
+
+  .brand__bar--sm {
+    width: 24px;
+  }
+
+  .brand__bar--lg {
+    width: 32px;
+  }
+
+  .nav__links {
+    display: none;
+    gap: 18px;
+    align-items: center;
+  }
+
+  .nav__link {
+    opacity: 0.75;
+    transition: opacity var(--dur-fast) var(--ease-editorial);
+    letter-spacing: 0.3em;
+    font-size: 10px;
+  }
+
+  .nav__link:hover,
+  .nav__link.is-active {
+    opacity: 1;
+  }
+
+  .theme-toggle {
+    padding: 10px 12px;
+  }
+
+  html[data-theme='terminal'] .brand__word {
+    font-family: var(--font-mono);
+    letter-spacing: 0.3em;
+    font-size: 12px;
+    text-shadow: var(--text-glow);
+  }
+
+  html[data-theme='terminal'] .brand__bar {
+    background: var(--muted);
+  }
+
+  @media (min-width: 860px) {
+    .nav__links {
+      display: inline-flex;
+    }
+  }
+</style>
+
