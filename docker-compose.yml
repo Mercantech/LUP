@@ -1,22 +1,31 @@
 services:
-  lup:
-    build: .
-    container_name: lup
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ASTRO_BASE: /
+        ASTRO_SITE: https://${APP_DOMAIN:-lup.mercantec.tech}
     restart: unless-stopped
     networks:
-      - dokploy
+      - dokploy-network
     labels:
       - traefik.enable=true
-      - traefik.docker.network=dokploy
+      - traefik.docker.network=dokploy-network
 
-      - traefik.http.routers.lup.rule=Host(`lup.mercantec.tech`)
-      - traefik.http.routers.lup.entrypoints=websecure
-      - traefik.http.routers.lup.tls=true
-      - traefik.http.routers.lup.tls.certresolver=letsencrypt
+      - traefik.http.routers.lup-web.rule=Host(`${APP_DOMAIN:-lup.mercantec.tech}`)
+      - traefik.http.routers.lup-web.entrypoints=web
+      - traefik.http.routers.lup-web.service=lup-web
+      - traefik.http.services.lup-web.loadbalancer.server.port=80
 
-      - traefik.http.services.lup.loadbalancer.server.port=80
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
 networks:
-  dokploy:
+  dokploy-network:
     external: true
 
