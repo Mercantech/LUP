@@ -26,33 +26,156 @@ Formålet med H1 er at give eleverne et solidt fundament i grundlæggende progra
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
 
-- Grundlæggende programmering: variabler, datatyper, kontrolstrukturer, metoder, debugging og grundlæggende OOP i C#.
-- Netværk og kommunikation: klient/server-arkitektur, OSI-modellen og HTTP-protokoller.
-- Objektorienteret programmering (OOP): klasser, arv, polymorfi, interfaces, indkapsling og UML.
-- Databasedesign og integration: relationelle databaser, SQL, CRUD og integration med applikationer (ADO.NET).
-- Frontend-udvikling med Blazor: databinding, komponenter, routing, HTML, CSS, Bootstrap og JavaScript-integration.
-- Projektstyring og samarbejde: introduktion til SCRUM, sprint-planlægning, retrospektiver og versionsstyring med GitHub.
+- Grundlæggende programmering – variabler, datatyper, kontrolstrukturer, metoder, debugging og grundlæggende OOP i C#.
+- Netværk og kommunikation – klient/server-arkitektur, OSI-modellen og HTTP-protokoller.
+- Objektorienteret programmering (OOP) – klasser, arv, polymorfi, interfaces, indkapsling og UML.
+- Databasedesign og integration – relationelle databaser, SQL, CRUD-operationer og integration med applikationer (ADO.NET).
+- Frontend-udvikling med Blazor – databinding, komponenter, routing, HTML, CSS, Bootstrap og JavaScript-integration.
+- Projektstyring og samarbejde – introduktion til SCRUM, sprint-planlægning, retrospektiver og versionsstyring med GitHub.
 
 Projektet **Niche Markedsplads** danner rammen om forløbet.
 
 ## Helhedsorientering
-Alle fagspecifikke H1-fag integreres i projektarbejdet, så eleverne oplever en sammenhæng mellem teori og praksis.
+Alle fagspecifikke H1-fag integreres i projektarbejdet, så eleverne oplever en sammenhæng mellem teori og praksis. Projektet struktureres som en erhvervsnær opgave, hvor udviklingsprocessen spejler branchens arbejdsgange fra idé til færdigt produkt.
 
 ## Praksisrelation
-Eleverne arbejder med værktøjer som Visual Studio, GitHub, PostgreSQL og Blazor i et setup, der minder om virkelige udviklingsprojekter.
+Forløbet er tilrettelagt med fokus på at spejle professionelle udviklingsprocesser. Eleverne arbejder med værktøjer som Visual Studio, GitHub, PostgreSQL og Blazor i et setup, der minder om virkelige udviklingsprojekter. Projektarbejdet følger SCRUM-principper med sprintplanlægning, standups og løbende feedback, så eleverne opnår erfaring med moderne samarbejdsformer i softwareudvikling.
 
 ## Tværfaglighed
-Forløbet kombinerer programmering, databasedesign, netværk, frontend-udvikling og projektstyring.
+Forløbet kombinerer fagområderne programmering, databasedesign, netværk, frontend-udvikling og projektstyring. Eleverne lærer at integrere teknologier og metoder på tværs af fagene for at skabe en samlet løsning, der fungerer både teknisk og brugermæssigt.
 
 ## Differentiering
-Eleverne arbejder i selvvalgte grupper og kan tilpasse projektets kompleksitet. Der tilbydes supplerende udfordringer ved behov.
+Eleverne arbejder i selvvalgte grupper og kan tilpasse projektets kompleksitet og retning i dialog med underviseren. Der tilbydes supplerende opgaver og udfordringer for elever, der ønsker at fordybe sig yderligere, fx spilprojekter (Minestryger, Find the Cat), ekstra OOP-øvelser, eller automatiseringsopgaver med Selenium.
 
-## Evaluering og bedømmelse (uddrag)
-- Grundlæggende programmering (72 lektioner)
-- Netværk I (72 lektioner)
-- Clientsideprogrammering (36 lektioner)
-- Databaseprogrammering / serverteknologi / computerteknologi (108 lektioner)
-- Objektorienteret programmering (72 lektioner)
+## Evaluering og bedømmelse
+
+## Læringsaktivitet Grundlæggende programmering – 72 lektioner
+Du kan/har:
+
+- Designe og udvikle konsolprogrammer ud fra case-beskrivelser
+- Anvende et C# til at oprette, fejlfinde og teste mindre konsolapplikationer
+- Forstå datatyper
+- Anvende kontrolstrukturer, metoder, variabler og konstanter i deres programmer
+- Dokumentere kode med kommentarer og versionsstyring
+
+Teoretisk del (eksempler):
+- Informations- og dokumentations-søgning
+- Kravspecifikationer
+- Grundlæggende fejlfinding og debugging
+- Testmetoder og værktøjer
+- Metoder, arrays & kontrol-strukturer
+
+Praktisk del:
+- Udvikling af varierede og enkle konsolbaserede programmer i C#
+- Dagsbaserede opgaver fra Microsoft Learn
+- Grundlæggende GitHub
+
+Feedbackfokus:
+- Løbende mundtlig feedback på lærlingens evne til at planlægge og designe konsolprogrammer
+- Evne til at identificere og rette fejl i konsolapplikationer
+
+Bedømmelse (særligt vægt på):
+- Evne til at gennemføre hele softwareudviklingscyklussen fra design til test
+- Evne til at begrunde valgte løsninger og beskrive udviklingsprocessen
+- Implementering af versionsstyring og fejlfindingsteknikker
+
+## Læringsaktivitet Netværk I – 72 lektioner
+Du kan/har:
+
+- Designe og implementere effektive netværksløsninger, der opfylder specifikke krav
+- Administrere og konfigurere VLAN'er og routing i komplekse netværksmiljøer
+- Sikre netværk, redundans og pålidelighed ved hjælp af forskellige protokoller og metoder
+- Udføre fejlfinding og diagnosticering af netværks-problemer og implementere sikkerhedstiltag
+- Grundlæggende forståelse af layer 2 og layer 3
+
+Teoretisk del:
+- OSI-modellen
+- Grundlæggende principper for netværksdesign (arkitektur, protokoller og komponenter)
+- Routing og switching (VLAN, IP-routing og layer 2-switching)
+
+Praktisk del:
+- Hands-on øvelser med VLAN'er, routing og Layer 3-switche
+- Arbejde med at lave egen webserver i C#
+
+Feedbackfokus:
+- Elevens engagement
+- Elevens nysgerrighed
+- Elevens arbejde med CCNA læringsmateriale
+
+Bedømmelse (særligt vægt på):
+- Elevernes evne til at forstå pensum fra Cisco og relatere det til softwareudvikling
+
+## Læringsaktivitet Clientsideprogrammering – 36 lektioner
+Du har/kan:
+
+- Oprette websider ved hjælp af HTML, CSS og Bootstrap-frameworket til at skabe ensartede og responsive brugergrænseflader
+- Forklare begreberne i Client-Server-modellen og have forståelse af HTTP-protokollen
+- Oprette HTML-dokumenter med korrekt struktur og semantik
+
+Teoretisk del:
+- Client-Server-modellen og HTTP-protokollen
+- Semantisk HTML og Bootstrap
+- UX og HCI introduktion
+
+Praktisk del:
+- Agilt projektarbejde på en webfrontend; fra simpelt til mere kompliceret design
+- Daglige opgaver, fremlæggelser og feedback loops i grupper såvel plenum
+- Fælles udgangspunkt: C#, Blazor med Bootstrap og MSSQL til projektarbejde
+
+Feedbackfokus:
+- Samarbejde i gruppen
+- Engagement
+- Nysgerrighed
+
+Bedømmelse (særligt vægt på):
+- Elevens evne til at gå fra simpel statisk enkelt-side til mere avanceret/dynamisk implementering
+- Kvalificering af egne valg
+
+## Læringsaktivitet Databaseprogrammering / Serverteknologi / Databaseserver & Computerteknologi – 108 lektioner
+Du har/kan:
+
+- Kendskab til serveropsætning og drift, særligt ift web og db server
+- Bruge SQL til at oprette, ændre og aflæse data i en lokal database på din computer
+- Redegøre for forskellige relationstyper mellem database-tabeller og forstå deres betydning i design af effektive databaser
+- Installere og konfigurere Visual Studio så man kan afvikle og udvikle på webserver, database og applikationsniveau
+- Route til forskellige websider baseret på domænenavne
+
+Teoretisk del:
+- Grundlæggende databaseadministration og sikkerhed, serveropsætning & drift
+- Introduktion til relationelle database og alternativer
+
+Praktisk del:
+- SQL-øvelser: SELECT, INSERT, UPDATE, DELETE, WHERE, JOIN
+- Skrive scripts til at automatisere gentagne databaseopgaver og samle dit arbejde i scripts, som kan genanvendes
+- Installere og konfigurere Internet Information Services og en MSSQL database (lokalt eller via Azure el.lign.)
+
+Feedbackfokus:
+- Forståelse af grundlæggende databaseadministrationsprincipper og webserver-funktionalitet
+- Evne til at forklare konceptet bag relationelle databaser
+- Evne til at lave/forklare/arbejde med simple CRUD operationer
+
+Bedømmelse (særligt vægt på):
+- Evne til at oprette, ændre og aflæse data samt udføre komplekse forespørgsler
+- Evne til at anvende SQL korrekt og effektivt
+- Evne til at illustrere og forklare database-relationstyper med eksempler i en frontend
+
+## Læringsaktivitet Objektorienteret programmering – 72 lektioner
+Du har/kan:
+
+- Forstå og anvende objektorienteret programmering (OOP) koncepter til at strukturere softwareprojekter
+- Arbejde med klasser til at oprette og bruge objekter
+- Definere og designe dine egne klasser
+- Udarbejde en applikation, der benytter OOP-konceptet effektivt
+
+Teoretisk del:
+- Grundlæggende OOAD og OOP koncepter
+- Fordele ved anvendelse af OOP i softwareudvikling
+
+Praktisk del:
+- Oprettelse af klasser og objekter i C#
+- Implementering af grundlæggende OOP-koncepter i en praktisk applikation
+- Anvendelse af lists, arrays mv til at organisere data
+- Implementering af abstrakte klasser og metoder
 
 Senest opdateret 5/12/23 af Peter Jones
 `.trim()

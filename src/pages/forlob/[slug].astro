@@ -64,9 +64,11 @@ if (!current) {
   <main style="padding-top: 96px">
     <section class="section head">
       <div class="container head__inner">
-        <div class="mono head__kicker">{current.short} / FORLØB</div>
-        <h1 class="serif head__title">{current.titel}</h1>
+        <div class="mono head__kicker">{current.short} :: FORLOB</div>
+        <div class="ascii-hr" aria-hidden="true">+----------------------------------------------------------+</div>
+        <h1 class="mono head__title">{current.titel.toUpperCase()}</h1>
         <p class="head__lead">{current.kort}</p>
+        <div class="scanline" aria-hidden="true"></div>
       </div>
     </section>
 
@@ -93,7 +95,7 @@ if (!current) {
             <div class="pane__list mono">
               <div>[OK] dokumentation</div>
               <div>[OK] tokens</div>
-              <div>[OK] themeswitch</div>
+              <div>[OK] terminal-ui</div>
             </div>
             <div class="progress mono" aria-hidden="true">
               [||||||||||.....]
@@ -123,9 +125,11 @@ if (!current) {
 
     .head__title {
       font-size: clamp(40px, 6vw, 72px);
-      font-weight: 300;
+      font-weight: 700;
       margin: 0 0 10px;
       text-transform: uppercase;
+      letter-spacing: 0.12em;
+      text-shadow: var(--text-glow);
     }
 
     .head__lead {
@@ -145,19 +149,22 @@ if (!current) {
       border: var(--border);
       border-radius: var(--radius);
       padding: 22px;
-    }
-
-    html[data-theme='terminal'] .content {
-      border-radius: 0;
       text-shadow: var(--text-glow);
     }
 
+    .content :global(a) {
+      text-decoration: underline;
+      text-decoration-style: dashed;
+      text-underline-offset: 4px;
+    }
+
     .content :global(h2) {
-      font-family: var(--font-serif);
-      font-weight: 300;
-      letter-spacing: 0.02em;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       margin: 26px 0 10px;
+      text-shadow: var(--text-glow);
     }
 
     .content :global(p),
@@ -177,17 +184,10 @@ if (!current) {
       overflow: hidden;
     }
 
-    html[data-theme='terminal'] .pane {
-      border-radius: 0;
-    }
-
     .pane__title {
       padding: 12px 14px;
       border-bottom: var(--border);
       opacity: 0.85;
-    }
-
-    html[data-theme='terminal'] .pane__title {
       background: var(--fg);
       color: #000;
       text-shadow: none;
@@ -206,7 +206,7 @@ if (!current) {
       padding: 8px 0;
       border-bottom: 1px dashed var(--border-color);
       opacity: 0.8;
-      transition: opacity var(--dur-fast) var(--ease-editorial);
+      transition: opacity var(--dur-med) steps(1, end), background var(--dur-med) steps(1, end), color var(--dur-med) steps(1, end);
     }
 
     .pane__item:last-child {
@@ -216,6 +216,11 @@ if (!current) {
     .pane__item:hover,
     .pane__item.is-active {
       opacity: 1;
+    }
+
+    .pane__item:hover {
+      background: var(--fg);
+      color: #000;
     }
 
     .progress {

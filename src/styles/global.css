@@ -1,27 +1,4 @@
-:root {
-  --ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-fast: 700ms;
-  --dur-slow: 1000ms;
-
-  --radius: 2px;
-  --border: 1px solid var(--border-color);
-}
-
-html[data-theme='editorial'] {
-  --bg: #f7f6f2;
-  --fg: #1c1c1c;
-  --muted: #b4b4b4;
-  --primary: #3d7068;
-  --border-color: #e5e4de;
-
-  --font-serif: 'Playfair Display', ui-serif, Georgia, 'Times New Roman', Times, serif;
-  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-
-  --radius: 2px;
-  --text-glow: none;
-}
-
+:root,
 html[data-theme='terminal'] {
   --bg: #0a0a0a;
   --fg: #33ff00;
@@ -31,12 +8,18 @@ html[data-theme='terminal'] {
   --error: #ff3333;
   --border-color: #1f521f;
 
-  --font-serif: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-  --font-sans: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-
   --radius: 0px;
+  --border: 1px solid var(--border-color);
+
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  --font-sans: var(--font-mono);
+  --font-serif: var(--font-mono);
+
   --text-glow: 0 0 5px rgba(51, 255, 0, 0.5);
+
+  --ease-snap: steps(1, end);
+  --dur-fast: 150ms;
+  --dur-med: 250ms;
 }
 
 *,
@@ -70,7 +53,7 @@ a {
 
 .mono {
   font-family: var(--font-mono);
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   font-size: 10px;
 }
@@ -88,62 +71,50 @@ a {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 18px;
+  padding: 10px 12px;
   border: var(--border);
   border-radius: var(--radius);
   background: transparent;
   color: var(--fg);
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  transition: letter-spacing var(--dur-fast) var(--ease-editorial),
-    background var(--dur-fast) var(--ease-editorial),
-    color var(--dur-fast) var(--ease-editorial),
-    transform var(--dur-fast) var(--ease-editorial);
-}
-
-html[data-theme='editorial'] .btn--primary {
-  background: var(--primary);
-  color: #fff;
-  position: relative;
-  overflow: hidden;
-}
-
-html[data-theme='editorial'] .btn--primary:hover {
-  letter-spacing: 0.4em;
-}
-
-html[data-theme='editorial'] .btn--primary::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(100%);
-  transition: transform var(--dur-fast) var(--ease-editorial);
-}
-
-html[data-theme='editorial'] .btn--primary:hover::after {
-  transform: translateY(0);
-}
-
-html[data-theme='terminal'] .btn {
-  border-radius: 0;
   text-shadow: var(--text-glow);
+  transition: background var(--dur-med) var(--ease-snap),
+    color var(--dur-med) var(--ease-snap),
+    transform var(--dur-med) var(--ease-snap),
+    opacity var(--dur-med) var(--ease-snap);
 }
 
-html[data-theme='terminal'] .btn::before,
-html[data-theme='terminal'] .btn::after {
-  content: '';
+.btn::before {
+  content: '[';
 }
 
-html[data-theme='terminal'] .btn--primary {
-  background: transparent;
+.btn::after {
+  content: ']';
 }
 
-html[data-theme='terminal'] .btn--primary:hover {
+.btn:hover {
   background: var(--primary);
   color: #000;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--danger:hover {
+  background: var(--error);
+}
+
+.ascii-hr {
+  color: var(--muted);
+  text-shadow: var(--text-glow);
+  font-family: var(--font-mono);
+  letter-spacing: 0.12em;
+  opacity: 0.9;
+  user-select: none;
 }
 
 @keyframes scanSlide {
@@ -166,7 +137,7 @@ html[data-theme='terminal'] .btn--primary:hover {
   content: '';
   position: absolute;
   inset: 0;
-  background: #3b82f6;
+  background: var(--secondary);
   width: 40%;
   transform: translateX(-100%);
   animation: scanSlide 2s cubic-bezier(0.8, 0, 0.2, 1) infinite;

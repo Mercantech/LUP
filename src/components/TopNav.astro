@@ -5,9 +5,12 @@ const { currentPath = '/' } = Astro.props;
 <header class="nav" data-nav>
   <div class="container nav__inner">
     <a class="brand" href="/">
-      <span class="brand__bar brand__bar--sm"></span>
-      <span class="brand__word serif">MERCANTEC</span>
-      <span class="brand__bar brand__bar--lg"></span>
+      <span class="brand__word mono brand__ascii" aria-hidden="true">__  __ _____ ____   ____    _    _   _ _____ _____ ____</span>
+      <span class="brand__word mono brand__ascii" aria-hidden="true">|  \\/  | ____|  _ \\ / ___|  / \\  | \\ | |_   _| ____/ ___|</span>
+      <span class="brand__word mono brand__ascii" aria-hidden="true">| |\\/| |  _| | |_) | |     / _ \\ |  \\| | | | |  _| \\___ \\</span>
+      <span class="brand__word mono brand__ascii" aria-hidden="true">| |  | | |___|  _ <| |___ / ___ \\| |\\  | | | | |___ ___) |</span>
+      <span class="brand__word mono brand__ascii" aria-hidden="true">|_|  |_|_____|_| \\_\\\\____/_/   \\_\\_| \\_| |_| |_____|____/</span>
+      <span class="brand__sr">Mercantec</span>
     </a>
 
     <nav class="nav__links mono" aria-label="Primær navigation">
@@ -19,35 +22,8 @@ const { currentPath = '/' } = Astro.props;
       <a class="nav__link" href="/forlob/hovedforlob-5">H5</a>
       <a class="nav__link" href="/forlob/hovedforlob-6">H6</a>
     </nav>
-
-    <button class="theme-toggle btn" type="button" data-theme-toggle>
-      <span class="mono">THEME</span>
-      <span aria-hidden="true">/</span>
-      <span class="mono" data-theme-label>EDITORIAL</span>
-    </button>
   </div>
 </header>
-
-<script is:inline>
-  (() => {
-    const root = document.documentElement;
-    const btn = document.querySelector('[data-theme-toggle]');
-    const label = document.querySelector('[data-theme-label]');
-    if (!btn || !label) return;
-
-    const getTheme = () => (root.dataset.theme === 'terminal' ? 'terminal' : 'editorial');
-    const setTheme = (t) => {
-      root.dataset.theme = t;
-      try {
-        localStorage.setItem('lup-theme', t);
-      } catch {}
-      label.textContent = t.toUpperCase();
-    };
-
-    setTheme(getTheme());
-    btn.addEventListener('click', () => setTheme(getTheme() === 'editorial' ? 'terminal' : 'editorial'));
-  })();
-</script>
 
 <script is:inline>
   (() => {
@@ -70,10 +46,10 @@ const { currentPath = '/' } = Astro.props;
     right: 0;
     z-index: 20;
     padding-top: 32px;
-    transition: padding var(--dur-fast) var(--ease-editorial),
-      background var(--dur-fast) var(--ease-editorial),
-      border-color var(--dur-fast) var(--ease-editorial),
-      backdrop-filter var(--dur-fast) var(--ease-editorial);
+    transition: padding var(--dur-med) steps(1, end),
+      background var(--dur-med) steps(1, end),
+      border-color var(--dur-med) steps(1, end),
+      backdrop-filter var(--dur-med) steps(1, end);
   }
 
   .nav.is-scrolled {
@@ -94,27 +70,28 @@ const { currentPath = '/' } = Astro.props;
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
   }
 
   .brand__word {
-    font-size: 20px;
-    letter-spacing: 0.02em;
-    font-weight: 300;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-shadow: var(--text-glow);
+    line-height: 1.05;
   }
 
-  .brand__bar {
+  .brand__sr {
+    position: absolute;
+    width: 1px;
     height: 1px;
-    background: var(--fg);
-    opacity: 0.7;
-  }
-
-  .brand__bar--sm {
-    width: 24px;
-  }
-
-  .brand__bar--lg {
-    width: 32px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .nav__links {
@@ -125,7 +102,7 @@ const { currentPath = '/' } = Astro.props;
 
   .nav__link {
     opacity: 0.75;
-    transition: opacity var(--dur-fast) var(--ease-editorial);
+    transition: opacity var(--dur-med) steps(1, end);
     letter-spacing: 0.3em;
     font-size: 10px;
   }
@@ -135,19 +112,8 @@ const { currentPath = '/' } = Astro.props;
     opacity: 1;
   }
 
-  .theme-toggle {
-    padding: 10px 12px;
-  }
-
-  html[data-theme='terminal'] .brand__word {
-    font-family: var(--font-mono);
-    letter-spacing: 0.3em;
-    font-size: 12px;
+  html[data-theme='terminal'] .nav__link {
     text-shadow: var(--text-glow);
-  }
-
-  html[data-theme='terminal'] .brand__bar {
-    background: var(--muted);
   }
 
   @media (min-width: 860px) {

@@ -59,9 +59,8 @@ function markdownToHtml(md: string) {
           LOKAL UNDERVISNINGSPLAN
         </div>
 
-        <h1 class="hero__title serif">
-          LUP<br />
-          <span class="hero__muted"><em>PROGRAMMERING</em></span>
+        <h1 class="hero__title mono">
+          mercantec@lup:~$ lup --programmering<span class="cursor" aria-hidden="true"></span>
         </h1>
 
         <p class="hero__copy">
@@ -70,10 +69,10 @@ function markdownToHtml(md: string) {
 
         <div class="hero__cta">
           <a class="btn btn--primary" href="/forlob/hovedforlob-1">
-            <span>ÅBN H1</span>
+            <span>OPEN --H1</span>
           </a>
           <a class="btn" href="#roadmap">
-            <span>SE OVERSIGT</span>
+            <span>LIST --ALL</span>
           </a>
         </div>
 
@@ -86,8 +85,8 @@ function markdownToHtml(md: string) {
     <section class="section roadmap" id="roadmap">
       <div class="container roadmap__inner">
         <div class="roadmap__head">
-          <h2 class="serif">Hovedforløb (oversigt)</h2>
-          <p class="roadmap__sub">Scroll på siden eller hop direkte til et forløb.</p>
+          <h2 class="mono">/FORLOB --INDEX</h2>
+          <p class="roadmap__sub mono">USE: CLICK #H1..#H6 OR SCROLL</p>
         </div>
 
         <div class="roadmap__list">
@@ -95,10 +94,10 @@ function markdownToHtml(md: string) {
             <a class="roadmap__item" href={`#${f.slug}`}>
               <div class="roadmap__n mono">{f.short}</div>
               <div class="roadmap__meta">
-                <div class="roadmap__title serif">{f.titel}</div>
+                <div class="roadmap__title mono">{f.titel.toUpperCase()}</div>
                 <div class="roadmap__desc">{f.kort}</div>
               </div>
-              <div class="roadmap__arrow mono">↓</div>
+              <div class="roadmap__arrow mono">--&gt;</div>
             </a>
           ))}
         </div>
@@ -109,15 +108,16 @@ function markdownToHtml(md: string) {
       <section class="section forlob" id={f.slug}>
         <div class="container forlob__inner">
           <div class="forlob__head">
-            <div class="mono forlob__kicker">{f.short} / HOVEDFORLØB</div>
-            <h2 class="serif forlob__title">{f.titel}</h2>
+            <div class="mono forlob__kicker">{f.short} :: HOVEDFORLOB</div>
+            <div class="ascii-hr" aria-hidden="true">============================================================</div>
+            <h2 class="mono forlob__title">{f.titel.toUpperCase()}</h2>
             <p class="forlob__lead">{f.kort}</p>
             <div class="forlob__actions">
               <a class="btn btn--primary" href={`/forlob/${f.slug}`}>
-                <span>ÅBN ISOLERET</span>
+                <span>OPEN --DETAIL</span>
               </a>
               <a class="btn" href="#roadmap">
-                <span>TIL TOP</span>
+                <span>BACK --INDEX</span>
               </a>
             </div>
           </div>
@@ -152,6 +152,7 @@ function markdownToHtml(md: string) {
       border: var(--border);
       border-radius: var(--radius);
       margin-bottom: 24px;
+      text-shadow: var(--text-glow);
     }
 
     .dot {
@@ -159,8 +160,8 @@ function markdownToHtml(md: string) {
       height: 8px;
       border-radius: 50%;
       background: var(--primary);
-      box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 18%, transparent);
-      animation: pulse 2.2s var(--ease-editorial) infinite;
+      box-shadow: 0 0 0 4px rgba(51, 255, 0, 0.18);
+      animation: pulse 2.2s steps(1, end) infinite;
     }
 
     @keyframes pulse {
@@ -176,18 +177,13 @@ function markdownToHtml(md: string) {
     }
 
     .hero__title {
-      font-weight: 300;
-      letter-spacing: 0.02em;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      line-height: 0.92;
-      font-size: clamp(56px, 9vw, 120px);
+      line-height: 1.1;
+      font-size: clamp(16px, 3.2vw, 32px);
       margin: 0 0 18px;
-    }
-
-    .hero__muted {
-      color: var(--muted);
-      font-style: italic;
-      margin-inline: 8px;
+      text-shadow: var(--text-glow);
     }
 
     .hero__copy {
@@ -205,13 +201,8 @@ function markdownToHtml(md: string) {
 
     .terminal-line {
       margin-top: 24px;
-      opacity: 0;
-      transition: opacity var(--dur-slow) var(--ease-editorial);
-    }
-
-    html[data-theme='terminal'] .terminal-line {
-      opacity: 1;
       text-shadow: var(--text-glow);
+      opacity: 0.85;
     }
 
     .roadmap__inner {
@@ -230,8 +221,9 @@ function markdownToHtml(md: string) {
 
     .roadmap__head h2 {
       margin: 0;
-      font-weight: 300;
-      font-size: 32px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.25em;
     }
 
     .roadmap__sub {
@@ -251,7 +243,7 @@ function markdownToHtml(md: string) {
       gap: 16px;
       padding: 18px;
       border-bottom: var(--border);
-      transition: background var(--dur-fast) var(--ease-editorial), opacity var(--dur-fast) var(--ease-editorial);
+      transition: background var(--dur-med) steps(1, end), opacity var(--dur-med) steps(1, end);
     }
 
     .roadmap__item:last-child {
@@ -259,16 +251,13 @@ function markdownToHtml(md: string) {
     }
 
     .roadmap__item:hover {
-      background: color-mix(in oklab, #fff 65%, var(--bg));
-    }
-
-    html[data-theme='terminal'] .roadmap__item:hover {
-      background: transparent;
+      background: var(--fg);
+      color: #000;
     }
 
     .roadmap__title {
-      font-weight: 300;
-      font-size: 18px;
+      font-weight: 700;
+      font-size: 12px;
       margin-bottom: 4px;
     }
 
@@ -306,10 +295,12 @@ function markdownToHtml(md: string) {
     }
 
     .forlob__title {
-      font-weight: 300;
+      font-weight: 700;
       text-transform: uppercase;
       margin: 0 0 10px;
-      font-size: clamp(28px, 3.2vw, 44px);
+      font-size: clamp(18px, 2.6vw, 28px);
+      letter-spacing: 0.12em;
+      text-shadow: var(--text-glow);
     }
 
     .forlob__lead {
@@ -332,19 +323,16 @@ function markdownToHtml(md: string) {
       padding: 22px;
       border-radius: var(--radius);
       margin-top: 14px;
-    }
-
-    html[data-theme='terminal'] .forlob__content {
-      border-radius: 0;
       text-shadow: var(--text-glow);
     }
 
     .forlob__content :global(h3) {
-      font-family: var(--font-serif);
-      font-weight: 300;
-      letter-spacing: 0.02em;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       margin: 26px 0 10px;
+      text-shadow: var(--text-glow);
     }
 
     .forlob__content :global(p),
@@ -356,6 +344,12 @@ function markdownToHtml(md: string) {
     .forlob__content :global(ul) {
       margin: 10px 0 0;
       padding-left: 18px;
+    }
+
+    .forlob__content :global(a) {
+      text-decoration: underline;
+      text-decoration-style: dashed;
+      text-underline-offset: 4px;
     }
 
     .footer__inner {
