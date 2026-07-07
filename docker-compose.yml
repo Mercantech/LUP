@@ -4,9 +4,10 @@ services:
     container_name: lup
     restart: unless-stopped
     networks:
-      - traefik
+      - dokploy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=dokploy
 
       - traefik.http.routers.lup.rule=Host(`lup.mercantec.tech`)
       - traefik.http.routers.lup.entrypoints=websecure
@@ -16,6 +17,6 @@ services:
       - traefik.http.services.lup.loadbalancer.server.port=80
 
 networks:
-  traefik:
+  dokploy:
     external: true
 
