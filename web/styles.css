@@ -37,6 +37,10 @@ a {
   color: inherit;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .atmosphere {
   position: fixed;
   inset: 0;
