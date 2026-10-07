@@ -307,7 +307,8 @@ const showTidslinje = (stopId = "") => {
 
   if (!tidslinjeBuilt) {
     tidslinjeTitle.textContent = tidslinjeMeta.title;
-    tidslinjeLead.textContent = tidslinjeMeta.lead;
+    tidslinjeLead.textContent = tidslinjeMeta.lead || "";
+    tidslinjeLead.hidden = !tidslinjeMeta.lead;
     tidslinjeTrack.innerHTML = tidslinje.map((s, i) => renderStop(s, i)).join("");
     tidslinjeRail.innerHTML = renderRail();
     tidslinjeBuilt = true;

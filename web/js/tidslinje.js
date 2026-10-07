@@ -5,8 +5,7 @@ const img = (name, alt) =>
 
 export const tidslinjeMeta = {
   title: "Tidslinje",
-  lead:
-    "Scroll gennem uddannelsen fra praktik før H1 til svendeprøven på H6 — skoleperioder og praktikmål i den rækkefølge, eleven møder dem.",
+  lead: "",
 };
 
 export const tidslinje = [
