@@ -42,6 +42,12 @@ const escapeHtml = (value) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 
+const lupBrandPlain = "Lokal Undervisningsplan";
+const lupBrandHtml = `<span class="brand-letter">L</span>okal <span class="brand-letter">U</span>ndervisnings<span class="brand-letter">P</span>lan`;
+
+const lupTitlePlain = (titel) => `${titel} — ${lupBrandPlain}`;
+const lupTitleHtml = (titel) => `${escapeHtml(titel)} — ${lupBrandHtml}`;
+
 const inlineMarkdown = (text) =>
   escapeHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 
@@ -161,9 +167,8 @@ const renderStop = (stop, index) => {
   const typeLabel = stop.type === "praktik" ? "Praktik" : "Skole";
   const lup = stop.type === "skole" ? byShort[stop.id] || byShort[stop.label?.toLowerCase()] : null;
 
-  const title = lup
-    ? `${lup.titel} — Lokal Undervisningsplan`
-    : stop.title;
+  const titlePlain = lup ? lupTitlePlain(lup.titel) : stop.title;
+  const titleHtml = lup ? lupTitleHtml(lup.titel) : escapeHtml(stop.title);
   const summary = lup?.kort || stop.summary;
   const duration =
     lup?.uger != null
@@ -177,7 +182,7 @@ const renderStop = (stop, index) => {
     const image = stop.image
       ? `<figure class="praktik-fig"><img src="assets/praktik/${escapeHtml(
           stop.image
-        )}" alt="${escapeHtml(title)}" loading="lazy" /></figure>`
+        )}" alt="${escapeHtml(titlePlain)}" loading="lazy" /></figure>`
       : "";
     const body = lup
       ? `<div class="prose tl-lup">${renderMarkdown(lup.markdown)}</div>`
@@ -195,7 +200,7 @@ const renderStop = (stop, index) => {
           ${duration}
         </span>
         <span class="tl-copy">
-          <h2 class="tl-title">${escapeHtml(title)}</h2>
+          <h2 class="tl-title">${titleHtml}</h2>
           <p class="tl-summary">${escapeHtml(summary)}</p>
         </span>
       </header>
@@ -300,7 +305,7 @@ const showForlob = (key) => {
   hideAll();
   detailView.hidden = false;
   detailCode.textContent = item.uger != null ? `${item.short} · ${item.uger} uger` : item.short;
-  detailTitle.textContent = `${item.titel} — Lokal Undervisningsplan`;
+  detailTitle.innerHTML = lupTitleHtml(item.titel);
   detailLead.textContent = item.kort;
   detailBody.innerHTML = renderMarkdown(item.markdown);
   document.title = `${item.short} · LUP`;
