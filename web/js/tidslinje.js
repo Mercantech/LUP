@@ -4,7 +4,7 @@ const img = (name, alt) =>
   `<figure class="praktik-fig"><img src="assets/praktik/${name}" alt="${alt}" loading="lazy" /></figure>`;
 
 const bridge = (text) =>
-  `<p class="tl-bridge"><strong>Sammenhæng.</strong> ${text}</p>`;
+  `<p class="tl-bridge">${text}</p>`;
 
 export const tidslinje = [
   {
