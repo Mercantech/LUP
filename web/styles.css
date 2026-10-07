@@ -608,7 +608,7 @@ body.has-tl-rail .tl-rail-shell {
 .tl-item {
   position: relative;
   margin: 0 0 2rem;
-  scroll-margin-top: 5.5rem;
+  scroll-margin-top: 6.75rem;
   animation: rise 0.5s calc(var(--i, 0) * 0.04s) ease both;
 }
 
