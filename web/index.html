@@ -8,13 +8,25 @@
       content="LUP — Lokale undervisningsplaner for MAGS hovedforløb H1–H6 på Mercantec."
     />
     <title>LUP · Lokale undervisningsplaner</title>
+    <script>
+      (() => {
+        const key = "lup-theme";
+        const stored = localStorage.getItem(key);
+        const theme =
+          stored === "light" || stored === "dark"
+            ? stored
+            : "dark";
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=21" />
+    <link rel="stylesheet" href="styles.css?v=22" />
   </head>
   <body>
     <div class="atmosphere" aria-hidden="true"></div>
@@ -27,15 +39,29 @@
           <small>MAGS · Mercantec</small>
         </span>
       </a>
-      <nav class="top-nav" aria-label="Hovedforløb">
-        <a href="#/h1" data-nav="h1">H1</a>
-        <a href="#/h2" data-nav="h2">H2</a>
-        <a href="#/h3" data-nav="h3">H3</a>
-        <a href="#/h4" data-nav="h4">H4</a>
-        <a href="#/h5" data-nav="h5">H5</a>
-        <a href="#/h6" data-nav="h6">H6</a>
-        <a href="#/praktik" data-nav="praktik">Praktik</a>
-      </nav>
+      <div class="top-tools">
+        <nav class="top-nav" aria-label="Hovedforløb">
+          <a href="#/h1" data-nav="h1">H1</a>
+          <a href="#/h2" data-nav="h2">H2</a>
+          <a href="#/h3" data-nav="h3">H3</a>
+          <a href="#/h4" data-nav="h4">H4</a>
+          <a href="#/h5" data-nav="h5">H5</a>
+          <a href="#/h6" data-nav="h6">H6</a>
+          <a href="#/praktik" data-nav="praktik">Praktik</a>
+        </nav>
+        <button
+          type="button"
+          class="theme-toggle"
+          id="theme-toggle"
+          aria-label="Skift mellem mørk og lys tilstand"
+          title="Skift tema"
+        >
+          <span class="theme-toggle-track" aria-hidden="true">
+            <span class="theme-toggle-thumb"></span>
+          </span>
+          <span class="theme-toggle-label" data-theme-label>Mørk</span>
+        </button>
+      </div>
     </header>
 
     <main>
@@ -96,6 +122,6 @@
       </div>
     </footer>
 
-    <script type="module" src="js/main.js?v=21"></script>
+    <script type="module" src="js/main.js?v=22"></script>
   </body>
 </html>
