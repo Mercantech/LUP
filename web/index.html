@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=7" />
+    <link rel="stylesheet" href="styles.css?v=8" />
   </head>
   <body>
     <div class="atmosphere" aria-hidden="true"></div>
@@ -75,14 +75,17 @@
         <article class="prose prose-wide" id="praktik-body"></article>
       </section>
 
-      <section id="tidslinje-view" class="detail" hidden>
+      <section id="tidslinje-view" class="detail tidslinje-page" hidden>
         <a class="back" href="#/">← Alle forløb</a>
         <header class="detail-head">
           <p class="detail-code">Uddannelsen</p>
           <h1 class="detail-title" id="tidslinje-title"></h1>
           <p class="detail-lead" id="tidslinje-lead"></p>
         </header>
-        <ol class="tl-track" id="tidslinje-track" aria-label="Tidslinje for uddannelsen"></ol>
+        <div class="tl-layout">
+          <ol class="tl-track" id="tidslinje-track" aria-label="Tidslinje for uddannelsen"></ol>
+          <nav class="tl-rail" id="tidslinje-rail" aria-label="Hop i tidslinjen"></nav>
+        </div>
       </section>
     </main>
 
@@ -90,6 +93,6 @@
       <p>MAGS · Mercantec · <a href="https://lup.dk">lup.dk</a></p>
     </footer>
 
-    <script type="module" src="js/main.js?v=7"></script>
+    <script type="module" src="js/main.js?v=8"></script>
   </body>
 </html>

@@ -19,7 +19,11 @@ const praktikBody = document.getElementById("praktik-body");
 const tidslinjeTitle = document.getElementById("tidslinje-title");
 const tidslinjeLead = document.getElementById("tidslinje-lead");
 const tidslinjeTrack = document.getElementById("tidslinje-track");
+const tidslinjeRail = document.getElementById("tidslinje-rail");
 const navLinks = document.querySelectorAll("[data-nav]");
+
+let railActiveId = "";
+let railRaf = 0;
 
 const escapeHtml = (value) =>
   String(value)
@@ -80,6 +84,7 @@ const hideAll = () => {
   detailView.hidden = true;
   praktikView.hidden = true;
   tidslinjeView.hidden = true;
+  document.body.classList.remove("has-tl-rail");
 };
 
 const setActiveNav = (key) => {
@@ -164,14 +169,72 @@ const renderStop = (stop, index) => {
     </li>`;
 };
 
+const renderRail = () =>
+  tidslinje
+    .map((stop) => {
+      const kind = stop.type === "praktik" ? "Praktik" : "Skole";
+      return `
+        <a
+          class="tl-rail-link tl-rail-${stop.type}"
+          href="#/tidslinje/${escapeHtml(stop.id)}"
+          data-stop="${escapeHtml(stop.id)}"
+          title="${escapeHtml(kind)} · ${escapeHtml(stop.label)}"
+        >
+          <span class="tl-rail-dot" aria-hidden="true"></span>
+          <span class="tl-rail-text">
+            <span class="tl-rail-kind">${kind}</span>
+            <span class="tl-rail-label">${escapeHtml(stop.label)}</span>
+          </span>
+        </a>`;
+    })
+    .join("");
+
+const syncRail = () => {
+  if (tidslinjeView.hidden || !tidslinjeRail) return;
+
+  const marker = window.scrollY + Math.min(180, window.innerHeight * 0.22);
+  let active = tidslinje[0]?.id || "";
+
+  for (const stop of tidslinje) {
+    const el = document.getElementById(`stop-${stop.id}`);
+    if (!el) continue;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    if (top <= marker) active = stop.id;
+  }
+
+  if (active === railActiveId) return;
+  railActiveId = active;
+
+  tidslinjeRail.querySelectorAll("[data-stop]").forEach((link) => {
+    const on = link.dataset.stop === active;
+    link.classList.toggle("is-active", on);
+    if (on) link.setAttribute("aria-current", "true");
+    else link.removeAttribute("aria-current");
+  });
+
+  const activeLink = tidslinjeRail.querySelector(`[data-stop="${active}"]`);
+  activeLink?.scrollIntoView({ block: "nearest", inline: "nearest" });
+};
+
+const onRailScroll = () => {
+  if (railRaf) return;
+  railRaf = requestAnimationFrame(() => {
+    railRaf = 0;
+    syncRail();
+  });
+};
+
 const showTidslinje = (stopId = "") => {
   hideAll();
   tidslinjeView.hidden = false;
   tidslinjeTitle.textContent = tidslinjeMeta.title;
   tidslinjeLead.textContent = tidslinjeMeta.lead;
   tidslinjeTrack.innerHTML = tidslinje.map((s, i) => renderStop(s, i)).join("");
+  tidslinjeRail.innerHTML = renderRail();
+  railActiveId = "";
   document.title = "Tidslinje · LUP";
   setActiveNav("tidslinje");
+  document.body.classList.add("has-tl-rail");
 
   const target = stopId ? document.getElementById(`stop-${stopId}`) : null;
   if (target) {
@@ -179,6 +242,8 @@ const showTidslinje = (stopId = "") => {
   } else {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  requestAnimationFrame(syncRail);
 };
 
 const render = () => {
@@ -237,6 +302,8 @@ const buildGrid = () => {
 
 buildGrid();
 window.addEventListener("hashchange", render);
+window.addEventListener("scroll", onRailScroll, { passive: true });
+window.addEventListener("resize", onRailScroll, { passive: true });
 
 if (!location.hash || location.hash === "#") {
   location.replace("#/");
