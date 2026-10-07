@@ -1,14 +1,19 @@
 import { forlob } from "./forlob.js";
+import { praktik, praktikHtml } from "./praktik.js";
 
 const byShort = Object.fromEntries(forlob.map((f) => [f.short.toLowerCase(), f]));
 
 const homeView = document.getElementById("home-view");
 const detailView = document.getElementById("detail-view");
+const praktikView = document.getElementById("praktik-view");
 const grid = document.getElementById("forlob-grid");
 const detailCode = document.getElementById("detail-code");
 const detailTitle = document.getElementById("detail-title");
 const detailLead = document.getElementById("detail-lead");
 const detailBody = document.getElementById("detail-body");
+const praktikTitle = document.getElementById("praktik-title");
+const praktikLead = document.getElementById("praktik-lead");
+const praktikBody = document.getElementById("praktik-body");
 const navLinks = document.querySelectorAll("[data-nav]");
 
 const escapeHtml = (value) =>
@@ -64,6 +69,12 @@ const routeKey = () => {
   return raw.split(/[/?#]/)[0] || "home";
 };
 
+const hideAll = () => {
+  homeView.hidden = true;
+  detailView.hidden = true;
+  praktikView.hidden = true;
+};
+
 const setActiveNav = (key) => {
   navLinks.forEach((link) => {
     link.classList.toggle("is-active", link.dataset.nav === key);
@@ -71,8 +82,8 @@ const setActiveNav = (key) => {
 };
 
 const showHome = () => {
+  hideAll();
   homeView.hidden = false;
-  detailView.hidden = true;
   document.title = "LUP · Lokale undervisningsplaner";
   setActiveNav("home");
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -85,7 +96,7 @@ const showForlob = (key) => {
     return;
   }
 
-  homeView.hidden = true;
+  hideAll();
   detailView.hidden = false;
   detailCode.textContent = item.short;
   detailTitle.textContent = item.titel;
@@ -96,10 +107,25 @@ const showForlob = (key) => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
+const showPraktik = () => {
+  hideAll();
+  praktikView.hidden = false;
+  praktikTitle.textContent = praktik.title;
+  praktikLead.textContent = praktik.lead;
+  praktikBody.innerHTML = praktikHtml;
+  document.title = "Praktikmålsoversigt · LUP";
+  setActiveNav("praktik");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
 const render = () => {
   const key = routeKey();
   if (key === "home" || key === "") {
     showHome();
+    return;
+  }
+  if (key === "praktik") {
+    showPraktik();
     return;
   }
   showForlob(key);
@@ -107,7 +133,7 @@ const render = () => {
 
 const buildGrid = () => {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  grid.innerHTML = forlob
+  const cards = forlob
     .map(
       (item, index) => `
       <a class="card" href="#/${item.short.toLowerCase()}" role="listitem" style="${
@@ -120,6 +146,18 @@ const buildGrid = () => {
       </a>`
     )
     .join("");
+
+  const praktikCard = `
+    <a class="card card-accent" href="#/praktik" role="listitem" style="${
+      reduceMotion ? "" : `animation: rise 0.55s ${0.15 + forlob.length * 0.06}s ease both;`
+    }">
+      <p class="card-code">Praktik</p>
+      <h2 class="card-title">Praktikmålsoversigt</h2>
+      <p class="card-desc">Mål og forventninger mellem skoleopholdene — med oversigtsbilleder for GF2–H6.</p>
+      <span class="card-go">Åbn oversigt →</span>
+    </a>`;
+
+  grid.innerHTML = cards + praktikCard;
 };
 
 buildGrid();
