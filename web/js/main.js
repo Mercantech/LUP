@@ -20,10 +20,30 @@ const tidslinjeTitle = document.getElementById("tidslinje-title");
 const tidslinjeLead = document.getElementById("tidslinje-lead");
 const tidslinjeTrack = document.getElementById("tidslinje-track");
 const tidslinjeRail = document.getElementById("tidslinje-rail");
+const tlRailUp = document.getElementById("tl-rail-up");
+const tlRailDown = document.getElementById("tl-rail-down");
 const navLinks = document.querySelectorAll("[data-nav]");
 
 let railActiveId = "";
 let railRaf = 0;
+
+const railIndex = () => {
+  const idx = tidslinje.findIndex((s) => s.id === railActiveId);
+  return idx < 0 ? 0 : idx;
+};
+
+const goRailStep = (delta) => {
+  if (tidslinjeView.hidden) return;
+  const next = tidslinje[railIndex() + delta];
+  if (!next) return;
+  location.hash = `#/tidslinje/${next.id}`;
+};
+
+const updateRailArrows = () => {
+  const idx = railIndex();
+  if (tlRailUp) tlRailUp.disabled = idx <= 0;
+  if (tlRailDown) tlRailDown.disabled = idx >= tidslinje.length - 1;
+};
 
 const escapeHtml = (value) =>
   String(value)
@@ -202,18 +222,21 @@ const syncRail = () => {
     if (top <= marker) active = stop.id;
   }
 
-  if (active === railActiveId) return;
-  railActiveId = active;
+  if (active !== railActiveId) {
+    railActiveId = active;
 
-  tidslinjeRail.querySelectorAll("[data-stop]").forEach((link) => {
-    const on = link.dataset.stop === active;
-    link.classList.toggle("is-active", on);
-    if (on) link.setAttribute("aria-current", "true");
-    else link.removeAttribute("aria-current");
-  });
+    tidslinjeRail.querySelectorAll("[data-stop]").forEach((link) => {
+      const on = link.dataset.stop === active;
+      link.classList.toggle("is-active", on);
+      if (on) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    });
 
-  const activeLink = tidslinjeRail.querySelector(`[data-stop="${active}"]`);
-  activeLink?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    const activeLink = tidslinjeRail.querySelector(`[data-stop="${active}"]`);
+    activeLink?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+
+  updateRailArrows();
 };
 
 const onRailScroll = () => {
@@ -304,6 +327,23 @@ buildGrid();
 window.addEventListener("hashchange", render);
 window.addEventListener("scroll", onRailScroll, { passive: true });
 window.addEventListener("resize", onRailScroll, { passive: true });
+
+tlRailUp?.addEventListener("click", () => goRailStep(-1));
+tlRailDown?.addEventListener("click", () => goRailStep(1));
+
+window.addEventListener("keydown", (event) => {
+  if (tidslinjeView.hidden) return;
+  if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+  const tag = event.target?.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || event.target?.isContentEditable) return;
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    goRailStep(-1);
+  } else if (event.key === "ArrowDown") {
+    event.preventDefault();
+    goRailStep(1);
+  }
+});
 
 if (!location.hash || location.hash === "#") {
   location.replace("#/");

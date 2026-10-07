@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=8" />
+    <link rel="stylesheet" href="styles.css?v=9" />
   </head>
   <body>
     <div class="atmosphere" aria-hidden="true"></div>
@@ -42,7 +42,10 @@
     <main>
       <section id="home-view" class="home" aria-labelledby="brand">
         <p class="eyebrow">Mercantec · Data &amp; IT</p>
-        <h1 class="brand" id="brand">LUP</h1>
+        <h1 class="brand" id="brand">
+          <span class="brand-letter">L</span>okale
+          <span class="brand-letter">U</span>ndervisnings<span class="brand-letter">P</span>lan
+        </h1>
         <p class="lede">
           Lokale undervisningsplaner for alle hovedforløb — mål, indhold,
           praksis og bedømmelse samlet ét sted.
@@ -84,7 +87,15 @@
         </header>
         <div class="tl-layout">
           <ol class="tl-track" id="tidslinje-track" aria-label="Tidslinje for uddannelsen"></ol>
-          <nav class="tl-rail" id="tidslinje-rail" aria-label="Hop i tidslinjen"></nav>
+          <aside class="tl-rail-shell" aria-label="Tidslinje-navigation">
+            <button type="button" class="tl-rail-arrow" id="tl-rail-up" aria-label="Forrige sektion">
+              ↑
+            </button>
+            <nav class="tl-rail" id="tidslinje-rail" aria-label="Hop i tidslinjen"></nav>
+            <button type="button" class="tl-rail-arrow" id="tl-rail-down" aria-label="Næste sektion">
+              ↓
+            </button>
+          </aside>
         </div>
       </section>
     </main>
@@ -93,6 +104,6 @@
       <p>MAGS · Mercantec · <a href="https://lup.dk">lup.dk</a></p>
     </footer>
 
-    <script type="module" src="js/main.js?v=8"></script>
+    <script type="module" src="js/main.js?v=9"></script>
   </body>
 </html>
