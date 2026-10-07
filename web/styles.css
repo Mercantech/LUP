@@ -47,21 +47,20 @@ a {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 45% at 8% -5%, rgba(31, 107, 87, 0.28), transparent 55%),
-    radial-gradient(ellipse 55% 40% at 95% 12%, rgba(226, 177, 47, 0.18), transparent 50%),
-    linear-gradient(165deg, #f7fbf8 0%, #e8f1ec 42%, #d7e6df 100%);
+    radial-gradient(ellipse 60% 40% at 10% 0%, rgba(31, 107, 87, 0.12), transparent 55%),
+    linear-gradient(180deg, #f7fbf8 0%, #eef4f0 100%);
 }
 
 .atmosphere::after {
   content: "";
   position: absolute;
   inset: 0;
-  opacity: 0.28;
+  opacity: 0.12;
   background-image:
     linear-gradient(var(--line) 1px, transparent 1px),
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: linear-gradient(to bottom, black, transparent 72%);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black, transparent 45%);
 }
 
 .top {
@@ -143,16 +142,16 @@ a {
 main {
   width: min(1100px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: clamp(2rem, 7vh, 4.5rem) 0 4rem;
+  padding: 1.25rem 0 3rem;
 }
 
-.home {
-  min-height: calc(100vh - 8rem);
+.home-head {
+  margin: 0 0 1.5rem;
 }
 
 .eyebrow {
-  margin: 0 0 0.7rem;
-  font-size: 0.82rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -160,35 +159,21 @@ main {
 }
 
 .brand {
-  margin: 0 0 0.8rem;
+  margin: 0;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(2.2rem, 6.5vw, 4.4rem);
-  line-height: 1.05;
-  letter-spacing: -0.04em;
+  font-size: clamp(1.7rem, 4.2vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   color: var(--ink);
-  max-width: 18ch;
+  max-width: 22ch;
 }
 
 .brand-letter {
   color: var(--moss);
   text-decoration: underline;
-  text-decoration-thickness: 0.08em;
+  text-decoration-thickness: 0.07em;
   text-underline-offset: 0.08em;
-}
-
-.lede {
-  margin: 0 0 1.6rem;
-  max-width: 34rem;
-  font-size: clamp(1.05rem, 2vw, 1.28rem);
-  color: var(--ink-soft);
-}
-
-.cta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 2.4rem;
 }
 
 .cta {
@@ -612,9 +597,9 @@ body.has-tl-rail .tl-rail-shell {
 
 .tl-item {
   position: relative;
-  margin: 0 0 2rem;
-  scroll-margin-top: 6.75rem;
-  animation: rise 0.5s calc(var(--i, 0) * 0.04s) ease both;
+  margin: 0 0 1.35rem;
+  scroll-margin-top: 5.5rem;
+  animation: rise 0.4s calc(var(--i, 0) * 0.03s) ease both;
 }
 
 .tl-track.is-settled .tl-item {
@@ -691,7 +676,7 @@ body.has-tl-rail .tl-rail-shell {
   margin: 0;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(1.2rem, 2.4vw, 1.55rem);
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
@@ -699,20 +684,21 @@ body.has-tl-rail .tl-rail-shell {
 .tl-summary {
   margin: 0;
   color: var(--ink-soft);
-  font-size: 0.98rem;
+  font-size: 0.92rem;
 }
 
 .tl-panel {
   display: block;
-  margin: 0 0 0.35rem 2.3rem;
-  padding: 1.15rem 1.25rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.88);
+  margin: 0 0 0.25rem 2.3rem;
+  padding: 0.85rem 0 0.25rem;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
 }
 
 .tl-praktik .tl-panel {
-  background: rgba(232, 239, 233, 0.55);
+  background: transparent;
 }
 
 .tl-topics {

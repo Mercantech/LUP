@@ -3,11 +3,6 @@
 const img = (name, alt) =>
   `<figure class="praktik-fig"><img src="assets/praktik/${name}" alt="${alt}" loading="lazy" /></figure>`;
 
-export const tidslinjeMeta = {
-  title: "Tidslinje",
-  lead: "",
-};
-
 export const tidslinje = [
   {
     id: "inden-h1",

@@ -1,14 +1,12 @@
 import { forlob } from "./forlob.js";
 import { praktik, praktikHtml } from "./praktik.js";
-import { tidslinje, tidslinjeMeta } from "./tidslinje.js";
+import { tidslinje } from "./tidslinje.js";
 
 const byShort = Object.fromEntries(forlob.map((f) => [f.short.toLowerCase(), f]));
 
 const homeView = document.getElementById("home-view");
 const detailView = document.getElementById("detail-view");
 const praktikView = document.getElementById("praktik-view");
-const tidslinjeView = document.getElementById("tidslinje-view");
-const grid = document.getElementById("forlob-grid");
 const detailCode = document.getElementById("detail-code");
 const detailTitle = document.getElementById("detail-title");
 const detailLead = document.getElementById("detail-lead");
@@ -16,8 +14,6 @@ const detailBody = document.getElementById("detail-body");
 const praktikTitle = document.getElementById("praktik-title");
 const praktikLead = document.getElementById("praktik-lead");
 const praktikBody = document.getElementById("praktik-body");
-const tidslinjeTitle = document.getElementById("tidslinje-title");
-const tidslinjeLead = document.getElementById("tidslinje-lead");
 const tidslinjeTrack = document.getElementById("tidslinje-track");
 const tidslinjeRail = document.getElementById("tidslinje-rail");
 const tlRailUp = document.getElementById("tl-rail-up");
@@ -32,64 +28,11 @@ let railScrolling = false;
 const prefersReducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const isTimelineOpen = () => !homeView.hidden;
+
 const railIndex = () => {
   const idx = tidslinje.findIndex((s) => s.id === railActiveId);
   return idx < 0 ? 0 : idx;
-};
-
-const scrollToStop = (stopId = "") => {
-  const behavior = prefersReducedMotion() ? "auto" : "smooth";
-  railScrolling = true;
-
-  if (!stopId) {
-    window.scrollTo({ top: 0, behavior });
-  } else {
-    const target = document.getElementById(`stop-${stopId}`);
-    if (target) target.scrollIntoView({ behavior, block: "start" });
-    else window.scrollTo({ top: 0, behavior });
-  }
-
-  window.setTimeout(
-    () => {
-      railScrolling = false;
-      syncRail();
-    },
-    prefersReducedMotion() ? 50 : 450
-  );
-};
-
-const goToStop = (stopId) => {
-  if (tidslinjeView.hidden) {
-    location.hash = `#/tidslinje/${stopId}`;
-    return;
-  }
-  const nextHash = `#/tidslinje/${stopId}`;
-  if (location.hash !== nextHash) {
-    history.replaceState(null, "", nextHash);
-  }
-  scrollToStop(stopId);
-
-  railActiveId = stopId;
-  tidslinjeRail?.querySelectorAll("[data-stop]").forEach((link) => {
-    const on = link.dataset.stop === stopId;
-    link.classList.toggle("is-active", on);
-    if (on) link.setAttribute("aria-current", "true");
-    else link.removeAttribute("aria-current");
-  });
-  updateRailArrows();
-};
-
-const goRailStep = (delta) => {
-  if (tidslinjeView.hidden) return;
-  const next = tidslinje[railIndex() + delta];
-  if (!next) return;
-  goToStop(next.id);
-};
-
-const updateRailArrows = () => {
-  const idx = railIndex();
-  if (tlRailUp) tlRailUp.disabled = idx <= 0;
-  if (tlRailDown) tlRailDown.disabled = idx >= tidslinje.length - 1;
 };
 
 const escapeHtml = (value) =>
@@ -150,7 +93,6 @@ const hideAll = () => {
   homeView.hidden = true;
   detailView.hidden = true;
   praktikView.hidden = true;
-  tidslinjeView.hidden = true;
   document.body.classList.remove("has-tl-rail");
 };
 
@@ -160,41 +102,59 @@ const setActiveNav = (key) => {
   });
 };
 
-const showHome = () => {
-  hideAll();
-  homeView.hidden = false;
-  document.title = "LUP · Lokale undervisningsplaner";
-  setActiveNav("home");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+const updateRailArrows = () => {
+  const idx = railIndex();
+  if (tlRailUp) tlRailUp.disabled = idx <= 0;
+  if (tlRailDown) tlRailDown.disabled = idx >= tidslinje.length - 1;
 };
 
-const showForlob = (key) => {
-  const item = byShort[key];
-  if (!item) {
-    showHome();
-    return;
+const scrollToStop = (stopId = "") => {
+  const behavior = prefersReducedMotion() ? "auto" : "smooth";
+  railScrolling = true;
+
+  if (!stopId) {
+    window.scrollTo({ top: 0, behavior });
+  } else {
+    const target = document.getElementById(`stop-${stopId}`);
+    if (target) target.scrollIntoView({ behavior, block: "start" });
+    else window.scrollTo({ top: 0, behavior });
   }
 
-  hideAll();
-  detailView.hidden = false;
-  detailCode.textContent = item.short;
-  detailTitle.textContent = item.titel;
-  detailLead.textContent = item.kort;
-  detailBody.innerHTML = renderMarkdown(item.markdown);
-  document.title = `${item.short} · LUP`;
-  setActiveNav(key);
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.setTimeout(
+    () => {
+      railScrolling = false;
+      syncRail();
+    },
+    prefersReducedMotion() ? 50 : 450
+  );
 };
 
-const showPraktik = () => {
-  hideAll();
-  praktikView.hidden = false;
-  praktikTitle.textContent = praktik.title;
-  praktikLead.textContent = praktik.lead;
-  praktikBody.innerHTML = praktikHtml;
-  document.title = "Praktikmålsoversigt · LUP";
-  setActiveNav("praktik");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+const goToStop = (stopId) => {
+  if (!isTimelineOpen()) {
+    location.hash = stopId ? `#/tidslinje/${stopId}` : "#/";
+    return;
+  }
+  const nextHash = stopId ? `#/tidslinje/${stopId}` : "#/";
+  if (location.hash !== nextHash) {
+    history.replaceState(null, "", nextHash);
+  }
+  scrollToStop(stopId);
+
+  railActiveId = stopId || tidslinje[0]?.id || "";
+  tidslinjeRail?.querySelectorAll("[data-stop]").forEach((link) => {
+    const on = link.dataset.stop === railActiveId;
+    link.classList.toggle("is-active", on);
+    if (on) link.setAttribute("aria-current", "true");
+    else link.removeAttribute("aria-current");
+  });
+  updateRailArrows();
+};
+
+const goRailStep = (delta) => {
+  if (!isTimelineOpen()) return;
+  const next = tidslinje[railIndex() + delta];
+  if (!next) return;
+  goToStop(next.id);
 };
 
 const renderStop = (stop, index) => {
@@ -257,7 +217,7 @@ const renderRail = () =>
     .join("");
 
 const syncRail = () => {
-  if (tidslinjeView.hidden || !tidslinjeRail || railScrolling) return;
+  if (!isTimelineOpen() || !tidslinjeRail || railScrolling) return;
 
   const marker = window.scrollY + Math.min(180, window.innerHeight * 0.22);
   let active = tidslinje[0]?.id || "";
@@ -294,21 +254,17 @@ const onRailScroll = () => {
   });
 };
 
-const showTidslinje = (stopId = "") => {
-  const alreadyOpen = !tidslinjeView.hidden;
+const showTimeline = (stopId = "") => {
+  const alreadyOpen = isTimelineOpen();
 
-  homeView.hidden = true;
   detailView.hidden = true;
   praktikView.hidden = true;
-  tidslinjeView.hidden = false;
+  homeView.hidden = false;
   document.body.classList.add("has-tl-rail");
-  document.title = "Tidslinje · LUP";
-  setActiveNav("tidslinje");
+  document.title = "LUP · Lokale undervisningsplaner";
+  setActiveNav("home");
 
   if (!tidslinjeBuilt) {
-    tidslinjeTitle.textContent = tidslinjeMeta.title;
-    tidslinjeLead.textContent = tidslinjeMeta.lead || "";
-    tidslinjeLead.hidden = !tidslinjeMeta.lead;
     tidslinjeTrack.innerHTML = tidslinje.map((s, i) => renderStop(s, i)).join("");
     tidslinjeRail.innerHTML = renderRail();
     tidslinjeBuilt = true;
@@ -321,68 +277,54 @@ const showTidslinje = (stopId = "") => {
     return;
   }
 
-  // Første åbning: undgå dobbelt-animation — scroll efter layout
   requestAnimationFrame(() => {
     scrollToStop(stopId);
     syncRail();
   });
 };
 
+const showForlob = (key) => {
+  const item = byShort[key];
+  if (!item) {
+    showTimeline();
+    return;
+  }
+
+  hideAll();
+  detailView.hidden = false;
+  detailCode.textContent = item.short;
+  detailTitle.textContent = item.titel;
+  detailLead.textContent = item.kort;
+  detailBody.innerHTML = renderMarkdown(item.markdown);
+  document.title = `${item.short} · LUP`;
+  setActiveNav(key);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+const showPraktik = () => {
+  hideAll();
+  praktikView.hidden = false;
+  praktikTitle.textContent = praktik.title;
+  praktikLead.textContent = praktik.lead;
+  praktikBody.innerHTML = praktikHtml;
+  document.title = "Praktikmålsoversigt · LUP";
+  setActiveNav("praktik");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
 const render = () => {
   const { key, stop } = routeParts();
-  if (key === "home" || key === "") {
-    showHome();
+  if (key === "home" || key === "" || key === "tidslinje") {
+    showTimeline(key === "tidslinje" ? stop : "");
     return;
   }
   if (key === "praktik") {
     showPraktik();
     return;
   }
-  if (key === "tidslinje") {
-    showTidslinje(stop);
-    return;
-  }
   showForlob(key);
 };
 
-const buildGrid = () => {
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const cards = forlob
-    .map(
-      (item, index) => `
-      <a class="card" href="#/${item.short.toLowerCase()}" role="listitem" style="${
-        reduceMotion ? "" : `animation: rise 0.55s ${0.15 + index * 0.06}s ease both;`
-      }">
-        <p class="card-code">${escapeHtml(item.short)}</p>
-        <h2 class="card-title">${escapeHtml(item.titel)}</h2>
-        <p class="card-desc">${escapeHtml(item.kort)}</p>
-        <span class="card-go">Åbn LUP →</span>
-      </a>`
-    )
-    .join("");
-
-  const extra = `
-    <a class="card card-accent" href="#/tidslinje" role="listitem" style="${
-      reduceMotion ? "" : `animation: rise 0.55s ${0.15 + forlob.length * 0.06}s ease both;`
-    }">
-      <p class="card-code">Tidslinje</p>
-      <h2 class="card-title">Inden H1 → H6</h2>
-      <p class="card-desc">Skoleperioder og praktikmål i den rækkefølge, eleven møder dem.</p>
-      <span class="card-go">Åbn tidslinje →</span>
-    </a>
-    <a class="card" href="#/praktik" role="listitem" style="${
-      reduceMotion ? "" : `animation: rise 0.55s ${0.15 + (forlob.length + 1) * 0.06}s ease both;`
-    }">
-      <p class="card-code">Praktik</p>
-      <h2 class="card-title">Praktikmålsoversigt</h2>
-      <p class="card-desc">Samlet oversigt med alle billeder og delpraktikmål.</p>
-      <span class="card-go">Åbn oversigt →</span>
-    </a>`;
-
-  grid.innerHTML = cards + extra;
-};
-
-buildGrid();
 window.addEventListener("hashchange", render);
 window.addEventListener("scroll", onRailScroll, { passive: true });
 window.addEventListener("resize", onRailScroll, { passive: true });
@@ -392,13 +334,13 @@ tlRailDown?.addEventListener("click", () => goRailStep(1));
 
 tidslinjeRail?.addEventListener("click", (event) => {
   const link = event.target.closest("[data-stop]");
-  if (!link || tidslinjeView.hidden) return;
+  if (!link || !isTimelineOpen()) return;
   event.preventDefault();
   goToStop(link.dataset.stop);
 });
 
 window.addEventListener("keydown", (event) => {
-  if (tidslinjeView.hidden) return;
+  if (!isTimelineOpen()) return;
   if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
   const tag = event.target?.tagName;
   if (tag === "INPUT" || tag === "TEXTAREA" || event.target?.isContentEditable) return;

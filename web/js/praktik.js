@@ -12,7 +12,7 @@ const img = (name, alt) =>
 export const praktikHtml = `
 <p>Her er en samlet praktikmålsoversigt over uddannelsen “Datatekniker med speciale i programmering”. Her finder I en oversigt over, hvad der generelt bliver brugt på hvert hovedforløb, samt vores forventninger om, hvad eleven lærer ude på lærepladsen.</p>
 <p><a class="cta cta-ghost" href="assets/praktik/pjece.pdf" target="_blank" rel="noopener noreferrer">Download pjecen (PDF)</a>
-<a class="cta cta-ghost" href="#/tidslinje" style="margin-left:0.5rem">Åbn tidslinjen</a></p>
+<a class="cta cta-ghost" href="#/" style="margin-left:0.5rem">Tilbage til tidslinjen</a></p>
 
 <h2>Praktik i virksomheden</h2>
 <p>Praktikvejledning bruges som redskab til at sikre, at eleven opnår de praktikmål, som er beskrevet for uddannelsen. De officielle praktikmål er beskrevet nedenfor.</p>

@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=14" />
+    <link rel="stylesheet" href="styles.css?v=15" />
   </head>
   <body>
     <div class="atmosphere" aria-hidden="true"></div>
@@ -28,7 +28,6 @@
         </span>
       </a>
       <nav class="top-nav" aria-label="Hovedforløb">
-        <a href="#/tidslinje" data-nav="tidslinje">Tidslinje</a>
         <a href="#/h1" data-nav="h1">H1</a>
         <a href="#/h2" data-nav="h2">H2</a>
         <a href="#/h3" data-nav="h3">H3</a>
@@ -40,50 +39,13 @@
     </header>
 
     <main>
-      <section id="home-view" class="home" aria-labelledby="brand">
-        <p class="eyebrow">Mercantec · Data &amp; IT</p>
-        <h1 class="brand" id="brand">
-          <span class="brand-letter">L</span>okale
-          <span class="brand-letter">U</span>ndervisnings<span class="brand-letter">P</span>lan
-        </h1>
-        <p class="lede">
-          Lokale undervisningsplaner for alle hovedforløb — mål, indhold,
-          praksis og bedømmelse samlet ét sted.
-        </p>
-        <div class="cta-row">
-          <a class="cta cta-primary" href="#/tidslinje">Se tidslinjen</a>
-          <a class="cta cta-ghost" href="#/h1">Start med H1</a>
-          <a class="cta cta-ghost" href="#/praktik">Praktikmål</a>
-        </div>
-        <div class="grid" id="forlob-grid" role="list" aria-label="Hovedforløb"></div>
-      </section>
-
-      <section id="detail-view" class="detail" hidden>
-        <a class="back" href="#/">← Alle forløb</a>
-        <header class="detail-head">
-          <p class="detail-code" id="detail-code"></p>
-          <h1 class="detail-title" id="detail-title"></h1>
-          <p class="detail-lead" id="detail-lead"></p>
-        </header>
-        <article class="prose" id="detail-body"></article>
-      </section>
-
-      <section id="praktik-view" class="detail" hidden>
-        <a class="back" href="#/">← Alle forløb</a>
-        <header class="detail-head">
-          <p class="detail-code">Praktik</p>
-          <h1 class="detail-title" id="praktik-title"></h1>
-          <p class="detail-lead" id="praktik-lead"></p>
-        </header>
-        <article class="prose prose-wide" id="praktik-body"></article>
-      </section>
-
-      <section id="tidslinje-view" class="detail tidslinje-page" hidden>
-        <a class="back" href="#/">← Alle forløb</a>
-        <header class="detail-head">
-          <p class="detail-code">Uddannelsen</p>
-          <h1 class="detail-title" id="tidslinje-title"></h1>
-          <p class="detail-lead" id="tidslinje-lead"></p>
+      <section id="home-view" class="home tidslinje-page" aria-labelledby="brand">
+        <header class="home-head">
+          <p class="eyebrow">Mercantec · Data &amp; IT</p>
+          <h1 class="brand" id="brand">
+            <span class="brand-letter">L</span>okale
+            <span class="brand-letter">U</span>ndervisnings<span class="brand-letter">P</span>lan
+          </h1>
         </header>
         <div class="tl-layout">
           <ol class="tl-track" id="tidslinje-track" aria-label="Tidslinje for uddannelsen"></ol>
@@ -98,12 +60,32 @@
           </aside>
         </div>
       </section>
+
+      <section id="detail-view" class="detail" hidden>
+        <a class="back" href="#/">← Tidslinje</a>
+        <header class="detail-head">
+          <p class="detail-code" id="detail-code"></p>
+          <h1 class="detail-title" id="detail-title"></h1>
+          <p class="detail-lead" id="detail-lead"></p>
+        </header>
+        <article class="prose" id="detail-body"></article>
+      </section>
+
+      <section id="praktik-view" class="detail" hidden>
+        <a class="back" href="#/">← Tidslinje</a>
+        <header class="detail-head">
+          <p class="detail-code">Praktik</p>
+          <h1 class="detail-title" id="praktik-title"></h1>
+          <p class="detail-lead" id="praktik-lead"></p>
+        </header>
+        <article class="prose prose-wide" id="praktik-body"></article>
+      </section>
     </main>
 
     <footer class="foot">
       <p>MAGS · Mercantec · <a href="https://lup.dk">lup.dk</a></p>
     </footer>
 
-    <script type="module" src="js/main.js?v=14"></script>
+    <script type="module" src="js/main.js?v=15"></script>
   </body>
 </html>
