@@ -40,134 +40,7 @@ Forløbet kombinerer fagområderne programmering, databasedesign, netværk, fron
 Eleverne arbejder i selvvalgte grupper og kan tilpasse projektets kompleksitet og retning i dialog med underviseren. Der tilbydes supplerende opgaver og udfordringer for elever, der ønsker at fordybe sig yderligere, fx spilprojekter (Minestryger, Find the Cat), ekstra OOP-øvelser, eller automatiseringsopgaver med Selenium.
 
 ## Evaluering og bedømmelse
-
-## Læringsaktivitet Grundlæggende programmering – 72 lektioner
-Du kan/har:
-
-- Designe og udvikle konsolprogrammer ud fra case-beskrivelser
-- Anvende et C# til at oprette, fejlfinde og teste mindre konsolapplikationer
-- Forstå datatyper
-- Anvende kontrolstrukturer, metoder, variabler og konstanter i deres programmer
-- Dokumentere kode med kommentarer og versionsstyring
-
-Teoretisk del (eksempler):
-- Informations- og dokumentations-søgning
-- Kravspecifikationer
-- Grundlæggende fejlfinding og debugging
-- Testmetoder og værktøjer
-- Metoder, arrays & kontrol-strukturer
-
-Praktisk del:
-- Udvikling af varierede og enkle konsolbaserede programmer i C#
-- Dagsbaserede opgaver fra Microsoft Learn
-- Grundlæggende GitHub
-
-Feedbackfokus:
-- Løbende mundtlig feedback på lærlingens evne til at planlægge og designe konsolprogrammer
-- Evne til at identificere og rette fejl i konsolapplikationer
-
-Bedømmelse (særligt vægt på):
-- Evne til at gennemføre hele softwareudviklingscyklussen fra design til test
-- Evne til at begrunde valgte løsninger og beskrive udviklingsprocessen
-- Implementering af versionsstyring og fejlfindingsteknikker
-
-## Læringsaktivitet Netværk I – 72 lektioner
-Du kan/har:
-
-- Designe og implementere effektive netværksløsninger, der opfylder specifikke krav
-- Administrere og konfigurere VLAN'er og routing i komplekse netværksmiljøer
-- Sikre netværk, redundans og pålidelighed ved hjælp af forskellige protokoller og metoder
-- Udføre fejlfinding og diagnosticering af netværks-problemer og implementere sikkerhedstiltag
-- Grundlæggende forståelse af layer 2 og layer 3
-
-Teoretisk del:
-- OSI-modellen
-- Grundlæggende principper for netværksdesign (arkitektur, protokoller og komponenter)
-- Routing og switching (VLAN, IP-routing og layer 2-switching)
-
-Praktisk del:
-- Hands-on øvelser med VLAN'er, routing og Layer 3-switche
-- Arbejde med at lave egen webserver i C#
-
-Feedbackfokus:
-- Elevens engagement
-- Elevens nysgerrighed
-- Elevens arbejde med CCNA læringsmateriale
-
-Bedømmelse (særligt vægt på):
-- Elevernes evne til at forstå pensum fra Cisco og relatere det til softwareudvikling
-
-## Læringsaktivitet Clientsideprogrammering – 36 lektioner
-Du har/kan:
-
-- Oprette websider ved hjælp af HTML, CSS og Bootstrap-frameworket til at skabe ensartede og responsive brugergrænseflader
-- Forklare begreberne i Client-Server-modellen og have forståelse af HTTP-protokollen
-- Oprette HTML-dokumenter med korrekt struktur og semantik
-
-Teoretisk del:
-- Client-Server-modellen og HTTP-protokollen
-- Semantisk HTML og Bootstrap
-- UX og HCI introduktion
-
-Praktisk del:
-- Agilt projektarbejde på en webfrontend; fra simpelt til mere kompliceret design
-- Daglige opgaver, fremlæggelser og feedback loops i grupper såvel plenum
-- Fælles udgangspunkt: C#, Blazor med Bootstrap og MSSQL til projektarbejde
-
-Feedbackfokus:
-- Samarbejde i gruppen
-- Engagement
-- Nysgerrighed
-
-Bedømmelse (særligt vægt på):
-- Elevens evne til at gå fra simpel statisk enkelt-side til mere avanceret/dynamisk implementering
-- Kvalificering af egne valg
-
-## Læringsaktivitet Databaseprogrammering / Serverteknologi / Databaseserver & Computerteknologi – 108 lektioner
-Du har/kan:
-
-- Kendskab til serveropsætning og drift, særligt ift web og db server
-- Bruge SQL til at oprette, ændre og aflæse data i en lokal database på din computer
-- Redegøre for forskellige relationstyper mellem database-tabeller og forstå deres betydning i design af effektive databaser
-- Installere og konfigurere Visual Studio så man kan afvikle og udvikle på webserver, database og applikationsniveau
-- Route til forskellige websider baseret på domænenavne
-
-Teoretisk del:
-- Grundlæggende databaseadministration og sikkerhed, serveropsætning & drift
-- Introduktion til relationelle database og alternativer
-
-Praktisk del:
-- SQL-øvelser: SELECT, INSERT, UPDATE, DELETE, WHERE, JOIN
-- Skrive scripts til at automatisere gentagne databaseopgaver og samle dit arbejde i scripts, som kan genanvendes
-- Installere og konfigurere Internet Information Services og en MSSQL database (lokalt eller via Azure el.lign.)
-
-Feedbackfokus:
-- Forståelse af grundlæggende databaseadministrationsprincipper og webserver-funktionalitet
-- Evne til at forklare konceptet bag relationelle databaser
-- Evne til at lave/forklare/arbejde med simple CRUD operationer
-
-Bedømmelse (særligt vægt på):
-- Evne til at oprette, ændre og aflæse data samt udføre komplekse forespørgsler
-- Evne til at anvende SQL korrekt og effektivt
-- Evne til at illustrere og forklare database-relationstyper med eksempler i en frontend
-
-## Læringsaktivitet Objektorienteret programmering – 72 lektioner
-Du har/kan:
-
-- Forstå og anvende objektorienteret programmering (OOP) koncepter til at strukturere softwareprojekter
-- Arbejde med klasser til at oprette og bruge objekter
-- Definere og designe dine egne klasser
-- Udarbejde en applikation, der benytter OOP-konceptet effektivt
-
-Teoretisk del:
-- Grundlæggende OOAD og OOP koncepter
-- Fordele ved anvendelse af OOP i softwareudvikling
-
-Praktisk del:
-- Oprettelse af klasser og objekter i C#
-- Implementering af grundlæggende OOP-koncepter i en praktisk applikation
-- Anvendelse af lists, arrays mv til at organisere data
-- Implementering af abstrakte klasser og metoder
+Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
 `.trim()
   },
   {
@@ -187,13 +60,31 @@ Formålet med H2 er at bygge videre på elevernes grundlæggende færdigheder fr
 - Dokumentere og præsentere arbejdsproces og produkt, både teknisk og forretningsmæssigt.
 
 ## Indhold i undervisningen
-- Backend-programmering: API-design, forretningslogik, validering, async og sikkerhed.
-- Databaseudvikling: avancerede SQL-operationer, relationer, constraints, triggers, stored procedures og ORM via Entity Framework.
-- Frontend-udvikling: dynamiske grænseflader, navigation, datavisualisering og inputvalidering i Blazor.
-- Projektstyring: SCRUM, sprintplanlægning, backlog-håndtering og retrospektiver.
-- Test og kvalitetssikring: automatiserede tests, fejlhåndtering og optimering af UX.
+Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
 
-Forløbet kulminerer i **Hotelbookingsystemet**.
+- Backend-programmering – API-design, forretningslogik, validering, async og sikkerhed i ASP.NET Core.
+- Databaseudvikling – avancerede SQL-operationer, relationer, constraints og ORM via Entity Framework Core.
+- Frontend-udvikling – dynamiske grænseflader, navigation, datavisualisering og inputvalidering i Blazor.
+- API-integration – REST, DTO’er, fejlhåndtering og kommunikation mellem frontend og backend.
+- Projektstyring – SCRUM, sprintplanlægning, backlog-håndtering og retrospektiver.
+- Test og kvalitetssikring – automatiserede tests, fejlhåndtering og optimering af UX.
+
+Projektet **Hotelbookingsystemet** danner rammen om forløbet.
+
+## Helhedsorientering
+Alle H2-fag integreres i ét samlet systemprojekt, så eleverne oplever sammenhæng mellem API, database og frontend. Opgaverne spejler en erhvervsnær udviklingsproces fra krav og datamodel til færdig, demonstrerbar løsning.
+
+## Praksisrelation
+Eleverne arbejder med professionelle værktøjer som Visual Studio, GitHub, Entity Framework, PostgreSQL/SQL Server og Blazor i et setup, der minder om virkelige fullstack-projekter. Arbejdet følger SCRUM med sprintplanlægning, standups og løbende feedback.
+
+## Tværfaglighed
+Forløbet kombinerer backend, database, frontend, API-design og projektstyring. Eleverne lærer at koble lagene sammen, så tekniske valg understøtter både funktionalitet, brugervenlighed og vedligeholdelse.
+
+## Differentiering
+Eleverne arbejder i grupper og kan i dialog med underviseren tilpasse projektets dybde — fx ekstra relationer, mere avanceret auth, udvidet test eller yderligere API-endpoints. Der tilbydes supplerende udfordringer til elever, der vil fordybe sig.
+
+## Evaluering og bedømmelse
+Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
 `.trim()
   },
   {
@@ -203,23 +94,41 @@ Forløbet kulminerer i **Hotelbookingsystemet**.
     kort: 'IoT-løsninger med Arduino, .NET API, databaseintegration, dashboards og sikkerhed.',
     markdown: `
 ## Mål for undervisningen
-H3 har til formål at give eleverne kompetencer til at designe og implementere komplette IoT-løsninger, hvor hardware, backend og frontend integreres i én samlet løsning. Efter forløbet skal eleven kunne:
+Formålet med H3 er at give eleverne kompetencer til at designe og implementere komplette IoT-løsninger, hvor hardware, backend og frontend integreres i én samlet løsning. Efter forløbet skal eleven kunne:
 
 - Integrere IoT-enheder med backend og database.
-- Designe og udvikle API’er til realtidsdataudveksling.
+- Designe og udvikle API’er til dataudveksling fra sensorer og aktuatorer.
 - Udvikle dashboards med visualisering og kontrol af IoT-enheder.
 - Arbejde med sikkerhed, dataintegritet og skalerbarhed i IoT-systemer.
 - Dokumentere og præsentere en helhedsorienteret løsning, både teknisk og funktionelt.
+- Anvende SCRUM i et projekt, der spænder fra hardware til cloud/backend.
 
 ## Indhold i undervisningen
-- IoT og hardwareprogrammering: Arduino MKR IoT kit, sensorer/aktuatorer, C++.
-- Backend og API-udvikling: REST API i C#/.NET, CRUD, HTTPS og Entity Framework.
-- Databaseudvikling: relationelle databaser, avanceret SQL, ORM-integration.
-- Frontend og dashboard: realtidsvisualisering af sensordata og styring.
-- Sikkerhed og performance: kryptering, beskyttelse mod angreb, skalerbarhed.
-- Projektstyring: SCRUM med sprints, standups, sprint reviews og retrospektiver.
+Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
 
-Forløbet kulminerer i **Interaktiv IoT Platform**.
+- IoT og hardwareprogrammering – Arduino, sensorer/aktuatorer og embedded C/C++.
+- Backend og API-udvikling – REST API i C#/.NET, CRUD, JWT/auth og Entity Framework.
+- Databaseudvikling – relationelle databaser, ORM-integration og lagring af sensordata.
+- Frontend og dashboard – visualisering af data og styring af enheder.
+- Sikkerhed og performance – grundlæggende sikring af API, data og enhedskommunikation.
+- Projektstyring – SCRUM med sprints, standups, reviews og retrospektiver.
+
+Projektet **Interaktiv IoT Platform** danner rammen om forløbet.
+
+## Helhedsorientering
+Hardware, API, database og dashboard samles i ét projektforløb, så eleverne ser hele kæden fra fysisk sensor til brugergrænseflade. Undervisningen er bygget op som en erhvervsnær case fra idé til demonstrerbar IoT-løsning.
+
+## Praksisrelation
+Eleverne arbejder med Arduino, .NET API, database og frontend i et setup, der minder om reelle IoT-projekter. De træner professionelle arbejdsgange med GitHub, sprintarbejde og løbende afprøvning af både hardware og software.
+
+## Tværfaglighed
+Forløbet kombinerer embedded/IoT, serverside, database, frontend og sikkerhed. Eleverne lærer at integrere teknologierne, så den samlede løsning fungerer både teknisk og brugermæssigt.
+
+## Differentiering
+Eleverne kan i dialog med underviseren vælge kompleksitet i sensoropsætning, API-features, dashboard og sikkerhed. Der tilbydes ekstraudfordringer — fx flere enheder, mere avanceret visualisering eller udvidet auth — til elever, der vil fordybe sig.
+
+## Evaluering og bedømmelse
+Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
 `.trim()
   },
   {
@@ -229,22 +138,41 @@ Forløbet kulminerer i **Interaktiv IoT Platform**.
     kort: 'Flutter mobile apps med API-integration, offline lagring, test/debugging og SCRUM-projekt.',
     markdown: `
 ## Mål for undervisningen
-H4 har til formål at give eleverne kompetencer til at designe og udvikle cross-platform mobile applikationer med Flutter, hvor backend-integration, API-kommunikation og offline funktionalitet indgår. Efter forløbet skal eleven kunne:
+Formålet med H4 er at give eleverne kompetencer til at designe og udvikle cross-platform mobile applikationer med Flutter, hvor backend-integration, API-kommunikation og offline funktionalitet indgår. Efter forløbet skal eleven kunne:
 
-- Designe og udvikle mobilapplikationer med Flutter.
+- Designe og udvikle mobilapplikationer med Flutter/Dart.
 - Integrere API’er til kommunikation med backend-systemer.
 - Implementere offline funktionalitet via lokal datalagring.
 - Gennemføre test og debugging for at sikre kvalitet, stabilitet og sikkerhed.
+- Arbejde med kravspecifikation og SCRUM i et mobilprojekt.
 - Dokumentere og præsentere både arbejdsproces og færdigt produkt.
 
 ## Indhold i undervisningen
-- Mobile app-udvikling: Flutter/Dart, widgetstruktur, navigation og UI-design.
-- Backend-integration: REST API’er i C#/.NET, CRUD, JWT, hosting i Docker.
-- Lokal datalagring: SQLite/synkronisering.
-- Test og sikkerhed: automatiserede tests, rollebaseret adgang, beskyttelse mod datalækage.
-- Projektstyring: SCRUM (sprint-planlægning, reviews, retrospektiver).
+Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
 
-Forløbet kulminerer i projektet **Mobil kundestyringsapp**.
+- Mobile app-udvikling – Flutter/Dart, widgetstruktur, navigation og UI-design.
+- Backend-integration – REST API’er, CRUD, auth/JWT og fejlhåndtering.
+- Lokal datalagring – offline-lagring og synkronisering med backend.
+- Test og sikkerhed – debugging, kvalitetssikring og grundlæggende sikring af data.
+- Krav og metodik – IT-kravspecifikation og SCRUM (sprintplanlægning, reviews, retrospektiver).
+- Serverside (fortsat) – videreudvikling og integration mod eksisterende API’er.
+
+Projektet **Mobil kundestyringsapp** danner rammen om forløbet.
+
+## Helhedsorientering
+Mobilapp, API og datalagring kobles sammen i ét projekt, så eleverne oplever hele vejen fra krav og UI til integration og afprøvning. Forløbet spejler en erhvervsnær mobiludviklingsproces fra idé til færdig app.
+
+## Praksisrelation
+Eleverne arbejder med Flutter, API-integration, GitHub og SCRUM i et setup, der minder om professionel app-udvikling. De træner sprintarbejde, løbende test og feedback på både kode og brugeroplevelse.
+
+## Tværfaglighed
+Forløbet kombinerer mobiludvikling, API-kommunikation, datalagring, test/sikkerhed og projektstyring. Eleverne lærer at skabe en samlet løsning, der fungerer online, offline og i et teamsetup.
+
+## Differentiering
+Eleverne kan i dialog med underviseren tilpasse appens features, UI-kompleksitet og integrationsniveau. Der tilbydes ekstra udfordringer — fx mere avanceret offline-synk, udvidet test eller ekstra skærme — til elever, der vil fordybe sig.
+
+## Evaluering og bedømmelse
+Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
 `.trim()
   },
   {
@@ -254,21 +182,40 @@ Forløbet kulminerer i projektet **Mobil kundestyringsapp**.
     kort: 'Linux administration, IoT/embedded og Big Data pipelines i et integreret mini-svendeprøveprojekt.',
     markdown: `
 ## Mål for undervisningen
-Formålet med H5 er at give eleverne avancerede kompetencer inden for Linux-administration, embedded systemer, IoT og Big Data, samt at træne dem i at anvende disse teknologier i en helhedsorienteret udviklingsopgave. Efter forløbet skal eleven kunne:
+Formålet med H5 er at give eleverne avancerede kompetencer inden for Linux-administration, embedded/IoT og Big Data, samt at træne dem i at anvende teknologierne i en helhedsorienteret udviklingsopgave. Efter forløbet skal eleven kunne:
 
-- Opsætte, konfigurere og sikre Linux-baserede servere og embedded enheder.
-- Udvikle og implementere IoT-løsninger med dataindsamling, overførsel og behandling.
-- Etablere en Big Data-pipeline til lagring, analyse og visualisering af data.
-- Integrere teknologierne i et samlet projekt med kravspecifikation, dokumentation og præsentation.
+- Opsætte, konfigurere og sikre Linux-baserede servere og containermiljøer.
+- Udvikle og implementere IoT-/embedded-løsninger med dataindsamling og overførsel.
+- Etablere en data-pipeline til lagring, analyse og visualisering (fx message queue og TimescaleDB).
+- Integrere teknologierne i et samlet mini-svendeprøveprojekt med dokumentation og præsentation.
 - Arbejde selvstændigt og i teams med projektstyring og procesrefleksion.
 
 ## Indhold i undervisningen
-Tre teknologispor efterfulgt af en mini-svendeprøve:
+Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
 
-- Linux på server og embedded: Ubuntu-server, brugere, netværk, sikkerhed, Docker og embedded Linux-platforme.
-- Embedded systemer og IoT: Arduino/BeagleBone, sensorintegration, dataoverførsel, IoT-sikkerhed.
-- Big Data: pipelines (Kafka/RabbitMQ), SQL/NoSQL (inkl. timescaleDB), visualisering (Dash/Grafana m.fl.).
-- Mini-svendeprøveprojekt: 4-ugers gruppeprojekt med integration af alle elementer.
+- Linux på server – brugere, netværk, sikkerhed, services og grundlæggende drift.
+- Containerisering – Docker og Compose til at køre og koble tjenester.
+- IoT og embedded – sensorintegration, dataoverførsel og sikkerhed omkring enheder.
+- Big Data / pipelines – message queues, tidsseriedata (fx TimescaleDB) og visualisering.
+- CI/CD og kvalitet – grundlæggende automatisering og stabil afvikling af løsninger.
+- Mini-svendeprøve – integreret gruppeprojekt med krav, dokumentation og fremlæggelse.
+
+**Mini-svendeprøveprojektet** danner rammen om den afsluttende del af forløbet.
+
+## Helhedsorientering
+Linux, containere, IoT og data-pipelines samles i ét projektforløb, så eleverne oplever sammenhæng mellem drift, dataindsamling og applikationslag. Undervisningen spejler en erhvervsnær opgave fra infrastruktur til færdig, demonstrerbar løsning.
+
+## Praksisrelation
+Eleverne arbejder med Linux, Docker, IoT-enheder, databaser og visualiseringsværktøjer i et setup tæt på virkelige drifts- og udviklingsmiljøer. Projektarbejdet træner planlægning, samarbejde og løbende afprøvning under SCRUM-lignende rammer.
+
+## Tværfaglighed
+Forløbet kombinerer systemadministration, embedded/IoT, databehandling og projektstyring. Eleverne lærer at integrere teknologierne, så den samlede løsning både kan køre stabilt og skabe værdi for brugeren.
+
+## Differentiering
+Eleverne kan i dialog med underviseren vælge dybde i Linux-opsætning, pipeline-kompleksitet og IoT-features. Der tilbydes ekstraudfordringer — fx mere avanceret monitoring, ekstra services eller skærpede sikkerhedskrav — til elever, der vil fordybe sig.
+
+## Evaluering og bedømmelse
+Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
 `.trim()
   },
   {
@@ -277,21 +224,40 @@ Tre teknologispor efterfulgt af en mini-svendeprøve:
     titel: 'Hovedforløb 6 (Svendeprøve)',
     kort: 'Afsluttende projekt + individuel mundtlig fremlæggelse, 5 uger med dokumentation.',
     markdown: `
-## Svendeprøveforløbet
-EUD hovedforløb 6 (eller afslutningen af EUX hovedforløb 5) indeholder den afsluttende prøve, fremover kaldet svendeprøven.
+## Mål for undervisningen
+Formålet med H6 er at gennemføre den afsluttende svendeprøve, hvor eleven selvstændigt planlægger, udvikler, dokumenterer og fremlægger en helhedsorienteret løsning. Efter forløbet skal eleven kunne:
 
-Svendeprøveforløbet er på i alt fem uger, hvor de første fire uger anvendes til at udarbejde en projektopgave med tilhørende dokumentation (infrastruktur eller programmering). Den sidste uge anvendes til forberedelse og afholdelse af selve svendeprøven.
+- Gennemføre et afsluttende projekt med kravspecifikation, løsning og dokumentation.
+- Anvende tidligere tillærte teknologier og metoder i en samlet, selvstændig opgave.
+- Planlægge og styre egen arbejdsproces med tydelig dokumentation af valg og fremskridt.
+- Udarbejde produkt- og procesdokumentation på svendeprøveniveau.
+- Præsentere og forsvare løsningen individuelt ved mundtlig fremlæggelse.
 
-## Delprøver
-- Projektopgavens løsning samt tilhørende dokumentation
-- En individuel mundtlig fremlæggelse (40 minutter inkl. votering)
+## Indhold i undervisningen
+Undervisningen og prøveforløbet kombinerer selvstændigt projektarbejde med vejledning inden for følgende hovedtemaer:
 
-Begge delprøver skal bestås (min. 02) og den endelige karakter er gennemsnittet.
+- Projektopgave – udvikling af en helhedsorienteret løsning (programmering).
+- Dokumentation – produktrapport (krav, vejledning, produktdokumentation) og procesrapport (plan, logbog, refleksion).
+- Projektstyring – planlægning, prioritering og løbende opfølgning i prøveperioden.
+- Kvalitet og argumentation – begrundelse af tekniske og metodiske valg.
+- Prøveforberedelse – strukturering af fremlæggelse og demonstration af produktet.
 
-## Dokumentation
-- Produktrapport: kravspecifikation, vejledning, produktdokumentation og bilag.
-- Procesrapport: problemformulering, projektplanlægning, logbog og konklusion.
+Svendeprøveforløbet er på i alt **fem uger**: fire uger til projekt og dokumentation, og den sidste uge til forberedelse og afholdelse af selve svendeprøven. Prøven består af projektopgavens løsning med dokumentation samt en individuel mundtlig fremlæggelse (40 minutter inkl. votering). Begge delprøver skal bestås.
+
+## Helhedsorientering
+H6 samler kompetencer fra tidligere hovedforløb i én afsluttende opgave. Eleven skal vise sammenhæng mellem analyse, udvikling, dokumentation og formidling — fra problem til færdigt produkt.
+
+## Praksisrelation
+Forløbet spejler en professionel afleveringssituation: selvstændigt ansvar, realistisk tidspres, dokumentationskrav og mundtlig forsvar af løsningen. Vejledning understøtter processen, men produkt og præsentation er elevens ansvar.
+
+## Tværfaglighed
+Svendeprøven kræver, at eleven kombinerer programmering, systemforståelse, dokumentation og projektstyring. Den samlede bedømmelse hviler på både teknisk løsning og evnen til at forklare proces og valg.
+
+## Differentiering
+Opgavens løsningstilgang og teknologivalg tilpasses elevens styrker og projektets rammer i dialog med vejleder, inden for svendeprøvens formelle krav. Der er plads til forskellige løsningsveje, så længe krav til produkt, dokumentation og fremlæggelse opfyldes.
+
+## Evaluering og bedømmelse
+Vi evaluerer løbende gennem dialog med eleverne undervejs i projektperioden. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen. Selve svendeprøven bedømmes formelt via de to delprøver (projekt/dokumentation og mundtlig fremlæggelse).
 `.trim()
   }
 ];
-
