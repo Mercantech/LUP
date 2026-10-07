@@ -125,8 +125,7 @@ const showPraktik = () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
-const renderStop = (stop, index, activeId) => {
-  const isActive = stop.id === activeId;
+const renderStop = (stop, index) => {
   const typeLabel = stop.type === "praktik" ? "Praktik" : "Skole";
   const topics =
     stop.topics?.length
@@ -140,11 +139,11 @@ const renderStop = (stop, index, activeId) => {
       ? `<a class="cta cta-primary tl-cta" href="${escapeHtml(stop.href)}">Åbn ${escapeHtml(
           stop.label
         )} LUP →</a>`
-      : `<a class="cta cta-ghost tl-cta" href="#/praktik">Hele praktikoversigten</a>`;
+      : "";
 
   const panel =
     stop.type === "praktik"
-      ? `<div class="tl-panel">${stop.body}${actions}</div>`
+      ? `<div class="tl-panel">${stop.body}</div>`
       : `<div class="tl-panel">
           ${
             stop.image
@@ -158,35 +157,20 @@ const renderStop = (stop, index, activeId) => {
         </div>`;
 
   return `
-    <li class="tl-item tl-${stop.type}${isActive ? " is-open" : ""}" data-stop="${escapeHtml(
-      stop.id
-    )}" style="--i:${index}">
-      <button type="button" class="tl-node" aria-expanded="${isActive}" data-tl-toggle="${escapeHtml(
-        stop.id
-      )}">
+    <li class="tl-item tl-${stop.type}" id="stop-${escapeHtml(stop.id)}" style="--i:${index}">
+      <header class="tl-node">
         <span class="tl-dot" aria-hidden="true"></span>
         <span class="tl-meta">
           <span class="tl-kind">${typeLabel}</span>
           <span class="tl-label">${escapeHtml(stop.label)}</span>
         </span>
         <span class="tl-copy">
-          <span class="tl-title">${escapeHtml(stop.title)}</span>
-          <span class="tl-summary">${escapeHtml(stop.summary)}</span>
+          <h2 class="tl-title">${escapeHtml(stop.title)}</h2>
+          <p class="tl-summary">${escapeHtml(stop.summary)}</p>
         </span>
-        <span class="tl-chevron" aria-hidden="true"></span>
-      </button>
+      </header>
       ${panel}
     </li>`;
-};
-
-const bindTidslinje = () => {
-  tidslinjeTrack.querySelectorAll("[data-tl-toggle]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.tlToggle;
-      const next = location.hash === `#/tidslinje/${id}` ? "#/tidslinje" : `#/tidslinje/${id}`;
-      location.hash = next;
-    });
-  });
 };
 
 const showTidslinje = (stopId = "") => {
@@ -194,15 +178,13 @@ const showTidslinje = (stopId = "") => {
   tidslinjeView.hidden = false;
   tidslinjeTitle.textContent = tidslinjeMeta.title;
   tidslinjeLead.textContent = tidslinjeMeta.lead;
-  const activeId = tidslinje.some((s) => s.id === stopId) ? stopId : tidslinje[0].id;
-  tidslinjeTrack.innerHTML = tidslinje.map((s, i) => renderStop(s, i, activeId)).join("");
-  bindTidslinje();
+  tidslinjeTrack.innerHTML = tidslinje.map((s, i) => renderStop(s, i)).join("");
   document.title = "Tidslinje · LUP";
   setActiveNav("tidslinje");
 
-  const activeEl = tidslinjeTrack.querySelector(`[data-stop="${activeId}"]`);
-  if (activeEl && stopId) {
-    activeEl.scrollIntoView({ behavior: "smooth", block: "center" });
+  const target = stopId ? document.getElementById(`stop-${stopId}`) : null;
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
   } else {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }

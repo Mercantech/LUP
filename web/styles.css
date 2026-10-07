@@ -464,31 +464,24 @@ main {
 
 .tl-item {
   position: relative;
-  margin: 0 0 0.85rem;
-  animation: rise 0.5s calc(var(--i, 0) * 0.05s) ease both;
+  margin: 0 0 2rem;
+  scroll-margin-top: 5.5rem;
+  animation: rise 0.5s calc(var(--i, 0) * 0.04s) ease both;
 }
 
 .tl-node {
   display: grid;
-  grid-template-columns: 2.3rem minmax(5.5rem, 7rem) 1fr auto;
+  grid-template-columns: 2.3rem minmax(5.5rem, 7rem) 1fr;
   gap: 0.85rem;
   align-items: start;
   width: 100%;
-  padding: 1rem 1.1rem 1rem 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.78);
+  margin: 0;
+  padding: 0 0 0.85rem;
+  border: 0;
+  background: transparent;
   text-align: left;
-  cursor: pointer;
   font: inherit;
   color: inherit;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.tl-node:hover,
-.tl-item.is-open .tl-node {
-  border-color: var(--moss);
-  box-shadow: var(--shadow);
 }
 
 .tl-dot {
@@ -543,42 +536,31 @@ main {
 }
 
 .tl-title {
-  font-weight: 700;
-  font-size: 1.02rem;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.2rem, 2.4vw, 1.55rem);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 .tl-summary {
+  margin: 0;
   color: var(--ink-soft);
-  font-size: 0.94rem;
-}
-
-.tl-chevron {
-  width: 0.55rem;
-  height: 0.55rem;
-  margin-top: 0.55rem;
-  border-right: 2px solid var(--ink-soft);
-  border-bottom: 2px solid var(--ink-soft);
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
-}
-
-.tl-item.is-open .tl-chevron {
-  transform: rotate(225deg);
-  margin-top: 0.75rem;
+  font-size: 0.98rem;
 }
 
 .tl-panel {
-  display: none;
-  margin: 0.55rem 0 0.35rem 2.3rem;
+  display: block;
+  margin: 0 0 0.35rem 2.3rem;
   padding: 1.15rem 1.25rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.88);
 }
 
-.tl-item.is-open .tl-panel {
-  display: block;
-  animation: rise 0.35s ease both;
+.tl-praktik .tl-panel {
+  background: rgba(232, 239, 233, 0.55);
 }
 
 .tl-topics {
@@ -630,10 +612,10 @@ main {
   }
 
   .tl-node {
-    grid-template-columns: 2rem 1fr auto;
+    grid-template-columns: 2rem 1fr;
     grid-template-areas:
-      "dot meta chev"
-      "dot copy chev";
+      "dot meta"
+      "dot copy";
     gap: 0.35rem 0.7rem;
   }
 
@@ -648,10 +630,6 @@ main {
 
   .tl-copy {
     grid-area: copy;
-  }
-
-  .tl-chevron {
-    grid-area: chev;
   }
 
   .tl-panel {
