@@ -28,7 +28,7 @@ export const tidslinje = [
       <ul class="check-list">
         <li><strong>Versionsstyring.</strong> GitHub bruges på H1 — sæt eleven ind i egne værktøjer og grundprincipper.</li>
         <li><strong>Database.</strong> Vis virksomhedens databasestruktur og valg inden SQL på H1.</li>
-        <li><strong>Motivation.</strong> Det vigtigste er, at eleven møder motiveret og spændt op.</li>
+        <li><strong>Motivation og nysgerrighed.</strong> Vi forventer ikke bredt programmeringskendskab — fokus er, at eleven møder motiveret og nysgerrig op.</li>
       </ul>
     `,
   },
@@ -95,11 +95,25 @@ export const tidslinje = [
     type: "praktik",
     label: "Inden H3",
     title: "Praktik mellem H2 og H3",
-    summary: "Viderefør API-, database- og frontend-erfaring inden IoT-forløbet.",
+    summary:
+      "Web, API, versionering og database — plus forberedelse til IoT/Arduino, frontend og ORM på H3.",
     image: "h2-h3.png",
     body: `
       ${img("h2-h3.png", "Praktikmål mellem H2 og H3")}
-      <p>Brug praktikperioden til at holde API-, database- og frontend-kompetencerne varme inden H3, hvor IoT, sikkerhed og dashboard kommer i fokus.</p>
+      <p><strong>Praktikmål for virksomheden generelt</strong></p>
+      <ul class="check-list">
+        <li><strong>(Web)applikationer.</strong> Moderne fullstack-webløsninger på frontend og backend.</li>
+        <li><strong>(API)applikationer.</strong> API-løsninger med moderne, anvendte teknologier.</li>
+        <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange og værktøjer.</li>
+        <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og relevante værktøjer.</li>
+      </ul>
+      <p><strong>Forberedelse til 3. hovedforløb</strong></p>
+      <ul class="check-list">
+        <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
+        <li><strong>Frontend.</strong> Holde Blazor/SPA-færdigheder ved lige — komponenter og brugerinteraktion.</li>
+        <li><strong>Client / IoT.</strong> Bekendtskab med Arduino eller C++ inden IoT-arbejdet på H3.</li>
+        <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
+      </ul>
     `,
   },
   {
@@ -124,11 +138,23 @@ export const tidslinje = [
     type: "praktik",
     label: "Inden H4",
     title: "Praktik mellem H3 og H4",
-    summary: "Hold API- og sikkerhedskompetencerne ved lige inden app-udvikling.",
+    summary:
+      "API, versionering og database — plus blød start på Flutter/Dart inden H4.",
     image: "h3-h4.png",
     body: `
       ${img("h3-h4.png", "Praktikmål mellem H3 og H4")}
-      <p>Fortsæt gerne med API, auth og database, så eleven er klar til mobiludvikling og kravspecifikation på H4.</p>
+      <p><strong>Praktikmål for virksomheden generelt</strong></p>
+      <ul class="check-list">
+        <li><strong>(API)applikationer.</strong> API-løsninger med moderne, anvendte teknologier.</li>
+        <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange og værktøjer.</li>
+        <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og relevante værktøjer.</li>
+      </ul>
+      <p><strong>Forberedelse til 4. hovedforløb</strong></p>
+      <ul class="check-list">
+        <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
+        <li><strong>Frontend / mobil.</strong> På H4 introduceres Flutter/Dart — det er en fordel, hvis eleven har kigget på mobiludvikling.</li>
+        <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
+      </ul>
     `,
   },
   {

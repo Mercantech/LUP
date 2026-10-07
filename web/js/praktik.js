@@ -3,7 +3,7 @@
 export const praktik = {
   title: "Praktikmålsoversigt",
   lead:
-    "Samlet oversigt over uddannelsen “Datatekniker med speciale i programmering” — hvad der typisk bruges på hvert hovedforløb, og hvad virksomheden kan forvente, at eleven arbejder med i praktikken.",
+    "Samlet oversigt over uddannelsen “Datatekniker med speciale i programmering” — skoleindhold og praktikmål mellem forløbene, baseret på MAGS’ praktikmålspjece.",
 };
 
 const img = (name, alt) =>
@@ -11,6 +11,8 @@ const img = (name, alt) =>
 
 export const praktikHtml = `
 <p>Her er en samlet praktikmålsoversigt over uddannelsen “Datatekniker med speciale i programmering”. Her finder I en oversigt over, hvad der generelt bliver brugt på hvert hovedforløb, samt vores forventninger om, hvad eleven lærer ude på lærepladsen.</p>
+<p><a class="cta cta-ghost" href="assets/praktik/pjece.pdf" target="_blank" rel="noopener noreferrer">Download pjecen (PDF)</a>
+<a class="cta cta-ghost" href="#/tidslinje" style="margin-left:0.5rem">Åbn tidslinjen</a></p>
 
 <h2>Praktik i virksomheden</h2>
 <p>Praktikvejledning bruges som redskab til at sikre, at eleven opnår de praktikmål, som er beskrevet for uddannelsen. De officielle praktikmål er beskrevet nedenfor.</p>
@@ -51,7 +53,7 @@ ${img("gf2-h1.png", "Praktikmål mellem GF2 og H1")}
 <ul class="check-list">
   <li><strong>Versionsstyring.</strong> På H1 bruges GitHub til versionsstyring — virksomheden kan med fordel sætte eleven ind i egne værktøjer og grundprincipper.</li>
   <li><strong>Database.</strong> Databaser og SQL mødes første gang på H1 — det hjælper at vise virksomhedens struktur og valg inden da.</li>
-  <li><strong>Motivation og spænding.</strong> H1 er elevens første hovedforløb efter valg af programmering — det vigtigste er, at de møder motiveret og spændte op.</li>
+  <li><strong>Motivation og nysgerrighed.</strong> H1 er elevens første hovedforløb efter valg af programmering — vi forventer ikke bredt kendskab, men at de møder motiveret og nysgerrige op.</li>
 </ul>
 
 <h2 id="h1">H1 — Programmering</h2>
@@ -155,6 +157,26 @@ ${img("h2.png", "Oversigt over H2")}
 
 <h3>Praktikmål for praktikperioden mellem H2 og H3</h3>
 ${img("h2-h3.png", "Praktikmål mellem H2 og H3")}
+<div class="cols">
+  <div>
+    <p><strong>Praktikmål for virksomheden generelt</strong></p>
+    <ul class="check-list">
+      <li><strong>(Web)applikationer.</strong> Moderne fullstack-webløsninger på frontend og backend.</li>
+      <li><strong>(API)applikationer.</strong> API-løsninger med moderne, anvendte teknologier.</li>
+      <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange og værktøjer.</li>
+      <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og relevante værktøjer.</li>
+    </ul>
+  </div>
+  <div>
+    <p><strong>Forberedelse til 3. hovedforløb</strong></p>
+    <ul class="check-list">
+      <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
+      <li><strong>Frontend.</strong> Holde Blazor/SPA-færdigheder ved lige — komponenter og brugerinteraktion.</li>
+      <li><strong>Client / IoT.</strong> Bekendtskab med Arduino eller C++ inden IoT-arbejdet på H3.</li>
+      <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
+    </ul>
+  </div>
+</div>
 
 <h2 id="h3">H3 — Programmering</h2>
 ${img("h3.png", "Oversigt over H3")}
@@ -185,6 +207,24 @@ ${img("h3.png", "Oversigt over H3")}
 
 <h3>Praktikmål for praktikperioden mellem H3 og H4</h3>
 ${img("h3-h4.png", "Praktikmål mellem H3 og H4")}
+<div class="cols">
+  <div>
+    <p><strong>Praktikmål for virksomheden generelt</strong></p>
+    <ul class="check-list">
+      <li><strong>(API)applikationer.</strong> API-løsninger med moderne, anvendte teknologier.</li>
+      <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange og værktøjer.</li>
+      <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og relevante værktøjer.</li>
+    </ul>
+  </div>
+  <div>
+    <p><strong>Forberedelse til 4. hovedforløb</strong></p>
+    <ul class="check-list">
+      <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
+      <li><strong>Frontend / mobil.</strong> På H4 introduceres Flutter/Dart — det er en fordel, hvis eleven har kigget på mobiludvikling.</li>
+      <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
+    </ul>
+  </div>
+</div>
 
 <h2 id="h4">H4 — Programmering</h2>
 ${img("h4.png", "Oversigt over H4")}

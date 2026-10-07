@@ -6,3 +6,7 @@ dist/
 web-tmp-*
 forlob-*.ts
 src/
+
+*.pdf
+!web/assets/praktik/pjece.pdf
+
