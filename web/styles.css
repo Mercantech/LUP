@@ -176,6 +176,21 @@ main {
   text-underline-offset: 0.08em;
 }
 
+.home-meta {
+  margin: 0.75rem 0 0;
+  max-width: 42rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.home-meta a {
+  font-weight: 700;
+  color: var(--moss-deep);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
 .cta {
   display: inline-flex;
   align-items: center;
@@ -663,6 +678,24 @@ body.has-tl-rail .tl-rail-shell {
   letter-spacing: -0.03em;
   line-height: 1;
   color: var(--ink);
+}
+
+.tl-duration {
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--moss);
+}
+
+.tl-bridge {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.85rem;
+  border-left: 3px solid var(--moss);
+  background: rgba(31, 107, 87, 0.07);
+  color: var(--ink-soft);
+  font-size: 0.95rem;
 }
 
 .tl-copy {

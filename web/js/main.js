@@ -163,6 +163,10 @@ const renderStop = (stop, index) => {
 
   const title = lup?.titel || stop.title;
   const summary = lup?.kort || stop.summary;
+  const duration =
+    lup?.uger != null
+      ? `<span class="tl-duration">${lup.uger} uger</span>`
+      : "";
 
   let panel;
   if (stop.type === "praktik") {
@@ -186,6 +190,7 @@ const renderStop = (stop, index) => {
         <span class="tl-meta">
           <span class="tl-kind">${typeLabel}</span>
           <span class="tl-label">${escapeHtml(stop.label)}</span>
+          ${duration}
         </span>
         <span class="tl-copy">
           <h2 class="tl-title">${escapeHtml(title)}</h2>
@@ -292,7 +297,7 @@ const showForlob = (key) => {
 
   hideAll();
   detailView.hidden = false;
-  detailCode.textContent = item.short;
+  detailCode.textContent = item.uger != null ? `${item.short} · ${item.uger} uger` : item.short;
   detailTitle.textContent = item.titel;
   detailLead.textContent = item.kort;
   detailBody.innerHTML = renderMarkdown(item.markdown);

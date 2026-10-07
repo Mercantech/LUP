@@ -3,8 +3,12 @@ export const forlob = [
     slug: 'hovedforlob-1',
     short: 'H1',
     titel: 'Hovedforløb 1',
-    kort: 'Fundament i C#, OOP, SQL, HTTP, Blazor og projektarbejde (SCRUM/GitHub).',
+    uger: 10,
+    kort: '10 uger · Fundament i C#, OOP, SQL, HTTP, Blazor og projektarbejde (SCRUM/GitHub).',
     markdown: `
+## Varighed
+H1 er **10 skoleuger**. I den periode er eleven på Mercantec og derfor ikke i virksomheden.
+
 ## Mål for undervisningen
 Formålet med H1 er at give eleverne et solidt fundament i grundlæggende programmering og relaterede teknologier, som de kan anvende i et samlet, helhedsorienteret projekt. Efter forløbet skal eleven kunne:
 
@@ -14,6 +18,20 @@ Formålet med H1 er at give eleverne et solidt fundament i grundlæggende progra
 - Implementere brugervenlige brugergrænseflader med Blazor.
 - Arbejde i teams ved brug af SCRUM-metodologi og GitHub til versionsstyring.
 - Dokumentere og reflektere over arbejdsprocessen og det færdige produkt.
+
+## Forventningsniveau
+**Kan typisk efter H1:**
+
+- Skrive og fejlfinde mindre C#-programmer med klasser, metoder og grundlæggende OOP.
+- Lave simple SQL-forespørgsler og CRUD mod en relationel database.
+- Bygge en simpel Blazor-frontend og forstå HTTP/klient-server i grove træk.
+- Arbejde i Git/GitHub i et team med SCRUM-lignende sprints.
+
+**Kan endnu ikke forventes:**
+
+- Selvstændigt designe større produktionssystemer eller avanceret arkitektur.
+- Professionel ORM (Entity Framework), kompleks API-sikkerhed eller driftsansvar.
+- At arbejde uden vejledning på ukendte frameworks i virksomheden.
 
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
@@ -47,8 +65,12 @@ Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres struktu
     slug: 'hovedforlob-2',
     short: 'H2',
     titel: 'Hovedforløb 2',
-    kort: 'Komplekse systemer med Entity Framework, avancerede relationer, Blazor, API-integration og SCRUM.',
+    uger: 10,
+    kort: '10 uger · EF Core, REST API, Blazor, avancerede relationer og SCRUM.',
     markdown: `
+## Varighed
+H2 er **10 skoleuger**. I den periode er eleven på Mercantec og derfor ikke i virksomheden.
+
 ## Mål for undervisningen
 Formålet med H2 er at bygge videre på elevernes grundlæggende færdigheder fra H1 og give dem kompetencer til at udvikle komplekse, skalerbare systemer med integration af backend, database og frontend. Efter forløbet skal eleven kunne:
 
@@ -58,6 +80,20 @@ Formålet med H2 er at bygge videre på elevernes grundlæggende færdigheder fr
 - Arbejde med API-design og integration til dataudveksling.
 - Anvende SCRUM som metode til planlægning, udvikling og evaluering.
 - Dokumentere og præsentere arbejdsproces og produkt, både teknisk og forretningsmæssigt.
+
+## Forventningsniveau
+**Kan typisk efter H2:**
+
+- Bygge et mindre fullstack-system med API, database (EF Core) og Blazor-frontend.
+- Modellere relationer i databasen og udveksle data via REST/DTO’er.
+- Deltage aktivt i SCRUM med backlog, sprints og retrospektiver.
+- Forklare egne tekniske valg i et sammenhængende projekt.
+
+**Kan endnu ikke forventes:**
+
+- Drift af produktionssystemer, avanceret cloud-arkitektur eller tung DevOps.
+- IoT/hardware-integration (kommer på H3) eller mobilapps (kommer på H4).
+- At eje hele systemarkitekturen alene uden sparring.
 
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
@@ -91,8 +127,12 @@ Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres struktu
     slug: 'hovedforlob-3',
     short: 'H3',
     titel: 'Hovedforløb 3',
-    kort: 'IoT-løsninger med Arduino, .NET API, databaseintegration, dashboards og sikkerhed.',
+    uger: 9,
+    kort: '9 uger · IoT med Arduino, .NET API, database, dashboards og sikkerhed.',
     markdown: `
+## Varighed
+H3 er **9 skoleuger**. I den periode er eleven på Mercantec og derfor ikke i virksomheden.
+
 ## Mål for undervisningen
 Formålet med H3 er at give eleverne kompetencer til at designe og implementere komplette IoT-løsninger, hvor hardware, backend og frontend integreres i én samlet løsning. Efter forløbet skal eleven kunne:
 
@@ -102,6 +142,20 @@ Formålet med H3 er at give eleverne kompetencer til at designe og implementere 
 - Arbejde med sikkerhed, dataintegritet og skalerbarhed i IoT-systemer.
 - Dokumentere og præsentere en helhedsorienteret løsning, både teknisk og funktionelt.
 - Anvende SCRUM i et projekt, der spænder fra hardware til cloud/backend.
+
+## Forventningsniveau
+**Kan typisk efter H3:**
+
+- Koble sensor/aktuator-data til et .NET API og en database.
+- Vise og styre data i et simpelt dashboard.
+- Anvende grundlæggende auth/sikkerhed omkring API og data.
+- Arbejde på tværs af hardware og software i ét projekt.
+
+**Kan endnu ikke forventes:**
+
+- Produktionklar IoT i stor skala eller avanceret embedded Linux-drift (uddybes på H5).
+- Selvstændig mobilapp-udvikling (kommer på H4).
+- At være eneansvarlig for kritisk infrastruktur uden sparring.
 
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
@@ -135,8 +189,12 @@ Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres struktu
     slug: 'hovedforlob-4',
     short: 'H4',
     titel: 'Hovedforløb 4',
-    kort: 'Flutter mobile apps med API-integration, offline lagring, test/debugging og SCRUM-projekt.',
+    uger: 7,
+    kort: '7 uger · Flutter/Dart, API-integration, offline lagring, test og SCRUM.',
     markdown: `
+## Varighed
+H4 er **7 skoleuger**. I den periode er eleven på Mercantec og derfor ikke i virksomheden.
+
 ## Mål for undervisningen
 Formålet med H4 er at give eleverne kompetencer til at designe og udvikle cross-platform mobile applikationer med Flutter, hvor backend-integration, API-kommunikation og offline funktionalitet indgår. Efter forløbet skal eleven kunne:
 
@@ -146,6 +204,20 @@ Formålet med H4 er at give eleverne kompetencer til at designe og udvikle cross
 - Gennemføre test og debugging for at sikre kvalitet, stabilitet og sikkerhed.
 - Arbejde med kravspecifikation og SCRUM i et mobilprojekt.
 - Dokumentere og præsentere både arbejdsproces og færdigt produkt.
+
+## Forventningsniveau
+**Kan typisk efter H4:**
+
+- Bygge en mindre cross-platform app i Flutter med navigation og API-kald.
+- Håndtere grundlæggende offline-lagring og synk mod backend.
+- Teste og debugge app-flows og forklare krav/valg i projektet.
+- Fortsætte arbejde med API’er fra tidligere forløb.
+
+**Kan endnu ikke forventes:**
+
+- Native iOS/Android-specialisering eller publicering i stores som standardkompetence.
+- Avanceret Linux/Docker/drift (kommer på H5).
+- At levere en færdig enterprise-app uden produktowner/vejledning.
 
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
@@ -179,8 +251,12 @@ Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres struktu
     slug: 'hovedforlob-5',
     short: 'H5',
     titel: 'Hovedforløb 5',
-    kort: 'Linux administration, IoT/embedded og Big Data pipelines i et integreret mini-svendeprøveprojekt.',
+    uger: 9,
+    kort: '9 uger · Linux, Docker, IoT/embedded, data-pipelines og mini-svendeprøve.',
     markdown: `
+## Varighed
+H5 er **9 skoleuger**. I den periode er eleven på Mercantec og derfor ikke i virksomheden.
+
 ## Mål for undervisningen
 Formålet med H5 er at give eleverne avancerede kompetencer inden for Linux-administration, embedded/IoT og Big Data, samt at træne dem i at anvende teknologierne i en helhedsorienteret udviklingsopgave. Efter forløbet skal eleven kunne:
 
@@ -189,6 +265,20 @@ Formålet med H5 er at give eleverne avancerede kompetencer inden for Linux-admi
 - Etablere en data-pipeline til lagring, analyse og visualisering (fx message queue og TimescaleDB).
 - Integrere teknologierne i et samlet mini-svendeprøveprojekt med dokumentation og præsentation.
 - Arbejde selvstændigt og i teams med projektstyring og procesrefleksion.
+
+## Forventningsniveau
+**Kan typisk efter H5:**
+
+- Opsætte og bruge Linux/Docker til at køre sammenhængende tjenester.
+- Bygge en mindre pipeline fra datafangst til lagring/visualisering.
+- Dokumentere og fremlægge et integreret projekt tæt på svendeprøveformat.
+- Tage mere ansvar for planlægning og tekniske valg i teamet.
+
+**Kan endnu ikke forventes:**
+
+- At være færdiguddannet drifts-/platformsspecialist.
+- At gennemføre den formelle svendeprøve (det er H6).
+- At eje kritisk produktion alene uden senior-sparring.
 
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
@@ -222,8 +312,12 @@ Vi evaluerer løbende gennem dialog med eleverne. Derudover gennemføres struktu
     slug: 'hovedforlob-6',
     short: 'H6',
     titel: 'Hovedforløb 6 (Svendeprøve)',
-    kort: 'Afsluttende projekt + individuel mundtlig fremlæggelse, 5 uger med dokumentation.',
+    uger: 5,
+    kort: '5 uger · Afsluttende projekt, dokumentation og individuel mundtlig fremlæggelse.',
     markdown: `
+## Varighed
+H6 er **5 skoleuger** (svendeprøveforløb). I den periode er eleven på Mercantec og derfor ikke i virksomheden. Typisk: fire uger til projekt og dokumentation, og den sidste uge til forberedelse og prøve.
+
 ## Mål for undervisningen
 Formålet med H6 er at gennemføre den afsluttende svendeprøve, hvor eleven selvstændigt planlægger, udvikler, dokumenterer og fremlægger en helhedsorienteret løsning. Efter forløbet skal eleven kunne:
 
@@ -232,6 +326,18 @@ Formålet med H6 er at gennemføre den afsluttende svendeprøve, hvor eleven sel
 - Planlægge og styre egen arbejdsproces med tydelig dokumentation af valg og fremskridt.
 - Udarbejde produkt- og procesdokumentation på svendeprøveniveau.
 - Præsentere og forsvare løsningen individuelt ved mundtlig fremlæggelse.
+
+## Forventningsniveau
+**Kan typisk under/efter H6:**
+
+- Drive et afgrænset projekt fra plan til produkt med dokumentation.
+- Begrunde tekniske og metodiske valg mundtligt og skriftligt.
+- Samle kompetencer fra tidligere forløb i én sammenhængende løsning.
+
+**Kan endnu ikke forventes før prøven er bestået:**
+
+- At eleven er “færdig” uden den formelle bedømmelse — begge delprøver skal bestås.
+- At virksomheden planlægger kritiske leverancer i de 5 skoleuger.
 
 ## Indhold i undervisningen
 Undervisningen og prøveforløbet kombinerer selvstændigt projektarbejde med vejledning inden for følgende hovedtemaer:
@@ -242,7 +348,7 @@ Undervisningen og prøveforløbet kombinerer selvstændigt projektarbejde med ve
 - Kvalitet og argumentation – begrundelse af tekniske og metodiske valg.
 - Prøveforberedelse – strukturering af fremlæggelse og demonstration af produktet.
 
-Svendeprøveforløbet er på i alt **fem uger**: fire uger til projekt og dokumentation, og den sidste uge til forberedelse og afholdelse af selve svendeprøven. Prøven består af projektopgavens løsning med dokumentation samt en individuel mundtlig fremlæggelse (40 minutter inkl. votering). Begge delprøver skal bestås.
+Svendeprøven består af projektopgavens løsning med dokumentation samt en individuel mundtlig fremlæggelse (40 minutter inkl. votering). Begge delprøver skal bestås.
 
 ## Helhedsorientering
 H6 samler kompetencer fra tidligere hovedforløb i én afsluttende opgave. Eleven skal vise sammenhæng mellem analyse, udvikling, dokumentation og formidling — fra problem til færdigt produkt.

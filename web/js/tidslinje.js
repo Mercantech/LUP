@@ -3,6 +3,9 @@
 const img = (name, alt) =>
   `<figure class="praktik-fig"><img src="assets/praktik/${name}" alt="${alt}" loading="lazy" /></figure>`;
 
+const bridge = (text) =>
+  `<p class="tl-bridge"><strong>Sammenhæng.</strong> ${text}</p>`;
+
 export const tidslinje = [
   {
     id: "inden-h1",
@@ -13,6 +16,9 @@ export const tidslinje = [
       "Kendskab til virksomhedens teknologier, og blød start på versionsstyring og database.",
     image: "gf2-h1.png",
     body: `
+      ${bridge(
+        "Efter GF2 møder eleven virksomheden første gang. Brug perioden til at vise jeres stack og arbejdsgange — på H1 (10 uger) får eleven første gang C#, SQL, Blazor og Git i et samlet skoleprojekt."
+      )}
       ${img("gf2-h1.png", "Praktikmål mellem GF2 og H1")}
       <div class="cols">
         <div>
@@ -47,6 +53,9 @@ export const tidslinje = [
       "Webapplikationer, versionering og database — plus forberedelse til ORM og frontend på H2.",
     image: "h1-h2.png",
     body: `
+      ${bridge(
+        "Efter H1 har eleven grundlæggende C#, SQL, Blazor og Git. I praktikken er det godt at bruge det på rigtige opgaver — inden H2 (10 uger), hvor EF Core, API og mere avanceret fullstack kommer i centrum."
+      )}
       ${img("h1-h2.png", "Praktikmål mellem H1 og H2")}
       <div class="cols">
         <div>
@@ -83,6 +92,9 @@ export const tidslinje = [
       "Web, API, versionering og database — plus forberedelse til IoT/Arduino, frontend og ORM på H3.",
     image: "h2-h3.png",
     body: `
+      ${bridge(
+        "Efter H2 har eleven arbejdet med API, EF Core og Blazor i et større system. Hold fullstack- og Git-kompetencerne varme i praktikken — på H3 (9 uger) kobles det til IoT/Arduino og dashboards."
+      )}
       ${img("h2-h3.png", "Praktikmål mellem H2 og H3")}
       <div class="cols">
         <div>
@@ -121,6 +133,9 @@ export const tidslinje = [
       "API, versionering og database — plus blød start på Flutter/Dart inden H4.",
     image: "h3-h4.png",
     body: `
+      ${bridge(
+        "Efter H3 har eleven prøvet kæden fra sensor til API og dashboard. Fortsæt med API, data og Git i praktikken — på H4 (7 uger) skifter fokus til Flutter/Dart og mobil integration."
+      )}
       ${img("h3-h4.png", "Praktikmål mellem H3 og H4")}
       <div class="cols">
         <div>
@@ -156,6 +171,9 @@ export const tidslinje = [
     summary: "Softwaretest, app og sikkerhed — plus blød start på Linux og projektstyring.",
     image: "h4-h5.png",
     body: `
+      ${bridge(
+        "Efter H4 har eleven bygget mobilapp med API og test. Brug praktikken på app, test og sikkerhed — og giv gerne et første møde med Linux/drift inden H5 (9 uger), hvor Docker, pipelines og mini-svendeprøve fylder."
+      )}
       ${img("h4-h5.png", "Praktikmål mellem H4 og H5")}
       <div class="cols">
         <div>
@@ -190,6 +208,9 @@ export const tidslinje = [
     summary: "Projektstyring og embedded — forberedelse til svendeprøven.",
     image: "h5-h6.png",
     body: `
+      ${bridge(
+        "Efter H5 har eleven trænet Linux, containere, data og et mini-svendeprøveprojekt. I praktikken er selvstændigt ansvar og dokumentation afgørende — inden H6 (5 uger), hvor den formelle svendeprøve gennemføres."
+      )}
       ${img("h5-h6.png", "Praktikmål mellem H5 og H6")}
       <div class="cols">
         <div>
