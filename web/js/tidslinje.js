@@ -20,16 +20,22 @@ export const tidslinje = [
     image: "gf2-h1.png",
     body: `
       ${img("gf2-h1.png", "Praktikmål mellem GF2 og H1")}
-      <p><strong>Praktikmål for virksomheden generelt</strong></p>
-      <ul class="check-list">
-        <li><strong>Programudvikling.</strong> Lærlingen har kendskab til programudvikling og til virksomhedens teknologier og struktur.</li>
-      </ul>
-      <p><strong>Forberedelse til 1. hovedforløb</strong></p>
-      <ul class="check-list">
-        <li><strong>Versionsstyring.</strong> GitHub bruges på H1 — sæt eleven ind i egne værktøjer og grundprincipper.</li>
-        <li><strong>Database.</strong> Vis virksomhedens databasestruktur og valg inden SQL på H1.</li>
-        <li><strong>Motivation og nysgerrighed.</strong> Vi forventer ikke bredt programmeringskendskab — fokus er, at eleven møder motiveret og nysgerrig op.</li>
-      </ul>
+      <div class="cols">
+        <div>
+          <p><strong>Praktikmål for virksomheden generelt</strong></p>
+          <ul class="check-list">
+            <li><strong>Programudvikling.</strong> Lærlingen har kendskab til programudvikling og til virksomhedens teknologier og struktur.</li>
+          </ul>
+        </div>
+        <div>
+          <p><strong>Forberedelse til 1. hovedforløb</strong></p>
+          <ul class="check-list">
+            <li><strong>Versionsstyring.</strong> GitHub bruges på H1 — sæt eleven ind i egne værktøjer og grundprincipper.</li>
+            <li><strong>Database.</strong> Vis virksomhedens databasestruktur og valg inden SQL på H1.</li>
+            <li><strong>Motivation og nysgerrighed.</strong> Vi forventer ikke bredt programmeringskendskab — fokus er, at eleven møder motiveret og nysgerrig op.</li>
+          </ul>
+        </div>
+      </div>
     `,
   },
   {
@@ -59,18 +65,24 @@ export const tidslinje = [
     image: "h1-h2.png",
     body: `
       ${img("h1-h2.png", "Praktikmål mellem H1 og H2")}
-      <p><strong>Praktikmål for virksomheden generelt</strong></p>
-      <ul class="check-list">
-        <li><strong>(Web)applikationer.</strong> Enkle fullstack-løsninger med moderne frontend og backend.</li>
-        <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange.</li>
-        <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og værktøjer.</li>
-      </ul>
-      <p><strong>Forberedelse til 2. hovedforløb</strong></p>
-      <ul class="check-list">
-        <li><strong>Versionsstyring.</strong> Mere praktisk indsigt i professionel versionskontrol.</li>
-        <li><strong>Frontend.</strong> Holde Blazor-færdigheder ved lige.</li>
-        <li><strong>Database.</strong> Kendskab til dataarbejde og evt. ORM i virksomheden.</li>
-      </ul>
+      <div class="cols">
+        <div>
+          <p><strong>Praktikmål for virksomheden generelt</strong></p>
+          <ul class="check-list">
+            <li><strong>(Web)applikationer.</strong> Enkle fullstack-løsninger med moderne frontend og backend.</li>
+            <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange.</li>
+            <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og værktøjer.</li>
+          </ul>
+        </div>
+        <div>
+          <p><strong>Forberedelse til 2. hovedforløb</strong></p>
+          <ul class="check-list">
+            <li><strong>Versionsstyring.</strong> Mere praktisk indsigt i professionel versionskontrol.</li>
+            <li><strong>Frontend.</strong> Holde Blazor-færdigheder ved lige.</li>
+            <li><strong>Database.</strong> Kendskab til dataarbejde og evt. ORM i virksomheden.</li>
+          </ul>
+        </div>
+      </div>
     `,
   },
   {
@@ -100,20 +112,26 @@ export const tidslinje = [
     image: "h2-h3.png",
     body: `
       ${img("h2-h3.png", "Praktikmål mellem H2 og H3")}
-      <p><strong>Praktikmål for virksomheden generelt</strong></p>
-      <ul class="check-list">
-        <li><strong>(Web)applikationer.</strong> Moderne fullstack-webløsninger på frontend og backend.</li>
-        <li><strong>(API)applikationer.</strong> API-løsninger med moderne, anvendte teknologier.</li>
-        <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange og værktøjer.</li>
-        <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og relevante værktøjer.</li>
-      </ul>
-      <p><strong>Forberedelse til 3. hovedforløb</strong></p>
-      <ul class="check-list">
-        <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
-        <li><strong>Frontend.</strong> Holde Blazor/SPA-færdigheder ved lige — komponenter og brugerinteraktion.</li>
-        <li><strong>Client / IoT.</strong> Bekendtskab med Arduino eller C++ inden IoT-arbejdet på H3.</li>
-        <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
-      </ul>
+      <div class="cols">
+        <div>
+          <p><strong>Praktikmål for virksomheden generelt</strong></p>
+          <ul class="check-list">
+            <li><strong>(Web)applikationer.</strong> Moderne fullstack-webløsninger på frontend og backend.</li>
+            <li><strong>(API)applikationer.</strong> API-løsninger med moderne, anvendte teknologier.</li>
+            <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange og værktøjer.</li>
+            <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og relevante værktøjer.</li>
+          </ul>
+        </div>
+        <div>
+          <p><strong>Forberedelse til 3. hovedforløb</strong></p>
+          <ul class="check-list">
+            <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
+            <li><strong>Frontend.</strong> Holde Blazor/SPA-færdigheder ved lige — komponenter og brugerinteraktion.</li>
+            <li><strong>Client / IoT.</strong> Bekendtskab med Arduino eller C++ inden IoT-arbejdet på H3.</li>
+            <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
+          </ul>
+        </div>
+      </div>
     `,
   },
   {
@@ -143,18 +161,24 @@ export const tidslinje = [
     image: "h3-h4.png",
     body: `
       ${img("h3-h4.png", "Praktikmål mellem H3 og H4")}
-      <p><strong>Praktikmål for virksomheden generelt</strong></p>
-      <ul class="check-list">
-        <li><strong>(API)applikationer.</strong> API-løsninger med moderne, anvendte teknologier.</li>
-        <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange og værktøjer.</li>
-        <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og relevante værktøjer.</li>
-      </ul>
-      <p><strong>Forberedelse til 4. hovedforløb</strong></p>
-      <ul class="check-list">
-        <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
-        <li><strong>Frontend / mobil.</strong> På H4 introduceres Flutter/Dart — det er en fordel, hvis eleven har kigget på mobiludvikling.</li>
-        <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
-      </ul>
+      <div class="cols">
+        <div>
+          <p><strong>Praktikmål for virksomheden generelt</strong></p>
+          <ul class="check-list">
+            <li><strong>(API)applikationer.</strong> API-løsninger med moderne, anvendte teknologier.</li>
+            <li><strong>Versionering.</strong> Forståelse for virksomhedens Git-arbejdsgange og værktøjer.</li>
+            <li><strong>Databaseudvikling.</strong> Erfaring med databaser, typer og relevante værktøjer.</li>
+          </ul>
+        </div>
+        <div>
+          <p><strong>Forberedelse til 4. hovedforløb</strong></p>
+          <ul class="check-list">
+            <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
+            <li><strong>Frontend / mobil.</strong> På H4 introduceres Flutter/Dart — det er en fordel, hvis eleven har kigget på mobiludvikling.</li>
+            <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
+          </ul>
+        </div>
+      </div>
     `,
   },
   {
@@ -183,17 +207,23 @@ export const tidslinje = [
     image: "h4-h5.png",
     body: `
       ${img("h4-h5.png", "Praktikmål mellem H4 og H5")}
-      <p><strong>Praktikmål for virksomheden generelt</strong></p>
-      <ul class="check-list">
-        <li><strong>Softwaretest.</strong> Kvalitetssikring og test af programmer</li>
-        <li><strong>App.</strong> Udviklet eller hjulpet med app i et framework</li>
-        <li><strong>Sikkerhed.</strong> Indsigt i sikkerhedsløsninger i softwareudvikling</li>
-      </ul>
-      <p><strong>Forberedelse til 5. hovedforløb</strong></p>
-      <ul class="check-list">
-        <li><strong>Linux.</strong> Kendskab til Linux i virksomhedens systemlandskab</li>
-        <li><strong>Projektstyring.</strong> Mindre opgaver med planlægning og dokumentation</li>
-      </ul>
+      <div class="cols">
+        <div>
+          <p><strong>Praktikmål for virksomheden generelt</strong></p>
+          <ul class="check-list">
+            <li><strong>Softwaretest.</strong> Kvalitetssikring og test af programmer</li>
+            <li><strong>App.</strong> Udviklet eller hjulpet med app i et framework</li>
+            <li><strong>Sikkerhed.</strong> Indsigt i sikkerhedsløsninger i softwareudvikling</li>
+          </ul>
+        </div>
+        <div>
+          <p><strong>Forberedelse til 5. hovedforløb</strong></p>
+          <ul class="check-list">
+            <li><strong>Linux.</strong> Kendskab til Linux i virksomhedens systemlandskab</li>
+            <li><strong>Projektstyring.</strong> Mindre opgaver med planlægning og dokumentation</li>
+          </ul>
+        </div>
+      </div>
     `,
   },
   {
@@ -222,16 +252,22 @@ export const tidslinje = [
     image: "h5-h6.png",
     body: `
       ${img("h5-h6.png", "Praktikmål mellem H5 og H6")}
-      <p><strong>Praktikmål for virksomheden generelt</strong></p>
-      <ul class="check-list">
-        <li><strong>Projektstyring.</strong> Deltagelse i udvikling med projektstyringsværktøjer</li>
-        <li><strong>Embedded systemer.</strong> Programmering til embedded med Linux eller anden platform</li>
-      </ul>
-      <p><strong>Forberedelse til 6. hovedforløb</strong></p>
-      <ul class="check-list">
-        <li><strong>Projektstyring.</strong> Ledelse, dokumentation og procesrapport</li>
-        <li><strong>Projektorienteret arbejde.</strong> Ansvar for udviklingsopgaver fra bunden</li>
-      </ul>
+      <div class="cols">
+        <div>
+          <p><strong>Praktikmål for virksomheden generelt</strong></p>
+          <ul class="check-list">
+            <li><strong>Projektstyring.</strong> Deltagelse i udvikling med projektstyringsværktøjer</li>
+            <li><strong>Embedded systemer.</strong> Programmering til embedded med Linux eller anden platform</li>
+          </ul>
+        </div>
+        <div>
+          <p><strong>Forberedelse til 6. hovedforløb</strong></p>
+          <ul class="check-list">
+            <li><strong>Projektstyring.</strong> Ledelse, dokumentation og procesrapport</li>
+            <li><strong>Projektorienteret arbejde.</strong> Ansvar for udviklingsopgaver fra bunden</li>
+          </ul>
+        </div>
+      </div>
     `,
   },
   {

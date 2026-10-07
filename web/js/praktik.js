@@ -180,30 +180,36 @@ ${img("h2-h3.png", "Praktikmål mellem H2 og H3")}
 
 <h2 id="h3">H3 — Programmering</h2>
 ${img("h3.png", "Oversigt over H3")}
-<h3>Serversideprogrammering</h3>
-<ul>
-  <li>API’er i C# med modeller og DTO’er til CRUD på tværs af enheder/platforme</li>
-  <li>Database via Entity Framework Core</li>
-</ul>
-<h3>GUI-2-programmering</h3>
-<ul>
-  <li>Blazor eller andet SPA-framework</li>
-  <li>Dashboard med API-integration til IoT-enhed</li>
-</ul>
-<h3>Softwaretest &amp; sikkerhed</h3>
-<ul>
-  <li>Sikkerhed i API samt HTTPS</li>
-  <li>Auth/login til dashboard og IoT, JWT og kryptering</li>
-</ul>
-<h3>Databaseprogrammering 3</h3>
-<ul>
-  <li>ORM via Entity Framework Core som bindeled mellem backend og datalag</li>
-</ul>
-<h3>IoT og embedded systemer</h3>
-<ul>
-  <li>C++ og Arduino — egen enhed med sensorer og aktuatorer</li>
-  <li>Integration med egen API ift. sikkerhed, serverside og database</li>
-</ul>
+<div class="cols">
+  <div>
+    <h3>Serversideprogrammering</h3>
+    <ul>
+      <li>API’er i C# med modeller og DTO’er til CRUD på tværs af enheder/platforme</li>
+      <li>Database via Entity Framework Core</li>
+    </ul>
+    <h3>GUI-2-programmering</h3>
+    <ul>
+      <li>Blazor eller andet SPA-framework</li>
+      <li>Dashboard med API-integration til IoT-enhed</li>
+    </ul>
+    <h3>Softwaretest &amp; sikkerhed</h3>
+    <ul>
+      <li>Sikkerhed i API samt HTTPS</li>
+      <li>Auth/login til dashboard og IoT, JWT og kryptering</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Databaseprogrammering 3</h3>
+    <ul>
+      <li>ORM via Entity Framework Core som bindeled mellem backend og datalag</li>
+    </ul>
+    <h3>IoT og embedded systemer</h3>
+    <ul>
+      <li>C++ og Arduino — egen enhed med sensorer og aktuatorer</li>
+      <li>Integration med egen API ift. sikkerhed, serverside og database</li>
+    </ul>
+  </div>
+</div>
 
 <h3>Praktikmål for praktikperioden mellem H3 og H4</h3>
 ${img("h3-h4.png", "Praktikmål mellem H3 og H4")}
@@ -228,29 +234,35 @@ ${img("h3-h4.png", "Praktikmål mellem H3 og H4")}
 
 <h2 id="h4">H4 — Programmering</h2>
 ${img("h4.png", "Oversigt over H4")}
-<h3>Appprogrammering 1 og 2</h3>
-<ul>
-  <li>Mobiludvikling i Flutter/Dart</li>
-  <li>App 1: UI, state, komponenter og navigation</li>
-  <li>App 2: samme principper med API-integration</li>
-</ul>
-<h3>Softwaretest og sikkerhed</h3>
-<ul>
-  <li>Fortsættelse fra H3: HTTPS, auth/login i mobilapp, JWT og kryptering</li>
-</ul>
-<h3>IT-kravspecifikation</h3>
-<ul>
-  <li>Casebeskrivelse (kundeperspektiv) og kravspecifikation (udviklerperspektiv)</li>
-  <li>Arbejds-/tidsplan og projektstyring ud fra dokumenterne</li>
-</ul>
-<h3>Programmeringsmetodik</h3>
-<ul>
-  <li>Agil metodik (fx Scrum): planlægning, roller og møder</li>
-</ul>
-<h3>Serversideprogrammering</h3>
-<ul>
-  <li>Fortsættelse fra H3: API’er, DTO’er, CRUD og EF Core</li>
-</ul>
+<div class="cols">
+  <div>
+    <h3>Appprogrammering 1 og 2</h3>
+    <ul>
+      <li>Mobiludvikling i Flutter/Dart</li>
+      <li>App 1: UI, state, komponenter og navigation</li>
+      <li>App 2: samme principper med API-integration</li>
+    </ul>
+    <h3>Softwaretest og sikkerhed</h3>
+    <ul>
+      <li>Fortsættelse fra H3: HTTPS, auth/login i mobilapp, JWT og kryptering</li>
+    </ul>
+    <h3>IT-kravspecifikation</h3>
+    <ul>
+      <li>Casebeskrivelse (kundeperspektiv) og kravspecifikation (udviklerperspektiv)</li>
+      <li>Arbejds-/tidsplan og projektstyring ud fra dokumenterne</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Programmeringsmetodik</h3>
+    <ul>
+      <li>Agil metodik (fx Scrum): planlægning, roller og møder</li>
+    </ul>
+    <h3>Serversideprogrammering</h3>
+    <ul>
+      <li>Fortsættelse fra H3: API’er, DTO’er, CRUD og EF Core</li>
+    </ul>
+  </div>
+</div>
 
 <h3>Praktikmål for praktikperioden mellem H4 og H5</h3>
 ${img("h4-h5.png", "Praktikmål mellem H4 og H5")}
