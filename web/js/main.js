@@ -367,7 +367,6 @@ window.addEventListener("keydown", (event) => {
 
 const THEME_KEY = "lup-theme";
 const themeToggle = document.getElementById("theme-toggle");
-const themeLabel = themeToggle?.querySelector("[data-theme-label]");
 
 const currentTheme = () =>
   document.documentElement.dataset.theme === "light" ? "light" : "dark";
@@ -377,12 +376,12 @@ const applyTheme = (theme) => {
   document.documentElement.dataset.theme = next;
   document.documentElement.style.colorScheme = next;
   localStorage.setItem(THEME_KEY, next);
-  if (themeLabel) themeLabel.textContent = next === "dark" ? "Mørk" : "Lys";
   if (themeToggle) {
     themeToggle.setAttribute(
       "aria-label",
       next === "dark" ? "Skift til lys tilstand" : "Skift til mørk tilstand"
     );
+    themeToggle.title = next === "dark" ? "Lys tilstand" : "Mørk tilstand";
   }
 };
 
