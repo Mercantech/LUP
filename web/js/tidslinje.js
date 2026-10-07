@@ -17,7 +17,7 @@ export const tidslinje = [
     image: "gf2-h1.png",
     body: `
       ${bridge(
-        "Jeres lærling kommer fra GF2 og møder virksomheden første gang. Vis jeres stack, værktøjer og arbejdsgange — på H1 (10 uger) bygger lærlingen videre med C#, SQL, Blazor og Git i et samlet skoleprojekt."
+        "Jeres lærling kommer lige fra GF2 og møder virksomheden for første gang. Inden H1 anbefaler vi, at I viser jeres stack, værktøjer og daglige arbejdsgange — og giver en blød start på Git og jeres databasestruktur. På H1 (10 uger) bygger lærlingen videre med C#, SQL, Blazor og Git."
       )}
       ${img("gf2-h1.png", "Praktikmål mellem GF2 og H1")}
       <div class="cols">
@@ -54,7 +54,7 @@ export const tidslinje = [
     image: "h1-h2.png",
     body: `
       ${bridge(
-        "Jeres lærling kan nu arbejde med grundlæggende C#, SQL, Blazor og Git. Brug det på rigtige opgaver hos jer — inden H2 (10 uger), hvor EF Core, API og mere avanceret fullstack kommer i centrum."
+        "Jeres lærling kan nu arbejde med grundlæggende C#, SQL, Blazor og Git. Inden H2 anbefaler vi, at I sætter lærlingen på rigtige opgaver hos jer — gerne små fullstack- og dataopgaver, så kompetencerne bliver brugt. På H2 (10 uger) kommer EF Core, API og mere avanceret fullstack i centrum."
       )}
       ${img("h1-h2.png", "Praktikmål mellem H1 og H2")}
       <div class="cols">
@@ -93,7 +93,7 @@ export const tidslinje = [
     image: "h2-h3.png",
     body: `
       ${bridge(
-        "Jeres lærling kan nu bygge større fullstack-løsninger med API, EF Core og Blazor. Hold kompetencerne varme i praktikken — på H3 (9 uger) kobles det til IoT/Arduino og dashboards."
+        "Jeres lærling kan nu bygge større fullstack-løsninger med API, EF Core og Blazor. Inden H3 anbefaler vi, at I holder API-, data- og Git-kompetencerne varme — og gerne giver et første kig på Arduino eller C++, hvis I har mulighed. På H3 (9 uger) kobles det til IoT og dashboards."
       )}
       ${img("h2-h3.png", "Praktikmål mellem H2 og H3")}
       <div class="cols">
@@ -134,7 +134,7 @@ export const tidslinje = [
     image: "h3-h4.png",
     body: `
       ${bridge(
-        "Jeres lærling kan nu følge kæden fra sensor til API og dashboard. Fortsæt gerne med API, data og Git hos jer — på H4 (7 uger) skifter fokus til Flutter/Dart og mobil integration."
+        "Jeres lærling kan nu følge kæden fra sensor til API og dashboard. Inden H4 anbefaler vi, at I fortsætter med API, data og Git hos jer — og gerne lader lærlingen kigge lidt på mobiludvikling, hvis det giver mening. På H4 (7 uger) skifter fokus til Flutter/Dart og mobil integration."
       )}
       ${img("h3-h4.png", "Praktikmål mellem H3 og H4")}
       <div class="cols">
@@ -172,7 +172,7 @@ export const tidslinje = [
     image: "h4-h5.png",
     body: `
       ${bridge(
-        "Jeres lærling kan nu bygge mobilapps med API-integration og test. Brug praktikken på app, test og sikkerhed — og giv gerne et første møde med Linux/drift inden H5 (9 uger), hvor Docker, pipelines og mini-svendeprøve fylder."
+        "Jeres lærling kan nu bygge mobilapps med API-integration og test. Inden H5 anbefaler vi, at I bruger perioden på app, test og sikkerhed — og gerne giver et første møde med Linux eller drift, hvis I har det i huset. På H5 (9 uger) fylder Docker, pipelines og mini-svendeprøve."
       )}
       ${img("h4-h5.png", "Praktikmål mellem H4 og H5")}
       <div class="cols">
@@ -209,7 +209,7 @@ export const tidslinje = [
     image: "h5-h6.png",
     body: `
       ${bridge(
-        "Jeres lærling kan nu arbejde med Linux, containere, data og et mini-svendeprøveprojekt. I praktikken er selvstændigt ansvar og dokumentation afgørende — inden H6 (5 uger), hvor den formelle svendeprøve gennemføres."
+        "Jeres lærling kan nu arbejde med Linux, containere, data og et mini-svendeprøveprojekt. Inden H6 anbefaler vi, at I giver lærlingen mere selvstændigt ansvar og træner dokumentation og proces — det er den bedste forberedelse til svendeprøven. På H6 (5 uger) gennemføres den formelle prøve."
       )}
       ${img("h5-h6.png", "Praktikmål mellem H5 og H6")}
       <div class="cols">
