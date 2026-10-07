@@ -127,34 +127,25 @@ const showPraktik = () => {
 
 const renderStop = (stop, index) => {
   const typeLabel = stop.type === "praktik" ? "Praktik" : "Skole";
-  const topics =
-    stop.topics?.length
-      ? `<ul class="tl-topics">${stop.topics
-          .map((t) => `<li>${escapeHtml(t)}</li>`)
-          .join("")}</ul>`
-      : "";
+  const lup = stop.type === "skole" ? byShort[stop.id] || byShort[stop.label?.toLowerCase()] : null;
 
-  const actions =
-    stop.type === "skole"
-      ? `<a class="cta cta-primary tl-cta" href="${escapeHtml(stop.href)}">Åbn ${escapeHtml(
-          stop.label
-        )} LUP →</a>`
-      : "";
+  const title = lup?.titel || stop.title;
+  const summary = lup?.kort || stop.summary;
 
-  const panel =
-    stop.type === "praktik"
-      ? `<div class="tl-panel">${stop.body}</div>`
-      : `<div class="tl-panel">
-          ${
-            stop.image
-              ? `<figure class="praktik-fig"><img src="assets/praktik/${escapeHtml(
-                  stop.image
-                )}" alt="${escapeHtml(stop.title)}" loading="lazy" /></figure>`
-              : ""
-          }
-          ${topics}
-          ${actions}
-        </div>`;
+  let panel;
+  if (stop.type === "praktik") {
+    panel = `<div class="tl-panel">${stop.body}</div>`;
+  } else {
+    const image = stop.image
+      ? `<figure class="praktik-fig"><img src="assets/praktik/${escapeHtml(
+          stop.image
+        )}" alt="${escapeHtml(title)}" loading="lazy" /></figure>`
+      : "";
+    const body = lup
+      ? `<div class="prose tl-lup">${renderMarkdown(lup.markdown)}</div>`
+      : `<p class="tl-summary">${escapeHtml(stop.summary)}</p>`;
+    panel = `<div class="tl-panel">${image}${body}</div>`;
+  }
 
   return `
     <li class="tl-item tl-${stop.type}" id="stop-${escapeHtml(stop.id)}" style="--i:${index}">
@@ -165,8 +156,8 @@ const renderStop = (stop, index) => {
           <span class="tl-label">${escapeHtml(stop.label)}</span>
         </span>
         <span class="tl-copy">
-          <h2 class="tl-title">${escapeHtml(stop.title)}</h2>
-          <p class="tl-summary">${escapeHtml(stop.summary)}</p>
+          <h2 class="tl-title">${escapeHtml(title)}</h2>
+          <p class="tl-summary">${escapeHtml(summary)}</p>
         </span>
       </header>
       ${panel}

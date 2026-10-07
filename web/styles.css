@@ -573,6 +573,23 @@ main {
   margin-top: 0.35rem;
 }
 
+.tl-lup {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.tl-lup h2 {
+  margin-top: 1.4rem;
+}
+
+.tl-lup h2:first-child {
+  margin-top: 0;
+}
+
 .foot {
   padding: 1.5rem;
   text-align: center;

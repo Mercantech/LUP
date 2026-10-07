@@ -42,18 +42,7 @@ export const tidslinje = [
     id: "h1",
     type: "skole",
     label: "H1",
-    title: "Hovedforløb 1 — Programmering",
-    summary:
-      "Fundament i C#, OOP, SQL, HTTP, Blazor og projektarbejde (SCRUM/GitHub).",
     image: "h1.png",
-    href: "#/h1",
-    topics: [
-      "Introforløb & studieteknik",
-      "Objektorienteret programmering",
-      "Clientside / Blazor",
-      "SQL & ADO.NET",
-      "Netværk I",
-    ],
   },
   {
     id: "inden-h2",
@@ -89,18 +78,7 @@ export const tidslinje = [
     id: "h2",
     type: "skole",
     label: "H2",
-    title: "Hovedforløb 2 — Programmering",
-    summary:
-      "EF Core, REST API, SPA-frontend, AD/server og IT-service / ticketsystem.",
     image: "h2.png",
-    href: "#/h2",
-    topics: [
-      "Videregående OOP & SOLID",
-      "SQL & Entity Framework Core",
-      "REST API med ASP.NET Core",
-      "SPA-frontend",
-      "Server, AD & ITSM",
-    ],
   },
   {
     id: "inden-h3",
@@ -138,18 +116,7 @@ export const tidslinje = [
     id: "h3",
     type: "skole",
     label: "H3",
-    title: "Hovedforløb 3 — Programmering",
-    summary:
-      "IoT med Arduino, .NET API, EF Core, dashboard, JWT/auth og sikkerhed.",
     image: "h3.png",
-    href: "#/h3",
-    topics: [
-      "Serverside & DTO’er",
-      "SPA-dashboard",
-      "Softwaretest & sikkerhed",
-      "ORM / EF Core",
-      "IoT & embedded",
-    ],
   },
   {
     id: "inden-h4",
@@ -185,18 +152,7 @@ export const tidslinje = [
     id: "h4",
     type: "skole",
     label: "H4",
-    title: "Hovedforløb 4 — Programmering",
-    summary:
-      "Flutter/Dart, API-integration, kravspec, Scrum og fortsat serverside/sikkerhed.",
     image: "h4.png",
-    href: "#/h4",
-    topics: [
-      "Appprogrammering 1 & 2",
-      "Softwaretest & sikkerhed",
-      "IT-kravspecifikation",
-      "Programmeringsmetodik (Scrum)",
-      "Serverside (fortsat)",
-    ],
   },
   {
     id: "inden-h5",
@@ -230,18 +186,7 @@ export const tidslinje = [
     id: "h5",
     type: "skole",
     label: "H5",
-    title: "Hovedforløb 5 — Programmering",
-    summary:
-      "Linux, Docker, message queues, TimescaleDB, avanceret JWT og mini-svendeprøve.",
     image: "h5.png",
-    href: "#/h5",
-    topics: [
-      "Linux-server",
-      "Docker & Compose",
-      "IoT & message queue",
-      "TimescaleDB",
-      "CI/CD & mini-svendeprøve",
-    ],
   },
   {
     id: "inden-h6",
@@ -274,16 +219,6 @@ export const tidslinje = [
     id: "h6",
     type: "skole",
     label: "H6",
-    title: "Hovedforløb 6 — Svendeprøven",
-    summary:
-      "20 dages svendeprøve, systemudvikling, projektstyring (PRINCE2-niveau) og eksamen.",
     image: "h6.png",
-    href: "#/h6",
-    topics: [
-      "Svendeprøve (20 dage)",
-      "Systemudvikling",
-      "Projektstyring",
-      "Eksamen & fagligt emne",
-    ],
   },
 ];
