@@ -168,8 +168,6 @@ Praktisk del:
 - Implementering af grundlæggende OOP-koncepter i en praktisk applikation
 - Anvendelse af lists, arrays mv til at organisere data
 - Implementering af abstrakte klasser og metoder
-
-Senest opdateret 5/12/23 af Peter Jones
 `.trim()
   },
   {

@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=3" />
+    <link rel="stylesheet" href="styles.css?v=4" />
   </head>
   <body>
     <div class="atmosphere" aria-hidden="true"></div>
@@ -28,6 +28,7 @@
         </span>
       </a>
       <nav class="top-nav" aria-label="Hovedforløb">
+        <a href="#/tidslinje" data-nav="tidslinje">Tidslinje</a>
         <a href="#/h1" data-nav="h1">H1</a>
         <a href="#/h2" data-nav="h2">H2</a>
         <a href="#/h3" data-nav="h3">H3</a>
@@ -47,11 +48,9 @@
           praksis og bedømmelse samlet ét sted.
         </p>
         <div class="cta-row">
-          <a class="cta cta-primary" href="#/h1">Start med H1</a>
+          <a class="cta cta-primary" href="#/tidslinje">Se tidslinjen</a>
+          <a class="cta cta-ghost" href="#/h1">Start med H1</a>
           <a class="cta cta-ghost" href="#/praktik">Praktikmål</a>
-          <a class="cta cta-ghost" href="https://h.mercantec.tech/" target="_blank" rel="noopener noreferrer"
-            >H-Templates</a
-          >
         </div>
         <div class="grid" id="forlob-grid" role="list" aria-label="Hovedforløb"></div>
       </section>
@@ -75,12 +74,22 @@
         </header>
         <article class="prose prose-wide" id="praktik-body"></article>
       </section>
+
+      <section id="tidslinje-view" class="detail" hidden>
+        <a class="back" href="#/">← Alle forløb</a>
+        <header class="detail-head">
+          <p class="detail-code">Uddannelsen</p>
+          <h1 class="detail-title" id="tidslinje-title"></h1>
+          <p class="detail-lead" id="tidslinje-lead"></p>
+        </header>
+        <ol class="tl-track" id="tidslinje-track" aria-label="Tidslinje for uddannelsen"></ol>
+      </section>
     </main>
 
     <footer class="foot">
       <p>MAGS · Mercantec · <a href="https://lup.dk">lup.dk</a></p>
     </footer>
 
-    <script type="module" src="js/main.js?v=2"></script>
+    <script type="module" src="js/main.js?v=3"></script>
   </body>
 </html>

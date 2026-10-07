@@ -1,11 +1,13 @@
 import { forlob } from "./forlob.js";
 import { praktik, praktikHtml } from "./praktik.js";
+import { tidslinje, tidslinjeMeta } from "./tidslinje.js";
 
 const byShort = Object.fromEntries(forlob.map((f) => [f.short.toLowerCase(), f]));
 
 const homeView = document.getElementById("home-view");
 const detailView = document.getElementById("detail-view");
 const praktikView = document.getElementById("praktik-view");
+const tidslinjeView = document.getElementById("tidslinje-view");
 const grid = document.getElementById("forlob-grid");
 const detailCode = document.getElementById("detail-code");
 const detailTitle = document.getElementById("detail-title");
@@ -14,6 +16,9 @@ const detailBody = document.getElementById("detail-body");
 const praktikTitle = document.getElementById("praktik-title");
 const praktikLead = document.getElementById("praktik-lead");
 const praktikBody = document.getElementById("praktik-body");
+const tidslinjeTitle = document.getElementById("tidslinje-title");
+const tidslinjeLead = document.getElementById("tidslinje-lead");
+const tidslinjeTrack = document.getElementById("tidslinje-track");
 const navLinks = document.querySelectorAll("[data-nav]");
 
 const escapeHtml = (value) =>
@@ -64,15 +69,17 @@ const renderMarkdown = (md) => {
   return html.join("\n");
 };
 
-const routeKey = () => {
+const routeParts = () => {
   const raw = (location.hash || "#/").replace(/^#\/?/, "").toLowerCase();
-  return raw.split(/[/?#]/)[0] || "home";
+  const [key = "home", stop = ""] = raw.split(/[/?#]/);
+  return { key: key || "home", stop };
 };
 
 const hideAll = () => {
   homeView.hidden = true;
   detailView.hidden = true;
   praktikView.hidden = true;
+  tidslinjeView.hidden = true;
 };
 
 const setActiveNav = (key) => {
@@ -118,14 +125,101 @@ const showPraktik = () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
+const renderStop = (stop, index, activeId) => {
+  const isActive = stop.id === activeId;
+  const typeLabel = stop.type === "praktik" ? "Praktik" : "Skole";
+  const topics =
+    stop.topics?.length
+      ? `<ul class="tl-topics">${stop.topics
+          .map((t) => `<li>${escapeHtml(t)}</li>`)
+          .join("")}</ul>`
+      : "";
+
+  const actions =
+    stop.type === "skole"
+      ? `<a class="cta cta-primary tl-cta" href="${escapeHtml(stop.href)}">Åbn ${escapeHtml(
+          stop.label
+        )} LUP →</a>`
+      : `<a class="cta cta-ghost tl-cta" href="#/praktik">Hele praktikoversigten</a>`;
+
+  const panel =
+    stop.type === "praktik"
+      ? `<div class="tl-panel">${stop.body}${actions}</div>`
+      : `<div class="tl-panel">
+          ${
+            stop.image
+              ? `<figure class="praktik-fig"><img src="assets/praktik/${escapeHtml(
+                  stop.image
+                )}" alt="${escapeHtml(stop.title)}" loading="lazy" /></figure>`
+              : ""
+          }
+          ${topics}
+          ${actions}
+        </div>`;
+
+  return `
+    <li class="tl-item tl-${stop.type}${isActive ? " is-open" : ""}" data-stop="${escapeHtml(
+      stop.id
+    )}" style="--i:${index}">
+      <button type="button" class="tl-node" aria-expanded="${isActive}" data-tl-toggle="${escapeHtml(
+        stop.id
+      )}">
+        <span class="tl-dot" aria-hidden="true"></span>
+        <span class="tl-meta">
+          <span class="tl-kind">${typeLabel}</span>
+          <span class="tl-label">${escapeHtml(stop.label)}</span>
+        </span>
+        <span class="tl-copy">
+          <span class="tl-title">${escapeHtml(stop.title)}</span>
+          <span class="tl-summary">${escapeHtml(stop.summary)}</span>
+        </span>
+        <span class="tl-chevron" aria-hidden="true"></span>
+      </button>
+      ${panel}
+    </li>`;
+};
+
+const bindTidslinje = () => {
+  tidslinjeTrack.querySelectorAll("[data-tl-toggle]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.tlToggle;
+      const next = location.hash === `#/tidslinje/${id}` ? "#/tidslinje" : `#/tidslinje/${id}`;
+      location.hash = next;
+    });
+  });
+};
+
+const showTidslinje = (stopId = "") => {
+  hideAll();
+  tidslinjeView.hidden = false;
+  tidslinjeTitle.textContent = tidslinjeMeta.title;
+  tidslinjeLead.textContent = tidslinjeMeta.lead;
+  const activeId = tidslinje.some((s) => s.id === stopId) ? stopId : tidslinje[0].id;
+  tidslinjeTrack.innerHTML = tidslinje.map((s, i) => renderStop(s, i, activeId)).join("");
+  bindTidslinje();
+  document.title = "Tidslinje · LUP";
+  setActiveNav("tidslinje");
+
+  const activeEl = tidslinjeTrack.querySelector(`[data-stop="${activeId}"]`);
+  if (activeEl && stopId) {
+    activeEl.scrollIntoView({ behavior: "smooth", block: "center" });
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
+
 const render = () => {
-  const key = routeKey();
+  const { key, stop } = routeParts();
   if (key === "home" || key === "") {
     showHome();
     return;
   }
   if (key === "praktik") {
     showPraktik();
+    return;
+  }
+  if (key === "tidslinje") {
+    showTidslinje(stop);
     return;
   }
   showForlob(key);
@@ -147,17 +241,25 @@ const buildGrid = () => {
     )
     .join("");
 
-  const praktikCard = `
-    <a class="card card-accent" href="#/praktik" role="listitem" style="${
+  const extra = `
+    <a class="card card-accent" href="#/tidslinje" role="listitem" style="${
       reduceMotion ? "" : `animation: rise 0.55s ${0.15 + forlob.length * 0.06}s ease both;`
+    }">
+      <p class="card-code">Tidslinje</p>
+      <h2 class="card-title">Inden H1 → H6</h2>
+      <p class="card-desc">Skoleperioder og praktikmål i den rækkefølge, eleven møder dem.</p>
+      <span class="card-go">Åbn tidslinje →</span>
+    </a>
+    <a class="card" href="#/praktik" role="listitem" style="${
+      reduceMotion ? "" : `animation: rise 0.55s ${0.15 + (forlob.length + 1) * 0.06}s ease both;`
     }">
       <p class="card-code">Praktik</p>
       <h2 class="card-title">Praktikmålsoversigt</h2>
-      <p class="card-desc">Mål og forventninger mellem skoleopholdene — med oversigtsbilleder for GF2–H6.</p>
+      <p class="card-desc">Samlet oversigt med alle billeder og delpraktikmål.</p>
       <span class="card-go">Åbn oversigt →</span>
     </a>`;
 
-  grid.innerHTML = cards + praktikCard;
+  grid.innerHTML = cards + extra;
 };
 
 buildGrid();

@@ -5,7 +5,7 @@ Lokale undervisningsplaner for MAGS hovedforløb (H1–H6).
 | | |
 |---|---|
 | **Live** | https://lup.dk |
-| **Indhold** | H1–H6 LUP’er + [praktikmålsoversigt](https://lup.dk/#/praktik) |
+| **Indhold** | H1–H6 LUP’er · [tidslinje](https://lup.dk/#/tidslinje) · [praktikmål](https://lup.dk/#/praktik) |
 
 ## Deploy
 
