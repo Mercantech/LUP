@@ -17,7 +17,7 @@ export const tidslinje = [
     image: "gf2-h1.png",
     body: `
       ${bridge(
-        "Efter GF2 møder eleven virksomheden første gang. Brug perioden til at vise jeres stack og arbejdsgange — på H1 (10 uger) får eleven første gang C#, SQL, Blazor og Git i et samlet skoleprojekt."
+        "Jeres lærling kommer fra GF2 og møder virksomheden første gang. Vis jeres stack, værktøjer og arbejdsgange — på H1 (10 uger) bygger lærlingen videre med C#, SQL, Blazor og Git i et samlet skoleprojekt."
       )}
       ${img("gf2-h1.png", "Praktikmål mellem GF2 og H1")}
       <div class="cols">
@@ -30,9 +30,9 @@ export const tidslinje = [
         <div>
           <p><strong>Forberedelse til 1. hovedforløb</strong></p>
           <ul class="check-list">
-            <li><strong>Versionsstyring.</strong> GitHub bruges på H1 — sæt eleven ind i egne værktøjer og grundprincipper.</li>
+            <li><strong>Versionsstyring.</strong> GitHub bruges på H1 — sæt lærlingen ind i jeres værktøjer og grundprincipper.</li>
             <li><strong>Database.</strong> Vis virksomhedens databasestruktur og valg inden SQL på H1.</li>
-            <li><strong>Motivation og nysgerrighed.</strong> Vi forventer ikke bredt programmeringskendskab — fokus er, at eleven møder motiveret og nysgerrig op.</li>
+            <li><strong>Motivation og nysgerrighed.</strong> Vi forventer ikke bredt programmeringskendskab — fokus er, at lærlingen møder motiveret og nysgerrig op.</li>
           </ul>
         </div>
       </div>
@@ -54,7 +54,7 @@ export const tidslinje = [
     image: "h1-h2.png",
     body: `
       ${bridge(
-        "Efter H1 har eleven grundlæggende C#, SQL, Blazor og Git. I praktikken er det godt at bruge det på rigtige opgaver — inden H2 (10 uger), hvor EF Core, API og mere avanceret fullstack kommer i centrum."
+        "Jeres lærling kan nu arbejde med grundlæggende C#, SQL, Blazor og Git. Brug det på rigtige opgaver hos jer — inden H2 (10 uger), hvor EF Core, API og mere avanceret fullstack kommer i centrum."
       )}
       ${img("h1-h2.png", "Praktikmål mellem H1 og H2")}
       <div class="cols">
@@ -93,7 +93,7 @@ export const tidslinje = [
     image: "h2-h3.png",
     body: `
       ${bridge(
-        "Efter H2 har eleven arbejdet med API, EF Core og Blazor i et større system. Hold fullstack- og Git-kompetencerne varme i praktikken — på H3 (9 uger) kobles det til IoT/Arduino og dashboards."
+        "Jeres lærling kan nu bygge større fullstack-løsninger med API, EF Core og Blazor. Hold kompetencerne varme i praktikken — på H3 (9 uger) kobles det til IoT/Arduino og dashboards."
       )}
       ${img("h2-h3.png", "Praktikmål mellem H2 og H3")}
       <div class="cols">
@@ -134,7 +134,7 @@ export const tidslinje = [
     image: "h3-h4.png",
     body: `
       ${bridge(
-        "Efter H3 har eleven prøvet kæden fra sensor til API og dashboard. Fortsæt med API, data og Git i praktikken — på H4 (7 uger) skifter fokus til Flutter/Dart og mobil integration."
+        "Jeres lærling kan nu følge kæden fra sensor til API og dashboard. Fortsæt gerne med API, data og Git hos jer — på H4 (7 uger) skifter fokus til Flutter/Dart og mobil integration."
       )}
       ${img("h3-h4.png", "Praktikmål mellem H3 og H4")}
       <div class="cols">
@@ -150,7 +150,7 @@ export const tidslinje = [
           <p><strong>Forberedelse til 4. hovedforløb</strong></p>
           <ul class="check-list">
             <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
-            <li><strong>Frontend / mobil.</strong> På H4 introduceres Flutter/Dart — det er en fordel, hvis eleven har kigget på mobiludvikling.</li>
+            <li><strong>Frontend / mobil.</strong> På H4 introduceres Flutter/Dart — det er en fordel, hvis lærlingen har kigget på mobiludvikling.</li>
             <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
           </ul>
         </div>
@@ -172,7 +172,7 @@ export const tidslinje = [
     image: "h4-h5.png",
     body: `
       ${bridge(
-        "Efter H4 har eleven bygget mobilapp med API og test. Brug praktikken på app, test og sikkerhed — og giv gerne et første møde med Linux/drift inden H5 (9 uger), hvor Docker, pipelines og mini-svendeprøve fylder."
+        "Jeres lærling kan nu bygge mobilapps med API-integration og test. Brug praktikken på app, test og sikkerhed — og giv gerne et første møde med Linux/drift inden H5 (9 uger), hvor Docker, pipelines og mini-svendeprøve fylder."
       )}
       ${img("h4-h5.png", "Praktikmål mellem H4 og H5")}
       <div class="cols">
@@ -209,7 +209,7 @@ export const tidslinje = [
     image: "h5-h6.png",
     body: `
       ${bridge(
-        "Efter H5 har eleven trænet Linux, containere, data og et mini-svendeprøveprojekt. I praktikken er selvstændigt ansvar og dokumentation afgørende — inden H6 (5 uger), hvor den formelle svendeprøve gennemføres."
+        "Jeres lærling kan nu arbejde med Linux, containere, data og et mini-svendeprøveprojekt. I praktikken er selvstændigt ansvar og dokumentation afgørende — inden H6 (5 uger), hvor den formelle svendeprøve gennemføres."
       )}
       ${img("h5-h6.png", "Praktikmål mellem H5 og H6")}
       <div class="cols">

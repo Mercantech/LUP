@@ -10,12 +10,12 @@ const img = (name, alt) =>
   `<figure class="praktik-fig"><img src="assets/praktik/${name}" alt="${alt}" loading="lazy" /></figure>`;
 
 export const praktikHtml = `
-<p>Her er en samlet praktikmålsoversigt over uddannelsen “Datatekniker med speciale i programmering”. Her finder I en oversigt over, hvad der generelt bliver brugt på hvert hovedforløb, samt vores forventninger om, hvad eleven lærer ude på lærepladsen.</p>
+<p>Her er en samlet praktikmålsoversigt over uddannelsen “Datatekniker med speciale i programmering”. Her finder I en oversigt over, hvad der generelt bliver brugt på hvert hovedforløb, samt vores forventninger om, hvad lærlingen lærer ude på lærepladsen.</p>
 <p><a class="cta cta-ghost" href="assets/praktik/pjece.pdf" target="_blank" rel="noopener noreferrer">Download pjecen (PDF)</a>
 <a class="cta cta-ghost" href="#/" style="margin-left:0.5rem">Tilbage til tidslinjen</a></p>
 
 <h2>Praktik i virksomheden</h2>
-<p>Praktikvejledning bruges som redskab til at sikre, at eleven opnår de praktikmål, som er beskrevet for uddannelsen. De officielle praktikmål er beskrevet nedenfor.</p>
+<p>Praktikvejledning bruges som redskab til at sikre, at lærlingen opnår de praktikmål, som er beskrevet for uddannelsen. De officielle praktikmål er beskrevet nedenfor.</p>
 
 <details class="praktik-details">
   <summary>Til vejledning: delpraktikmål mellem skoleopholdene</summary>
@@ -44,16 +44,16 @@ ${img("gf2.png", "Diagram for Grundforløb 2")}
 
 <h3>Praktikmål for praktikperioden mellem GF2 og H1</h3>
 ${img("gf2-h1.png", "Praktikmål mellem GF2 og H1")}
-<p>Sæt kryds i de praktikmål, som eleven har opnået i sin praktikperiode.</p>
+<p>Sæt kryds i de praktikmål, som lærlingen har opnået i sin praktikperiode.</p>
 <p><strong>Praktikmål for virksomheden generelt</strong> — lærlingen har opnået kompetencer, der åbner mulighed for at arbejde med følgende:</p>
 <ul class="check-list">
   <li><strong>Programudvikling.</strong> Lærlingen har kendskab til programudvikling og til virksomhedens teknologier og struktur.</li>
 </ul>
 <p><strong>Forberedelse til 1. hovedforløb</strong> — lærlingen må gerne opnå begyndende kendskab til:</p>
 <ul class="check-list">
-  <li><strong>Versionsstyring.</strong> På H1 bruges GitHub til versionsstyring — virksomheden kan med fordel sætte eleven ind i egne værktøjer og grundprincipper.</li>
+  <li><strong>Versionsstyring.</strong> På H1 bruges GitHub til versionsstyring — virksomheden kan med fordel sætte lærlingen ind i egne værktøjer og grundprincipper.</li>
   <li><strong>Database.</strong> Databaser og SQL mødes første gang på H1 — det hjælper at vise virksomhedens struktur og valg inden da.</li>
-  <li><strong>Motivation og nysgerrighed.</strong> H1 er elevens første hovedforløb efter valg af programmering — vi forventer ikke bredt kendskab, men at de møder motiveret og nysgerrige op.</li>
+  <li><strong>Motivation og nysgerrighed.</strong> H1 er lærlingens første hovedforløb efter valg af programmering — vi forventer ikke bredt kendskab, men at de møder motiveret og nysgerrige op.</li>
 </ul>
 
 <h2 id="h1">H1 — Programmering</h2>
@@ -62,7 +62,7 @@ ${img("h1.png", "Oversigt over H1")}
   <div>
     <h3>Introforløb</h3>
     <ul>
-      <li>Fokus på læringstaktikker, studieteknik og elevens rolle i undervisningen</li>
+      <li>Fokus på læringstaktikker, studieteknik og lærlingens rolle i undervisningen</li>
       <li>Første C#-opgave: lister, betingelser og brugerinput i konsolapplikationer</li>
     </ul>
     <h3>Objektorienteret programmering (OOP)</h3>
@@ -226,7 +226,7 @@ ${img("h3-h4.png", "Praktikmål mellem H3 og H4")}
     <p><strong>Forberedelse til 4. hovedforløb</strong></p>
     <ul class="check-list">
       <li><strong>Versionsstyring.</strong> Praktisk indsigt i professionel versionskontrol og begyndende projektstyring.</li>
-      <li><strong>Frontend / mobil.</strong> På H4 introduceres Flutter/Dart — det er en fordel, hvis eleven har kigget på mobiludvikling.</li>
+      <li><strong>Frontend / mobil.</strong> På H4 introduceres Flutter/Dart — det er en fordel, hvis lærlingen har kigget på mobiludvikling.</li>
       <li><strong>Database.</strong> Fortsat arbejde med virksomhedens data og valg af ORM.</li>
     </ul>
   </div>
@@ -351,7 +351,7 @@ ${img("h6.png", "Oversigt over H6 / svendeprøven")}
     <h3>Svendeprøve</h3>
     <ul>
       <li>20 dage til et færdigt produkt</li>
-      <li>Elevens egen casebeskrivelse som kundevinkel</li>
+      <li>Lærlingens egen casebeskrivelse som kundevinkel</li>
       <li>Produkt- og processrapport + mundtlig fremlæggelse</li>
     </ul>
     <h3>Systemudvikling</h3>
