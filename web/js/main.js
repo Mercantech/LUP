@@ -26,17 +26,64 @@ const navLinks = document.querySelectorAll("[data-nav]");
 
 let railActiveId = "";
 let railRaf = 0;
+let tidslinjeBuilt = false;
+let railScrolling = false;
+
+const prefersReducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const railIndex = () => {
   const idx = tidslinje.findIndex((s) => s.id === railActiveId);
   return idx < 0 ? 0 : idx;
 };
 
+const scrollToStop = (stopId = "") => {
+  const behavior = prefersReducedMotion() ? "auto" : "smooth";
+  railScrolling = true;
+
+  if (!stopId) {
+    window.scrollTo({ top: 0, behavior });
+  } else {
+    const target = document.getElementById(`stop-${stopId}`);
+    if (target) target.scrollIntoView({ behavior, block: "start" });
+    else window.scrollTo({ top: 0, behavior });
+  }
+
+  window.setTimeout(
+    () => {
+      railScrolling = false;
+      syncRail();
+    },
+    prefersReducedMotion() ? 50 : 450
+  );
+};
+
+const goToStop = (stopId) => {
+  if (tidslinjeView.hidden) {
+    location.hash = `#/tidslinje/${stopId}`;
+    return;
+  }
+  const nextHash = `#/tidslinje/${stopId}`;
+  if (location.hash !== nextHash) {
+    history.replaceState(null, "", nextHash);
+  }
+  scrollToStop(stopId);
+
+  railActiveId = stopId;
+  tidslinjeRail?.querySelectorAll("[data-stop]").forEach((link) => {
+    const on = link.dataset.stop === stopId;
+    link.classList.toggle("is-active", on);
+    if (on) link.setAttribute("aria-current", "true");
+    else link.removeAttribute("aria-current");
+  });
+  updateRailArrows();
+};
+
 const goRailStep = (delta) => {
   if (tidslinjeView.hidden) return;
   const next = tidslinje[railIndex() + delta];
   if (!next) return;
-  location.hash = `#/tidslinje/${next.id}`;
+  goToStop(next.id);
 };
 
 const updateRailArrows = () => {
@@ -210,7 +257,7 @@ const renderRail = () =>
     .join("");
 
 const syncRail = () => {
-  if (tidslinjeView.hidden || !tidslinjeRail) return;
+  if (tidslinjeView.hidden || !tidslinjeRail || railScrolling) return;
 
   const marker = window.scrollY + Math.min(180, window.innerHeight * 0.22);
   let active = tidslinje[0]?.id || "";
@@ -233,7 +280,7 @@ const syncRail = () => {
     });
 
     const activeLink = tidslinjeRail.querySelector(`[data-stop="${active}"]`);
-    activeLink?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    activeLink?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
   }
 
   updateRailArrows();
@@ -248,25 +295,36 @@ const onRailScroll = () => {
 };
 
 const showTidslinje = (stopId = "") => {
-  hideAll();
+  const alreadyOpen = !tidslinjeView.hidden;
+
+  homeView.hidden = true;
+  detailView.hidden = true;
+  praktikView.hidden = true;
   tidslinjeView.hidden = false;
-  tidslinjeTitle.textContent = tidslinjeMeta.title;
-  tidslinjeLead.textContent = tidslinjeMeta.lead;
-  tidslinjeTrack.innerHTML = tidslinje.map((s, i) => renderStop(s, i)).join("");
-  tidslinjeRail.innerHTML = renderRail();
-  railActiveId = "";
+  document.body.classList.add("has-tl-rail");
   document.title = "Tidslinje · LUP";
   setActiveNav("tidslinje");
-  document.body.classList.add("has-tl-rail");
 
-  const target = stopId ? document.getElementById(`stop-${stopId}`) : null;
-  if (target) {
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
-  } else {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  if (!tidslinjeBuilt) {
+    tidslinjeTitle.textContent = tidslinjeMeta.title;
+    tidslinjeLead.textContent = tidslinjeMeta.lead;
+    tidslinjeTrack.innerHTML = tidslinje.map((s, i) => renderStop(s, i)).join("");
+    tidslinjeRail.innerHTML = renderRail();
+    tidslinjeBuilt = true;
+    railActiveId = "";
+    requestAnimationFrame(() => tidslinjeTrack.classList.add("is-settled"));
   }
 
-  requestAnimationFrame(syncRail);
+  if (alreadyOpen) {
+    scrollToStop(stopId);
+    return;
+  }
+
+  // Første åbning: undgå dobbelt-animation — scroll efter layout
+  requestAnimationFrame(() => {
+    scrollToStop(stopId);
+    syncRail();
+  });
 };
 
 const render = () => {
@@ -330,6 +388,13 @@ window.addEventListener("resize", onRailScroll, { passive: true });
 
 tlRailUp?.addEventListener("click", () => goRailStep(-1));
 tlRailDown?.addEventListener("click", () => goRailStep(1));
+
+tidslinjeRail?.addEventListener("click", (event) => {
+  const link = event.target.closest("[data-stop]");
+  if (!link || tidslinjeView.hidden) return;
+  event.preventDefault();
+  goToStop(link.dataset.stop);
+});
 
 window.addEventListener("keydown", (event) => {
   if (tidslinjeView.hidden) return;

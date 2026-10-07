@@ -534,7 +534,10 @@ body.has-tl-rail .tl-rail-shell {
   border-radius: 8px;
   text-decoration: none;
   color: var(--ink-soft);
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease;
 }
 
 .tl-rail-link:hover {
@@ -545,6 +548,7 @@ body.has-tl-rail .tl-rail-shell {
 .tl-rail-link.is-active {
   background: rgba(31, 107, 87, 0.16);
   color: var(--moss-deep);
+  transform: translateX(-2px);
 }
 
 .tl-rail-dot {
@@ -553,6 +557,7 @@ body.has-tl-rail .tl-rail-shell {
   border-radius: 50%;
   background: #c5d4cc;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
 }
 
 .tl-rail-skole .tl-rail-dot {
@@ -610,6 +615,10 @@ body.has-tl-rail .tl-rail-shell {
   margin: 0 0 2rem;
   scroll-margin-top: 6.75rem;
   animation: rise 0.5s calc(var(--i, 0) * 0.04s) ease both;
+}
+
+.tl-track.is-settled .tl-item {
+  animation: none;
 }
 
 .tl-node {
