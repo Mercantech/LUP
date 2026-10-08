@@ -58,7 +58,26 @@ Forløbet kombinerer fagområderne programmering, databasedesign, netværk, fron
 Lærlingerne arbejder i selvvalgte grupper og kan tilpasse projektets kompleksitet og retning i dialog med underviseren. Der tilbydes supplerende opgaver og udfordringer for lærlinge, der ønsker at fordybe sig yderligere, fx spilprojekter (Minestryger, Find the Cat), ekstra OOP-øvelser, eller automatiseringsopgaver med Selenium.
 
 ## Evaluering og bedømmelse
-Vi evaluerer løbende gennem dialog med lærlingerne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
+Evaluering og bedømmelse følger forløbets mål. Fokus er nysgerrighed, best practice og refleksion — både i det daglige arbejde og ved den afsluttende overhøring.
+
+## Løbende evaluering
+- Dialog mellem underviser og lærling undervejs i undervisning og projektarbejde.
+- Feedback i sprints, reviews og ved afleveringer.
+- Anonyme midtvejs- og slutevalueringer, som tages op i klassen med henblik på justering af undervisningen.
+
+## Bedømmelsesgrundlag
+- Deltagelse og indsats i undervisning og gruppearbejde.
+- Produkt og proces: kode, dokumentation og forklaring af valg.
+- Afsluttende overhøring, hvor lærlingen mundtligt viser forståelse og kan forsvare egne valg.
+
+## Bedømmelseskriterier
+- **Nysgerrighed:** stiller relevante spørgsmål, undersøger muligheder og søger at forstå frem for kun at “få det til at virke”.
+- **Best practice:** følger aftalte arbejdsgange (fx Git, struktur, navngivning, sikkerhed og dokumentation) og begrunder afvigelser.
+- **Refleksion:** kan forklare hvad der gik godt/skidt, hvad der er lært, og hvad der ville være næste skridt.
+- Teknisk niveau vurderes i forhold til forløbets mål og forventningsniveau.
+
+## Afsluttende overhøring
+Forløbet afsluttes med en overhøring. Her demonstrerer lærlingen produktet (eller centrale dele), svarer på faglige spørgsmål og viser nysgerrighed, brug af best practice og evne til at reflektere over proces og resultat.
 `.trim()
   },
   {
@@ -120,7 +139,26 @@ Forløbet kombinerer backend, database, frontend, API-design og projektstyring. 
 Lærlingerne arbejder i grupper og kan i dialog med underviseren tilpasse projektets dybde — fx ekstra relationer, mere avanceret auth, udvidet test eller yderligere API-endpoints. Der tilbydes supplerende udfordringer til lærlinge, der vil fordybe sig.
 
 ## Evaluering og bedømmelse
-Vi evaluerer løbende gennem dialog med lærlingerne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
+Evaluering og bedømmelse følger forløbets mål. Fokus er nysgerrighed, best practice og refleksion — både i det daglige arbejde og ved den afsluttende overhøring.
+
+## Løbende evaluering
+- Dialog mellem underviser og lærling undervejs i undervisning og projektarbejde.
+- Feedback i sprints, reviews og ved afleveringer.
+- Anonyme midtvejs- og slutevalueringer, som tages op i klassen med henblik på justering af undervisningen.
+
+## Bedømmelsesgrundlag
+- Deltagelse og indsats i undervisning og gruppearbejde.
+- Produkt og proces: API, database, frontend, dokumentation og forklaring af arkitekturvalg.
+- Afsluttende overhøring, hvor lærlingen mundtligt viser forståelse og kan forsvare egne valg.
+
+## Bedømmelseskriterier
+- **Nysgerrighed:** stiller relevante spørgsmål, undersøger muligheder og søger at forstå frem for kun at “få det til at virke”.
+- **Best practice:** følger aftalte arbejdsgange (fx Git, API-design, ORM, struktur og dokumentation) og begrunder afvigelser.
+- **Refleksion:** kan forklare hvad der gik godt/skidt, hvad der er lært, og hvad der ville være næste skridt.
+- Teknisk niveau vurderes i forhold til forløbets mål og forventningsniveau.
+
+## Afsluttende overhøring
+Forløbet afsluttes med en overhøring. Her demonstrerer lærlingen produktet (eller centrale dele), svarer på faglige spørgsmål og viser nysgerrighed, brug af best practice og evne til at reflektere over proces og resultat.
 `.trim()
   },
   {
@@ -182,7 +220,26 @@ Forløbet kombinerer embedded/IoT, serverside, database, frontend og sikkerhed. 
 Lærlingerne kan i dialog med underviseren vælge kompleksitet i sensoropsætning, API-features, dashboard og sikkerhed. Der tilbydes ekstraudfordringer — fx flere enheder, mere avanceret visualisering eller udvidet auth — til lærlinge, der vil fordybe sig.
 
 ## Evaluering og bedømmelse
-Vi evaluerer løbende gennem dialog med lærlingerne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
+Evaluering og bedømmelse følger forløbets mål. Fokus er nysgerrighed, best practice og refleksion — både i det daglige arbejde og ved den afsluttende overhøring.
+
+## Løbende evaluering
+- Dialog mellem underviser og lærling undervejs i undervisning og projektarbejde.
+- Feedback i sprints, reviews og ved afprøvning af hardware/software.
+- Anonyme midtvejs- og slutevalueringer, som tages op i klassen med henblik på justering af undervisningen.
+
+## Bedømmelsesgrundlag
+- Deltagelse og indsats i undervisning og gruppearbejde.
+- Produkt og proces: IoT-kæde (sensor → API → dashboard), dokumentation og forklaring af valg.
+- Afsluttende overhøring, hvor lærlingen mundtligt viser forståelse og kan forsvare egne valg.
+
+## Bedømmelseskriterier
+- **Nysgerrighed:** stiller relevante spørgsmål, undersøger fejl og muligheder på tværs af hardware og software.
+- **Best practice:** følger aftalte arbejdsgange (fx Git, sikkerhed omkring API/data, struktur og dokumentation) og begrunder afvigelser.
+- **Refleksion:** kan forklare hvad der gik godt/skidt, hvad der er lært, og hvad der ville være næste skridt.
+- Teknisk niveau vurderes i forhold til forløbets mål og forventningsniveau.
+
+## Afsluttende overhøring
+Forløbet afsluttes med en overhøring. Her demonstrerer lærlingen produktet (eller centrale dele), svarer på faglige spørgsmål og viser nysgerrighed, brug af best practice og evne til at reflektere over proces og resultat.
 `.trim()
   },
   {
@@ -244,7 +301,26 @@ Forløbet kombinerer mobiludvikling, API-kommunikation, datalagring, test/sikker
 Lærlingerne kan i dialog med underviseren tilpasse appens features, UI-kompleksitet og integrationsniveau. Der tilbydes ekstra udfordringer — fx mere avanceret offline-synk, udvidet test eller ekstra skærme — til lærlinge, der vil fordybe sig.
 
 ## Evaluering og bedømmelse
-Vi evaluerer løbende gennem dialog med lærlingerne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
+Evaluering og bedømmelse følger forløbets mål. Fokus er nysgerrighed, best practice og refleksion — både i det daglige arbejde og ved den afsluttende overhøring.
+
+## Løbende evaluering
+- Dialog mellem underviser og lærling undervejs i undervisning og app-udvikling.
+- Feedback i sprints, reviews, test og ved API-integration.
+- Anonyme midtvejs- og slutevalueringer, som tages op i klassen med henblik på justering af undervisningen.
+
+## Bedømmelsesgrundlag
+- Deltagelse og indsats i undervisning og gruppearbejde.
+- Produkt og proces: mobilapp, API-integration, test/sikkerhed, dokumentation og forklaring af valg.
+- Afsluttende overhøring, hvor lærlingen mundtligt viser forståelse og kan forsvare egne valg.
+
+## Bedømmelseskriterier
+- **Nysgerrighed:** stiller relevante spørgsmål om UX, integration og fejlfinding — og undersøger frem for kun at “få det til at virke”.
+- **Best practice:** følger aftalte arbejdsgange (fx Git, Flutter-struktur, test, sikkerhed og dokumentation) og begrunder afvigelser.
+- **Refleksion:** kan forklare hvad der gik godt/skidt, hvad der er lært, og hvad der ville være næste skridt.
+- Teknisk niveau vurderes i forhold til forløbets mål og forventningsniveau.
+
+## Afsluttende overhøring
+Forløbet afsluttes med en overhøring. Her demonstrerer lærlingen produktet (eller centrale dele), svarer på faglige spørgsmål og viser nysgerrighed, brug af best practice og evne til at reflektere over proces og resultat.
 `.trim()
   },
   {
@@ -305,7 +381,26 @@ Forløbet kombinerer systemadministration, embedded/IoT, databehandling og proje
 Lærlingerne kan i dialog med underviseren vælge dybde i Linux-opsætning, pipeline-kompleksitet og IoT-features. Der tilbydes ekstraudfordringer — fx mere avanceret monitoring, ekstra services eller skærpede sikkerhedskrav — til lærlinge, der vil fordybe sig.
 
 ## Evaluering og bedømmelse
-Vi evaluerer løbende gennem dialog med lærlingerne. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen.
+Evaluering og bedømmelse følger forløbets mål. Fokus er nysgerrighed, best practice og refleksion — både i det daglige arbejde, i mini-svendeprøven og ved den afsluttende overhøring.
+
+## Løbende evaluering
+- Dialog mellem underviser og lærling undervejs i undervisning og projektarbejde.
+- Feedback i sprints, reviews og ved afprøvning af infrastruktur og pipelines.
+- Anonyme midtvejs- og slutevalueringer, som tages op i klassen med henblik på justering af undervisningen.
+
+## Bedømmelsesgrundlag
+- Deltagelse og indsats i undervisning og gruppearbejde.
+- Produkt og proces: Linux/Docker-setup, data-pipeline/IoT, dokumentation og forklaring af valg — herunder mini-svendeprøveprojektet.
+- Afsluttende overhøring, hvor lærlingen mundtligt viser forståelse og kan forsvare egne valg.
+
+## Bedømmelseskriterier
+- **Nysgerrighed:** stiller relevante spørgsmål om drift, fejlfinding og sammenhæng mellem komponenter.
+- **Best practice:** følger aftalte arbejdsgange (fx Git, containeropsætning, sikkerhed, dokumentation og proces) og begrunder afvigelser.
+- **Refleksion:** kan forklare hvad der gik godt/skidt, hvad der er lært, og hvad der ville være næste skridt mod svendeprøven.
+- Teknisk niveau vurderes i forhold til forløbets mål og forventningsniveau.
+
+## Afsluttende overhøring
+Forløbet afsluttes med en overhøring. Her demonstrerer lærlingen produktet (eller centrale dele), svarer på faglige spørgsmål og viser nysgerrighed, brug af best practice og evne til at reflektere over proces og resultat.
 `.trim()
   },
   {
@@ -363,7 +458,27 @@ Svendeprøven kræver, at lærlingen kombinerer programmering, systemforståelse
 Opgavens løsningstilgang og teknologivalg tilpasses lærlingens styrker og projektets rammer i dialog med vejleder, inden for svendeprøvens formelle krav. Der er plads til forskellige løsningsveje, så længe krav til produkt, dokumentation og fremlæggelse opfyldes.
 
 ## Evaluering og bedømmelse
-Vi evaluerer løbende gennem dialog med lærlingerne undervejs i projektperioden. Derudover gennemføres strukturerede midtvejs- og slutevalueringer, som er anonyme og tages op i klassen. Selve svendeprøven bedømmes formelt via de to delprøver (projekt/dokumentation og mundtlig fremlæggelse).
+H6 afsluttes med den formelle svendeprøve. Undervejs evaluerer vi stadig med fokus på nysgerrighed, best practice og refleksion, så lærlingen er klar til begge delprøver.
+
+## Løbende evaluering
+- Dialog og vejledning undervejs i projektperioden.
+- Opfølgning på plan, fremskridt og dokumentation.
+- Anonyme midtvejs- og slutevalueringer, som tages op i klassen (procesværdi — ikke erstatning for den formelle bedømmelse).
+
+## Bedømmelsesgrundlag
+- Projektopgavens løsning (produkt).
+- Dokumentation: produktrapport og procesrapport.
+- Individuel mundtlig fremlæggelse (40 minutter inkl. votering).
+- Begge delprøver skal bestås.
+
+## Bedømmelseskriterier
+- **Nysgerrighed:** viser faglig undersøgelse, stiller og besvarer relevante spørgsmål og går i dybden med egne valg.
+- **Best practice:** demonstrerer professionelle arbejdsgange i kode, dokumentation, planlægning og præsentation.
+- **Refleksion:** kan forklare proces, begrundelser, fejl og læring — og se næste skridt efter prøven.
+- Den samlede bedømmelse følger svendeprøvens formelle krav til produkt, dokumentation og mundtlig forsvar.
+
+## Afsluttende overhøring
+Den afsluttende mundtlige del er den formelle fremlæggelse ved svendeprøven. Her demonstrerer lærlingen produktet, forsvarer valg og viser nysgerrighed, best practice og refleksion under overhøringen.
 `.trim()
   }
 ];

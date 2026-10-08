@@ -89,6 +89,169 @@ const renderMarkdown = (md) => {
   return html.join("\n");
 };
 
+/** § 54: tre hoveddele — mål, indhold, evaluering. */
+const LUP_PILLARS = [
+  {
+    id: "maal",
+    num: 1,
+    title: "Mål for undervisningen",
+    blocks: new Set(["Mål for undervisningen", "Forventningsniveau"]),
+  },
+  {
+    id: "indhold",
+    num: 2,
+    title: "Indhold i undervisningen",
+    blocks: new Set([
+      "Indhold i undervisningen",
+      "Helhedsorientering",
+      "Praksisrelation",
+      "Tværfaglighed",
+      "Differentiering",
+    ]),
+  },
+  {
+    id: "eval",
+    num: 3,
+    title: "Evaluering og bedømmelse",
+    blocks: new Set([
+      "Evaluering og bedømmelse",
+      "Løbende evaluering",
+      "Bedømmelsesgrundlag",
+      "Bedømmelseskriterier",
+      "Afsluttende overhøring",
+    ]),
+  },
+];
+
+const LUP_INDHOLD_SUB = new Set([
+  "Helhedsorientering",
+  "Praksisrelation",
+  "Tværfaglighed",
+  "Differentiering",
+]);
+
+const LUP_EVAL_SUB = new Set([
+  "Løbende evaluering",
+  "Bedømmelsesgrundlag",
+  "Bedømmelseskriterier",
+  "Afsluttende overhøring",
+]);
+
+const parseLupBlocks = (md) => {
+  const lines = md.replace(/\r\n/g, "\n").split("\n");
+  const blocks = [];
+  let current = null;
+
+  for (const line of lines) {
+    if (line.startsWith("## ")) {
+      if (current) blocks.push(current);
+      current = { title: line.slice(3).trim(), lines: [] };
+    } else if (current) {
+      current.lines.push(line);
+    }
+  }
+  if (current) blocks.push(current);
+  return blocks;
+};
+
+const renderBlockBody = (lines) => {
+  const html = [];
+  let inList = false;
+
+  const closeList = () => {
+    if (inList) {
+      html.push("</ul>");
+      inList = false;
+    }
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      closeList();
+      continue;
+    }
+    if (trimmed.startsWith("- ")) {
+      if (!inList) {
+        html.push("<ul>");
+        inList = true;
+      }
+      html.push(`<li>${inlineMarkdown(trimmed.slice(2))}</li>`);
+      continue;
+    }
+    closeList();
+    html.push(`<p>${inlineMarkdown(trimmed)}</p>`);
+  }
+  closeList();
+  return html.join("\n");
+};
+
+const renderLupBlock = (block, { sub = false } = {}) => {
+  const isPrimary =
+    block.title === "Mål for undervisningen" ||
+    block.title === "Indhold i undervisningen" ||
+    block.title === "Evaluering og bedømmelse";
+  const parts = [];
+  if (!isPrimary) {
+    const tag = sub ? "h3" : "h2";
+    parts.push(
+      `<${tag} class="${sub ? "lup-subhead" : ""}">${inlineMarkdown(block.title)}</${tag}>`
+    );
+  }
+  parts.push(renderBlockBody(block.lines));
+  return parts.join("\n");
+};
+
+const renderLupMarkdown = (md) => {
+  const blocks = parseLupBlocks(md);
+  const meta = blocks.filter((b) => b.title === "Varighed");
+  const pillarBlocks = LUP_PILLARS.map((pillar) => ({
+    pillar,
+    blocks: blocks.filter((b) => pillar.blocks.has(b.title)),
+  }));
+
+  const nav = `
+    <nav class="lup-pillars-nav" aria-label="LUP minimumskrav">
+      <p class="lup-pillars-kicker">Minimumskrav efter bekendtgørelse om erhvervsuddannelser § 54</p>
+      <ol class="lup-pillars-list">
+        ${LUP_PILLARS.map(
+          (p) =>
+            `<li><a href="#lup-${p.id}"><span class="lup-pillars-num">${p.num}</span>${escapeHtml(p.title)}</a></li>`
+        ).join("")}
+      </ol>
+    </nav>`;
+
+  const metaHtml = meta.length
+    ? `<div class="lup-meta">${meta.map((b) => renderLupBlock(b)).join("")}</div>`
+    : "";
+
+  const pillarsHtml = pillarBlocks
+    .map(({ pillar, blocks: group }) => {
+      if (!group.length) return "";
+      const body = group
+        .map((b) =>
+          renderLupBlock(b, {
+            sub:
+              LUP_INDHOLD_SUB.has(b.title) ||
+              LUP_EVAL_SUB.has(b.title) ||
+              b.title === "Forventningsniveau",
+          })
+        )
+        .join("");
+      return `
+        <section class="lup-pillar lup-pillar--${pillar.id}" id="lup-${pillar.id}" aria-labelledby="lup-${pillar.id}-title">
+          <header class="lup-pillar-head">
+            <span class="lup-pillar-num" aria-hidden="true">${pillar.num}</span>
+            <h2 class="lup-pillar-title" id="lup-${pillar.id}-title">${escapeHtml(pillar.title)}</h2>
+          </header>
+          <div class="lup-pillar-body">${body}</div>
+        </section>`;
+    })
+    .join("");
+
+  return `${nav}${metaHtml}${pillarsHtml}`;
+};
+
 const routeParts = () => {
   const raw = (location.hash || "#/").replace(/^#\/?/, "").toLowerCase();
   const [key = "home", stop = ""] = raw.split(/[/?#]/);
@@ -185,7 +348,7 @@ const renderStop = (stop, index) => {
         )}" alt="${escapeHtml(titlePlain)}" loading="lazy" /></figure>`
       : "";
     const body = lup
-      ? `<div class="prose tl-lup">${renderMarkdown(lup.markdown)}</div>`
+      ? `<div class="prose tl-lup lup-doc">${renderLupMarkdown(lup.markdown)}</div>`
       : `<p class="tl-summary">${escapeHtml(stop.summary)}</p>`;
     panel = `<div class="tl-panel">${image}${body}</div>`;
   }
@@ -307,7 +470,8 @@ const showForlob = (key) => {
   detailCode.textContent = item.uger != null ? `${item.short} · ${item.uger} uger` : item.short;
   detailTitle.innerHTML = lupTitleHtml(item.titel);
   detailLead.textContent = item.kort;
-  detailBody.innerHTML = renderMarkdown(item.markdown);
+  detailBody.classList.add("lup-doc");
+  detailBody.innerHTML = renderLupMarkdown(item.markdown);
   document.title = `${item.short} · LUP`;
   setActiveNav(key);
   window.scrollTo({ top: 0, behavior: "smooth" });
