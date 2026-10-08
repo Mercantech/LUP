@@ -230,7 +230,6 @@ const renderLupMarkdown = (md) => {
       return `
         <section class="lup-pillar lup-pillar--${pillar.id}" id="lup-${pillar.id}" aria-labelledby="lup-${pillar.id}-title">
           <header class="lup-pillar-head">
-            <span class="lup-pillar-num" aria-hidden="true">${pillar.num}</span>
             <h2 class="lup-pillar-title" id="lup-${pillar.id}-title">${escapeHtml(pillar.title)}</h2>
           </header>
           <div class="lup-pillar-body">${body}</div>
