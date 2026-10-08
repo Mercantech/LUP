@@ -210,17 +210,6 @@ const renderLupMarkdown = (md) => {
     blocks: blocks.filter((b) => pillar.blocks.has(b.title)),
   }));
 
-  const nav = `
-    <nav class="lup-pillars-nav" aria-label="LUP minimumskrav">
-      <p class="lup-pillars-kicker">Minimumskrav efter bekendtgørelse om erhvervsuddannelser § 54</p>
-      <ol class="lup-pillars-list">
-        ${LUP_PILLARS.map(
-          (p) =>
-            `<li><a href="#lup-${p.id}"><span class="lup-pillars-num">${p.num}</span>${escapeHtml(p.title)}</a></li>`
-        ).join("")}
-      </ol>
-    </nav>`;
-
   const metaHtml = meta.length
     ? `<div class="lup-meta">${meta.map((b) => renderLupBlock(b)).join("")}</div>`
     : "";
@@ -249,7 +238,7 @@ const renderLupMarkdown = (md) => {
     })
     .join("");
 
-  return `${nav}${metaHtml}${pillarsHtml}`;
+  return `${metaHtml}${pillarsHtml}`;
 };
 
 const routeParts = () => {

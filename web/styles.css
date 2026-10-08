@@ -558,6 +558,108 @@ main {
   color: var(--ink);
 }
 
+/* LUP — tre hoveddele (§ 54) */
+.lup-doc {
+  max-width: 52rem;
+}
+
+.lup-meta {
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.lup-meta h2 {
+  margin-top: 0;
+  font-size: 1rem;
+  color: var(--ink-soft);
+}
+
+.lup-pillar {
+  scroll-margin-top: 5.5rem;
+  margin: 0 0 1.15rem;
+  padding: 1.15rem 1.15rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 10px 24px rgba(16, 35, 31, 0.06);
+}
+
+[data-theme="dark"] .lup-pillar {
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
+}
+
+.lup-pillar--maal {
+  border-color: rgba(31, 107, 87, 0.28);
+}
+
+.lup-pillar--indhold {
+  border-color: rgba(226, 177, 47, 0.35);
+}
+
+.lup-pillar--eval {
+  border-color: rgba(31, 107, 87, 0.22);
+}
+
+.lup-pillar-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.lup-pillar-num {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background: var(--moss);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
+}
+
+[data-theme="dark"] .lup-pillar-num {
+  background: var(--lime);
+  color: #07110e;
+}
+
+.lup-pillar-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.lup-pillar-body > :first-child {
+  margin-top: 0;
+}
+
+.lup-pillar-body h3.lup-subhead {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.02rem;
+  color: var(--moss-deep);
+}
+
+.lup-pillar-body h3.lup-subhead:first-child {
+  margin-top: 0;
+}
+
+.tl-lup.lup-doc .lup-pillar {
+  margin-bottom: 1rem;
+}
+
 .praktik-fig {
   margin: 1rem 0 1.4rem;
   padding: 0;
