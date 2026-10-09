@@ -27,12 +27,6 @@ Formålet med H1 er at give lærlingerne et solidt fundament i grundlæggende pr
 - Bygge en simpel Blazor-frontend og forstå HTTP/klient-server i grove træk.
 - Arbejde i Git/GitHub i et team med SCRUM-lignende sprints.
 
-**Kan endnu ikke forventes:**
-
-- Selvstændigt designe større produktionssystemer eller avanceret arkitektur.
-- Professionel ORM (Entity Framework), kompleks API-sikkerhed eller driftsansvar.
-- At arbejde uden vejledning på ukendte frameworks i virksomheden.
-
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
 
@@ -107,12 +101,6 @@ Formålet med H2 er at bygge videre på lærlingernes grundlæggende færdighede
 - Modellere relationer i databasen og udveksle data via REST/DTO’er.
 - Deltage aktivt i SCRUM med backlog, sprints og retrospektiver.
 - Forklare egne tekniske valg i et sammenhængende projekt.
-
-**Kan endnu ikke forventes:**
-
-- Drift af produktionssystemer, avanceret cloud-arkitektur eller tung DevOps.
-- IoT/hardware-integration (kommer på H3) eller mobilapps (kommer på H4).
-- At eje hele systemarkitekturen alene uden sparring.
 
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
@@ -189,12 +177,6 @@ Formålet med H3 er at give lærlingerne kompetencer til at designe og implement
 - Anvende grundlæggende auth/sikkerhed omkring API og data.
 - Arbejde på tværs af hardware og software i ét projekt.
 
-**Kan endnu ikke forventes:**
-
-- Produktionklar IoT i stor skala eller avanceret embedded Linux-drift (uddybes på H5).
-- Selvstændig mobilapp-udvikling (kommer på H4).
-- At være eneansvarlig for kritisk infrastruktur uden sparring.
-
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
 
@@ -270,12 +252,6 @@ Formålet med H4 er at give lærlingerne kompetencer til at designe og udvikle c
 - Teste og debugge app-flows og forklare krav/valg i projektet.
 - Fortsætte arbejde med API’er fra tidligere forløb.
 
-**Kan endnu ikke forventes:**
-
-- Native iOS/Android-specialisering eller publicering i stores som standardkompetence.
-- Avanceret Linux/Docker/drift (kommer på H5).
-- At levere en færdig enterprise-app uden produktowner/vejledning.
-
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
 
@@ -350,12 +326,6 @@ Formålet med H5 er at give lærlingerne avancerede kompetencer inden for Linux-
 - Dokumentere og fremlægge et integreret projekt tæt på svendeprøveformat.
 - Tage mere ansvar for planlægning og tekniske valg i teamet.
 
-**Kan endnu ikke forventes:**
-
-- At være færdiguddannet drifts-/platformsspecialist.
-- At gennemføre den formelle svendeprøve (det er H6).
-- At eje kritisk produktion alene uden senior-sparring.
-
 ## Indhold i undervisningen
 Undervisningen kombinerer teori og praksis gennem følgende hovedtemaer:
 
@@ -428,11 +398,6 @@ Formålet med H6 er at gennemføre den afsluttende svendeprøve, hvor lærlingen
 - Drive et afgrænset projekt fra plan til produkt med dokumentation.
 - Begrunde tekniske og metodiske valg mundtligt og skriftligt.
 - Samle kompetencer fra tidligere forløb i én sammenhængende løsning.
-
-**Kan endnu ikke forventes før prøven er bestået:**
-
-- At lærlingen er “færdig” uden den formelle bedømmelse — begge delprøver skal bestås.
-- At virksomheden planlægger kritiske leverancer i de 5 skoleuger.
 
 ## Indhold i undervisningen
 Undervisningen og prøveforløbet kombinerer selvstændigt projektarbejde med vejledning inden for følgende hovedtemaer:
