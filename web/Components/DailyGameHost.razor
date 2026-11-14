@@ -1,0 +1,24 @@
+@using Mercantec.Tech.Web.Characters
+
+<aside class="daily-host" aria-label="Dagens vært">
+    @if (CharacterCatalog.Find(Day.HostSlug) is { } character)
+    {
+        @if (character.DisplayPortrait is { } portrait)
+        {
+            <img src="@portrait.Image" alt="" width="128" height="128" />
+        }
+        <div>
+            <p>Dagens vært</p>
+            <h2><a href="@character.Path">@character.Name</a></h2>
+            <p>@Day.Theme</p>
+        </div>
+    }
+    else
+    {
+        <div><h2>Dagens tema</h2><p>@Day.Theme</p></div>
+    }
+</aside>
+
+@code {
+    [Parameter, EditorRequired] public DailyGameDay Day { get; set; } = default!;
+}

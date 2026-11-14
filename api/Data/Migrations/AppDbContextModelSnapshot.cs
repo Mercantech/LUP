@@ -271,6 +271,69 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("custom_emojis", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.DailyGamePlay", b =>
+                {
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Game")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("StateJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserSub", "Game", "Date");
+
+                    b.HasIndex("Game", "Date");
+
+                    b.ToTable("daily_game_plays", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.DailyGamePuzzle", b =>
+                {
+                    b.Property<string>("Game")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("DataJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Game", "Date");
+
+                    b.ToTable("daily_game_puzzles", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.DailyGameSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("daily_game_schedule", (string)null);
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.Drawing", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2734,6 +2797,15 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("FileAsset");
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.DailyGamePlay", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.DailyGamePuzzle", null)
+                        .WithMany()
+                        .HasForeignKey("Game", "Date")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.Drawing", b =>

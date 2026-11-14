@@ -1,5 +1,6 @@
 @page "/characters/{Slug}"
 @using Mercantec.Tech.Web.Characters
+@using Mercantec.Tech.Web.Games
 @inject AuthService Auth
 @inject NavigationManager Nav
 @inject IJSRuntime Js
@@ -66,6 +67,16 @@ else
                 @if (!Auth.IsAuthenticated && character.Links.Any(link => link.RequiresLogin))
                 {
                     <p class="character-login-note">Log ind i LUP for at bruge værktøjerne.</p>
+                }
+                @if (DailyGameHosts.Word.Contains(character.Slug))
+                {
+                    <div class="character-links" aria-label="Daglige spil">
+                        <a class="secondary" href="@GamesCatalog.DailyWordPath">Spil Dagens ord</a>
+                        @if (DailyGameHosts.Numbers.Contains(character.Slug))
+                        {
+                            <a class="secondary" href="@GamesCatalog.TaljagtPath">Spil Taljagt</a>
+                        }
+                    </div>
                 }
             </div>
         </section>

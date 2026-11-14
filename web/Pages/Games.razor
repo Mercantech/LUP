@@ -14,13 +14,28 @@
         </div>
     </article>
 
-    <section class="games-wordle" aria-labelledby="games-wordle-title">
-        <div class="games-wordle-preview" aria-hidden="true"><span>O</span><span>R</span><span>D</span></div>
-        <div class="games-wordle-copy">
-            <h2 id="games-wordle-title">Dagens Wordle</h2>
-            <p>Gæt et ord på fem bogstaver. En ny LUP-karakter er vært hver dag.</p>
+    <section class="daily-games" aria-labelledby="daily-games-title">
+        <h2 id="daily-games-title">Daglige spil</h2>
+        <div class="daily-games-grid">
+            <article class="daily-game">
+                <div class="daily-game-preview" aria-hidden="true"><span>O</span><span>R</span><span>D</span></div>
+                <h3>Dagens Wordle</h3>
+                <p>Gæt et ord på fem bogstaver med dagens LUP-vært.</p>
+                <a class="daily-game-play" href="@GamesCatalog.WordlePath">Spil dagens Wordle <span aria-hidden="true">→</span></a>
+            </article>
+            <article class="daily-game daily-game-word">
+                <div class="daily-game-preview" aria-hidden="true"><span>A</span><span>Å</span><span>?</span></div>
+                <h3>Dagens ord</h3>
+                <p>Brug karakterens ledetråde til at gætte et fagbegreb på tre forsøg.</p>
+                <a class="daily-game-play" href="@GamesCatalog.DailyWordPath">Spil Dagens ord <span aria-hidden="true">→</span></a>
+            </article>
+            <article class="daily-game daily-game-numbers">
+                <div class="daily-game-preview" aria-hidden="true"><span>5</span><span>+</span><span>7</span></div>
+                <h3>Taljagt</h3>
+                <p>Byg dagens måltal med Bilbo Backend og Kamæleonen.</p>
+                <a class="daily-game-play" href="@GamesCatalog.TaljagtPath">Spil Taljagt <span aria-hidden="true">→</span></a>
+            </article>
         </div>
-        <a class="games-wordle-play" href="@GamesCatalog.WordlePath">Spil dagens Wordle <span aria-hidden="true">→</span></a>
     </section>
 
     <section class="classic-games" aria-labelledby="classic-games-title">

@@ -31,6 +31,10 @@ Start en frisk fixture før testen, så de fiktive konti har en tom daglig runde
 Testen dækker gæstevisning, loginretur, fysiske taster og skærmtaster, resultat,
 genåbning på samme konto og en anden kontos separate runde.
 
+`node editor/tests/qa-daily-games-browser.mjs` afprøver Dagens ord og Taljagt
+med en frisk fixture på desktop og mobil. Testen gennemfører begge spil og
+kontrollerer, at hints, facit og resultat følger den fiktive konto efter genåbning.
+
 `node editor/tests/qa-references-browser.mjs` bruger samme fixture og fjerde fiktive bruger
 uden hold til at teste oprettelse af teori via oversigten, rigtige globale mentions,
 udgivelse, private linkmåls synlighed, personnotifikationer og graf på tværs af

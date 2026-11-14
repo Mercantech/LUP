@@ -1,3 +1,5 @@
+using Mercantec.Tech.Contracts;
+
 namespace Mercantec.Tech.Web.Games;
 
 public sealed record ClassicGame(string Id, string Name, string Description, string Artwork, string LegacyPath)
@@ -15,6 +17,8 @@ public static class GamesCatalog
 {
     public const string Path = "/games";
     public const string WordlePath = Path + "/wordle";
+    public const string DailyWordPath = Path + "/" + DailyGameIds.Word;
+    public const string TaljagtPath = Path + "/" + DailyGameIds.Numbers;
     public const string ProjectsPath = "/projects/mine";
     public const string GameCategory = "spil";
     public const string GameProjectsPath = ProjectsPath + "?category=" + GameCategory;

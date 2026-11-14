@@ -1,0 +1,138 @@
+@page "/games/dagens-ord"
+@using Mercantec.Tech.Web.Games
+@implements IDisposable
+@inject DailyGamesClient Games
+@inject AuthService Auth
+
+<PageTitle>Dagens ord · LUP</PageTitle>
+
+<div class="daily-word">
+    <header class="daily-word-heading">
+        <a href="@GamesCatalog.Path">← Alle spil</a>
+        <h1>Dagens ord</h1>
+        <p>Gæt et fagord ud fra dagens ledetråd.</p>
+    </header>
+
+    @if (Puzzle is { } puzzle)
+    {
+        <div class="daily-word-layout">
+            <section class="daily-word-panel daily-word-play" aria-labelledby="daily-word-clue">
+                <div class="daily-word-clue">
+                    <div class="daily-word-context">
+                        <span>@puzzle.Theme</span>
+                        <time datetime="@puzzle.Date.ToString("yyyy-MM-dd")">@puzzle.Date.ToString("d. MMMM", Danish)</time>
+                    </div>
+                    <h2 id="daily-word-clue">Dagens ledetråd</h2>
+                    <p>@puzzle.Clue</p>
+                </div>
+
+                @if (!CanPlay)
+                {
+                    <div class="daily-word-content">
+                        <p>@(_loginRequired ? "Log ind igen for at fortsætte din runde." : "Log ind for at få ekstra ledetråde, gemme dine forsøg og opbygge en streak.")</p>
+                        <a class="daily-word-action" href="@Auth.LoginPath()">Log ind og spil</a>
+                    </div>
+                }
+                else if (_round is { } round)
+                {
+                    <div class="daily-word-content">
+                        @if (round.Hints.Count > 0)
+                        {
+                            <ol class="daily-word-hints" aria-label="Åbnede ledetråde">
+                                @for (var i = 0; i < round.Hints.Count; i++)
+                                {
+                                    <li><strong>Ekstra ledetråd @(i + 1)</strong> @round.Hints[i]</li>
+                                }
+                            </ol>
+                        }
+                        @if (round.Status == DailyGameStatus.Playing)
+                        {
+                            <form class="daily-word-entry" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
+                                <label for="daily-word-input">Dit gæt</label>
+                                <span class="daily-word-count">@(3 - round.Guesses.Count) forsøg tilbage</span>
+                                <input id="daily-word-input" type="text" @bind="_input" @bind:event="oninput"
+                                       @ref="_entry" placeholder="Skriv ordet" readonly="@_busy" maxlength="32"
+                                       autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
+                                <button class="daily-word-action" type="submit" disabled="@(_busy || string.IsNullOrWhiteSpace(_input))">Gæt</button>
+                            </form>
+                            @if (round.Hints.Count < 2)
+                            {
+                                <button class="daily-word-secondary" type="button" disabled="@_busy" @onclick="RevealAsync">
+                                    Vis ekstra ledetråd @(round.Hints.Count + 1)
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <div class="daily-word-result">
+                                <h3 tabindex="-1" @ref="_resultHeading">@(round.Status == DailyGameStatus.Won ? "Du fandt ordet!" : "Runden er slut")</h3>
+                                <p>Dagens ord var <strong>@round.Answer</strong>.</p>
+                                <p>@round.Explanation</p>
+                                @if (!string.IsNullOrWhiteSpace(round.Example))
+                                {
+                                    <p class="daily-word-example">@round.Example</p>
+                                }
+                                <p>Næste ord <time datetime="@puzzle.NextRoundAt.ToString("O")">@puzzle.NextRoundAt.ToString("'den' d. MMMM 'kl.' HH.mm", Danish)</time> (dansk tid).</p>
+                            </div>
+                        }
+
+                        @if (round.Guesses.Count > 0)
+                        {
+                            <ul class="daily-word-guesses" aria-label="Dine gæt">
+                                @for (var i = 0; i < round.Guesses.Count; i++)
+                                {
+                                    var guess = round.Guesses[i];
+                                    var correct = round.Status == DailyGameStatus.Won && i == round.Guesses.Count - 1;
+                                    <li class="@(correct ? "daily-word-correct" : null)">
+                                        <span aria-hidden="true">@(correct ? "✓" : "×")</span>
+                                        <span class="visually-hidden">@(correct ? "Rigtigt gæt" : "Forkert gæt")</span>
+                                        @guess
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        <p class="daily-word-message" role="status" aria-atomic="true">@(_error ?? _feedback)</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="daily-word-content">
+                        <p role="status">@(_error ?? "Henter din runde …")</p>
+                        @if (_error is not null)
+                        {
+                            <button class="daily-word-action" type="button" @onclick="LoadAsync">Prøv igen</button>
+                        }
+                    </div>
+                }
+            </section>
+
+            <aside class="daily-word-sidebar" aria-label="Vært og fremskridt">
+                <DailyGameHost Day="@puzzle" />
+                @if (_round is { } progress)
+                {
+                    <section class="daily-word-panel daily-word-progress" aria-labelledby="daily-word-progress">
+                        <h2 id="daily-word-progress">Din streak</h2>
+                        <dl>
+                            <div><dt>I træk nu</dt><dd>@DaysLabel(progress.Streak)</dd></div>
+                            <div><dt>Din rekord</dt><dd>@DaysLabel(progress.BestStreak)</dd></div>
+                        </dl>
+                    </section>
+                }
+                <details class="daily-word-panel daily-word-rules">
+                    <summary>Sådan spiller du</summary>
+                    <p>Du har tre forsøg og kan åbne to ekstra ledetråde. Både sejr og nederlag tæller med i din streak, når du afslutter runden.</p>
+                </details>
+            </aside>
+        </div>
+    }
+    else
+    {
+        <div class="daily-word-panel daily-word-content">
+            <p role="status">@(_error ?? "Henter dagens ledetråd …")</p>
+            @if (_error is not null)
+            {
+                <button class="daily-word-action" type="button" @onclick="LoadAsync">Prøv igen</button>
+            }
+        </div>
+    }
+</div>

@@ -38,6 +38,7 @@ builder.Services.AddScoped<DrawingAccess>();
 builder.Services.AddScoped<DrawingService>();
 builder.Services.AddScoped<FileAuthorization>();
 builder.Configuration["Wordle:ScheduleKey"] = QaIdentities.ServiceKey;
+builder.Configuration["DailyGames:ScheduleKey"] = QaIdentities.ServiceKey;
 builder.Services.AddWordle();
 builder.Services.AddSingleton<NotebookServiceKey>();
 builder.Services.AddHttpClient<NotebookEngineClient>(client => client.Timeout = TimeSpan.FromSeconds(30));

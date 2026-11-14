@@ -1,0 +1,173 @@
+@page "/games/taljagt"
+@using System.Globalization
+@using Mercantec.Tech.Web.Games
+@implements IDisposable
+@inject AuthService Auth
+@inject DailyGamesClient Games
+
+<PageTitle>Taljagt · LUP</PageTitle>
+
+<div class="taljagt">
+    <header class="tal-heading">
+        <a href="@GamesCatalog.Path">← Alle spil</a>
+        <h1>Taljagt</h1>
+        <p>Byg et regnestykke, der rammer dagens måltal.</p>
+    </header>
+
+    @if (_day is not { Tiles: { } tiles, Target: { } target } day)
+    {
+        <section class="tal-panel tal-play">
+            <p role="status">@(_notice ?? "Henter dagens Taljagt …")</p>
+            @if (_notice is not null)
+            {
+                <button type="button" class="tal-action" @onclick="LoadAsync">Prøv igen</button>
+            }
+        </section>
+    }
+    else
+    {
+        <div class="tal-layout">
+            <section class="tal-panel tal-play" aria-labelledby="tal-challenge-title">
+                <div class="tal-target">
+                    <div>
+                        <h2 id="tal-challenge-title">Dagens måltal</h2>
+                        <time datetime="@day.Date.ToString("yyyy-MM-dd")">@day.Date.ToString("d. MMMM yyyy", Danish)</time>
+                    </div>
+                    <strong>@target</strong>
+                </div>
+
+                @if (!CanPlay)
+                {
+                    <div class="tal-guest">
+                        <p class="tal-label">Dagens tal</p>
+                        <div class="tal-tiles" aria-label="Dagens tal" role="group">
+                            @foreach (var number in tiles)
+                            {
+                                <span class="tal-tile">@number</span>
+                            }
+                        </div>
+                        <p>@(_loginRequired ? "Log ind igen for at fortsætte." : "Log ind for at spille og gemme din streak.")</p>
+                        <a class="tal-action" href="@Auth.LoginPath()">Log ind og spil</a>
+                    </div>
+                }
+                else if (_round is null)
+                {
+                    @if (_notice is null)
+                    {
+                        <p role="status">Henter din runde …</p>
+                    }
+                    else
+                    {
+                        <p role="status">@_notice</p>
+                        <button type="button" class="tal-action" @onclick="LoadAsync">Prøv igen</button>
+                    }
+                }
+                else if (_round.Status == DailyGameStatus.Playing)
+                {
+                    <div class="tal-controls">
+                        <p class="tal-label">Dit regnestykke</p>
+                        <div class="tal-expression" role="status" aria-atomic="true">
+                            @if (_tokens.Count == 0)
+                            {
+                                <span>Vælg et af dagens tal</span>
+                            }
+                            else
+                            {
+                                <strong>@DisplayExpression(tiles)</strong>
+                                @if (DraftValue is { } value)
+                                {
+                                    <span class="tal-expression-value">= @value</span>
+                                }
+                            }
+                        </div>
+
+                        <p class="tal-label">Dagens tal</p>
+                        <div class="tal-tiles" aria-label="Dagens talbrikker" role="group">
+                            @for (var index = 0; index < tiles.Count; index++)
+                            {
+                                var token = index.ToString(CultureInfo.InvariantCulture);
+                                var used = _tokens.Contains(token);
+                                <button type="button" class="tal-tile @(used ? "is-used" : null)"
+                                        aria-label="@($"Tal {tiles[index]}, brik {index + 1}{(used ? ", brugt" : "")}")"
+                                        aria-disabled="@(!CanAddNumber(token) ? "true" : null)"
+                                        @onclick="() => AddToken(token)">@tiles[index]</button>
+                            }
+                        </div>
+
+                        <div class="tal-operators" aria-label="Regnearter og parenteser" role="group">
+                            @foreach (var operation in Operators)
+                            {
+                                <button type="button" class="tal-tile" aria-label="@operation.Label"
+                                        aria-disabled="@(!CanAddOperator(operation.Token) ? "true" : null)"
+                                        @onclick="() => AddToken(operation.Token)">
+                                    @operation.Symbol
+                                </button>
+                            }
+                        </div>
+
+                        <div class="tal-edit">
+                            <button type="button" class="tal-secondary" disabled="@(_submitting || _tokens.Count == 0)" @onclick="Undo">Fortryd</button>
+                            <button type="button" class="tal-secondary" disabled="@(_submitting || _tokens.Count == 0)" @onclick="Clear">Ryd</button>
+                        </div>
+                        <div class="tal-submit">
+                            <p>Du kan aflevere ét regnestykke om dagen. Du behøver ikke ramme måltallet præcist.</p>
+                            <button type="button" class="tal-action" disabled="@(!CanSubmit)" @onclick="SubmitAsync">
+                                @(_submitting ? "Afleverer …" : "Aflevér regnestykke")
+                            </button>
+                        </div>
+                        <div class="tal-notice" role="status" aria-atomic="true">@(_notice ?? DraftFeedback)</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="tal-result">
+                        <h3 tabindex="-1" @ref="_resultHeading">@(_round.Status == DailyGameStatus.Won ? "Du ramte måltallet!" : "Du gennemførte dagens Taljagt")</h3>
+                        <div class="tal-result-metrics">
+                            <dl>
+                                <dt>Dit resultat</dt><dd>@(_round.Value?.ToString(Danish) ?? "–")</dd>
+                                <dt>Fra måltallet</dt><dd>@(_round.Distance?.ToString(Danish) ?? "–")</dd>
+                                <dt>Point</dt><dd>@(_round.Score?.ToString(Danish) ?? "–")</dd>
+                            </dl>
+                        </div>
+                        @if (_round.Expression is { } expression)
+                        {
+                            <p>Dit regnestykke <strong>@ReadableExpression(expression)</strong></p>
+                        }
+                        @if (_round.Example is { } example)
+                        {
+                            <p>En løsning <strong>@ReadableExpression(example)</strong></p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(_round.Explanation))
+                        {
+                            <p>@_round.Explanation</p>
+                        }
+                        <p class="tal-muted">Næste runde <time datetime="@day.NextRoundAt.ToString("O")">@day.NextRoundAt.ToString("'den' d. MMMM 'kl.' HH.mm", Danish)</time> (dansk tid)</p>
+                    </div>
+                }
+            </section>
+
+            <aside class="tal-sidebar" aria-label="Dagens vært og spilleregler">
+                <DailyGameHost Day="day" />
+                @if (_round is { } progress)
+                {
+                    <section class="tal-panel tal-progress" aria-labelledby="tal-progress-title">
+                        <h2 id="tal-progress-title">Din streak</h2>
+                        <dl>
+                            <div><dt>I træk nu</dt><dd>@DaysLabel(progress.Streak)</dd></div>
+                            <div><dt>Din rekord</dt><dd>@DaysLabel(progress.BestStreak)</dd></div>
+                        </dl>
+                        <p>En gyldig aflevering tæller med i din streak.</p>
+                    </section>
+                }
+                <details class="tal-panel tal-rules" open>
+                    <summary>Sådan spiller du</summary>
+                    <ol>
+                        <li>Brug mindst to af dagens talbrikker. Hver brik kan bruges én gang.</li>
+                        <li>Brug plus, minus, gange, division eller parenteser. Alle mellemresultater skal være hele tal på mindst nul.</li>
+                        <li>Du får 100 point for at ramme måltallet. Hvert tal, du er fra målet, trækker ét point, ned til nul.</li>
+                    </ol>
+                </details>
+            </aside>
+        </div>
+    }
+</div>

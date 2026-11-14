@@ -1,0 +1,237 @@
+.taljagt {
+    max-width: 73rem;
+    margin-inline: auto;
+    color: var(--ink);
+}
+
+.tal-heading {
+    padding-block: clamp(1.125rem, 4vw, 2rem);
+}
+
+.tal-heading a {
+    color: var(--blue);
+}
+
+.tal-heading h1 {
+    margin: .5rem 0 .25rem;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+
+.tal-heading p, .tal-muted, .tal-progress p, .tal-target time {
+    margin: 0;
+    color: var(--muted);
+}
+
+.tal-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, .5fr);
+    gap: clamp(.75rem, 2.5vw, 1.5rem);
+    align-items: start;
+}
+
+.tal-panel {
+    min-width: 0;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 1.25rem;
+}
+
+.tal-play {
+    padding: clamp(.65rem, 2.6vw, 1.75rem);
+}
+
+.tal-target {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem 1.25rem;
+    padding: clamp(.75rem, 3vw, 1.5rem);
+    border-radius: .85rem;
+    background: var(--tint);
+}
+
+.tal-target strong {
+    font: 700 clamp(2.1rem, 8vw, 3.4rem)/1 "Space Grotesk", "DM Sans", sans-serif;
+    color: var(--blue);
+}
+
+.tal-target h2, .tal-progress h2, .tal-result h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    letter-spacing: -.025em;
+}
+
+.tal-label {
+    margin: 1rem 0 .35rem;
+    font-weight: 700;
+    font-size: .9rem;
+}
+
+.tal-expression {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    align-content: center;
+    gap: .35rem .65rem;
+    min-height: 3.5rem;
+    padding: .55rem .7rem;
+    border: 1px solid var(--rule);
+    border-radius: .75rem;
+    background: var(--bg);
+    color: var(--muted);
+    overflow-wrap: anywhere;
+}
+
+.tal-expression strong {
+    color: var(--ink);
+    font-size: clamp(1rem, 4vw, 1.25rem);
+}
+
+.tal-expression-value {
+    color: var(--blue);
+    font-weight: 700;
+}
+
+.tal-tiles, .tal-operators {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: clamp(.2rem, 1.5vw, .45rem);
+}
+
+.tal-operators {
+    margin-top: .55rem;
+}
+
+.tal-tile, .tal-secondary, .tal-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    border: 1px solid var(--rule);
+    border-radius: .55rem;
+    color: var(--ink);
+    background: var(--bg);
+    font: inherit;
+    font-weight: 700;
+}
+
+.tal-tile {
+    padding: .25rem .15rem;
+    font-size: clamp(1rem, 4vw, 1.25rem);
+}
+
+.tal-tile:not([aria-disabled]):hover, .tal-secondary:not(:disabled):hover {
+    border-color: var(--blue);
+}
+
+.tal-tile[aria-disabled], .tal-secondary:disabled, .tal-action:disabled {
+    color: var(--muted);
+    background: var(--bg);
+    border-color: var(--rule);
+    opacity: .73;
+}
+
+.tal-tile.is-used {
+    text-decoration: line-through;
+}
+
+.tal-edit, .tal-submit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+    margin-top: .65rem;
+}
+
+.tal-submit {
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.tal-submit p {
+    flex: 1 1 11rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: .9rem;
+}
+
+.tal-action, .tal-secondary {
+    padding: .4rem .85rem;
+}
+
+.tal-action {
+    color: var(--on-blue);
+    border-color: transparent;
+    background: var(--blue);
+    text-decoration: none;
+}
+
+.taljagt :is(button, a, summary, h3):focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 3px;
+}
+
+.tal-notice {
+    margin-top: .45rem;
+    min-height: 1.4em;
+}
+
+.tal-result {
+    padding: clamp(.75rem, 2vw, 1.2rem);
+    margin-top: 1rem;
+    background: var(--tint);
+    border-radius: .85rem;
+}
+
+.tal-result-metrics dl, .tal-progress dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .2rem .6rem;
+    align-items: baseline;
+    margin: .6rem 0;
+}
+
+.tal-result dd, .tal-progress dd {
+    margin: 0;
+    font-weight: 700;
+}
+
+.tal-result p {
+    margin: .4rem 0;
+}
+
+.tal-sidebar {
+    display: grid;
+    gap: .75rem;
+}
+
+.tal-progress, .tal-rules {
+    padding: .85rem 1rem;
+}
+
+.tal-rules summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.tal-rules ol {
+    padding-inline-start: 1.2rem;
+    margin-block: .5rem 0;
+}
+
+.tal-rules li + li {
+    margin-top: .35rem;
+}
+
+.tal-guest p:last-of-type {
+    margin-top: .75rem;
+}
+
+@media (max-width: 50rem) {
+    .tal-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

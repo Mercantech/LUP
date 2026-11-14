@@ -10,12 +10,27 @@
     line-height: 1.1;
 }
 
-.games-wordle {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: clamp(.65rem, 2.5vw, 1.5rem);
+.daily-games {
     margin: clamp(1rem, 3vw, 1.75rem) 0;
+}
+
+.daily-games h2 {
+    margin: 0 0 .65rem;
+    color: var(--ink);
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+}
+
+.daily-games-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(.65rem, 2vw, 1rem);
+}
+
+.daily-game {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    align-items: start;
+    gap: .5rem;
     padding: clamp(.85rem, 3vw, 1.5rem);
     border: 1px solid var(--rule);
     border-radius: 1.25rem;
@@ -23,12 +38,20 @@
     color: var(--ink);
 }
 
-.games-wordle-preview {
+.daily-game-word {
+    background: var(--peach);
+}
+
+.daily-game-numbers {
+    background: var(--green-tint);
+}
+
+.daily-game-preview {
     display: flex;
     gap: .25rem;
 }
 
-.games-wordle-preview span {
+.daily-game-preview span {
     display: grid;
     place-items: center;
     width: clamp(1.65rem, 5vw, 2.75rem);
@@ -38,32 +61,43 @@
     font: 700 clamp(1rem, 3vw, 1.4rem)/1 "Space Grotesk", sans-serif;
 }
 
-.games-wordle-preview span:nth-child(2) {
+.daily-game-preview span:nth-child(2) {
     background: var(--peach);
     color: var(--orange);
 }
 
-.games-wordle-preview span:nth-child(3) {
+.daily-game-preview span:nth-child(3) {
     background: var(--green-tint);
     color: var(--green);
 }
 
-.games-wordle-copy h2, .games-wordle-copy p {
+.daily-game-word .daily-game-preview span:nth-child(2) {
+    background: var(--tint);
+    color: var(--blue);
+}
+
+.daily-game-numbers .daily-game-preview span:nth-child(3) {
+    background: var(--tint);
+    color: var(--blue);
+}
+
+.daily-game h3, .daily-game p {
     margin: 0;
 }
 
-.games-wordle-copy h2 {
-    font-size: clamp(1.25rem, 3.5vw, 1.8rem);
+.daily-game h3 {
+    font-size: clamp(1.2rem, 3.5vw, 1.45rem);
     letter-spacing: -.025em;
 }
 
-.games-wordle-play {
+.daily-game-play {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: .5rem;
     min-height: 2.75rem;
     padding: .4rem .85rem;
+    justify-self: start;
     border-radius: .65rem;
     color: var(--on-blue);
     background: var(--blue);
@@ -71,18 +105,14 @@
     font-weight: 700;
 }
 
-.games-wordle-play:focus-visible {
+.daily-game-play:focus-visible {
     outline: 2px solid var(--blue);
     outline-offset: 3px;
 }
 
-@media (max-width: 38rem) {
-    .games-wordle {
-        grid-template-columns: auto minmax(0, 1fr);
-    }
-
-    .games-wordle-play {
-        grid-column: 1 / -1;
+@media (max-width: 44rem) {
+    .daily-games-grid {
+        grid-template-columns: 1fr;
     }
 }
 
