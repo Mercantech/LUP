@@ -25,7 +25,7 @@ try {
     await teacher.getByRole('heading', { name: entry.draft.title, exact: true }).waitFor();
   }
   await importer.click();
-  await teacher.getByText('Du har allerede importeret alle videnstjek i udvalget.', { exact: true }).waitFor();
+  await teacher.getByText('Du har allerede importeret alle videnstjek fra det gamle katalog.', { exact: true }).waitFor();
   assert.equal(await teacher.getByRole('heading', { name: draft.title, exact: true }).count(), 1);
 
   await teacher.getByRole('article').filter({ has: teacher.getByRole('heading', { name: draft.title, exact: true }) })

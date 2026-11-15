@@ -36,21 +36,23 @@ services:
       default:
         aliases:
           - mercantec-tech-minio
+      dokploy-network: {}
     labels:
       - traefik.enable=true
       - traefik.docker.network=dokploy-network
       # Kun Console — S3 API eksponeres ikke via Traefik
-      - traefik.http.routers.mercantec-tech-minio-console.rule=Host(`minio.mercantec.tech`)
-      - traefik.http.routers.mercantec-tech-minio-console.entrypoints=web
-      - traefik.http.routers.mercantec-tech-minio-console.service=mercantec-tech-minio-console
-      - traefik.http.routers.mercantec-tech-minio-console.middlewares=mercantec-tech-minio-console-headers
-      - traefik.http.services.mercantec-tech-minio-console.loadbalancer.server.port=9001
-      - traefik.http.middlewares.mercantec-tech-minio-console-headers.headers.stsSeconds=31536000
-      - traefik.http.middlewares.mercantec-tech-minio-console-headers.headers.stsIncludeSubdomains=true
-      - traefik.http.middlewares.mercantec-tech-minio-console-headers.headers.contentTypeNosniff=true
-      - traefik.http.middlewares.mercantec-tech-minio-console-headers.headers.browserXssFilter=true
-      - traefik.http.middlewares.mercantec-tech-minio-console-headers.headers.frameDeny=true
-      - traefik.http.middlewares.mercantec-tech-minio-console-headers.headers.referrerPolicy=no-referrer
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-minio-console.rule=Host(`minio.mercantec.tech`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-minio-console.entrypoints=web
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-minio-console.priority=${LUP_TRAEFIK_PRIORITY:-100}
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-minio-console.service=${COMPOSE_PROJECT_NAME}-minio-console
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-minio-console.middlewares=${COMPOSE_PROJECT_NAME}-minio-console-headers
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-minio-console.loadbalancer.server.port=9001
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-minio-console-headers.headers.stsSeconds=31536000
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-minio-console-headers.headers.stsIncludeSubdomains=true
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-minio-console-headers.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-minio-console-headers.headers.browserXssFilter=true
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-minio-console-headers.headers.frameDeny=true
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-minio-console-headers.headers.referrerPolicy=no-referrer
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
@@ -148,6 +150,7 @@ services:
       default:
         aliases:
           - mercantec-tech-api
+          - lup-api-internal
     volumes:
       - mercantec_notion_key:/run/notion:ro
       - mercantec_updates_key:/run/lup-updates:ro
@@ -323,6 +326,7 @@ services:
       default:
         aliases:
           - mercantec-tech-collaboration
+          - lup-collaboration-internal
     volumes:
       - mercantec_notion_key:/run/notion:ro
     labels:
@@ -348,30 +352,32 @@ services:
       default:
         aliases:
           - mercantec-tech-web
+      dokploy-network: {}
     labels:
       - traefik.enable=true
       - traefik.docker.network=dokploy-network
-      - traefik.http.services.mercantec-tech-web.loadbalancer.server.port=3000
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-web.loadbalancer.server.port=3000
       # lup.dk (+ www) → samme Blazor-SPA som mercantec.tech (Dokploy domain-create eller labels)
-      - traefik.http.routers.mercantec-tech-web-lup.rule=Host(`lup.dk`) || Host(`www.lup.dk`)
-      - traefik.http.routers.mercantec-tech-web-lup.entrypoints=web
-      - traefik.http.routers.mercantec-tech-web-lup.service=mercantec-tech-web
-      - traefik.http.routers.mercantec-tech-web-lup.middlewares=mercantec-tech-web-lup-headers
-      - traefik.http.middlewares.mercantec-tech-web-lup-headers.headers.stsSeconds=31536000
-      - traefik.http.middlewares.mercantec-tech-web-lup-headers.headers.stsIncludeSubdomains=true
-      - traefik.http.middlewares.mercantec-tech-web-lup-headers.headers.contentTypeNosniff=true
-      - traefik.http.middlewares.mercantec-tech-web-lup-headers.headers.browserXssFilter=true
-      - traefik.http.middlewares.mercantec-tech-web-lup-headers.headers.frameDeny=true
-      - traefik.http.middlewares.mercantec-tech-web-lup-headers.headers.referrerPolicy=no-referrer
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-lup.rule=Host(`lup.dk`) || Host(`www.lup.dk`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-lup.entrypoints=web
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-lup.priority=${LUP_TRAEFIK_PRIORITY:-100}
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-lup.service=${COMPOSE_PROJECT_NAME}-web
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-lup.middlewares=${COMPOSE_PROJECT_NAME}-web-lup-headers
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-lup-headers.headers.stsSeconds=31536000
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-lup-headers.headers.stsIncludeSubdomains=true
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-lup-headers.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-lup-headers.headers.browserXssFilter=true
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-lup-headers.headers.frameDeny=true
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-lup-headers.headers.referrerPolicy=no-referrer
       # Move the Games front page only. Legacy game/API paths and Arduino clients keep their existing services.
-      - traefik.http.routers.mercantec-tech-games-home.rule=Host(`games.mercantec.tech`) && Path(`/`)
-      - traefik.http.routers.mercantec-tech-games-home.entrypoints=web
-      - traefik.http.routers.mercantec-tech-games-home.priority=10000
-      - traefik.http.routers.mercantec-tech-games-home.service=mercantec-tech-web
-      - traefik.http.routers.mercantec-tech-games-home.middlewares=mercantec-tech-games-home
-      - traefik.http.middlewares.mercantec-tech-games-home.redirectregex.regex=^https?://games[.]mercantec[.]tech(:[0-9]+)?/
-      - traefik.http.middlewares.mercantec-tech-games-home.redirectregex.replacement=https://lup.dk/games
-      - traefik.http.middlewares.mercantec-tech-games-home.redirectregex.permanent=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-games-home.rule=Host(`games.mercantec.tech`) && Path(`/`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-games-home.entrypoints=web
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-games-home.priority=${LUP_GAMES_REDIRECT_PRIORITY:-10000}
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-games-home.service=${COMPOSE_PROJECT_NAME}-web
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-games-home.middlewares=${COMPOSE_PROJECT_NAME}-games-home
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-games-home.redirectregex.regex=^https?://games[.]mercantec[.]tech(:[0-9]+)?/
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-games-home.redirectregex.replacement=https://lup.dk/games
+      - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-games-home.redirectregex.permanent=true
     restart: unless-stopped
 
 volumes:
@@ -384,6 +390,11 @@ volumes:
   mercantec_preview_spool:
 
 networks:
+  # Compose scopes this bridge to the project. Backend aliases stay off the shared ingress.
   default:
-    name: dokploy-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${LUP_PRIVATE_SUBNET:-}
+  dokploy-network:
     external: true

@@ -4,6 +4,7 @@ using Mercantec.Tech.Api.Integrations.Azure;
 using Mercantec.Tech.Api.Integrations.Lectio;
 using Mercantec.Tech.Api.Integrations.OpenAI;
 using Mercantec.Tech.Api.Ai.EditorRuns;
+using Mercantec.Tech.Api.KnowledgeChecks;
 using Mercantec.Tech.Api.Services;
 using Mercantec.Tech.Api.Storage;
 using Mercantec.Tech.Api.Storage.CharacterOriginals;
@@ -19,6 +20,13 @@ if (args is ["character-originals", "verify"] or ["character-originals", "import
 {
     var storageConfiguration = new ConfigurationBuilder().AddEnvironmentVariables().Build();
     await CharacterOriginalImport.RunAsync(storageConfiguration, args.Length == 3 ? args[2] : null);
+    return;
+}
+
+if (args.Length > 0 && args[0] == "knowledge-checks")
+{
+    var commandConfiguration = new ConfigurationBuilder().AddEnvironmentVariables().Build();
+    Environment.ExitCode = await LegacyKnowledgeCheckPublisher.RunCommandAsync(args, commandConfiguration);
     return;
 }
 

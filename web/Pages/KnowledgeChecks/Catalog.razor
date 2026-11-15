@@ -59,7 +59,7 @@
                 }
                 <details class="panel knowledge-import">
                     <summary>Importér fra det gamle Videnstjek</summary>
-                    <p>Tilføj videnstjek fra GF2, backend, frontend og Flutter til dine kladder med forklaringer og links til kilderne.</p>
+                    <p>Kopiér hele det gamle quizkatalog til dine egne kladder med forklaringer og kildelinks.</p>
                     <div class="actions">
                         <button type="button" class="secondary" @onclick="ImportLegacyAsync" disabled="@_importingLegacy">
                             @(_importingLegacy ? "Importerer…" : "Importér som kladder")
@@ -285,7 +285,7 @@
         {
             var result = await Client.SendAsync<KnowledgeCheckLegacyImport>(HttpMethod.Post, "legacy-import");
             _importStatus = result.Added == 0
-                ? "Du har allerede importeret alle videnstjek i udvalget."
+                ? "Du har allerede importeret alle videnstjek fra det gamle katalog."
                 : $"{result.Added} videnstjek er tilføjet som kladder."
                     + (result.Existing > 0 ? $" {result.Existing} var allerede importeret." : "");
             await LoadAsync();

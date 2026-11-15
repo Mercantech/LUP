@@ -5,6 +5,8 @@ services:
     environment:
       ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
   web:
+    networks:
+      dokploy-network: !reset null
     ports:
       - "3000:3000"
   api:
@@ -17,6 +19,8 @@ services:
     ports:
       - "8080:8080"
   minio:
+    networks:
+      dokploy-network: !reset null
     environment:
       MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-http://127.0.0.1:9001}
     ports:
@@ -24,6 +28,4 @@ services:
       - "9001:9001"
 
 networks:
-  default:
-    name: mercantec-tech-local
-    external: false
+  dokploy-network: !reset null

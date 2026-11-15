@@ -55,8 +55,8 @@ Sprints: [Project #9](https://github.com/orgs/Mercantech/projects/9/views/1) · 
 |-----|---------|
 | `api/` | .NET 10 Web API + EF/Postgres (Forløb, Hold, Membership) |
 | `web/` | Blazor WASM PWA + nginx i Docker |
-| `docker-compose.yml` | Dokploy (`dokploy-network`, aliases) |
-| `docker-compose.local.yml` | Lokal port-mapping + lokalt net |
+| `docker-compose.yml` | Projektspecifikt net; kun web og MinIO-console på `dokploy-network` |
+| `docker-compose.local.yml` | Lokale porte uden `dokploy-network` |
 | `design/lup/` | Selvstændig klikbar LUP-designreference (port 3001) |
 | `obsidian/` | AI-workflows, features, badges |
 
@@ -135,13 +135,13 @@ Gave- og afstemningstestene bruger en isoleret SQLite-database; ingen rigtige ga
 
 ## Dokploy
 
-`docker-compose.yml` med eksternt `dokploy-network`. Env fra Dokploy / `.env.example`.  
+`docker-compose.yml` holder API, database og collaboration på projektets eget Docker-netværk. Web og MinIO-console bruger også det eksterne `dokploy-network` til Traefik. Env fra Dokploy / `.env.example`.
 Domain: service `web`, port `3000`, hosts `mercantec.tech` + `lup.dk` (+ `www.lup.dk`). Se [Dokploy-drift](obsidian/02-ai-workflows/Dokploy-drift.md).
 
 ## Scaffold-check (#1)
 
 - [x] API med health-endpoint
 - [x] Web (Blazor PWA) der bygger
-- [x] Compose med dokploy-network + unikke aliases
+- [x] Privat netværk pr. Compose-projekt og fælles ingress til Traefik
 - [x] `docker-compose.local.yml`
 - [x] README med compose-kommandoer

@@ -2378,6 +2378,3383 @@
           }
         ]
       }
+    },
+    {
+      "key": "bcrypt-security",
+      "draft": {
+        "title": "BCrypt & Password Sikkerhed",
+        "description": "Test din viden om BCrypt hashing, password sikkerhed, salt og hvordan man implementerer sikker brugerautentificering i C#",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "04b77b06-7683-519c-8c71-114067d2f8b4",
+            "kind": "single",
+            "prompt": "Hvorfor er BCrypt bedre end simple hash-funktioner som MD5 til passwords?",
+            "options": [
+              "BCrypt er hurtigere at beregne",
+              "BCrypt er beregningstungt og gør mange adgangskodegæt dyrere",
+              "BCrypt kan dekrypteres igen",
+              "BCrypt bruger mindre hukommelse"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://auth0.com/blog/hashing-in-action-understanding-bcrypt/",
+            "optionExplanations": [
+              "BCrypt er faktisk langsommere - det er netop pointen for sikkerhed.",
+              "BCrypt har en justerbar omkostning, der gør hvert gæt dyrere. MD5 er lavet til hurtig hashing og er uegnet til adgangskoder.",
+              "BCrypt er en one-way hash-funktion - den kan ikke dekrypteres.",
+              "Hukommelsesforbrug er ikke hovedfordelen ved BCrypt."
+            ],
+            "learnMoreTitle": "Why BCrypt is Better",
+            "learnMoreDescription": "En forklaring af hvorfor BCrypt er bedre end andre hash-funktioner til passwords."
+          },
+          {
+            "id": "8402c993-8793-583a-86a2-34cd5e6d4fae",
+            "kind": "single",
+            "prompt": "Hvad er formålet med salt i password hashing?",
+            "options": [
+              "At gøre passwords længere",
+              "At beskytte mod rainbow table-angreb ved at give hvert password et unikt salt",
+              "At kryptere passwords",
+              "At reducere hash-størrelsen"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/consumer-apis/password-hashing",
+            "optionExplanations": [
+              "Salt påvirker ikke password-længden, kun hash-unikheden.",
+              "Salt gør hver hash unik, selv for identiske passwords, hvilket forhindrer rainbow table-angreb.",
+              "Salt er ikke kryptering - det er en tilføjelse til hashing.",
+              "Salt øger faktisk hash-størrelsen, ikke reducerer den."
+            ],
+            "learnMoreTitle": "Password Salting",
+            "learnMoreDescription": "Microsofts guide til password sikkerhed og salting."
+          },
+          {
+            "id": "1f1a1ecb-205e-5acd-b771-163d4403357f",
+            "kind": "single",
+            "prompt": "Hvordan hasher du et password med BCrypt i C#?",
+            "options": [
+              "BCrypt.HashPassword(password)",
+              "BCrypt.Encrypt(password)",
+              "BCrypt.Hash(password)",
+              "BCrypt.Protect(password)"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://github.com/BcryptNet/bcrypt.net",
+            "optionExplanations": [
+              "BCrypt.HashPassword(password) er den korrekte metode til at hashe passwords.",
+              "BCrypt er ikke kryptering - det er hashing.",
+              "Der findes ingen Hash metode - det er HashPassword.",
+              "Protect er ikke en BCrypt-metode."
+            ],
+            "learnMoreTitle": "BCrypt.Net-Next Documentation",
+            "learnMoreDescription": "Officiel dokumentation for BCrypt.Net-Next pakken."
+          },
+          {
+            "id": "ce2885ac-467f-566c-8207-ebcc7033efa1",
+            "kind": "single",
+            "prompt": "Hvordan validerer du et password mod en BCrypt hash?",
+            "options": [
+              "BCrypt.Decrypt(password, hash)",
+              "BCrypt.Verify(password, hash)",
+              "BCrypt.Compare(password, hash)",
+              "BCrypt.Match(password, hash)"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.c-sharpcorner.com/article/bcrypt-password-hashing-in-c-sharp/",
+            "optionExplanations": [
+              "BCrypt kan ikke dekrypteres - det er en one-way hash.",
+              "BCrypt.Verify(password, hash) sammenligner password med hash.",
+              "Der findes ingen Compare metode - det er Verify.",
+              "Der findes ingen Match metode - det er Verify."
+            ],
+            "learnMoreTitle": "BCrypt Password Verification",
+            "learnMoreDescription": "En guide til at validere passwords med BCrypt."
+          },
+          {
+            "id": "5627b456-baf4-5eff-b1de-da5c3dd41edc",
+            "kind": "single",
+            "prompt": "Hvad sker der normalt, hvis du hasher samme adgangskode to gange med BCrypt og nyt salt hver gang?",
+            "options": [
+              "Du får altid den samme hash",
+              "Du får forskellige hashstrenge, fordi saltene er forskellige",
+              "Anden hash fejler med en fejl",
+              "Du får en dobbelt hash"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://stackoverflow.com/questions/6832445/how-can-bcrypt-have-built-in-salts",
+            "optionExplanations": [
+              "BCrypt genererer automatisk nyt salt hver gang, så hashes bliver forskellige.",
+              "Et nyt tilfældigt salt gør, at samme adgangskode normalt får en anden hashstreng. Saltet indgår i den gemte streng.",
+              "BCrypt fejler ikke - det fungerer perfekt hver gang.",
+              "Du får ikke dobbelt hashing - hver hash er komplet og unik."
+            ],
+            "learnMoreTitle": "BCrypt Salt Generation",
+            "learnMoreDescription": "Forklaring af hvordan BCrypt automatisk genererer salt."
+          },
+          {
+            "id": "b7c8a8ae-4873-507b-b8f2-f2b60315dc19",
+            "kind": "single",
+            "prompt": "Hvad er en rainbow table i kontekst af password sikkerhed?",
+            "options": [
+              "En tabel med farver til UI-design",
+              "En forudberegnet liste over hashes for almindelige passwords",
+              "En database med brugeroplysninger",
+              "En liste over sikre passwords"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#salting",
+            "optionExplanations": [
+              "Det handler ikke om UI-design eller farver.",
+              "Rainbow tables indeholder forudberegnede hashes for almindelige passwords, som angribere kan bruge.",
+              "Det er ikke en database med brugeroplysninger.",
+              "Det er ikke en liste over sikre passwords."
+            ],
+            "learnMoreTitle": "Password Storage – Salting",
+            "learnMoreDescription": "OWASP forklarer, hvorfor et unikt salt beskytter mod forudberegnede opslag."
+          },
+          {
+            "id": "b0710480-d0f7-5d63-b2ea-36a1ec21d189",
+            "kind": "single",
+            "prompt": "Hvad er den korrekte måde at implementere password validering i en login-controller?",
+            "options": [
+              "Sammenlign password direkte med hash fra databasen",
+              "Hash det indtastede password og sammenlign med hash fra databasen",
+              "Brug BCrypt.Verify(password, hash) til at sammenligne",
+              "Dekrypter hash fra databasen og sammenlign med password"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity",
+            "optionExplanations": [
+              "Du kan ikke sammenligne password direkte med hash.",
+              "Hashing passwordet igen giver en anden hash pga. nyt salt.",
+              "BCrypt.Verify() håndterer salt og sammenligning korrekt.",
+              "BCrypt hashes kan ikke dekrypteres - de er one-way."
+            ],
+            "learnMoreTitle": "Implementing Secure Login",
+            "learnMoreDescription": "Microsofts guide til sikker brugerautentificering."
+          },
+          {
+            "id": "0bebd592-3e47-5683-b930-d0f4f228a534",
+            "kind": "single",
+            "prompt": "Hvad er en vigtig best practice ved brug af BCrypt i produktion?",
+            "options": [
+              "Gem passwords i klartekst som backup",
+              "Gem kun den hashede password-streng, aldrig det oprindelige password",
+              "Brug samme salt for alle brugere",
+              "Hash passwords flere gange for ekstra sikkerhed"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#store-passwords-in-a-secure-fashion",
+            "optionExplanations": [
+              "At gemme passwords i klartekst er en alvorlig sikkerhedsfejl.",
+              "Du skal kun gemme den hashede password-streng - aldrig det oprindelige password.",
+              "BCrypt genererer automatisk unikt salt for hver bruger - det skal du ikke ændre.",
+              "BCrypt er allerede designet til at være sikker - dobbelt hashing er unødvendigt og kan skabe problemer."
+            ],
+            "learnMoreTitle": "Password Security Best Practices",
+            "learnMoreDescription": "OWASP guide til sikker password-håndtering."
+          }
+        ]
+      }
+    },
+    {
+      "key": "bogus-faker",
+      "draft": {
+        "title": "Bogus (Faker) - Test Data Generering",
+        "description": "Test din viden om Bogus biblioteket, hvordan man genererer realistisk test data og best practices for data seeding",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "7e94be3a-a744-5ba5-8b83-f238e4908765",
+            "kind": "single",
+            "prompt": "Hvad er hovedformålet med Bogus (Faker) biblioteket?",
+            "options": [
+              "At kryptere data i produktion",
+              "At generere realistisk test data til development og testing",
+              "At optimere database performance",
+              "At validere bruger-input"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://github.com/bchavez/Bogus",
+            "optionExplanations": [
+              "Bogus er ikke til kryptering af produktion data.",
+              "Bogus er designet til at generere realistisk test data til development og testing formål.",
+              "Database performance er ikke hovedformålet med Bogus.",
+              "Input validering er ikke det Bogus bruges til."
+            ],
+            "learnMoreTitle": "Bogus Documentation",
+            "learnMoreDescription": "Officiel dokumentation for Bogus biblioteket og dets formål."
+          },
+          {
+            "id": "37d26a7c-204d-520c-8b0c-394fe566fd48",
+            "kind": "single",
+            "prompt": "Hvad er en af hovedfordelene ved at bruge Bogus i stedet for hardcodede test værdier?",
+            "options": [
+              "Det gør koden hurtigere at køre",
+              "Det giver varieret, realistisk data der kan opdage edge cases",
+              "Det eliminerer behovet for unit tests",
+              "Det reducerer hukommelsesforbruget"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.baeldung.com/java-faker-library",
+            "optionExplanations": [
+              "Bogus påvirker ikke kode-performance direkte.",
+              "Realistisk data hjælper med at opdage problemer som hardcodede værdier ikke kan.",
+              "Bogus erstatter ikke unit tests - det forbedrer dem.",
+              "Hukommelsesforbrug påvirkes ikke af valg af test data."
+            ],
+            "learnMoreTitle": "Why Use Fake Data in Testing",
+            "learnMoreDescription": "En forklaring af fordelene ved realistisk test data."
+          },
+          {
+            "id": "b667867f-5854-5645-be5d-cac992c7c975",
+            "kind": "single",
+            "prompt": "Hvor bør Bogus-genererede testkunder ikke erstatte rigtige kundedata?",
+            "options": [
+              "I development miljøer",
+              "I produktion miljøer",
+              "I unit tests",
+              "I integration tests"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://github.com/bchavez/Bogus#security",
+            "optionExplanations": [
+              "Development miljøer er netop hvor Bogus er nyttigt.",
+              "Brug syntetiske kunder til udvikling og test. Undgå at blande dem ind i faktiske kundedata i produktion.",
+              "Unit tests er et perfekt sted at bruge Bogus.",
+              "Integration tests kan også drage fordel af Bogus."
+            ],
+            "learnMoreTitle": "Bogus Security Considerations",
+            "learnMoreDescription": "Vigtige sikkerhedsaspekter ved brug af Bogus."
+          },
+          {
+            "id": "408529e5-54b1-5b6d-afea-3e09973844e2",
+            "kind": "single",
+            "prompt": "Hvad er formålet med at bruge seeds i Bogus?",
+            "options": [
+              "At gøre data generation hurtigere",
+              "At sikre reproducerbare tests med samme data hver gang",
+              "At kryptere genererede data",
+              "At reducere hukommelsesforbrug"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://github.com/bchavez/Bogus#seeding",
+            "optionExplanations": [
+              "Seeds påvirker ikke hastigheden af data generation.",
+              "Seeds sikrer at samme data genereres hver gang, hvilket gør tests reproducerbare.",
+              "Seeds er ikke til kryptering.",
+              "Seeds påvirker ikke hukommelsesforbrug."
+            ],
+            "learnMoreTitle": "Bogus Seeding",
+            "learnMoreDescription": "Guide til at bruge seeds i Bogus for reproducerbare tests."
+          },
+          {
+            "id": "d2532c13-da93-564c-93f6-ffb33caef71d",
+            "kind": "single",
+            "prompt": "Hvad er en best practice ved brug af Bogus i relationelle databaser?",
+            "options": [
+              "Altid generere alle data samtidigt i én operation",
+              "Generere forældre-entiteter først, derefter afhængige entiteter",
+              "Ignorere foreign key constraints",
+              "Bruge samme ID for alle genererede entiteter"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/modeling/data-seeding",
+            "optionExplanations": [
+              "At generere alt samtidigt kan skabe problemer med relationer.",
+              "Du skal generere forældre først for at kunne referere til dem i afhængige entiteter.",
+              "Foreign key constraints skal respekteres for at opretholde dataintegritet.",
+              "Unikke ID'er er vigtige for at undgå konflikter."
+            ],
+            "learnMoreTitle": "Database Seeding Best Practices",
+            "learnMoreDescription": "Best practices for at seed relationelle databaser med test data."
+          },
+          {
+            "id": "3b8ae7fd-6731-5571-928e-e1a8ef40199f",
+            "kind": "single",
+            "prompt": "Hvad er formålet med lokalisering i Bogus?",
+            "options": [
+              "At gøre data generation hurtigere",
+              "At generere data der matcher et bestemt sprog/region (f.eks. danske navne og adresser)",
+              "At reducere hukommelsesforbrug",
+              "At kryptere genererede data"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://github.com/bchavez/Bogus#localization",
+            "optionExplanations": [
+              "Lokalisering påvirker ikke hastighed.",
+              "Lokalisering sikrer at data matcher det ønskede sprog/region (danske navne, adresser osv.).",
+              "Lokalisering påvirker ikke hukommelsesforbrug.",
+              "Lokalisering er ikke til kryptering."
+            ],
+            "learnMoreTitle": "Bogus Localization",
+            "learnMoreDescription": "Guide til at bruge lokalisering i Bogus for region-specifik data."
+          },
+          {
+            "id": "c774670b-91c6-555b-bf6a-501602c49960",
+            "kind": "single",
+            "prompt": "Hvad er en vigtig best practice ved brug af Bogus i API testing?",
+            "options": [
+              "Altid generere maksimalt antal records for at teste performance",
+              "Generere kun det antal records der er nødvendige for testen",
+              "Ignorere data validering i genererede objekter",
+              "Bruge hardcodede værdier sammen med Bogus"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-10.0",
+            "optionExplanations": [
+              "At generere for mange records kan gøre tests langsomme og unødvendige.",
+              "Generer kun det antal records der er nødvendige for at teste funktionaliteten.",
+              "Data validering er vigtig selv for genererede objekter.",
+              "Blanding af hardcodede værdier og Bogus kan skabe inkonsistens."
+            ],
+            "learnMoreTitle": "Integration tests in ASP.NET Core",
+            "learnMoreDescription": "Microsofts guide til integrationstests, testmiljø og testdata."
+          },
+          {
+            "id": "319cd5dc-0ccd-5d8c-b1f2-000684034652",
+            "kind": "single",
+            "prompt": "Hvad er formålet med betingede regler i Bogus?",
+            "options": [
+              "At gøre data generation hurtigere",
+              "At skabe relationer mellem forskellige felter i samme entitet",
+              "At reducere hukommelsesforbrug",
+              "At kryptere genererede data"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://github.com/bchavez/Bogus#rules",
+            "optionExplanations": [
+              "Betingede regler påvirker ikke hastighed.",
+              "Betingede regler tillader dig at skabe realistiske relationer mellem felter (f.eks. alder påvirker indkomst).",
+              "Betingede regler påvirker ikke hukommelsesforbrug.",
+              "Betingede regler er ikke til kryptering."
+            ],
+            "learnMoreTitle": "Bogus Conditional Rules",
+            "learnMoreDescription": "Guide til at bruge betingede regler i Bogus for realistisk data."
+          },
+          {
+            "id": "d644a1fd-06e2-5671-b318-bcb4d73260ab",
+            "kind": "single",
+            "prompt": "Hvad er en fordel ved at bruge Bogus i stedet for manuel test data oprettelse?",
+            "options": [
+              "Det eliminerer behovet for at skrive kode",
+              "Det sparer tid og sikrer konsistent data struktur",
+              "Det gør alle tests automatisk grønne",
+              "Det eliminerer behovet for database"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.c-sharpcorner.com/article/automated-test-data-generation-using-bogus/",
+            "optionExplanations": [
+              "Du skal stadig skrive kode til at definere Bogus regler.",
+              "Bogus sparer tid på manuel data oprettelse og sikrer konsistent struktur.",
+              "Bogus garanterer ikke at tests passerer - det giver kun test data.",
+              "Bogus eliminerer ikke behovet for database - det hjælper med at populere den."
+            ],
+            "learnMoreTitle": "Benefits of Automated Test Data",
+            "learnMoreDescription": "Fordele ved automatiseret test data generation."
+          },
+          {
+            "id": "668890a6-48c0-59ff-aad0-da4a7aa5a450",
+            "kind": "single",
+            "prompt": "Hvordan forebygger du, at fiktive testdata skrives til produktion?",
+            "options": [
+              "Altid kryptere genererede data",
+              "Begræns automatisk test-seeding til udvikling og isolerede testmiljøer",
+              "Ignorere alle sikkerhedsadvarsler",
+              "Bruge samme data i alle miljøer"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/environments",
+            "optionExplanations": [
+              "Kryptering beskytter ikke mod, at testdata skrives til den forkerte database.",
+              "Kør kun test-seeding mod forventede udviklings- og testdatabaser. Hold disse miljøer adskilt fra produktion.",
+              "Sikkerhedsadvarsler skal aldrig ignoreres.",
+              "Forskellige miljøer bør have forskellige data."
+            ],
+            "learnMoreTitle": "Environment-Specific Configuration",
+            "learnMoreDescription": "Guide til at konfigurere applikationer for forskellige miljøer."
+          }
+        ]
+      }
+    },
+    {
+      "key": "caching-redis",
+      "draft": {
+        "title": "Caching med Redis - Performance Optimering",
+        "description": "Test din viden om caching strategier, Redis implementering og performance optimering i .NET",
+        "topic": "Backend",
+        "estimatedMinutes": 18,
+        "questions": [
+          {
+            "id": "f8c2016c-f70a-59da-af80-e6c9fd937e8f",
+            "kind": "single",
+            "prompt": "Hvad er en typisk grund til at cache et resultat fra en database i en API?",
+            "options": [
+              "At reducere hukommelsesforbrug",
+              "At forbedre performance ved at undgå gentagne database kald",
+              "At sikre data konsistens",
+              "At reducere netværk trafik"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/overview",
+            "optionExplanations": [
+              "Caching kan faktisk øge hukommelsesforbrug ved at gemme data i hukommelsen.",
+              "Ved gentagne læsninger kan API'et genbruge resultatet i en periode og undgå gentagne databasekald.",
+              "Caching kan faktisk skabe data konsistens problemer hvis ikke håndteret korrekt.",
+              "Nogle caches reducerer også netværkstrafik. Her er formålet at genbruge databaseresultatet."
+            ],
+            "learnMoreTitle": "Caching Fundamentals",
+            "learnMoreDescription": "Grundlæggende koncepter om caching og dets fordele."
+          },
+          {
+            "id": "038452a2-9074-538f-8544-eaf003ad5aef",
+            "kind": "single",
+            "prompt": "Hvad er forskellen mellem IMemoryCache og IDistributedCache?",
+            "options": [
+              "IMemoryCache er hurtigere end IDistributedCache",
+              "IMemoryCache er lokal til appens proces, mens IDistributedCache kan deles mellem flere appinstanser",
+              "IMemoryCache kræver mere konfiguration end IDistributedCache",
+              "IDistributedCache virker kun med Redis"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/distributed",
+            "optionExplanations": [
+              "Hastighed afhænger af implementering, ikke interfacet.",
+              "En distribueret cache kan give flere processer adgang til de samme cachede data. En proceslokal cache kan ikke deles sådan.",
+              "IMemoryCache kræver mindre konfiguration end IDistributedCache.",
+              "IDistributedCache kan implementeres med Redis, SQL Server, eller andre providers."
+            ],
+            "learnMoreTitle": "Cache Types in .NET",
+            "learnMoreDescription": "Forklaring af forskellige cache typer i .NET."
+          },
+          {
+            "id": "6c55b403-2ded-5b75-9ee9-1f98127352ad",
+            "kind": "single",
+            "prompt": "Hvordan kan du vælge en genkendelig nøgle til en cachepost i .NET?",
+            "options": [
+              "Cache nøgler genereres automatisk af framework'et",
+              "Du skal altid bruge en GUID som cache nøgle",
+              "Brug en beskrivende streng, der identificerer de cachede data",
+              "Cache nøgler skal være numeriske"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/overview#cache-keys",
+            "optionExplanations": [
+              "Framework'et genererer ikke automatisk cache nøgler.",
+              "GUIDs er ikke nødvendige - beskrivende strings er bedre.",
+              "Cache nøgler bør være beskrivende strings der identificerer dataen (f.eks. 'all_rooms', 'user_123').",
+              "Nøgler behøver ikke være numeriske. Flere almindelige .NET-cache-API'er bruger beskrivende strenge."
+            ],
+            "learnMoreTitle": "Cache Keys Best Practices",
+            "learnMoreDescription": "Best practices for at designe cache nøgler."
+          },
+          {
+            "id": "a614e9a4-45ae-5d27-9c09-172a2f88122c",
+            "kind": "single",
+            "prompt": "Hvad sker der når du kalder _cache.TryGetValue()?",
+            "options": [
+              "Data hentes altid fra databasen",
+              "Metoden returnerer true hvis data findes i cache, false hvis ikke",
+              "Cache'et bliver automatisk ryddet",
+              "Data bliver automatisk opdateret i cache'et"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.memory.imemorycache.trygetvalue",
+            "optionExplanations": [
+              "TryGetValue() henter kun fra cache, ikke fra database.",
+              "TryGetValue() returnerer true hvis data findes i cache, false hvis ikke, og output parameteren indeholder dataen.",
+              "Cache'et ryddes ikke automatisk af TryGetValue().",
+              "Data opdateres ikke automatisk af TryGetValue()."
+            ],
+            "learnMoreTitle": "TryGetValue Method",
+            "learnMoreDescription": "Dokumentation for TryGetValue() metoden i IMemoryCache."
+          },
+          {
+            "id": "e2f8b85d-0273-5442-8e9d-8874b43547b5",
+            "kind": "single",
+            "prompt": "Hvordan sætter du data i cache med en bestemt levetid?",
+            "options": [
+              "_cache.Set(key, data)",
+              "_cache.Set(key, data, TimeSpan.FromMinutes(30))",
+              "_cache.Add(key, data, TimeSpan.FromMinutes(30))",
+              "_cache.Store(key, data, 30)"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/overview#cache-expiration",
+            "optionExplanations": [
+              "Uden TimeSpan parameter caches dataen uden udløbsdato.",
+              "_cache.Set(key, data, TimeSpan.FromMinutes(30)) caches dataen i 30 minutter.",
+              "Add() metoden eksisterer ikke i IMemoryCache.",
+              "Store() metoden eksisterer ikke i IMemoryCache."
+            ],
+            "learnMoreTitle": "Cache Expiration",
+            "learnMoreDescription": "Guide til at sætte cache udløbsdatoer i .NET."
+          },
+          {
+            "id": "89cc7100-66ff-5fa7-96ba-667c622489b8",
+            "kind": "single",
+            "prompt": "Hvad er cache invalidation?",
+            "options": [
+              "At rydde hele cache'et automatisk",
+              "At fjerne specifikke cache entries når data ændrer sig",
+              "At reducere cache størrelsen",
+              "At kryptere cache data"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/overview#cache-invalidation",
+            "optionExplanations": [
+              "Cache invalidation handler om specifikke entries, ikke hele cache'et.",
+              "Cache invalidation er at fjerne specifikke cache entries når de underliggende data ændrer sig.",
+              "Cache størrelse reduceres ikke automatisk ved invalidation.",
+              "Kryptering er ikke relateret til cache invalidation."
+            ],
+            "learnMoreTitle": "Cache Invalidation",
+            "learnMoreDescription": "Strategier for cache invalidation i .NET."
+          },
+          {
+            "id": "e375dd43-efc1-5f21-878c-79033724fa42",
+            "kind": "single",
+            "prompt": "Hvornår bør du undgå en almindelig cache, der kan servere forældede data?",
+            "options": [
+              "Når svaret skal være helt aktuelt, og cachen ikke kan ugyldiggøres, når data ændres",
+              "Når data er statisk og sjældent ændrer sig",
+              "Når data er offentlig og ikke følsom",
+              "Når data bruges af mange brugere"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/overview#when-to-cache",
+            "optionExplanations": [
+              "Selv en kort cachelevetid kan give et for gammelt resultat, hvis en handling kræver de aktuelle data.",
+              "Statisk data er perfekt til caching.",
+              "Offentlig data kan ofte caches sikkert.",
+              "Data der bruges af mange brugere er netop godt til caching."
+            ],
+            "learnMoreTitle": "When Not to Cache",
+            "learnMoreDescription": "Guide til at identificere data der ikke bør caches."
+          },
+          {
+            "id": "99972def-e2ba-57de-bfec-e700ee56d730",
+            "kind": "single",
+            "prompt": "Hvad er fordelene ved Redis over IMemoryCache?",
+            "options": [
+              "Redis er altid hurtigere end IMemoryCache",
+              "Redis kan deles mellem flere appinstanser og bevarer cachen, hvis en appinstans genstartes",
+              "Redis kræver mindre konfiguration end IMemoryCache",
+              "Redis bruger mindre hukommelse end IMemoryCache"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/distributed#redis",
+            "optionExplanations": [
+              "Hastighed afhænger af netværk og Redis konfiguration.",
+              "Redis kører uden for appens proces. Om data overlever en genstart af selve Redis, afhænger af Redis' opsætning.",
+              "Redis kræver mere konfiguration end IMemoryCache.",
+              "Redis bruger ikke mindre hukommelse - det kører som en separat proces."
+            ],
+            "learnMoreTitle": "Redis vs Memory Cache",
+            "learnMoreDescription": "Sammenligning af Redis og IMemoryCache i .NET."
+          },
+          {
+            "id": "19f969bd-5385-56fd-a0f8-f490fb719b45",
+            "kind": "single",
+            "prompt": "Hvordan implementerer du Redis caching i .NET?",
+            "options": [
+              "Redis er indbygget i .NET og kræver ingen ekstra konfiguration",
+              "Du skal installere Redis package og konfigurere IDistributedCache",
+              "Redis kan kun bruges med Azure",
+              "Redis kræver at du skriver custom caching kode"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/distributed#redis",
+            "optionExplanations": [
+              "Redis er ikke indbygget i .NET - det kræver ekstra packages.",
+              "Du skal installere Redis package og konfigurere IDistributedCache i Program.cs.",
+              "Redis kan køre lokalt, i Docker, eller på Azure - det er ikke Azure-specifikt.",
+              "Du behøver ikke skrive custom caching kode - IDistributedCache giver standard interface."
+            ],
+            "learnMoreTitle": "Redis Setup in .NET",
+            "learnMoreDescription": "Guide til at opsætte Redis caching i .NET applikationer."
+          },
+          {
+            "id": "e82a882b-f7cc-5fbb-a0ed-891443952330",
+            "kind": "single",
+            "prompt": "En API's offentlige værelsesliste læses ofte. Listen må være op til ét minut gammel. Hvilken cachelevetid giver en rimelig balance?",
+            "options": [
+              "1 sekund - for at sikre data er altid frisk",
+              "30-60 sekunder - for at balancere performance og data friskhed",
+              "24 timer - for maksimal performance",
+              "Aldrig - værelseslister bør aldrig caches"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/overview#cache-expiration",
+            "optionExplanations": [
+              "Ét sekund opfylder friskhedskravet, men giver mindre genbrug af databaseresultatet.",
+              "30–60 sekunder giver mere genbrug og holder sig inden for den aftalte grænse på ét minut.",
+              "24 timer overskrider den aftalte grænse.",
+              "Kravet tillader en kort cachelevetid."
+            ],
+            "learnMoreTitle": "Cache Duration Guidelines",
+            "learnMoreDescription": "Retningslinjer for at vælge cache levetider."
+          }
+        ]
+      }
+    },
+    {
+      "key": "cors-xss-security",
+      "draft": {
+        "title": "CORS & XSS Sikkerhed",
+        "description": "Test din viden om Cross-Origin Resource Sharing, Cross-Site Scripting og hvordan man beskytter webapplikationer mod sikkerhedsangreb",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "ea6e12c1-a542-571c-a4c0-a3e8ebd9c5cc",
+            "kind": "single",
+            "prompt": "Hvad står CORS for og hvorfor er det vigtigt?",
+            "options": [
+              "Cross-Origin Resource Sharing – det lader en server angive, hvilke andre oprindelser der må læse dens svar i en browser",
+              "Cross-Origin Request System - det gør alle API-kald hurtigere",
+              "Cross-Origin Response Security - det krypterer al data automatisk",
+              "Cross-Origin Resource Security - det eliminerer alle sikkerhedsrisici"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.moesif.com/blog/technical/cors/Authoritative-Guide-to-CORS-Cross-Origin-Resource-Sharing-for-REST-APIs/",
+            "optionExplanations": [
+              "Browseren håndhæver CORS ud fra serverens HTTP-headere. API'et skal stadig kontrollere autentificering og autorisation.",
+              "CORS handler ikke om hastighed, men om sikkerhed.",
+              "CORS krypterer ikke data automatisk.",
+              "CORS eliminerer ikke alle risici - det er en del af sikkerhedsstrategien."
+            ],
+            "learnMoreTitle": "CORS Explained",
+            "learnMoreDescription": "En autoritativ guide til CORS og hvorfor det er vigtigt for REST API'er."
+          },
+          {
+            "id": "1ae908b4-9df4-5c3a-aeac-957b08d0f3b7",
+            "kind": "single",
+            "prompt": "Hvad betyder det hvis en API har 'Access-Control-Allow-Origin: *'?",
+            "options": [
+              "API'et er kun tilgængeligt for lokale requests",
+              "En browser må dele svaret med enhver oprindelse for CORS-forespørgsler uden legitimationsoplysninger",
+              "API'et er kun tilgængeligt for HTTPS requests",
+              "API'et kræver authentication for alle requests"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#security_considerations",
+            "optionExplanations": [
+              "Stjernen står for alle oprindelser ved CORS, uanset om de er lokale.",
+              "Stjernen tillader læsning fra enhver oprindelse uden legitimationsoplysninger. Den erstatter ikke API'ets adgangskontrol.",
+              "'*' handler ikke om HTTPS vs HTTP.",
+              "'*' påvirker ikke authentication-krav."
+            ],
+            "learnMoreTitle": "CORS Security Risks",
+            "learnMoreDescription": "En forklaring af sikkerhedsrisici ved løse CORS-politikker."
+          },
+          {
+            "id": "a9d74175-eb82-59c7-abe8-93961d12cb0c",
+            "kind": "single",
+            "prompt": "Hvad er Cross-Site Scripting (XSS)?",
+            "options": [
+              "En teknik til at kryptere data mellem domæner",
+              "Et angreb hvor ondsindet JavaScript-kode injiceres på en hjemmeside",
+              "En metode til at dele ressourcer mellem forskellige domæner",
+              "En teknik til at optimere website-performance"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://owasp.org/www-community/attacks/xss/",
+            "optionExplanations": [
+              "XSS handler ikke om kryptering af data.",
+              "XSS er et angreb hvor ondsindet kode injiceres gennem uvalideret input.",
+              "Det beskriver CORS, ikke XSS.",
+              "XSS handler ikke om performance-optimering."
+            ],
+            "learnMoreTitle": "Cross-Site Scripting (XSS)",
+            "learnMoreDescription": "OWASP guide til XSS og hvordan man forhindrer det."
+          },
+          {
+            "id": "cfb04fd1-7d5c-544b-bccb-2f93054060e6",
+            "kind": "single",
+            "prompt": "Hvordan kan du forhindre XSS-angreb i din webapplikation?",
+            "options": [
+              "Ved at bruge HTTPS på alle sider",
+              "Kod brugerdata efter den kontekst, de indsættes i, og rens HTML, hvis brugere må skrive HTML",
+              "Ved at blokere alle JavaScript-filer",
+              "Ved at bruge CORS-headers"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/security/cross-site-scripting",
+            "optionExplanations": [
+              "HTTPS beskytter mod man-in-the-middle, ikke XSS.",
+              "Vis almindelige brugerdata som tekst med korrekt kontekstkodning. Brug en egnet sanitizer til HTML, som brugere må indsætte.",
+              "At blokere JavaScript vil ødelægge funktionaliteten af de fleste moderne websites.",
+              "CORS beskytter mod cross-origin requests, ikke XSS."
+            ],
+            "learnMoreTitle": "XSS Prevention",
+            "learnMoreDescription": "Microsofts guide til at forhindre XSS i ASP.NET Core."
+          },
+          {
+            "id": "b24ec094-b792-5ec7-9af2-68d3853695a4",
+            "kind": "single",
+            "prompt": "Hvad er en god CORS-konfiguration, når et privat API skal bruges af bestemte webklienter i produktion?",
+            "options": [
+              "Tillad alle domæner med '*' for maksimal kompatibilitet",
+              "Tillad kun de nødvendige oprindelser, og behold API'ets egen adgangskontrol",
+              "Deaktiver CORS helt for maksimal sikkerhed",
+              "Tillad kun lokale domæner (localhost)"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/security/cors",
+            "optionExplanations": [
+              "Stjernen giver bredere browseradgang end opgaven kræver.",
+              "Angiv de nødvendige oprindelser, så browseren kun deler svar med de godkendte webklienter. Autentificering og autorisation håndteres separat.",
+              "Hvis frontend og API har forskellige oprindelser, kan en manglende tilladelse blokere læsning i browseren.",
+              "Kun localhost vil ikke virke når din applikation deployes."
+            ],
+            "learnMoreTitle": "Secure CORS Configuration",
+            "learnMoreDescription": "En guide til sikker CORS-konfiguration i produktion."
+          }
+        ]
+      }
+    },
+    {
+      "key": "data-serialization",
+      "draft": {
+        "title": "Data Serialisering & JSON",
+        "description": "Test din viden om JSON håndtering, data mapping og serialisering i C# med System.Text.Json",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "de2840c6-e4a1-523a-b84a-70f80f96ec63",
+            "kind": "single",
+            "prompt": "Hvilket JSON-bibliotek følger med moderne .NET og kan bruges fra C#?",
+            "options": [
+              "Newtonsoft.Json",
+              "System.Text.Json",
+              "DataContractJsonSerializer",
+              "JavaScriptSerializer"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/overview",
+            "optionExplanations": [
+              "Newtonsoft.Json var populær tidligere, men System.Text.Json er nu anbefalet.",
+              "System.Text.Json er hurtigere, indbygget i .NET og den anbefalede løsning.",
+              "DataContractJsonSerializer er ældre og mindre effektiv.",
+              "JavaScriptSerializer er forældet og bør ikke bruges."
+            ],
+            "learnMoreTitle": "System.Text.Json Overview",
+            "learnMoreDescription": "Microsofts officielle dokumentation om System.Text.Json og hvorfor det er anbefalet."
+          },
+          {
+            "id": "968a0058-5303-5b60-ace4-da1589d1dcc3",
+            "kind": "single",
+            "prompt": "Hvad gør [JsonPropertyName] attributten?",
+            "options": [
+              "Gør en property readonly",
+              "Mapper JSON-felter til C# properties med forskellige navne",
+              "Validerer JSON-data",
+              "Krypterer property-værdier"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/customize-properties",
+            "optionExplanations": [
+              "readonly gør properties skrivebeskyttede, ikke relateret til JSON mapping.",
+              "[JsonPropertyName] tillader dig at matche JSON-felter med dine egne property-navne.",
+              "Validering sker ikke automatisk med denne attribut.",
+              "Kryptering er ikke en funktion i [JsonPropertyName]."
+            ],
+            "learnMoreTitle": "Customize property names and values",
+            "learnMoreDescription": "Microsofts guide til at bruge [JsonPropertyName] og andre JSON attributter."
+          },
+          {
+            "id": "6a97966f-6c0e-5d50-b0ce-fd59750d2305",
+            "kind": "single",
+            "prompt": "Hvad sker der hvis du prøver at deserialisere ugyldig JSON?",
+            "options": [
+              "Programmet crasher med en fatal fejl",
+              "En JsonException kastes, som du kan fange med try-catch",
+              "Objektet oprettes med null-værdier",
+              "Intet sker - deserialiseringen ignorerer fejl"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/handle-overflow",
+            "optionExplanations": [
+              "Programmet crasher ikke - en exception kastes i stedet.",
+              "JsonException kastes og kan håndteres elegant med try-catch.",
+              "Deserialiseringen fejler helt, ikke delvist.",
+              "Fejl ignoreres ikke - de skal håndteres eksplicit."
+            ],
+            "learnMoreTitle": "Handle overflow JSON",
+            "learnMoreDescription": "Microsofts guide til fejlhåndtering i System.Text.Json."
+          },
+          {
+            "id": "8189ec3a-2898-5f5e-967c-88d15daff40a",
+            "kind": "single",
+            "prompt": "Hvordan serialiserer du variablen liste med System.Text.Json uden at angive typeparameteren eksplicit?",
+            "options": [
+              "JsonSerializer.Serialize<List<T>>(liste)",
+              "JsonSerializer.Serialize(liste)",
+              "JsonSerializer.SerializeArray(liste)",
+              "JsonSerializer.ToJson(liste)"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/how-to",
+            "optionExplanations": [
+              "Den eksplicitte typeparameter kan være gyldig, men opgaven beder om at lade compileren udlede typen.",
+              "JsonSerializer.Serialize(liste) lader compileren udlede typen fra variablen.",
+              "Der findes ingen SerializeArray metode.",
+              "ToJson er ikke en del af System.Text.Json API'et."
+            ],
+            "learnMoreTitle": "Serialize to JSON",
+            "learnMoreDescription": "Microsofts dokumentation om hvordan man serialiserer objekter til JSON."
+          },
+          {
+            "id": "d4f4d4a3-bd02-568d-948c-43251ef339e6",
+            "kind": "single",
+            "prompt": "Hvad er en vigtig best practice ved deserialisering af ekstern JSON?",
+            "options": [
+              "Altid stole på at JSON'en er korrekt formateret",
+              "Valider data efter deserialisering og håndter fejl med try-catch",
+              "Brug kun Newtonsoft.Json til ekstern data",
+              "Ignorer alle fejl for at undgå crashes"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/deserialization",
+            "optionExplanations": [
+              "Du skal aldrig stole blindt på ekstern data - valider altid.",
+              "Validering og fejlhåndtering er kritiske for robuste applikationer.",
+              "System.Text.Json er fint til ekstern data - det handler om validering.",
+              "At ignorere fejl giver ustabile applikationer og sikkerhedsrisici."
+            ],
+            "learnMoreTitle": "Deserialisering i System.Text.Json",
+            "learnMoreDescription": "Microsofts guide til at læse JSON som .NET-objekter."
+          }
+        ]
+      }
+    },
+    {
+      "key": "efcore-linq-querying",
+      "draft": {
+        "title": "EF Core & LINQ Querying - Avancerede Koncepter",
+        "description": "Test din viden om EF Core querying, Eager vs Lazy Loading, filtering, sorting og RESTful conventions",
+        "topic": "Backend",
+        "estimatedMinutes": 18,
+        "questions": [
+          {
+            "id": "16e81fb4-a29c-5c9c-bb0f-78deffbffc91",
+            "kind": "single",
+            "prompt": "Hvad er hovedforskellen mellem Eager Loading og Lazy Loading i EF Core?",
+            "options": [
+              "Eager Loading er hurtigere end Lazy Loading",
+              "Eager Loading henter relateret data med det samme, Lazy Loading venter til det tilgås",
+              "Lazy Loading kræver mindre hukommelse end Eager Loading",
+              "Eager Loading virker kun med SQL Server, Lazy Loading virker med alle databaser"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/querying/related-data",
+            "optionExplanations": [
+              "Hastighed afhænger af situationen - ikke altid hurtigere.",
+              "Eager Loading henter alt relateret data i én forespørgsel, mens Lazy Loading henter når det tilgås.",
+              "Hukommelsesforbrug afhænger af data mængden, ikke loading typen.",
+              "Begge loading typer virker med alle EF Core understøttede databaser."
+            ],
+            "learnMoreTitle": "EF Core Loading Patterns",
+            "learnMoreDescription": "Guide til Eager vs Lazy Loading i Entity Framework Core."
+          },
+          {
+            "id": "c49f1163-de5a-583f-8006-9a8dca594f39",
+            "kind": "single",
+            "prompt": "Hvad er N+1 problemet i forbindelse med Lazy Loading?",
+            "options": [
+              "At der genereres for mange SQL forespørgsler når man tilgår relateret data",
+              "At der bruges for meget hukommelse til at cache data",
+              "At der er for mange relationer mellem entiteter",
+              "At der er for mange felter i hver entitet"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/querying/related-data#eager-loading",
+            "optionExplanations": [
+              "N+1 problemet opstår når man henter N hovedobjekter og derefter 1 forespørgsel per relateret objekt.",
+              "Hukommelsesforbrug er ikke det primære problem med N+1.",
+              "Antal relationer er ikke problemet - det er måden data hentes på.",
+              "Antal felter påvirker ikke N+1 problemet."
+            ],
+            "learnMoreTitle": "N+1 Query Problem",
+            "learnMoreDescription": "Forklaring af N+1 problemet og hvordan man løser det."
+          },
+          {
+            "id": "2c4bf1e6-9f58-5b8c-8500-86d40bafce33",
+            "kind": "single",
+            "prompt": "Hvordan bruger du Eager Loading til at hente en booking med bruger og værelse?",
+            "options": [
+              "var booking = _context.Bookings.Include(b => b.User).Include(b => b.Room).FirstOrDefault()",
+              "var booking = _context.Bookings.Load(b => b.User).Load(b => b.Room).FirstOrDefault()",
+              "var booking = _context.Bookings.With(b => b.User).With(b => b.Room).FirstOrDefault()",
+              "var booking = _context.Bookings.Join(b => b.User).Join(b => b.Room).FirstOrDefault()"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/querying/related-data#eager-loading",
+            "optionExplanations": [
+              "Include() er den korrekte metode til Eager Loading i EF Core.",
+              "Load() eksisterer ikke i EF Core.",
+              "With() er ikke en EF Core metode.",
+              "Join() bruges til SQL JOINs, ikke til Eager Loading."
+            ],
+            "learnMoreTitle": "EF Core Include Method",
+            "learnMoreDescription": "Dokumentation for Include() metoden i EF Core."
+          },
+          {
+            "id": "b1446c3d-0117-5025-bf56-6d77ae16518a",
+            "kind": "single",
+            "prompt": "Hvad er formålet med .AsQueryable() når man bygger dynamiske queries?",
+            "options": [
+              "At gøre queries hurtigere",
+              "At tillade dynamisk tilføjelse af Where() og OrderBy() klausuler",
+              "At reducere hukommelsesforbrug",
+              "At sikre at queries er type-safe"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/how-to-build-dynamic-queries",
+            "optionExplanations": [
+              ".AsQueryable() påvirker ikke hastighed direkte.",
+              "IQueryable lader dig bygge forespørgslen videre med Where() og OrderBy(), inden den udføres. En DbSet i EF Core er allerede en IQueryable.",
+              "Hukommelsesforbrug påvirkes ikke af .AsQueryable().",
+              "Type-safety er ikke hovedformålet med .AsQueryable()."
+            ],
+            "learnMoreTitle": "Query based on run-time state",
+            "learnMoreDescription": "Microsoft forklarer, hvordan en LINQ-forespørgsel kan bygges dynamisk."
+          },
+          {
+            "id": "92e4c578-76a0-5cca-ab5e-dacdd4a8ee9f",
+            "kind": "single",
+            "prompt": "Hvordan modtager du et godkendt filter fra query-strengen og tilføjer det til en EF Core-forespørgsel?",
+            "options": [
+              "Altid bruge hardcodede WHERE klausuler",
+              "Bruge [FromQuery] attribut og bygge queries dynamisk med .Where()",
+              "Kun tillade filtering på foruddefinerede felter",
+              "Ignorere filtering og returnere alt data"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/web-api/action-return-types",
+            "optionExplanations": [
+              "Hardcodede WHERE klausuler giver ikke fleksibilitet.",
+              "Bind filterparameteren med [FromQuery], validér værdien, og tilføj det tilsvarende Where()-udtryk.",
+              "En liste over godkendte felter er god praksis. Den modtager og anvender ikke i sig selv filterværdien.",
+              "At ignorere filtering kan give performance problemer og dårlig brugeroplevelse."
+            ],
+            "learnMoreTitle": "Query Parameters in ASP.NET Core",
+            "learnMoreDescription": "Guide til at håndtere query parameters i ASP.NET Core controllers."
+          },
+          {
+            "id": "40ecca24-2891-5598-b8b1-0f48f485d380",
+            "kind": "single",
+            "prompt": "Hvad er den korrekte måde at implementere dynamisk sorting på?",
+            "options": [
+              "Altid bruge OrderBy() på ID feltet",
+              "Bruge en switch statement til at vælge sorteringsfelt og retning",
+              "Kun tillade sortering på navn feltet",
+              "Ignorere sortering og returnere data i database rækkefølge"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/",
+            "optionExplanations": [
+              "At altid sortere på ID giver ikke brugeren kontrol.",
+              "En switch statement giver fleksibel kontrol over sorteringsfelt og retning.",
+              "Begrænsning til kun navn feltet reducerer funktionalitet.",
+              "Database rækkefølge er ikke altid den ønskede rækkefølge."
+            ],
+            "learnMoreTitle": "Dynamic Sorting in LINQ",
+            "learnMoreDescription": "Guide til at implementere dynamisk sorting i LINQ queries."
+          },
+          {
+            "id": "a3b05384-bad9-5287-b298-f189f2c8e6de",
+            "kind": "single",
+            "prompt": "Hvad er en RESTful route konvention?",
+            "options": [
+              "At bruge HTTP metoder til at angive handlinger på ressourcer",
+              "At altid bruge POST til alle operationer",
+              "At bruge camelCase i route navne",
+              "At bruge ental i collection endpoints"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design",
+            "optionExplanations": [
+              "RESTful konventioner bruger HTTP metoder (GET, POST, PUT, DELETE) til at angive handlinger på ressourcer.",
+              "POST bør kun bruges til at oprette nye ressourcer.",
+              "Route navne bør være lowercase med bindestreger, ikke camelCase.",
+              "Collection endpoints bør bruge flertal (f.eks. /rooms ikke /room)."
+            ],
+            "learnMoreTitle": "REST API Design",
+            "learnMoreDescription": "Best practices for REST API design og konventioner."
+          },
+          {
+            "id": "3672587b-f6ad-5169-b62a-8567e85c6053",
+            "kind": "single",
+            "prompt": "Hvilken rute udtrykker direkte, at værelserne er en ressource under netop hotellet med id {id}?",
+            "options": [
+              "GET /hotels/{id}/rooms",
+              "GET /rooms?hotelId={id}",
+              "GET /getRoomsForHotel?id={id}",
+              "GET /hotelRooms/{hotelId}"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://restfulapi.net/resource-naming/",
+            "optionExplanations": [
+              "/hotels/{id}/rooms følger RESTful konventioner for nested ressourcer.",
+              "Et filter på den samlede værelsesressource er også muligt, men det er ikke den indlejrede rute, som opgaven spørger efter.",
+              "'getRoomsForHotel' er ikke RESTful - brug HTTP metoder i stedet.",
+              "'hotelRooms' er ikke en standard RESTful konvention."
+            ],
+            "learnMoreTitle": "Nested Resources in REST",
+            "learnMoreDescription": "Guide til at håndtere nested ressourcer i REST APIs."
+          },
+          {
+            "id": "5da47df1-d3df-5a01-924d-f74e482f4ead",
+            "kind": "single",
+            "prompt": "Hvad er formålet med .ThenInclude() i EF Core?",
+            "options": [
+              "At tilføje WHERE betingelser til en query",
+              "At inkludere nested relateret data (f.eks. hotel fra room fra booking)",
+              "At sortere resultater",
+              "At begrænse antal returnerede records"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/querying/related-data#including-multiple-levels",
+            "optionExplanations": [
+              "WHERE betingelser tilføjes med .Where(), ikke .ThenInclude().",
+              ".ThenInclude() bruges til at inkludere nested relateret data (f.eks. hotel fra room fra booking).",
+              "Sortering håndteres med .OrderBy(), ikke .ThenInclude().",
+              "Antal records begrænses med .Take(), ikke .ThenInclude()."
+            ],
+            "learnMoreTitle": "EF Core ThenInclude",
+            "learnMoreDescription": "Dokumentation for ThenInclude() metoden i EF Core."
+          },
+          {
+            "id": "ab980e8e-111a-5e60-a7a7-6e6e3b82ddb7",
+            "kind": "single",
+            "prompt": "Hvornår bør du bruge projection (.Select()) i stedet for .Include()?",
+            "options": [
+              "Altid bruge .Include() for bedre performance",
+              "Når du kun skal bruge specifikke felter fra relateret data",
+              "Kun når du arbejder med store datamængder",
+              "Når du vil have alle felter fra alle relaterede entiteter"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying#project-only-properties-you-need",
+            "optionExplanations": [
+              ".Include() henter hele objekter, hvilket kan være ineffektivt hvis du kun skal bruge få felter.",
+              ".Select() er bedre når du kun skal bruge specifikke felter, da det reducerer data transfer.",
+              ".Select() er nyttigt uanset datamængde når du kun skal bruge specifikke felter.",
+              "Hvis du vil have alle felter, så brug .Include() i stedet."
+            ],
+            "learnMoreTitle": "EF Core Projection",
+            "learnMoreDescription": "Microsoft forklarer, hvordan du kun henter de felter, du skal bruge."
+          }
+        ]
+      }
+    },
+    {
+      "key": "error-handling",
+      "draft": {
+        "title": "Error Handling i C#",
+        "description": "Test din viden om fejlhåndtering i C# og API-kommunikation",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "bbc29e43-a286-503c-bc9c-4ad648c95f46",
+            "kind": "single",
+            "prompt": "Hvilken faglig fordel giver det at fange specifikke exceptions før den generelle Exception?",
+            "options": [
+              "Fordi specifikke exceptions giver bedre kontrol og mere præcise fejlbeskeder",
+              "Fordi det gør programmet hurtigere",
+              "Fordi C# kræver det",
+              "Fordi Exception ikke kan fanges"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements#the-try-catch-statement",
+            "optionExplanations": [
+              "At fange specifikke exceptions gør koden mere robust og giver præcis fejlhåndtering.",
+              "Hastighed er ikke hovedpointen.",
+              "C# afviser en catch-blok, hvis en tidligere blok med den samme bredere exceptiontype allerede fanger den. Her spørges til fordelen for fejlhåndteringen.",
+              "Exception kan altid fanges, men bør være sidste resort."
+            ],
+            "learnMoreTitle": "try-catch i C#",
+            "learnMoreDescription": "Microsoft dokumentation om brugen af try-catch til at fange exceptions."
+          },
+          {
+            "id": "8a353afc-8f45-5cfa-a741-af99448baf97",
+            "kind": "single",
+            "prompt": "Hvad er fordelen ved at definere en custom exception (f.eks. ApiException)?",
+            "options": [
+              "De er hurtigere at køre",
+              "De kan inkludere ekstra information og gøre fejlhåndtering mere specifik",
+              "De forhindrer alle fejl i at ske",
+              "De erstatter behovet for try-catch"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-create-user-defined-exceptions",
+            "optionExplanations": [
+              "Performance er ikke forskellen.",
+              "Custom exceptions kan bære ekstra data som statuskoder og gør koden mere læsbar.",
+              "Exceptions forhindrer ikke fejl i at ske – de hjælper med at håndtere dem.",
+              "Du skal stadig bruge try-catch."
+            ],
+            "learnMoreTitle": "How to create custom exceptions",
+            "learnMoreDescription": "Microsofts guide til at lave dine egne exception klasser."
+          },
+          {
+            "id": "18a00855-e3e0-5eff-999a-62bb4f0fc7c4",
+            "kind": "single",
+            "prompt": "Hvilken exception-type fanges typisk ved netværksfejl i HttpClient?",
+            "options": [
+              "InvalidOperationException",
+              "JsonException",
+              "HttpRequestException",
+              "IOException"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestexception",
+            "optionExplanations": [
+              "InvalidOperationException handler om ugyldig brug af API'et.",
+              "JsonException bruges til fejl i serialisering/deserialisering.",
+              "HttpRequestException er den korrekte exception for netværksfejl.",
+              "IOException bruges til fil- og stream-fejl."
+            ],
+            "learnMoreTitle": "HttpRequestException Class",
+            "learnMoreDescription": "Dokumentation om HttpRequestException og hvornår den bruges."
+          },
+          {
+            "id": "69158649-4a2f-5517-b098-db0bff4bffaf",
+            "kind": "single",
+            "prompt": "Hvad betyder statuskoden 429 Too Many Requests?",
+            "options": [
+              "Brugeren mangler authentication",
+              "Serveren er nede midlertidigt",
+              "Der er sendt for mange requests på kort tid",
+              "Serverens gateway er fejlkonfigureret"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429",
+            "optionExplanations": [
+              "Det ville være 401 Unauthorized.",
+              "Det ville være 503 Service Unavailable.",
+              "429 betyder at klienten har overskredet serverens rate limit.",
+              "Det ville være 502 Bad Gateway."
+            ],
+            "learnMoreTitle": "HTTP 429 Too Many Requests",
+            "learnMoreDescription": "MDN-dokumentation om statuskoden 429 og rate limiting."
+          },
+          {
+            "id": "a10d440f-451c-5206-8388-0255fb47c77e",
+            "kind": "single",
+            "prompt": "Hvad er exponential backoff i forbindelse med API error handling?",
+            "options": [
+              "At prøve igen med gradvist længere pauser mellem forsøg",
+              "At køre alle retries samtidigt",
+              "At give op efter første fejl",
+              "At ignorere serverens fejlbeskeder"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://cloud.google.com/storage/docs/retry-strategy",
+            "optionExplanations": [
+              "Exponential backoff betyder at man venter 1s, 2s, 4s, 8s osv. mellem retries.",
+              "Det ville overbelaste serveren yderligere.",
+              "Det fjerner robustheden i systemet.",
+              "At ignorere fejl giver dårlig brugeroplevelse og ustabilt system."
+            ],
+            "learnMoreTitle": "Exponential Backoff and Retry",
+            "learnMoreDescription": "Forklaring på exponential backoff som best practice for API retries."
+          }
+        ]
+      }
+    },
+    {
+      "key": "gf2-dag3-control-flow",
+      "draft": {
+        "title": "GF2 Kapitel 3 - Control Flow",
+        "description": "Test din viden om control flow i C#: if/else statements, switch statements, ternary operator, brugerinput og scope",
+        "topic": "GF2",
+        "estimatedMinutes": 9,
+        "questions": [
+          {
+            "id": "0a201b5a-620f-5fa1-92e0-a93bdae0247f",
+            "kind": "single",
+            "prompt": "Hvad vil følgende kode udskrive? bool result = (10 > 5) && (3 < 1); if (result) Console.WriteLine(\"Sand\"); else Console.WriteLine(\"Falsk\");",
+            "options": [
+              "Sand",
+              "Falsk",
+              "Compile error",
+              "Runtime error"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/selection-statements#the-if-statement",
+            "optionExplanations": [
+              "(10 > 5) er sand, men (3 < 1) er falsk, så && giver falsk.",
+              "&& kræver begge betingelser er sande. Da (3 < 1) er falsk, bliver result falsk.",
+              "Koden er syntaktisk korrekt.",
+              "Der opstår ingen runtime fejl."
+            ],
+            "learnMoreTitle": "If Statements in C#",
+            "learnMoreDescription": "Microsofts dokumentation om if statements i C#."
+          },
+          {
+            "id": "39d8a6ba-a085-5277-84bf-153d518461c5",
+            "kind": "single",
+            "prompt": "Hvad sker der i C#, hvis kontrollen i en ikke-tom switch-sektion kan nå frem til næste case uden at forlade sektionen?",
+            "options": [
+              "Koden kompilerer ikke - der kommer en fejl",
+              "Koden kører videre til næste case (fall-through)",
+              "Programmet crasher",
+              "Intet særligt sker"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/selection-statements#the-switch-statement",
+            "optionExplanations": [
+              "C# afviser, at kontrollen falder videre efter instruktionerne i en sektion. En sektion kan f.eks. afsluttes med break eller return.",
+              "I modsætning til C/Java tillader C# ikke implicit fall-through.",
+              "Programmet når aldrig at køre da det ikke kompilerer.",
+              "Der sker noget meget specifikt - en compile error."
+            ],
+            "learnMoreTitle": "Switch Statements in C#",
+            "learnMoreDescription": "Microsofts dokumentation om switch statements i C#."
+          },
+          {
+            "id": "6f01a639-91f3-5ebd-ac5a-09ea1b6fe674",
+            "kind": "single",
+            "prompt": "Hvilken af følgende ternary operator syntakser vil give en compile error?",
+            "options": [
+              "string result = (age >= 18) ? \"Voksen\" : \"Barn\";",
+              "int value = (x > 0) ? x : -x;",
+              "bool isValid = (input != null) ? true : false",
+              "double price = (discount > 0) ? originalPrice * 0.9 : originalPrice;"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/conditional-operator",
+            "optionExplanations": [
+              "Korrekt syntaks med parenteser og semikolon.",
+              "Korrekt syntaks med matematiske operationer.",
+              "Mangler semikolon i slutningen - vil give compile error.",
+              "Korrekt syntaks med matematiske beregninger."
+            ],
+            "learnMoreTitle": "Ternary Operator in C#",
+            "learnMoreDescription": "Microsofts dokumentation om conditional operator (ternary) i C#."
+          },
+          {
+            "id": "0793b447-cad9-5b22-8c14-66c6a5eb0f1c",
+            "kind": "single",
+            "prompt": "Hvad returnerer Console.ReadLine() hvis brugeren bare trykker Enter uden at skrive noget?",
+            "options": [
+              "null",
+              "En tom string (\"\")",
+              "Et mellemrum (\" \")",
+              "En exception kastes"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.console.readline",
+            "optionExplanations": [
+              "Console.ReadLine() returnerer kun null ved EOF (Ctrl+Z på Windows).",
+              "Når brugeren bare trykker Enter returneres en tom string.",
+              "Der returneres ikke et mellemrum, men en helt tom string.",
+              "Der kastes ingen exception ved tom input."
+            ],
+            "learnMoreTitle": "Console.ReadLine() in C#",
+            "learnMoreDescription": "Microsofts dokumentation om Console.ReadLine() i C#."
+          },
+          {
+            "id": "ea99d7d7-9d0d-534a-9750-1385ad236565",
+            "kind": "single",
+            "prompt": "Hvad sker der i følgende kode? int x = 10; if (true) { int x = 20; Console.WriteLine(x); }",
+            "options": [
+              "Udskriver 10",
+              "Udskriver 20",
+              "Compile error - kan ikke redeclarere x",
+              "Runtime error"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/basic-concepts#scopes",
+            "optionExplanations": [
+              "Koden kompilerer ikke, så der udskrives intet.",
+              "Koden kompilerer ikke, så der udskrives intet.",
+              "C# tillader ikke at redeclarere en variabel med samme navn i samme scope eller nested scope.",
+              "Det er en compile-time error, ikke runtime error."
+            ],
+            "learnMoreTitle": "Variable Scope in C#",
+            "learnMoreDescription": "Microsofts dokumentation om variable scope i C#."
+          },
+          {
+            "id": "27fb3aa0-f6fa-5216-b63c-61b9830359aa",
+            "kind": "single",
+            "prompt": "Hvad vil følgende kode udskrive? string result = (5 > 3) ? \"Større\" : (5 < 3) ? \"Mindre\" : \"Lig med\"; Console.WriteLine(result);",
+            "options": [
+              "Større",
+              "Mindre",
+              "Lig med",
+              "Compile error"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/conditional-operator",
+            "optionExplanations": [
+              "Da 5 > 3 er sandt, returneres \"Større\" uden at evaluere resten.",
+              "Den anden betingelse evalueres ikke da den første er sand.",
+              "Default værdien bruges ikke da den første betingelse er sand.",
+              "Nested ternary operators er gyldige i C#."
+            ],
+            "learnMoreTitle": "Ternary Operator in C#",
+            "learnMoreDescription": "Microsofts dokumentation om conditional operator (ternary) i C#."
+          },
+          {
+            "id": "e70c8098-2d7f-527b-a69d-9c037140d902",
+            "kind": "single",
+            "prompt": "Hvad vil følgende kode udskrive? int num = 15; if (num > 10) { Console.WriteLine(\"Større end 10\"); } else if (num > 5) { Console.WriteLine(\"Større end 5\"); } else { Console.WriteLine(\"Mindre end eller lig med 5\"); }",
+            "options": [
+              "Større end 10",
+              "Større end 5",
+              "Mindre end eller lig med 5",
+              "Ingen af ovenstående"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/selection-statements#the-if-statement",
+            "optionExplanations": [
+              "Da num = 15 og 15 > 10 er sandt, udføres den første if-blok.",
+              "Denne blok udføres kun hvis den første betingelse er falsk.",
+              "Denne blok udføres kun hvis begge betingelser er falske.",
+              "A er korrekt - koden udskriver 'Større end 10'."
+            ],
+            "learnMoreTitle": "If-Else Logic in C#",
+            "learnMoreDescription": "Microsofts dokumentation om if-else statement logik."
+          },
+          {
+            "id": "c618bd65-3f1c-5c35-b518-78e0c5499a4a",
+            "kind": "single",
+            "prompt": "Hvad vil int.TryParse(\"abc\", out int result) returnere, og hvad bliver værdien af result?",
+            "options": [
+              "Returnerer true, result bliver 0",
+              "Returnerer false, result bliver 0",
+              "Returnerer false, result bliver -1",
+              "Kaster en FormatException"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.int32.tryparse",
+            "optionExplanations": [
+              "TryParse returnerer false når konvertering fejler.",
+              "TryParse returnerer false ved fejl og sætter out parameteren til default værdi (0 for int).",
+              "Default værdi for int er 0, ikke -1.",
+              "For denne ugyldige tekst returnerer TryParse false, så kaldet ikke kaster en FormatException på grund af teksten."
+            ],
+            "learnMoreTitle": "TryParse Methods in C#",
+            "learnMoreDescription": "Microsofts dokumentation om TryParse metoder i C#."
+          },
+          {
+            "id": "effa2e03-87e9-542a-9dba-390dc7e16150",
+            "kind": "single",
+            "prompt": "Hvad vil følgende switch statement udskrive? int day = 3; switch (day) { case 1: case 2: Console.WriteLine(\"Weekday\"); break; case 3: Console.WriteLine(\"Wednesday\"); case 4: Console.WriteLine(\"Thursday\"); break; default: Console.WriteLine(\"Other\"); break; }",
+            "options": [
+              "Wednesday",
+              "Wednesday Thursday",
+              "Compile error",
+              "Thursday"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/selection-statements#the-switch-statement",
+            "optionExplanations": [
+              "Koden kompilerer ikke på grund af manglende break efter case 3.",
+              "Koden kompilerer ikke på grund af manglende break efter case 3.",
+              "C# kræver eksplicit break, return eller goto - case 3 mangler break før case 4.",
+              "Koden kompilerer ikke på grund af manglende break efter case 3."
+            ],
+            "learnMoreTitle": "Switch Fall-through in C#",
+            "learnMoreDescription": "Microsofts dokumentation om switch fall-through regler i C#."
+          },
+          {
+            "id": "25c4e179-18c3-5ef8-9efc-4324b2f0554b",
+            "kind": "single",
+            "prompt": "Hvilket udtryk samler tre betingelser i én if og stopper, når den første falske betingelse er fundet?",
+            "options": [
+              "if (condition1 && condition2 && condition3)",
+              "if (condition1) { if (condition2) { if (condition3) { } } }",
+              "if (condition1 || condition2 || condition3)",
+              "De er alle lige effektive"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/boolean-logical-operators",
+            "optionExplanations": [
+              "&& afbryder evalueringen ved den første falske betingelse.",
+              "Indlejrede if-sætninger kan også stoppe tidligt, men samler ikke alle betingelser i ét udtryk.",
+              "|| stopper ved det første sande udtryk og betyder, at mindst én betingelse er sand.",
+              "A er den eneste viste løsning, der samler alle tre betingelser i én if med den ønskede betydning."
+            ],
+            "learnMoreTitle": "Logical Operators in C#",
+            "learnMoreDescription": "Microsofts dokumentation om logiske operatorer og short-circuit evaluation."
+          }
+        ]
+      }
+    },
+    {
+      "key": "gf2-dag7-loops-iterationer",
+      "draft": {
+        "title": "GF2 Kapitel 7 - Loops og Iterationer",
+        "description": "Test din viden om for, while, do-while og foreach loops i C# samt iteration over arrays, lister og dictionaries",
+        "topic": "GF2",
+        "estimatedMinutes": 10,
+        "questions": [
+          {
+            "id": "d2b52680-9363-5995-a69f-74249a2489fe",
+            "kind": "single",
+            "prompt": "Hvilken loop bruges, når du ved hvor mange gange du vil gentage en blok kode?",
+            "options": [
+              "while loop",
+              "do-while loop",
+              "for loop",
+              "foreach loop"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement",
+            "optionExplanations": [
+              "while loop bruges når du vil gentage baseret på en betingelse, ikke et kendt antal gange.",
+              "do-while loop sikrer mindst én iteration, men er ikke optimalt til kendt antal gentagelser.",
+              "for loop er perfekt når du ved hvor mange gange du vil gentage - den har initialisering, betingelse og opdatering.",
+              "foreach loop bruges til at iterere over samlinger, ikke til et kendt antal gentagelser."
+            ],
+            "learnMoreTitle": "for Loop i C#",
+            "learnMoreDescription": "Microsofts dokumentation om for loops og deres syntaks i C#."
+          },
+          {
+            "id": "cd85ed59-c3d9-5b71-857c-4d675185999d",
+            "kind": "single",
+            "prompt": "Hvad er forskellen mellem while og do-while loop?",
+            "options": [
+              "Der er ingen forskel",
+              "do-while sikrer at koden køres mindst én gang",
+              "while loop er hurtigere end do-while",
+              "do-while kan kun bruges med arrays"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Der er en vigtig forskel i hvornår betingelsen evalueres.",
+              "do-while evaluerer betingelsen EFTER koden er kørt, så koden køres altid mindst én gang.",
+              "Hastighed er ikke forskellen mellem disse loops.",
+              "do-while kan bruges til mange formål, ikke kun arrays."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "3373ce00-e5c8-583c-87dd-d4e02c0f0e49",
+            "kind": "single",
+            "prompt": "Hvilken loop er bedst til at iterere over alle elementer i en List<string>?",
+            "options": [
+              "for loop med indeks",
+              "while loop",
+              "foreach loop",
+              "do-while loop"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "for loop virker, men foreach er mere læsbar og sikker for samlinger.",
+              "while loop er ikke optimalt til at iterere over samlinger.",
+              "foreach loop er designet til at iterere over samlinger og er mere læsbar og sikker.",
+              "do-while er ikke optimalt til samlinger."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "9b149572-cd70-5f22-8afc-51a9eda2417e",
+            "kind": "single",
+            "prompt": "Hvad gør 'break' i en loop?",
+            "options": [
+              "Stopper den nuværende iteration og fortsætter med næste",
+              "Afslutter hele loopet før det normalt ville slutte",
+              "Starter loopet forfra",
+              "Ændrer loopets retning"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Det beskriver 'continue', ikke 'break'.",
+              "break afslutter loopet helt og springer ud af det.",
+              "break starter ikke loopet forfra.",
+              "break ændrer ikke retning, det stopper loopet."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "242f23de-2b19-51b9-9e48-621a86b63c5c",
+            "kind": "single",
+            "prompt": "Hvad gør 'continue' i en loop?",
+            "options": [
+              "Afslutter hele loopet",
+              "Stopper den nuværende iteration og fortsætter med næste",
+              "Starter loopet forfra",
+              "Ændrer loopets hastighed"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Det beskriver 'break', ikke 'continue'.",
+              "continue springer resten af den nuværende iteration over og fortsætter med næste.",
+              "continue starter ikke loopet forfra.",
+              "continue ændrer ikke hastighed, det springer iteration over."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "67cd926a-f48a-51cc-8b02-1d9c5d080e07",
+            "kind": "single",
+            "prompt": "Hvilken syntaks bruges til at iterere over en Dictionary<string, int>?",
+            "options": [
+              "foreach (string key in dictionary)",
+              "foreach (KeyValuePair<string, int> kvp in dictionary)",
+              "foreach (int value in dictionary)",
+              "for (int i = 0; i < dictionary.Count; i++)"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Dette itererer kun over nøglerne, ikke nøgle/værdi-parrene.",
+              "KeyValuePair<string, int> giver adgang til både nøgle og værdi i hver iteration.",
+              "Dette itererer kun over værdierne, ikke nøgle/værdi-parrene.",
+              "for loop med indeks virker ikke direkte med Dictionary."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "45eebf16-8e41-527f-ba42-4cf4311c5c99",
+            "kind": "single",
+            "prompt": "Hvilket svar angiver begge almindelige måder at gennemløbe alle rækker og elementer i en 2D-liste (List<List<int>>)?",
+            "options": [
+              "Kun med en enkelt foreach loop",
+              "Med nested for loops",
+              "Med nested foreach loops",
+              "Både B og C er korrekte"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "En enkelt foreach loop kan ikke håndtere 2D-strukturer.",
+              "Nested for loops virker med indekser: for (int i = 0; i < outer.Count; i++) for (int j = 0; j < outer[i].Count; j++)",
+              "Nested foreach loops virker også: foreach (List<int> inner in outer) foreach (int item in inner)",
+              "Begge metoder er korrekte - for loops med indekser eller nested foreach loops."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "f3c70f0e-2cc0-5305-b62e-69fd9c2cf376",
+            "kind": "single",
+            "prompt": "Hvad er forskellen mellem numbers.Length og names.Count?",
+            "options": [
+              "Der er ingen forskel",
+              "Length bruges til arrays, Count til lister",
+              "Count er hurtigere end Length",
+              "Length kan kun bruges med strings"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Der er en vigtig forskel i hvilke datatyper de bruges med.",
+              "Length er en property på arrays, Count er en property på lister og andre samlinger.",
+              "Hastighed er ikke forskellen - det handler om datatyper.",
+              "Length bruges med arrays, ikke kun strings."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "cabda550-7efb-552f-87af-7b251fb20b15",
+            "kind": "single",
+            "prompt": "Hvilket svar angiver begge for-løkker, hvor i gennemløber præcis tallene 0 til 4?",
+            "options": [
+              "for (int i = 0; i <= 4; i++)",
+              "for (int i = 0; i < 5; i++)",
+              "for (int i = 1; i < 5; i++)",
+              "Både A og B er korrekte"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "i <= 4 betyder i går fra 0 til 4 (inklusiv 4).",
+              "i < 5 betyder i går fra 0 til 4 (eksklusiv 5).",
+              "Dette starter ved 1, så det vil udskrive 1 til 4.",
+              "Begge loops vil udskrive 0, 1, 2, 3, 4."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "b670620e-3ff2-5ae7-82f8-7b7326091112",
+            "kind": "single",
+            "prompt": "Hvad sker der i denne kode: for (int i = 0; i < 10; i++) { if (i == 5) break; Console.WriteLine(i); }",
+            "options": [
+              "Udskriver tallene 0 til 9",
+              "Udskriver tallene 0 til 4",
+              "Udskriver tallene 1 til 5",
+              "Udskriver intet"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "break stopper loopet når i == 5, så 5-9 udskrives ikke.",
+              "Loopet kører fra 0 til 4, og når i bliver 5, stopper break loopet.",
+              "Loopet starter ved 0, ikke 1.",
+              "Loopet udskriver faktisk 0, 1, 2, 3, 4."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          }
+        ]
+      }
+    },
+    {
+      "key": "gf2-kapitel-8-metoder-funktioner",
+      "draft": {
+        "title": "GF2 Kapitel 8 - Metoder & Funktioner",
+        "description": "Test din viden om metoder, parametre, returværdier, overloading, rekursion og valgfrie parametre i C#",
+        "topic": "GF2",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "053efdfa-b6d6-54d4-8640-3d54f34bd94b",
+            "kind": "single",
+            "prompt": "Hvilke dele kan du udpege i denne C#-metode: public int Sum(int a, int b) { return a + b; }?",
+            "options": [
+              "Kun metodenavn og metodekrop",
+              "Adgangsmodifikator, returtype, metodenavn, parametre og metodekrop",
+              "Kun returtype og metodenavn",
+              "Kun parametre og metodekrop"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/methods",
+            "optionExplanations": [
+              "En metode består af flere dele end kun navn og krop.",
+              "public er adgangsmodifikatoren, int er returtypen, Sum er navnet, a og b er parametrene, og blokken er metodekroppen.",
+              "Der mangler flere vigtige dele som adgangsmodifikator og parametre.",
+              "Der mangler vigtige dele som adgangsmodifikator og returtype."
+            ],
+            "learnMoreTitle": "Metoder i C#",
+            "learnMoreDescription": "Microsofts dokumentation om metoder og deres syntaks i C#."
+          },
+          {
+            "id": "b7213d22-02e5-583c-b83f-afc5f13d7661",
+            "kind": "single",
+            "prompt": "Hvad betyder 'void' som returtype?",
+            "options": [
+              "At metoden returnerer en tom værdi",
+              "At metoden ikke returnerer noget",
+              "At metoden returnerer null",
+              "At metoden returnerer en string"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "'void' betyder ikke at returnere en tom værdi.",
+              "'void' betyder at metoden ikke returnerer noget - den udfører kun en handling.",
+              "'void' er ikke det samme som at returnere null.",
+              "'void' er ikke en string returtype."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "cd783645-746b-5793-b202-0311d5bee9be",
+            "kind": "single",
+            "prompt": "Hvad er forskellen mellem en parameter og et argument?",
+            "options": [
+              "Der er ingen forskel",
+              "Parameter er i metodedefinitionen, argument er ved metodens kald",
+              "Argument er i metodedefinitionen, parameter er ved metodens kald",
+              "Parameter er altid en string, argument er altid et tal"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Der er en vigtig forskel mellem disse to begreber.",
+              "Parameter er variablen i metodedefinitionen, argument er den faktiske værdi der sendes ved kald.",
+              "Det er omvendt - parameter er i definitionen, argument er ved kaldet.",
+              "Det handler ikke om datatyper, men om hvor de bruges."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "58c9ffa6-6fc4-5382-9c2f-bc00e542c4c5",
+            "kind": "single",
+            "prompt": "Hvad er method overloading?",
+            "options": [
+              "At en metode kører for længe",
+              "At have flere metoder med samme navn men forskellige parametre",
+              "At en metode kalder sig selv",
+              "At en metode returnerer for mange værdier"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Overloading handler ikke om køretid, men om metodesignaturer.",
+              "Overloading er flere metoder med samme navn og forskellige parameterlister. En anden returtype alene er ikke nok.",
+              "Det beskriver rekursion, ikke overloading.",
+              "Overloading handler ikke om antal returværdier."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "fc916291-dee1-54cd-bac4-49fbf8ce72b7",
+            "kind": "single",
+            "prompt": "Hvad er rekursion?",
+            "options": [
+              "At en metode kalder en anden metode",
+              "At en metode kalder sig selv",
+              "At en metode returnerer en værdi",
+              "At en metode tager parametre"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Det beskriver et almindeligt metodkald, ikke rekursion.",
+              "Rekursion er når en metode kalder sig selv - ofte brugt til at løse problemer der kan opdeles i mindre delproblemer.",
+              "Det beskriver en almindelig returværdi, ikke rekursion.",
+              "Det beskriver almindelige parametre, ikke rekursion."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "35966476-469d-5905-90d6-43a90f56245f",
+            "kind": "single",
+            "prompt": "Hvad beregner denne metode for et ikke-negativt heltal n, når resultatet kan være i int? public int Factorial(int n) { if (n <= 1) return 1; else return n * Factorial(n - 1); }",
+            "options": [
+              "Metoden beregner summen af alle tal fra 1 til n",
+              "Metoden beregner fakultet af n (n!)",
+              "Metoden beregner kvadratet af n",
+              "Metoden beregner kvadratroden af n"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Dette ville være en sum-funktion, ikke fakultet.",
+              "Dette er en rekursiv fakultet-funktion der beregner n! = n × (n-1) × (n-2) × ... × 1.",
+              "Dette ville være n * n, ikke fakultet.",
+              "Dette ville være √n, ikke fakultet."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "4a4411a6-23c6-559b-bdf8-3a9360f8273f",
+            "kind": "single",
+            "prompt": "Hvad er valgfrie parametre?",
+            "options": [
+              "Parametre der ikke kan bruges",
+              "Parametre med standardværdier der kan udelades ved kald",
+              "Parametre der altid skal være null",
+              "Parametre der kun kan bruges én gang"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Valgfrie parametre kan sagtens bruges.",
+              "Valgfrie parametre har standardværdier og kan udelades ved metodens kald.",
+              "Valgfrie parametre behøver ikke være null.",
+              "Valgfrie parametre kan bruges mange gange."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "37c2eaed-7420-5dea-b930-c9838638796c",
+            "kind": "single",
+            "prompt": "Hvilken metodeheader har en valgfri int-parameter med standardværdien 5?",
+            "options": [
+              "public void Method(int param = 5)",
+              "public void Method(int param?)",
+              "public void Method(int param = null)",
+              "public void Method(int? param)"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Dette er korrekt syntaks for valgfrie parametre med standardværdi 5.",
+              "Dette er nullable int syntaks, ikke valgfrie parametre.",
+              "int kan ikke være null, og syntaksen er forkert.",
+              "Dette er nullable int syntaks, ikke valgfrie parametre."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "50edd301-ff6f-5b66-ab2c-0bfbc56ea626",
+            "kind": "single",
+            "prompt": "Hvorfor er metoder vigtige i UI-udvikling som Blazor?",
+            "options": [
+              "Kun for at gøre koden hurtigere",
+              "For modularitet, genbrug og lettere vedligeholdelse",
+              "Kun for at spare hukommelse",
+              "Kun for at gøre koden kortere"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Metoder handler ikke kun om hastighed.",
+              "Metoder giver modularitet, genbrug af kode, lettere vedligeholdelse og bedre læselighed.",
+              "Metoder handler ikke kun om hukommelse.",
+              "Metoder handler ikke kun om kodelængde."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "091afc35-b6d3-517b-97e4-6acaa8206437",
+            "kind": "single",
+            "prompt": "Hvad er forskellen mellem statiske og instansmetoder?",
+            "options": [
+              "Der er ingen forskel",
+              "Statiske kaldes på klassen, instansmetoder kaldes på objekter",
+              "Instansmetoder kaldes på klassen, statiske kaldes på objekter",
+              "Statiske er hurtigere end instansmetoder"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Der er en vigtig forskel i hvordan de kaldes.",
+              "Statiske metoder kaldes direkte på klassen (ClassName.Method()), instansmetoder kaldes på objekter (object.Method()).",
+              "Det er omvendt - statiske på klassen, instansmetoder på objekter.",
+              "Det handler ikke om hastighed, men om hvordan de kaldes."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          }
+        ]
+      }
+    },
+    {
+      "key": "jwt-security",
+      "draft": {
+        "title": "JWT & Token Sikkerhed",
+        "description": "Test din viden om JWT tokens, refresh tokens og sikkerhedsaspekter",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "5032aab5-0677-5dab-8356-333fad6660a0",
+            "kind": "multiple",
+            "prompt": "Hvilke af disse er teknisk mulige steder, hvor en webklient kan gemme et access-token?",
+            "options": [
+              "I en SQL-database",
+              "I en cookie (ofte HttpOnly)",
+              "I sessionStorage eller localStorage",
+              "I JWT-serveren"
+            ],
+            "correctOptions": [
+              1,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.descope.com/blog/post/developer-guide-jwt-storage",
+            "optionExplanations": [
+              "SQL er serverside – ikke relevant for klientlagring.",
+              "Et token kan gemmes i en cookie. Med HttpOnly kan JavaScript ikke læse den, men det løser ikke XSS i sig selv.",
+              "Web Storage kan gemme tokens, men script på samme oprindelse kan læse dem. Undgå at gemme langlivede tokens dér.",
+              "JWT er \"self-contained\" – ikke nødvendigt at gemme dem på serveren, medmindre man blacklister eller tracker tokens."
+            ],
+            "learnMoreTitle": "JWT Token Storage Best Practices",
+            "learnMoreDescription": "Lær om de bedste måder at gemme JWT tokens på klienten, og hvilke sikkerhedsrisici du skal være opmærksom på."
+          },
+          {
+            "id": "f1b075fc-14c7-5869-b86f-09a6b75ecdd8",
+            "kind": "single",
+            "prompt": "Hvad er hovedformålet med refresh tokens?",
+            "options": [
+              "At gøre tokens sværere at forfalske",
+              "At udvide login-sessionen uden at gøre access-tokenet langtidslevende",
+              "At kunne nulstille adgangskoder",
+              "At undgå at bruge cookies"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/",
+            "optionExplanations": [
+              "Det er signaturen i JWT, ikke refresh-tokenet, der gør det svært at forfalske.",
+              "Det er præcis formålet – holde brugeren logget ind uden at have farlige langlivede access-tokens.",
+              "Ikke relevant – nulstilling af adgangskode foregår typisk separat.",
+              "Refresh tokens kan netop gemmes i cookies – så dette er misvisende."
+            ],
+            "learnMoreTitle": "Refresh Tokens Explained",
+            "learnMoreDescription": "Forstå hvordan refresh tokens fungerer og hvorfor de er vigtige for sikkerhed."
+          },
+          {
+            "id": "eaa7cf02-cb4d-5172-885a-7cd17952857b",
+            "kind": "multiple",
+            "prompt": "Hvilke udsagn gælder for et signeret JWT, som skal kunne udløbe?",
+            "options": [
+              "JWT tokens skal altid krypteres",
+              "Signaturen kan valideres for at kontrollere udsteder og integritet",
+              "Signaturen skjuler automatisk de følsomme claims",
+              "exp-claimet angiver udløbstidspunktet"
+            ],
+            "correctOptions": [
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://tools.ietf.org/html/rfc7519",
+            "optionExplanations": [
+              "Et signeret JWT behøver ikke også være krypteret.",
+              "Modtageren kan kontrollere signaturen ved hjælp af den betroede udsteders nøgle.",
+              "En signatur skjuler ikke payloaden. Undgå at lægge hemmelige oplysninger i et token, der kun er signeret.",
+              "exp angiver udløbstidspunktet, hvis claimet findes. API'et skal håndhæve reglerne i sin tokenprofil."
+            ],
+            "learnMoreTitle": "JWT Security Best Practices",
+            "learnMoreDescription": "Lær om de vigtigste sikkerhedsaspekter ved JWT tokens."
+          },
+          {
+            "id": "a360b197-4411-5e09-9adb-099bb53f10f3",
+            "kind": "single",
+            "prompt": "Hvordan kan klienten få et nyt JWT access-token, når det gamle er udløbet, og klienten har et gyldigt refresh-token?",
+            "options": [
+              "Brugeren bliver automatisk logget ud",
+              "Systemet bruger refresh-tokenet til at få et nyt access-token",
+              "Tokenet bliver automatisk fornyet",
+              "Brugeren skal logge ind igen"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/",
+            "optionExplanations": [
+              "Det udløbne access-token afvises. En gyldig refresh-session kan stadig bruges.",
+              "Klienten kan bede token-endpointet om et nyt access-token ved hjælp af refresh-tokenet.",
+              "Tokenet fornyes ikke automatisk – det kræver en API-kald med refresh-tokenet.",
+              "Et nyt login kan blive nødvendigt, hvis refresh-tokenet er ugyldigt, udløbet eller tilbagekaldt."
+            ],
+            "learnMoreTitle": "JWT Token Refresh Flow",
+            "learnMoreDescription": "Forstå det komplette flow for token refresh i JWT-baserede systemer."
+          }
+        ]
+      }
+    },
+    {
+      "key": "oauth",
+      "draft": {
+        "title": "OAuth 2.0 (grundlæggende)",
+        "description": "Test din viden om OAuth 2.0: roller, authorization code flow, tokens, scopes, PKCE og sikkerhed",
+        "topic": "Backend",
+        "estimatedMinutes": 11,
+        "questions": [
+          {
+            "id": "697485e2-c706-5f4f-b27b-0a9b69593011",
+            "kind": "single",
+            "prompt": "Hvad er OAuth 2.0 primært?",
+            "options": [
+              "En krypteringsstandard til passwords",
+              "Et framework til at give tredjeparts-apps begrænset adgang uden at dele brugerens password",
+              "En database til brugere",
+              "En erstatning for HTTPS"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.rfc-editor.org/rfc/rfc6749.html#section-1",
+            "optionExplanations": [
+              "OAuth handler ikke om at kryptere passwords.",
+              "OAuth 2.0 bruges til autorisation – at delegere adgang (fx 'log ind med Google') uden at give appen brugerens password.",
+              "OAuth er ikke en database.",
+              "OAuth bruges ofte over HTTPS, men erstatter det ikke."
+            ],
+            "learnMoreTitle": "The OAuth 2.0 Authorization Framework",
+            "learnMoreDescription": "IETF-standarden gennemgår formålet med OAuth 2.0 og de involverede roller."
+          },
+          {
+            "id": "9db3a4a5-83bb-5496-86e9-6d316bc96b16",
+            "kind": "single",
+            "prompt": "Hvilke roller findes i OAuth 2.0?",
+            "options": [
+              "Resource Owner, Client, Authorization Server, Resource Server",
+              "Admin, User, Database, Cache",
+              "Browser, API, DNS, Firewall",
+              "Kun 'User' og 'Server'"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Resource Owner = brugeren; Client = appen; Authorization Server = udsteder tokens; Resource Server = API der beskytter data.",
+              "Det er ikke OAuth-roller.",
+              "Det er ikke OAuth-roller.",
+              "OAuth 2.0 definerer fire typer af aktører."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "2e652368-4925-5eb7-9b75-cff21d85cf50",
+            "kind": "single",
+            "prompt": "Hvilket OAuth-flow anbefales til en webapp med backend, når brugeren giver adgang via sin browser?",
+            "options": [
+              "Implicit flow",
+              "Authorization Code flow med PKCE",
+              "Resource Owner Password flow",
+              "Client Credentials flow"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Implicit flow er forældet og usikkert – token kan ende i URL.",
+              "Brugeren godkender i browseren. Klienten veksler den kortlivede kode til tokens og bruger PKCE til at binde koden til flowet.",
+              "Password flow kræver at appen håndterer password – undgå med tredjeparts-login.",
+              "Client Credentials er til machine-to-machine, ikke bruger-login."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "540e2f10-697f-5715-ad06-29fe318a28f6",
+            "kind": "single",
+            "prompt": "Hvad er forskellen mellem et access token og et refresh token i OAuth?",
+            "options": [
+              "Access token bruges til at hente nye tokens; refresh token til at kalde API",
+              "Access token bruges til at kalde API; refresh token bruges til at få nye access tokens",
+              "De er det samme",
+              "Kun access token findes i OAuth"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Det er omvendt.",
+              "Access token sendes til Resource Server; refresh token bruges hos Authorization Server til nye access tokens.",
+              "De har forskellige formål og levetid.",
+              "OAuth 2.0 understøtter begge."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "59476d85-d4cf-5f13-9df2-56a7bb159823",
+            "kind": "single",
+            "prompt": "Hvad bruges OAuth 'scopes' til?",
+            "options": [
+              "At begrænse hvilke ressourcer/rettigheder klienten får adgang til",
+              "At kryptere tokens",
+              "At vælge hvilken database der bruges",
+              "At sætte session timeout"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Scopes angiver fx 'read:email' eller 'openid' – hvad appen må gøre på brugerens vegne.",
+              "Scopes begrænser rettigheder; de krypterer ikke tokens.",
+              "Scopes har intet med databasevalg at gøre.",
+              "Session/timeout håndteres typisk af token expiry, ikke scopes."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "dc2d3719-3622-5f7e-94fb-8b31de554a67",
+            "kind": "single",
+            "prompt": "Hvorfor anbefales det ofte at bruge PKCE (Proof Key for Code Exchange) ved OAuth?",
+            "options": [
+              "For at gøre authorization code flow hurtigere",
+              "For at beskytte mod at authorization code bliver stjålet og brugt (især ved public clients som SPA/mobile)",
+              "For at fjerne behovet for client secret",
+              "Kun for at understøtte ældre browsere"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://oauth.net/2/pkce/",
+            "optionExplanations": [
+              "PKCE handler om sikkerhed, ikke hastighed.",
+              "PKCE binder authorization code til den klient, der startede flowet, og beskytter mod misbrug af koden. Det er også relevant for fortrolige klienter.",
+              "PKCE er et særskilt værn og fjerner ikke et eventuelt krav om klientautentificering.",
+              "PKCE er en sikkerhedsforbedring, ikke browserkompatibilitet."
+            ],
+            "learnMoreTitle": "PKCE (RFC 7636)",
+            "learnMoreDescription": "Hvordan PKCE beskytter authorization code flow."
+          },
+          {
+            "id": "704c9dbb-7fad-50c0-a68f-c17b39c05599",
+            "kind": "single",
+            "prompt": "Hvad er en 'public client' i OAuth?",
+            "options": [
+              "En server der kører i det offentlige cloud",
+              "En klient der ikke sikkert kan gemme en client secret (fx SPA, mobil-app)",
+              "En klient der er open source",
+              "En klient der kun bruger HTTPS"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Det handler ikke om hvor serveren kører.",
+              "Public client = kan ikke holde secrets hemmelige (browser/mobile); confidential client = har backend og kan gemme client secret.",
+              "Open source er ikke definitionen af public client.",
+              "HTTPS bruges af både public og confidential clients."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "5db9cd19-cf1a-59c8-99ee-56a9a6a5deb7",
+            "kind": "multiple",
+            "prompt": "Hvilke udsagn om login med en ekstern udbyder er korrekte, når appen bruger Authorization Code flow?",
+            "options": [
+              "Appen kan bruge OpenID Connect eller en udbyders OAuth-baserede login",
+              "Din app får brugerens password til Google/GitHub",
+              "Brugeren godkender hos udbyderen og sendes tilbage med en authorization code",
+              "OAuth erstatter behovet for HTTPS"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "'Log ind med X' er typisk OAuth 2.0 eller OIDC (som bygger på OAuth).",
+              "Din app får aldrig brugerens password – det er pointen med OAuth.",
+              "Brugeren vender tilbage til appens registrerede redirect-URI med en code, som appen kan veksle til tokens.",
+              "OAuth bruges over HTTPS; det erstatter det ikke."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "06e4b6ba-7b68-5ad8-b7e2-f1d5a797fbc2",
+            "kind": "single",
+            "prompt": "Hvorfor er 'Implicit flow' (token direkte i redirect-URL) anbefalet undgået?",
+            "options": [
+              "Fordi det er for langsomt",
+              "Fordi access token kan ende i browserhistorik, referrer eller logs og dermed lække",
+              "Fordi det ikke understøtter scopes",
+              "Fordi det kun virker på mobile"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Problemet er sikkerhed, ikke hastighed.",
+              "Token i URL/fragment kan lække; Authorization Code (+ PKCE) er sikrere.",
+              "Implicit flow understøtter scopes.",
+              "Implicit blev brugt især i browsere, ikke kun mobile."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "986a0408-b7b4-56bc-a4db-fc489e64bed5",
+            "kind": "single",
+            "prompt": "Hvad er forskellen mellem OAuth 2.0 og OpenID Connect (OIDC)?",
+            "options": [
+              "OIDC erstatter OAuth helt",
+              "OAuth handler om autorisation (adgang); OIDC bygger ovenpå og tilføjer standardiseret identitetsinfo (fx hvem brugeren er)",
+              "OIDC er kun til mobile apps",
+              "De er identiske"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://openid.net/connect/",
+            "optionExplanations": [
+              "OIDC bygger på OAuth 2.0 og udvider den – erstatter den ikke.",
+              "OAuth = delegeret adgang; OIDC = OAuth + ID token + userinfo så du får standardiseret 'hvem er brugeren'.",
+              "OIDC bruges på web og mobile.",
+              "OIDC tilføjer identitetslag oven på OAuth."
+            ],
+            "learnMoreTitle": "OpenID Connect",
+            "learnMoreDescription": "Kort overblik over OIDC og forholdet til OAuth 2.0."
+          }
+        ]
+      }
+    },
+    {
+      "key": "oop-advanced",
+      "draft": {
+        "title": "Udvidet OOP & Trådprogrammering i C#",
+        "description": "Test din viden om delegates, asynkron programmering, thread safety og OOP-konceptet i C#",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "27efe412-f2a2-59b2-bbed-ea16c8b87ec8",
+            "kind": "single",
+            "prompt": "Hvad kaldes en typesikker reference til én eller flere metoder med en bestemt signatur i C#?",
+            "options": [
+              "Callback",
+              "Delegate",
+              "Lambda",
+              "Interface"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/",
+            "optionExplanations": [
+              "En callback er en metode, der kaldes efter en opgave – ofte via en delegate.",
+              "En delegate har en defineret signatur og kan pege på metoder, der matcher den.",
+              "Lambda er en kortfattet måde at skrive anonyme metoder på, men ikke selve typen.",
+              "Et interface definerer en kontrakt, ikke en funktion pointer."
+            ],
+            "learnMoreTitle": "Delegates in C#",
+            "learnMoreDescription": "Microsofts dokumentation om delegates, hvordan de fungerer, og hvordan de bruges til callbacks."
+          },
+          {
+            "id": "78f82e9b-884e-5ac7-ae3c-a7060e307f3c",
+            "kind": "single",
+            "prompt": "Hvad er forskellen på Thread og Task i moderne C#?",
+            "options": [
+              "Thread er mere ressourceeffektiv end Task",
+              "En Thread er en udførelsestråd, mens en Task repræsenterer en operation og kan afventes",
+              "Task kan ikke køre parallelt",
+              "Thread understøtter async/await"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/task-based-asynchronous-programming",
+            "optionExplanations": [
+              "En særskilt tråd kræver en stak og anden administration. En Task kan repræsentere I/O, som ikke kræver en tråd under ventetiden.",
+              "En Task kan repræsentere både asynkron I/O og arbejde på ThreadPool. Den opretter ikke i sig selv en ny tråd.",
+              "Flere tasks kan køre parallelt, f.eks. hvis de planlægges på flere tråde.",
+              "async/await er designet til Task-baseret programmering, ikke Thread direkte."
+            ],
+            "learnMoreTitle": "Task-based Asynchronous Programming",
+            "learnMoreDescription": "Læs om forskellen mellem Threads og Tasks i .NET og hvorfor Tasks er det anbefalede valg."
+          },
+          {
+            "id": "567eed78-0614-5885-96b0-491c960d861a",
+            "kind": "single",
+            "prompt": "Hvad er en race condition?",
+            "options": [
+              "Når resultatet utilsigtet afhænger af rækkefølgen af samtidige operationer",
+              "Når en tråd kører hurtigere end en anden",
+              "Når to tråde konkurrerer om CPU-tid",
+              "Når en tråd er i sleep-tilstand"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Usynkroniseret læsning og skrivning af delt tilstand kan give forskellige resultater, alt efter hvordan operationerne udføres.",
+              "Hastighedsforskelle er ikke det samme som race conditions.",
+              "CPU-planlægning er normalt, men ikke en race condition.",
+              "Sleep handler blot om at en tråd venter."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "3cc2ed3b-43e7-5e6a-a3eb-e0ba2397b721",
+            "kind": "single",
+            "prompt": "Hvilken teknik sikrer at kun én tråd ad gangen kan udføre en kritisk sektion?",
+            "options": [
+              "await",
+              "lock",
+              "volatile",
+              "continue"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/lock",
+            "optionExplanations": [
+              "await handler om asynkron programmering, ikke låsning.",
+              "lock sikrer at kun én tråd kan køre koden ad gangen.",
+              "volatile sikrer kun at en variabel altid læses fra hovedhukommelsen.",
+              "continue bruges i loops, ikke trådsynkronisering."
+            ],
+            "learnMoreTitle": "lock statement in C#",
+            "learnMoreDescription": "Microsofts dokumentation om lock og trådsynkronisering i C#."
+          },
+          {
+            "id": "c4afb625-5140-54b0-8260-785bf68e52dc",
+            "kind": "single",
+            "prompt": "Hvad gør Interlocked.Increment(ref counter)?",
+            "options": [
+              "Øger counter sikkert og atomisk, selv med flere tråde",
+              "Øger counter, men kan give race conditions",
+              "Låser hele programmet indtil counter er øget",
+              "Kan kun bruges i async/await-metoder"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.interlocked",
+            "optionExplanations": [
+              "Interlocked.Increment udfører en atomisk operation uden behov for lock.",
+              "Netop pointen er at undgå race conditions.",
+              "Programmet låses ikke, kun operationen er atomisk.",
+              "Interlocked kan bruges uafhængigt af async/await."
+            ],
+            "learnMoreTitle": "Interlocked Class",
+            "learnMoreDescription": "Dokumentation for Interlocked-klassen i .NET, inkl. atomiske operationer."
+          },
+          {
+            "id": "32263be1-7c49-55d4-a399-392c4bd1ecfd",
+            "kind": "single",
+            "prompt": "Hvorfor bruges asynkrone kald ofte i Blazor WebAssembly, når appen venter på netværket?",
+            "options": [
+              "Fordi C# ikke har tråde",
+              "For at lade brugerfladen reagere, mens netværkskaldet afventes",
+              "For at blokere brugerfladen, indtil kaldet er færdigt",
+              "For at oprette en ny UI-tråd for hvert kald"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/blazor/components/synchronization-context?view=aspnetcore-10.0",
+            "optionExplanations": [
+              "C# har tråde. Spørgsmålet handler om at holde brugerfladen tilgængelig under ventetid.",
+              "await kan lade brugerfladen fortsætte med at håndtere input, mens netværkskaldet er i gang.",
+              "Formålet er at undgå at låse brugerfladen under ventetid.",
+              "await opretter ikke i sig selv en ny tråd."
+            ],
+            "learnMoreTitle": "ASP.NET Core Blazor synchronization context",
+            "learnMoreDescription": "Microsoft forklarer asynkrone kald og blokering af brugerfladen i Blazor."
+          },
+          {
+            "id": "5b34cf5f-6ea6-561f-9ecb-0bb7453bb8b6",
+            "kind": "single",
+            "prompt": "Hvad er forskellen på async/await og parallelle tråde?",
+            "options": [
+              "async/await kan håndtere ventetid uden at blokere en tråd, mens parallel udførelse kan fordele CPU-arbejde over flere tråde",
+              "async/await opretter altid nye tråde",
+              "Tråde kan kun bruges i konsolprogrammer",
+              "De er det samme i C#"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Asynkronitet og parallelisme er forskellige begreber. De kan bruges sammen, hvis en app både venter på I/O og har CPU-tungt arbejde.",
+              "async/await bruger ikke altid nye tråde – ofte kører det på samme tråd.",
+              "Tråde kan bruges i mange typer programmer.",
+              "De er fundamentalt forskellige koncepter."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "0a05a62f-cc8d-5494-ae67-1c966ed00221",
+            "kind": "single",
+            "prompt": "Hvad betyder det at en metode i en baseklasse er markeret som abstract?",
+            "options": [
+              "At metoden kan kaldes direkte fra baseklassen",
+              "En konkret afledt klasse skal have en implementering af metoden",
+              "At metoden er skjult for andre klasser",
+              "At metoden kører hurtigere end en normal metode"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/abstract",
+            "optionExplanations": [
+              "Den abstrakte deklaration har ingen metodekrop. Et virtuelt kald kan ramme en konkret implementering i en afledt klasse.",
+              "En konkret afledt klasse skal implementere metoden eller arve en implementering. En afledt abstrakt klasse kan lade implementeringen vente.",
+              "Access modifiers styrer synlighed, ikke abstract.",
+              "Abstract har intet med performance at gøre."
+            ],
+            "learnMoreTitle": "Abstract Classes and Methods",
+            "learnMoreDescription": "Microsofts docs om abstrakte klasser og metoder i C#."
+          }
+        ]
+      }
+    },
+    {
+      "key": "rate-limiting-security",
+      "draft": {
+        "title": "Rate Limiting & Sikkerhed",
+        "description": "Test din viden om rate limiting, brute force beskyttelse og login sikkerhed",
+        "topic": "Backend",
+        "estimatedMinutes": 10,
+        "questions": [
+          {
+            "id": "e0c3c0c5-fd63-5650-b384-10f7bcff1a0c",
+            "kind": "single",
+            "prompt": "Hvad er hovedformålet med rate limiting i login endpoints?",
+            "options": [
+              "At øge server-performance ved at begrænse antal requests",
+              "At forhindre brute force angreb ved at begrænse login forsøg",
+              "At spare database-ressourcer ved at cache login data",
+              "At forbedre brugeroplevelsen ved hurtigere login"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://owasp.org/www-community/attacks/Brute_force_attack",
+            "optionExplanations": [
+              "Performance er en bivirkning, ikke hovedformålet.",
+              "Rate limiting beskytter mod automatiserede angreb der prøver at gætte passwords.",
+              "Database-ressourcer er ikke hovedformålet med rate limiting.",
+              "Rate limiting kan faktisk gøre login langsommere ved mislykkede forsøg."
+            ],
+            "learnMoreTitle": "Brute Force Protection",
+            "learnMoreDescription": "OWASP guide til at forhindre brute force angreb."
+          },
+          {
+            "id": "28204605-96a2-56a8-a2a9-939c81ba8852",
+            "kind": "single",
+            "prompt": "Hvilken HTTP-statuskode passer, når et API afviser en forespørgsel, fordi grænsen for antal forespørgsler er overskredet?",
+            "options": [
+              "401 Unauthorized",
+              "403 Forbidden",
+              "429 Too Many Requests",
+              "503 Service Unavailable"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/web-api/?view=aspnetcore-8.0#http-status-codes",
+            "optionExplanations": [
+              "401 angiver, at autentificering mangler eller er ugyldig.",
+              "403 bruges ved autorisationsfejl, ikke rate limiting.",
+              "429 Too Many Requests angiver, at klienten har sendt for mange forespørgsler i en periode.",
+              "503 bruges når serveren er nede, ikke ved rate limiting."
+            ],
+            "learnMoreTitle": "HTTP Status Codes for Rate Limiting",
+            "learnMoreDescription": "Microsofts guide til HTTP status koder og deres brug."
+          },
+          {
+            "id": "c6f7b967-8d58-517b-a4b1-8743f75a5ed6",
+            "kind": "single",
+            "prompt": "Hvad betyder 'progressive delays' i rate limiting?",
+            "options": [
+              "At alle brugere får længere ventetid efterhånden som dagen går",
+              "At hver mislykket login forsøg resulterer i længere ventetid før næste forsøg",
+              "At serveren automatisk lukker ned efter et bestemt antal requests",
+              "At brugere får forskellige ventetider baseret på deres rolle"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#login-throttling",
+            "optionExplanations": [
+              "Progressive delays er ikke baseret på tid på dagen.",
+              "Hver fejl øger ventetiden, hvilket gør brute force angreb ineffektive.",
+              "Serveren lukker ikke ned - den påfører kun ventetider.",
+              "Ventetider er baseret på antal fejl, ikke brugerroller."
+            ],
+            "learnMoreTitle": "Login Throttling",
+            "learnMoreDescription": "OWASP beskriver grænser for loginforsøg og ventetid ved gentagne fejl."
+          },
+          {
+            "id": "1951cb4c-482c-50d9-85a6-eee6efafb023",
+            "kind": "single",
+            "prompt": "Hvorfor kan en loginløsning nulstille tælleren for fejlede forsøg for samme konto efter et gyldigt login?",
+            "options": [
+              "At spare hukommelse på serveren",
+              "For at afslutte rækken af fejlede forsøg for kontoen",
+              "At forbedre database-performance",
+              "At sikre at alle brugere får samme ventetid"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/performance/caching/memory",
+            "optionExplanations": [
+              "Hukommelse er ikke hovedformålet - sikkerhed er vigtigere.",
+              "Det gyldige login afslutter rækken af fejl for kontoen. En generel grænse for logintrafik kan stadig gælde.",
+              "Database-performance påvirkes ikke af fejl-cache.",
+              "Alle brugere får ikke samme ventetid - det afhænger af deres fejlhistorik."
+            ],
+            "learnMoreTitle": "Cache Management in Security",
+            "learnMoreDescription": "Best practices for cache management i sikkerhedskritiske applikationer."
+          },
+          {
+            "id": "80854210-de59-509b-9ff8-1f0e4550af3e",
+            "kind": "single",
+            "prompt": "Hvad er en 'account lockout' i rate limiting?",
+            "options": [
+              "En permanent blokering af en konto efter forkerte passwords",
+              "En midlertidig blokering af login-forsøg efter et bestemt antal fejl",
+              "En automatisk sletning af brugerdata ved mistænkelig aktivitet",
+              "En besked til administratoren om at gennemgå en konto"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/azure/active-directory/authentication/concept-authentication-strengths",
+            "optionExplanations": [
+              "Lockouts er midlertidige, ikke permanente.",
+              "Kontoen låses midlertidigt for at forhindre vedvarende angreb.",
+              "Data slettes ikke automatisk - kun login-forsøg blokeres.",
+              "Det kan være en del af monitoring, men er ikke selve lockout-funktionen."
+            ],
+            "learnMoreTitle": "Account Lockout Strategies",
+            "learnMoreDescription": "Strategier for account lockout og recovery."
+          }
+        ]
+      }
+    },
+    {
+      "key": "solid-principles",
+      "draft": {
+        "title": "SOLID Principper",
+        "description": "Test din viden om SOLID-principperne i objektorienteret programmering og hvordan de hjælper med at skrive ren, vedligeholdelsesvenlig kode",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "75f01c02-b459-55db-9a70-d8df7abde1f6",
+            "kind": "single",
+            "prompt": "Hvad står 'S' for i SOLID-principperne?",
+            "options": [
+              "Single Responsibility Principle",
+              "Simple Design Principle",
+              "Static Method Principle",
+              "Service Layer Principle"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/architectural-principles#single-responsibility",
+            "optionExplanations": [
+              "Single Responsibility Principle betyder at en klasse kun skal have én grund til at ændres.",
+              "Simple Design er et andet koncept, ikke en del af SOLID.",
+              "Static Method har intet med SOLID at gøre.",
+              "Service Layer er et arkitekturmønster, ikke et SOLID-princip."
+            ],
+            "learnMoreTitle": "Single Responsibility Principle",
+            "learnMoreDescription": "Microsofts dokumentation om Single Responsibility Principle og hvordan det implementeres i C#."
+          },
+          {
+            "id": "9f4ee8b9-064e-594a-b3aa-01878de96e65",
+            "kind": "single",
+            "prompt": "Hvad betyder Open/Closed Principle?",
+            "options": [
+              "Koden skal være åben for alle at se",
+              "Klasser skal være åbne for udvidelse, men lukkede for ændring",
+              "Alle metoder skal være public",
+              "Koden skal kunne køre på alle platforme"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.c-sharpcorner.com/article/open-closed-principle-in-c-sharp/",
+            "optionExplanations": [
+              "Det handler ikke om synlighed af koden.",
+              "Du skal kunne tilføje ny funktionalitet uden at ændre eksisterende kode.",
+              "Access modifiers har intet med Open/Closed at gøre.",
+              "Det handler ikke om platformkompatibilitet."
+            ],
+            "learnMoreTitle": "Open/Closed Principle",
+            "learnMoreDescription": "En forklaring af Open/Closed Principle med praktiske eksempler i C#."
+          },
+          {
+            "id": "3901cd03-1a84-5074-a851-b60628f6846e",
+            "kind": "single",
+            "prompt": "Hvad er Liskov Substitution Principle?",
+            "options": [
+              "At alle klasser skal have samme navn",
+              "At afledte klasser skal kunne bruges i stedet for deres baseklasse uden at ændre programmets opførsel",
+              "At alle metoder skal returnere samme type",
+              "At klasser skal være lige store i hukommelsen"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.baeldung.com/java-liskov-substitution-principle",
+            "optionExplanations": [
+              "Navngivning har intet med LSP at gøre.",
+              "Hvis du har en baseklasse, skal alle afledte klasser kunne bruges på samme måde.",
+              "Returtyper kan variere mellem afledte klasser.",
+              "Hukommelsesstørrelse er ikke relevant for LSP."
+            ],
+            "learnMoreTitle": "Liskov Substitution Principle",
+            "learnMoreDescription": "En dybdegående forklaring af LSP med kodeeksempler."
+          },
+          {
+            "id": "0270923b-ecb8-5816-8454-517a6d787fa9",
+            "kind": "single",
+            "prompt": "Hvad betyder Interface Segregation Principle?",
+            "options": [
+              "At alle klasser skal implementere interfaces",
+              "Klienter skal kun afhænge af de metoder i et interface, de bruger",
+              "At alle metoder i et interface skal være public",
+              "At interfaces skal være gratis at bruge"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/architectural-principles#interface-segregation",
+            "optionExplanations": [
+              "Det er ikke et krav at alle klasser implementerer interfaces.",
+              "Opdel brede interfaces efter klienternes behov, så klienterne slipper for at afhænge af operationer, de ikke bruger.",
+              "Interface-metoder er altid public per definition.",
+              "Det handler ikke om omkostninger."
+            ],
+            "learnMoreTitle": "Interface Segregation Principle",
+            "learnMoreDescription": "Microsofts guide til Interface Segregation Principle med praktiske eksempler."
+          },
+          {
+            "id": "4e1c0b2b-43e8-5fab-b2b0-92bc7299052f",
+            "kind": "single",
+            "prompt": "Hvad betyder Dependency Inversion Principle?",
+            "options": [
+              "At alle dependencies skal være private",
+              "At højniveau-moduler ikke skal afhænge af lavniveau-moduler - begge skal afhænge af abstraktioner",
+              "At alle klasser skal være static",
+              "At dependencies skal være billige at oprette"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.c-sharpcorner.com/article/dependency-inversion-principle-in-c-sharp/",
+            "optionExplanations": [
+              "Access modifiers har intet med DIP at gøre.",
+              "Højniveau-logik skal afhænge af abstraktioner, ikke konkrete implementeringer.",
+              "Static klasser er ikke relateret til DIP.",
+              "Det handler ikke om omkostninger."
+            ],
+            "learnMoreTitle": "Dependency Inversion Principle",
+            "learnMoreDescription": "En forklaring af DIP og hvordan det implementeres med dependency injection."
+          },
+          {
+            "id": "129f461f-50e0-5c13-9752-c7789dc433d6",
+            "kind": "single",
+            "prompt": "Hvordan hjælper SOLID-principperne med vedligeholdelse af kode?",
+            "options": [
+              "De gør koden hurtigere at køre",
+              "De gør koden lettere at forstå, ændre og udvide uden at bryde eksisterende funktionalitet",
+              "De reducerer hukommelsesforbruget",
+              "De forhindrer alle fejl i at ske"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.baeldung.com/solid-principles",
+            "optionExplanations": [
+              "SOLID handler ikke primært om performance.",
+              "SOLID gør koden mere modulær og lettere at arbejde med over tid.",
+              "Hukommelsesforbrug påvirkes ikke direkte af SOLID.",
+              "SOLID forhindrer ikke fejl, men gør dem lettere at håndtere."
+            ],
+            "learnMoreTitle": "SOLID Principles Benefits",
+            "learnMoreDescription": "En oversigt over fordelene ved at følge SOLID-principperne."
+          },
+          {
+            "id": "6f3ee1cf-057d-521e-8dbb-b51fd8fde74e",
+            "kind": "single",
+            "prompt": "Hvad er et eksempel på brud på Single Responsibility Principle?",
+            "options": [
+              "En klasse der både håndterer brugerdata og sender emails",
+              "En klasse med mange private metoder",
+              "En klasse der implementerer flere interfaces",
+              "En klasse med mange properties"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.c-sharpcorner.com/article/single-responsibility-principle-with-example/",
+            "optionExplanations": [
+              "En klasse skal ikke håndtere både brugerdata og email-funktionalitet - det er to ansvarsområder.",
+              "Antallet af private metoder påvirker ikke SRP.",
+              "Implementering af interfaces kan være helt fint.",
+              "Antallet af properties påvirker ikke SRP."
+            ],
+            "learnMoreTitle": "Single Responsibility Principle Examples",
+            "learnMoreDescription": "Praktiske eksempler på SRP og hvordan man refaktorerer kode der bryder det."
+          },
+          {
+            "id": "02e77306-cfad-5959-ab55-94acba9426e2",
+            "kind": "single",
+            "prompt": "Hvilket eksempel viser, hvordan Dependency Inversion Principle kan anvendes i C#?",
+            "options": [
+              "Ved at bruge dependency injection og lade klasser afhænge af interfaces i stedet for konkrete klasser",
+              "Ved at gøre alle metoder virtual",
+              "Ved at bruge static metoder",
+              "Ved at undgå at bruge interfaces"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+            "optionExplanations": [
+              "Højniveaumodulet afhænger af en kontrakt. En konkret implementering kan leveres via dependency injection.",
+              "Virtual metoder er ikke relateret til DIP.",
+              "Static metoder gør det sværere at implementere DIP.",
+              "Interfaces er netop nøglen til DIP."
+            ],
+            "learnMoreTitle": "Dependency Injection in .NET",
+            "learnMoreDescription": "Microsofts guide til dependency injection og hvordan det implementerer DIP."
+          }
+        ]
+      }
+    },
+    {
+      "key": "xml-comments",
+      "draft": {
+        "title": "XML-kommentarer & API-dokumentation",
+        "description": "Test din viden om XML-kommentarer i C#, hvordan man dokumenterer API'er og aktiverer Swagger-dokumentation",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "be847aa5-635d-5f24-a6e4-55b3e315de51",
+            "kind": "single",
+            "prompt": "Hvad er formålet med XML-kommentarer i C# API'er?",
+            "options": [
+              "At gøre koden hurtigere at køre",
+              "At dokumentere API'er så andre udviklere kan forstå endpoints uden at kende koden",
+              "At kryptere API-endpoints",
+              "At reducere hukommelsesforbruget"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/",
+            "optionExplanations": [
+              "XML-kommentarer påvirker ikke kode-performance.",
+              "XML-kommentarer giver automatisk API-dokumentation som Swagger kan vise.",
+              "XML-kommentarer er ikke kryptering - de er dokumentation.",
+              "XML-kommentarer påvirker ikke hukommelsesforbrug."
+            ],
+            "learnMoreTitle": "XML Documentation Comments",
+            "learnMoreDescription": "Microsofts guide til XML-kommentarer i C#."
+          },
+          {
+            "id": "a8d11836-c6fe-5496-a6f1-95daa0ce1648",
+            "kind": "single",
+            "prompt": "Hvilken tag bruges til at beskrive hvad en metode gør?",
+            "options": [
+              "<description>",
+              "<summary>",
+              "<method>",
+              "<info>"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags",
+            "optionExplanations": [
+              "<description> er ikke en standard XML-kommentar tag.",
+              "<summary> bruges til at beskrive hvad metoden gør.",
+              "<method> er ikke en standard XML-kommentar tag.",
+              "<info> er ikke en standard XML-kommentar tag."
+            ],
+            "learnMoreTitle": "XML Documentation Tags",
+            "learnMoreDescription": "En oversigt over alle tilgængelige XML-kommentar tags i C#."
+          },
+          {
+            "id": "e2176aa4-9559-5b30-a415-2e7195d1b449",
+            "kind": "single",
+            "prompt": "Hvordan dokumenterer du en parameter i en XML-kommentar?",
+            "options": [
+              "<param name=\"parameterName\">Beskrivelse af parameteren</param>",
+              "<parameter name=\"parameterName\">Beskrivelse af parameteren</parameter>",
+              "<input name=\"parameterName\">Beskrivelse af parameteren</input>",
+              "<arg name=\"parameterName\">Beskrivelse af parameteren</arg>"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/recommended-tags#param",
+            "optionExplanations": [
+              "<param name=\"parameterName\"> er den korrekte syntaks for at dokumentere parametre.",
+              "<parameter> er ikke en standard XML-kommentar tag.",
+              "<input> er ikke en standard XML-kommentar tag.",
+              "<arg> er ikke en standard XML-kommentar tag."
+            ],
+            "learnMoreTitle": "Documenting Parameters",
+            "learnMoreDescription": "Microsofts guide til at dokumentere parametre med XML-kommentarer."
+          },
+          {
+            "id": "424cb39d-0f13-53b5-b9ab-8258b1f41c36",
+            "kind": "single",
+            "prompt": "Hvad kan Swagger-værktøjer bruge XML-tagget <response code=\"...\"> til?",
+            "options": [
+              "At definere HTTP-metoder (GET, POST, etc.)",
+              "At beskrive hvilke HTTP-statuskoder der kan returneres og hvorfor",
+              "At specificere response-typen",
+              "At definere API-versioner"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle",
+            "optionExplanations": [
+              "HTTP-metoder defineres med attributter som [HttpGet], ikke med <response>.",
+              "Værktøjer, som understøtter denne konvention, kan bruge kommentaren til at dokumentere mulige HTTP-statuskoder og deres betydning.",
+              "Response-typen defineres med <returns>, ikke med <response>.",
+              "API-versioner håndteres ikke med <response> tags."
+            ],
+            "learnMoreTitle": "Documenting Responses",
+            "learnMoreDescription": "En guide til at dokumentere API-responses med XML-kommentarer."
+          },
+          {
+            "id": "390cdd08-7532-50f1-bee2-4df40d399cd0",
+            "kind": "single",
+            "prompt": "Hvad skal du tilføje i din .csproj fil for at generere XML-dokumentation?",
+            "options": [
+              "<GenerateDocumentationFile>true</GenerateDocumentationFile>",
+              "<XMLDocumentation>true</XMLDocumentation>",
+              "<CreateXMLFile>true</CreateXMLFile>",
+              "<EnableXMLDocs>true</EnableXMLDocs>"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/#generate-documentation",
+            "optionExplanations": [
+              "<GenerateDocumentationFile>true</GenerateDocumentationFile> aktiverer XML-dokumentationsgenerering.",
+              "<XMLDocumentation> er ikke en standard property.",
+              "<CreateXMLFile> er ikke en standard property.",
+              "<EnableXMLDocs> er ikke en standard property."
+            ],
+            "learnMoreTitle": "Generate XML Documentation",
+            "learnMoreDescription": "Microsofts guide til at generere XML-dokumentation i .NET projekter."
+          }
+        ]
+      }
     }
   ]
 }
