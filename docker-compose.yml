@@ -11,6 +11,8 @@ services:
       default:
         aliases:
           - mercantec-tech-db
+    labels:
+      - dk.lup.network-scope=project
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
@@ -89,6 +91,8 @@ services:
       start_period: 5s
     networks:
       - default
+    labels:
+      - dk.lup.network-scope=project
     restart: unless-stopped
 
   api:
@@ -230,6 +234,7 @@ services:
       - default
     labels:
       - traefik.enable=false
+      - dk.lup.network-scope=project
     read_only: true
     tmpfs:
       - /tmp:size=512m,mode=1777
@@ -390,7 +395,7 @@ volumes:
   mercantec_preview_spool:
 
 networks:
-  # Compose scopes this bridge to the project. Backend aliases stay off the shared ingress.
+  # Existing services with network-scope labels are recreated when moving off the shared bridge.
   default:
     driver: bridge
     ipam:
