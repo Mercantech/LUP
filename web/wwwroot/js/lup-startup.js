@@ -1,12 +1,10 @@
 (() => {
-    const splash = document.querySelector("[data-lup-startup]");
-    if (!splash) return;
-
-    const portrait = splash.querySelector("[data-startup-portrait]");
-    const quote = splash.querySelector("[data-startup-quote]");
-    const character = splash.querySelector("[data-startup-character]");
     const cast = [
-        { name: character.textContent, art: portrait.getAttribute("src"), line: quote.textContent },
+        {
+            name: "LUPP",
+            art: "images/characters/lupp/reactions/encouragement.webp",
+            line: "»Jeg tester lige startknappen. En god bane skal også have en god begyndelse.«"
+        },
         {
             name: "Raymond",
             art: "images/characters/raymond/reactions/join.webp",
@@ -44,6 +42,19 @@
         }
     ];
 
+    const rotationMs = 7000;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    window.lupStartup = {
+        preview: () => ({ characters: cast, rotationMs, reducedMotion: motion.matches }),
+        canRotate: () => !document.hidden && !motion.matches
+    };
+
+    const splash = document.querySelector("[data-lup-startup]");
+    if (!splash) return;
+
+    const portrait = splash.querySelector("[data-startup-portrait]");
+    const quote = splash.querySelector("[data-startup-quote]");
+    const character = splash.querySelector("[data-startup-character]");
     let index = Math.floor(Math.random() * cast.length);
     function show(entry) {
         if (portrait.getAttribute("src") === entry.art) return;
@@ -58,12 +69,11 @@
     }
 
     show(cast[index]);
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const timer = window.setInterval(() => {
-        if (document.hidden || motion.matches) return;
+        if (!window.lupStartup.canRotate()) return;
         index = (index + 1) % cast.length;
         show(cast[index]);
-    }, 7000);
+    }, rotationMs);
     new MutationObserver((_, observer) => {
         if (splash.isConnected) return;
         window.clearInterval(timer);

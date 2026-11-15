@@ -67,7 +67,7 @@ html[data-theme="hacker"] .lup-startup {
 
 .lup-startup__logo svg { width: 2.65rem; height: 2.65rem; }
 
-.lup-startup__heading h1 {
+.lup-startup__heading :is(h1, h3) {
     margin: 0;
     font: 650 clamp(1.5rem, 4.3vw, 2rem)/1.13 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
     letter-spacing: -.045em;

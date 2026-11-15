@@ -1,0 +1,177 @@
+@page "/teacher/tools/indlaesning"
+@inject AuthService Auth
+@inject AuthRedirect Redirect
+@inject ViewAsStudentContext ViewAs
+@inject IJSRuntime JS
+@implements IDisposable
+
+<PageTitle>Indlæsningsskærmen · LUP</PageTitle>
+
+@if (!CanRead)
+{
+    <header class="page-title"><div><h1>Indlæsningsskærmen</h1><p>Denne side er for undervisere.</p></div></header>
+    <a class="secondary" href="@Redirect.PostLoginPath()">Til dit overblik</a>
+}
+else
+{
+    <div class="startup-preview">
+        <nav class="breadcrumbs" aria-label="Brødkrummer">
+            <a href="/teacher/tools">Underviserværktøjer</a><span aria-hidden="true">›</span><span aria-current="page">Indlæsningsskærmen</span>
+        </nav>
+        <header class="page-title startup-preview-heading">
+            <div><h1>Indlæsningsskærmen</h1><p>Se, hvad LUPs karakterer siger, mens appen starter.</p></div>
+        </header>
+        @if (_loadFailed)
+        {
+            <div class="panel">
+                <p role="alert">Indlæsningsskærmen kunne ikke hentes.</p>
+                <button type="button" class="secondary" @onclick="LoadAsync">Prøv igen</button>
+            </div>
+        }
+        else if (_preview is not { } preview)
+        {
+            <p role="status">Henter indlæsningsskærmen…</p>
+        }
+        else
+        {
+            var current = preview.Characters[_selected];
+            <section class="startup-preview-section" aria-labelledby="startup-preview-title">
+                <div class="startup-preview-toolbar">
+                    <h2 id="startup-preview-title">Forhåndsvisning</h2>
+                    <button type="button" class="secondary" @onclick="ToggleRotationAsync" disabled="@preview.ReducedMotion">
+                        <UiIcon Name="loop" /> @(_rotation is null ? "Afspil rotation" : "Sæt rotation på pause")
+                    </button>
+                </div>
+                @if (preview.ReducedMotion)
+                {
+                    <p class="startup-preview-motion">Vælg en figur nedenfor. Automatisk rotation følger din indstilling for reduceret bevægelse.</p>
+                }
+                <div class="lup-startup lup-startup--preview" data-loading-preview>
+                    <div class="lup-startup__card">
+                        <div class="lup-startup__heading">
+                            <span class="lup-startup__logo"><LupLogoAssembly Loop="true" /></span>
+                            <h3>LUP starter…</h3>
+                        </div>
+                        <div class="lup-startup__track" aria-hidden="true"></div>
+                        <figure class="lup-startup__message">
+                            <div class="lup-startup__portrait">
+                                <img src="@current.Art" data-startup-portrait alt="" width="144" height="144" decoding="async" />
+                            </div>
+                            <blockquote data-startup-quote>@current.Line</blockquote>
+                            <figcaption data-startup-character>@current.Name</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </section>
+            <section class="startup-preview-section" aria-labelledby="startup-characters-title">
+                <h2 id="startup-characters-title">Karakterer og replikker</h2>
+                <ul class="startup-preview-characters" data-loading-characters>
+                    @for (var index = 0; index < preview.Characters.Length; index++)
+                    {
+                        var position = index;
+                        var character = preview.Characters[position];
+                        <li @key="character.Name">
+                            <button type="button" class="startup-preview-choice" aria-pressed="@(_selected == position ? "true" : "false")" @onclick="() => Select(position)">
+                                <img src="@character.Art" alt="" width="60" height="60" loading="lazy" decoding="async" />
+                                <span><strong>@character.Name</strong><span>@character.Line</span></span>
+                            </button>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    </div>
+}
+
+@code {
+    private StartupPreviewData? _preview;
+    private PeriodicTimer? _rotation;
+    private int _selected;
+    private bool _attempted;
+    private bool _loadFailed;
+    private bool _disposed;
+    private bool CanRead => Auth.IsInitialized && Redirect.ShowsTeacherChrome;
+
+    protected override void OnInitialized()
+    {
+        Auth.AuthStateChanged += AccessChanged;
+        ViewAs.Changed += AccessChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!CanRead || _attempted) return;
+        await LoadAsync();
+        if (!_disposed) StateHasChanged();
+    }
+
+    private async Task LoadAsync()
+    {
+        _attempted = true;
+        _loadFailed = false;
+        try
+        {
+            _preview = await JS.InvokeAsync<StartupPreviewData>("lupStartup.preview");
+            _loadFailed = _preview is not { Characters.Length: > 0, RotationMs: > 0 };
+        }
+        catch (JSException) { _loadFailed = true; }
+    }
+
+    private async Task ToggleRotationAsync()
+    {
+        if (_rotation is not null)
+        {
+            StopRotation();
+            return;
+        }
+        if (_preview is not { ReducedMotion: false } preview) return;
+
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(preview.RotationMs));
+        _rotation = timer;
+        try
+        {
+            while (await timer.WaitForNextTickAsync())
+            {
+                if (await JS.InvokeAsync<bool>("lupStartup.canRotate") && _rotation == timer && CanRead)
+                {
+                    _selected = (_selected + 1) % preview.Characters.Length;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (JSException) { }
+        finally
+        {
+            if (_rotation == timer) _rotation = null;
+        }
+    }
+
+    private void Select(int index)
+    {
+        StopRotation();
+        _selected = index;
+    }
+
+    private void StopRotation()
+    {
+        _rotation?.Dispose();
+        _rotation = null;
+    }
+
+    private void AccessChanged() => _ = InvokeAsync(() =>
+    {
+        if (!CanRead) StopRotation();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        _disposed = true;
+        StopRotation();
+        Auth.AuthStateChanged -= AccessChanged;
+        ViewAs.Changed -= AccessChanged;
+    }
+
+    public sealed record StartupPreviewData(StartupCharacter[] Characters, int RotationMs, bool ReducedMotion);
+    public sealed record StartupCharacter(string Name, string Art, string Line);
+}
