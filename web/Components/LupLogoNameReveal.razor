@@ -8,15 +8,15 @@
             var initial = char.ToLowerInvariant(word[0]);
             <div class="name-row name-row--@initial">
                 <svg class="name-piece" viewBox="0 0 10 10" shape-rendering="crispEdges" focusable="false">
-                    <use href="@($"images/branding/pixel-lup.svg#letter-{initial}")" />
+                    <use href="@($"images/branding/pixel-lup.svg?v=2#letter-{initial}")" />
                     @if (initial == 'u')
                     {
-                        <use class="name-shared-piece" href="images/branding/pixel-lup.svg#letter-l" />
+                        <use class="name-shared-piece" href="images/branding/pixel-lup.svg?v=2#letter-l" />
                     }
                     @if (initial == 'p')
                     {
                         <svg class="name-shared-piece" x="0" y="0" width="2" height="10" viewBox="0 0 2 10" overflow="hidden">
-                            <use href="images/branding/pixel-lup.svg#letter-l" />
+                            <use href="images/branding/pixel-lup.svg?v=2#letter-l" />
                         </svg>
                     }
                 </svg>

@@ -89,10 +89,13 @@ async function check(name, theme, expectedCharacter, random, options) {
     await attribution.getByText(expectedCharacter, { exact: true }).waitFor();
     const logo = splash.locator('.lup-logo-assembly');
     assert.deepEqual(await logo.locator('use').evaluateAll(parts => parts.map(part => part.getAttribute('href'))), [
-      'images/branding/pixel-lup.svg#letter-l',
-      'images/branding/pixel-lup.svg#letter-u',
-      'images/branding/pixel-lup.svg#letter-p',
+      'images/branding/pixel-lup.svg?v=2#letter-l',
+      'images/branding/pixel-lup.svg?v=2#letter-u',
+      'images/branding/pixel-lup.svg?v=2#letter-p',
     ]);
+    await page.waitForFunction(() => Array.from(
+      document.querySelectorAll('[data-lup-startup] .lup-logo-assembly use')
+    ).every(part => part.getBBox().width > 0));
     const logoAnimations = await logo.evaluate(mark => mark.getAnimations({ subtree: true }).length);
     assert.equal(logoAnimations, options.reducedMotion === 'reduce' ? 0 : 3);
     assert.equal(await page.locator('.loading-progress, .loading-progress-text').count(), 0);

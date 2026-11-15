@@ -10,6 +10,8 @@ const cacheNamePrefix = 'offline-cache-';
 const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
 const offlineAssetsInclude = [ /\.dll$/, /\.pdb$/, /\.wasm/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.webmanifest$/, /^images\/branding\/pixel-lup\.svg$/ ];
 const offlineAssetsExclude = [ /^service-worker\.js$/, /^appsettings\.Development\.json$/ ];
+const pixelLogoPath = 'images/branding/pixel-lup.svg';
+const animatedPixelLogoUrl = pixelLogoPath + '?v=2';
 
 // Replace with your base path if you are hosting on a subfolder. Ensure there is a trailing '/'.
 const base = "/";
@@ -78,9 +80,12 @@ async function onInstall(event) {
     const cache = await caches.open(cacheName);
     await Promise.all(assets.map(async (asset) => {
         try {
-            const response = await fetch(asset.url, { cache: 'no-cache' });
-            if (response.ok)
-                await cache.put(asset.url, response);
+            const assetUrl = asset.url === pixelLogoPath ? animatedPixelLogoUrl : asset.url;
+            const response = await fetch(assetUrl, { cache: 'no-cache' });
+            if (!response.ok) return;
+            if (assetUrl !== asset.url)
+                await cache.put(assetUrl, response.clone());
+            await cache.put(asset.url, response);
         } catch (err) {
             console.warn('Service worker: skipped', asset.url, err);
         }

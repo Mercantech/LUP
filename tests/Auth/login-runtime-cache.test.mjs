@@ -127,6 +127,20 @@ test('worker installation does not prefetch either login-runtime URL but still c
     assert.equal(f.entries.has(origin + '/js/other-feature.js'), true);
 });
 
+test('the worker precaches the updated logo once for static and animated uses', async () => {
+    const logo = 'images/branding/pixel-lup.svg';
+    const versioned = origin + '/' + logo + '?v=2';
+    const f = fixture({ assets: [logo] });
+    await f.install();
+
+    assert.deepEqual(f.fetched.filter(request => request.url.includes(logo)), [
+        { url: versioned, cache: 'no-cache' },
+    ]);
+    assert.equal((await f.fetch(versioned)).status, 200);
+    assert.equal((await f.fetch(origin + '/' + logo)).status, 200);
+    assert.equal(f.fetched.length, 2, 'both references are available from the cache after installation');
+});
+
 test('large character originals and animations load on demand and only requested media are cached', async () => {
     const originals = [
         'images/characters/chameleon/reactions/banjo.png',
