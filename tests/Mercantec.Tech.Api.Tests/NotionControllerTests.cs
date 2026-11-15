@@ -4,6 +4,7 @@ using System.Text.Json;
 using Mercantec.Tech.Api.Controllers;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
+using Mercantec.Tech.Api.KnowledgeChecks;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -365,6 +366,60 @@ public sealed class NotionControllerTests : IAsyncLifetime
         // An upgraded collaboration server can also remove the final drawing reference.
         Assert.IsType<OkObjectResult>(await Write([], new()));
         Assert.Equal("[]", await db.NotionPages.Where(p => p.Id == page.Id).Select(p => p.DrawingIdsJson).SingleAsync());
+    }
+
+    [Fact]
+    public async Task KnowledgeChecksUsePublishedBindingsAndNotebookAndHoldAccess()
+    {
+        var page = await Create();
+        var version = new KnowledgeCheckVersion
+        {
+            Id = Guid.NewGuid(), Title = "Control Flow",
+            Quiz = new() { Id = Guid.NewGuid(), OwnerSub = teacher, Title = "Control Flow" }
+        };
+        var shared = new KnowledgeCheckPublication { Id = Guid.NewGuid(), Version = version, IsActive = true };
+        var assigned = new KnowledgeCheckPublication { Id = Guid.NewGuid(), Version = version, HoldId = holdId, IsActive = true };
+        var foreign = new KnowledgeCheckPublication { Id = Guid.NewGuid(), Version = version, HoldId = otherHoldId, IsActive = true };
+        var closed = new KnowledgeCheckPublication { Id = Guid.NewGuid(), Version = version, IsActive = false };
+        db.KnowledgeCheckPublications.AddRange(shared, assigned, foreign, closed);
+        await db.SaveChangesAsync();
+        var teacherController = As(teacher, true);
+        var options = Value<NotionKnowledgeCheckOption[]>(await teacherController.KnowledgeChecks(page.Id, default));
+        Assert.Equal(new[] { shared.Id, assigned.Id }.Order().ToArray(), options.Select(x => x.Id).Order().ToArray());
+        Assert.IsType<NotFoundResult>(await As(student).KnowledgeChecks(page.Id, default));
+        async Task<IActionResult> Write(Dictionary<string, Guid> bindings, string fingerprint)
+        {
+            var controller = Storage(body: JsonSerializer.SerializeToUtf8Bytes(new StoreNotionDocument(
+                Convert.ToBase64String([7, 8, 9]), fingerprint, KnowledgeCheckBlocks: bindings)));
+            controller.Request.ContentType = "application/json";
+            return await controller.WriteState(page.Id, default);
+        }
+        async Task<IActionResult> Publish(string fingerprint)
+        {
+            var state = Value<NotionPageContext>(await teacherController.Context(page.Id, default));
+            return await teacherController.Publish(page.Id, new(state.DraftRevision, fingerprint, []), default);
+        }
+        Task<bool> CanRead(Guid sub, Guid id, string block = "check-one") =>
+            KnowledgeCheckNotebookAccess.CanReadAsync(db, page.Id, block, id, As(sub).User, default);
+
+        Assert.IsType<BadRequestObjectResult>(await Write(new() { ["invalid key"] = assigned.Id }, Fingerprint));
+        Assert.IsType<OkObjectResult>(await Write(new() { ["check-one"] = foreign.Id }, Fingerprint));
+        Assert.IsType<BadRequestObjectResult>(await Publish(Fingerprint));
+        Assert.IsType<OkObjectResult>(await Write(new() { ["check-one"] = assigned.Id }, new('b', 64)));
+        Assert.False(await CanRead(student, assigned.Id));
+        Assert.IsType<OkObjectResult>(await Publish(new('b', 64)));
+        Assert.True(await CanRead(student, assigned.Id));
+        Assert.False(await CanRead(student, assigned.Id, "other-block"));
+        Assert.False(await CanRead(student, shared.Id));
+        Assert.False(await CanRead(outsider, assigned.Id));
+        Assert.IsType<OkObjectResult>(await Write(new(), new('c', 64)));
+        Assert.True(await CanRead(student, assigned.Id));
+        Assert.IsType<OkObjectResult>(await Publish(new('c', 64)));
+        Assert.False(await CanRead(student, assigned.Id));
+        Assert.IsType<OkObjectResult>(await Write(new() { ["check-one"] = assigned.Id }, new('d', 64)));
+        Assert.IsType<OkObjectResult>(await Publish(new('d', 64)));
+        Assert.IsType<NoContentResult>(await teacherController.TrashPage(page.Id, default));
+        Assert.False(await CanRead(student, assigned.Id));
     }
 
     [Fact]

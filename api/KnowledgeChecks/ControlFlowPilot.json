@@ -1,0 +1,188 @@
+{
+  "title": "GF2 · Control Flow",
+  "description": "Øv dig på if, switch, betingede udtryk, brugerinput og scope i C#.",
+  "topic": "GF2",
+  "estimatedMinutes": 9,
+  "questions": [
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0001",
+      "kind": "single",
+      "prompt": "Hvad bliver skrevet i konsollen?\n\nbool valg = 10 > 5 && 3 < 1;\nConsole.WriteLine(valg ? \"Sandt\" : \"Falsk\");",
+      "options": [
+        "Sandt",
+        "Falsk",
+        "Begge ord",
+        "Programmet kompilerer ikke"
+      ],
+      "correctOptions": [
+        1
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "Operatoren && kræver, at begge sammenligninger er sande. 3 < 1 er falsk, så udtrykket vælger teksten Falsk.",
+      "learnMoreUrl": "https://learn.microsoft.com/da-dk/dotnet/csharp/language-reference/operators/boolean-logical-operators"
+    },
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0002",
+      "kind": "single",
+      "prompt": "En case i en C#-switch indeholder et kald til Console.WriteLine og slutter uden break, return, throw eller goto. Derefter kommer en anden case. Hvad sker der?",
+      "options": [
+        "Kompilatoren afviser koden",
+        "Begge cases køres altid",
+        "Kun næste case køres",
+        "Koden ignorerer den første case"
+      ],
+      "correctOptions": [
+        0
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "En switch-sektion, som indeholder kode, må ikke falde igennem til den næste sektion. Brug eksempelvis break til at afslutte sektionen.",
+      "learnMoreUrl": "https://learn.microsoft.com/da-dk/dotnet/csharp/language-reference/statements/selection-statements"
+    },
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0003",
+      "kind": "single",
+      "prompt": "Hvilket udtryk giver teksten »Voksen«, når alder er mindst 18, og ellers teksten »Barn«?",
+      "options": [
+        "alder > 18 ? \"Voksen\" : \"Barn\"",
+        "alder >= 18 ? \"Barn\" : \"Voksen\"",
+        "alder >= 18 ? \"Voksen\" : \"Barn\"",
+        "alder <= 18 ? \"Voksen\" : \"Barn\""
+      ],
+      "correctOptions": [
+        2
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "Betingelsen skal være sand fra og med 18. Operatoren ?: vælger første resultat ved sand og det andet ved falsk.",
+      "learnMoreUrl": "https://learn.microsoft.com/da-dk/dotnet/csharp/language-reference/operators/conditional-operator"
+    },
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0004",
+      "kind": "single",
+      "prompt": "Brugeren trykker Enter på en tom linje. Hvilken værdi læser Console.ReadLine()?",
+      "options": [
+        "null",
+        "En tom streng",
+        "En streng med ét mellemrum",
+        "Et linjeskift"
+      ],
+      "correctOptions": [
+        1
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "Metoden returnerer tegnene før linjeskiftet. En tom linje giver en tom streng. null markerer, at der ikke er mere input.",
+      "learnMoreUrl": "https://learn.microsoft.com/da-dk/dotnet/api/system.console.readline"
+    },
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0005",
+      "kind": "single",
+      "prompt": "Kan du erklære saldo en gang mere inde i if-blokken?\n\nint saldo = 10;\nif (saldo > 0)\n{\n    int saldo = 20;\n    Console.WriteLine(saldo);\n}",
+      "options": [
+        "Ja, og det udskriver 10",
+        "Ja, og det udskriver 20",
+        "Nej, kompilatoren afviser den anden erklæring",
+        "Ja, men programmet fejler, når det køres"
+      ],
+      "correctOptions": [
+        2
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "Den ydre saldo er allerede en lokal variabel i det omsluttende scope. Brug et andet navn eller tildel den eksisterende variabel en ny værdi.",
+      "learnMoreUrl": null
+    },
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0006",
+      "kind": "single",
+      "prompt": "Hvilken værdi får besked?\n\nint temperatur = 5;\nstring besked = temperatur > 0 ? \"Plus\" : temperatur < 0 ? \"Minus\" : \"Nul\";",
+      "options": [
+        "Plus",
+        "Minus",
+        "Nul",
+        "En tom streng"
+      ],
+      "correctOptions": [
+        0
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "Første betingelse er sand, så Plus vælges med det samme. Den anden betingelse bliver kun vurderet, hvis den første er falsk.",
+      "learnMoreUrl": "https://learn.microsoft.com/da-dk/dotnet/csharp/language-reference/operators/conditional-operator"
+    },
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0007",
+      "kind": "single",
+      "prompt": "Hvilken gren rammer en score på 15?\n\nif (score > 10)\n    Console.WriteLine(\"Høj\");\nelse if (score > 5)\n    Console.WriteLine(\"Mellem\");\nelse\n    Console.WriteLine(\"Lav\");",
+      "options": [
+        "Høj",
+        "Mellem",
+        "Høj og Mellem",
+        "Lav"
+      ],
+      "correctOptions": [
+        0
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "I en if/else if-kæde kører kun den første gren, hvor betingelsen er sand. 15 er større end 10, så resten springes over.",
+      "learnMoreUrl": "https://learn.microsoft.com/da-dk/dotnet/csharp/language-reference/statements/selection-statements"
+    },
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0008",
+      "kind": "single",
+      "prompt": "Hvad er værdierne efter dette kald?\n\nbool lykkedes = int.TryParse(\"abc\", out int tal);",
+      "options": [
+        "lykkedes er true, og tal er 0",
+        "lykkedes er false, og tal er 0",
+        "lykkedes er false, og tal er -1",
+        "Kaldet kaster en FormatException"
+      ],
+      "correctOptions": [
+        1
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "TryParse returnerer false, fordi abc ikke er et heltal. Ved dette mislykkede kald får int-parameteren standardværdien 0.",
+      "learnMoreUrl": "https://learn.microsoft.com/da-dk/dotnet/api/system.int32.tryparse"
+    },
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0009",
+      "kind": "single",
+      "prompt": "Må case 1 og case 2 dele den samme kode?\n\nswitch (dag)\n{\n    case 1:\n    case 2:\n        Console.WriteLine(\"Tidlig uge\");\n        break;\n}",
+      "options": [
+        "Nej, hver case skal have sin egen break",
+        "Ja, men kun hvis case 2 fjernes",
+        "Ja, flere case-etiketter kan pege på den samme sektion",
+        "Nej, fordi case 1 altid kører videre efter Console.WriteLine"
+      ],
+      "correctOptions": [
+        2
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "Tomme case-etiketter kan dele en sektion. Her ender både 1 og 2 i samme sektion, som er afsluttet med break.",
+      "learnMoreUrl": "https://learn.microsoft.com/da-dk/dotnet/csharp/language-reference/statements/selection-statements"
+    },
+    {
+      "id": "bbe3b6d9-ba00-4b0b-b748-41e367fe0010",
+      "kind": "single",
+      "prompt": "Elev() må kun kaldes, hvis LoggetInd() returnerer true. Hvilken betingelse sikrer det?",
+      "options": [
+        "LoggetInd() && Elev()",
+        "LoggetInd() & Elev()",
+        "Elev() && LoggetInd()",
+        "LoggetInd() || Elev()"
+      ],
+      "correctOptions": [
+        0
+      ],
+      "acceptedAnswers": [],
+      "manualGrading": false,
+      "explanation": "&& evaluerer venstre side først og springer højre side over, hvis venstre side er falsk. Med & evalueres begge sider.",
+      "learnMoreUrl": "https://learn.microsoft.com/da-dk/dotnet/csharp/language-reference/operators/boolean-logical-operators"
+    }
+  ]
+}

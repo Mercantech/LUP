@@ -1,0 +1,278 @@
+@page "/videnstjek"
+@using Mercantec.Tech.Web.KnowledgeChecks
+@inject KnowledgeCheckClient Client
+@inject AuthRedirect Redirect
+@inject ViewAsStudentContext ViewAs
+@inject NavigationManager Nav
+
+<PageTitle>Videnstjek · LUP</PageTitle>
+
+<div class="knowledge-catalog">
+    <header class="page-title knowledge-hero">
+        <div>
+            <h1>Videnstjek</h1>
+            <p>Prøv det, du har lært, og se, hvad du vil øve dig på igen.</p>
+        </div>
+        @if (CanManage && View == "administrer")
+        {
+            <a class="action" href="/videnstjek/rediger/ny"><UiIcon Name="plus" /> Opret videnstjek</a>
+        }
+    </header>
+
+    @if (ViewAs.IsActive)
+    {
+        <p class="panel">Afslut elevvisningen for at åbne Videnstjek med din egen konto.</p>
+    }
+    else if (_error is not null)
+    {
+        <div class="panel">
+            <p role="alert">@_error</p>
+            <button type="button" class="secondary" @onclick="LoadAsync">Prøv igen</button>
+        </div>
+    }
+    else if (_index is null)
+    {
+        <p role="status">Henter videnstjek…</p>
+    }
+    else
+    {
+        <nav class="knowledge-nav" aria-label="Videnstjek">
+            @foreach (var tab in Tabs)
+            {
+                @if (tab.Key != "administrer" || CanManage)
+                {
+                    <a href="/videnstjek?vis=@tab.Key" aria-current="@(View == tab.Key ? "page" : null)">@tab.Label</a>
+                }
+            }
+        </nav>
+
+        @if (View == "administrer")
+        {
+            <section class="knowledge-section" aria-labelledby="knowledge-drafts">
+                <div class="knowledge-section-heading">
+                    <h2 id="knowledge-drafts">Kladder</h2>
+                    <button type="button" class="secondary" @onclick="CreatePilotAsync" disabled="@_creatingPilot">Opret fra GF2-eksempel</button>
+                </div>
+                @if (_pilotError is not null)
+                {
+                    <p role="alert">@_pilotError</p>
+                }
+                @if (!_index.Owned.Any())
+                {
+                    <p class="panel">Opret et videnstjek, eller prøv med et færdigt GF2-eksempel.</p>
+                }
+                else
+                {
+                    <div class="knowledge-list">
+                        @foreach (var draft in _index.Owned)
+                        {
+                            <article class="panel knowledge-row" @key="draft.Id">
+                                <div><h3>@draft.Title</h3><p>@Metadata(draft.Topic, draft.QuestionCount)</p></div>
+                                <a class="secondary" href="/videnstjek/rediger/@draft.Id">Rediger<span class="visually-hidden"> @draft.Title</span></a>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+
+            <section class="knowledge-section" aria-labelledby="knowledge-publications">
+                <h2 id="knowledge-publications">Udgivelser</h2>
+                @if (!Managed.Any())
+                {
+                    <p class="panel">Udgivne videnstjek vises her.</p>
+                }
+                else
+                {
+                    <div class="knowledge-list">
+                        @foreach (var publication in Managed)
+                        {
+                            <article class="panel knowledge-row" @key="publication.Id">
+                                <div>
+                                    <h3>@publication.Title</h3>
+                                    <p>@(publication.HoldName ?? "Fri øvelse") · @(publication.IsActive ? "Aktiv" : "Lukket")</p>
+                                </div>
+                                <div class="actions">
+                                    @if (publication.HoldId is not null)
+                                    {
+                                        <a class="secondary" href="/videnstjek/@publication.Id/resultater">Holdresultater<span class="visually-hidden"> for @publication.Title</span></a>
+                                    }
+                                    @if (publication.IsActive)
+                                    {
+                                        <a class="secondary" href="/videnstjek/@publication.Id">Åbn udgivelse<span class="visually-hidden"> @publication.Title</span></a>
+                                    }
+                                    @if (_index.Owned.Any(draft => draft.Id == publication.QuizId))
+                                    {
+                                        <a class="secondary" href="/videnstjek/rediger/@publication.QuizId#udgivelser">Administrér<span class="visually-hidden"> @publication.Title</span></a>
+                                    }
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        }
+        else if (View == "historik")
+        {
+            <section class="knowledge-section" aria-labelledby="knowledge-history">
+                <h2 id="knowledge-history">Min historik</h2>
+                @if (!_index.History.Any())
+                {
+                    <p class="panel">Dine forsøg vises her, når du er begyndt på dit første videnstjek.</p>
+                }
+                else
+                {
+                    <div class="knowledge-list">
+                        @foreach (var attempt in _index.History)
+                        {
+                            <article class="panel knowledge-row" @key="attempt.AttemptId">
+                                <div>
+                                    <h3>@attempt.Title</h3>
+                                    <p>@StatusLabel(attempt.Status) · @FormatDate(attempt.SubmittedAtUtc ?? attempt.StartedAtUtc)
+                                        @if (attempt.Score is not null)
+                                        {
+                                            <span> · @attempt.Score af @attempt.QuestionCount point</span>
+                                        }
+                                    </p>
+                                </div>
+                                @if (attempt.CanOpen)
+                                {
+                                    <a class="secondary" href="@($"/videnstjek/{attempt.PublicationId}?forsog={attempt.AttemptId}")">@(attempt.Status == "started" ? "Fortsæt" : "Se forsøg")<span class="visually-hidden"> for @attempt.Title</span></a>
+                                }
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        }
+        else
+        {
+            var items = View == "tildelinger" ? Assignments.ToArray() : FilteredPractice.ToArray();
+            <section class="knowledge-section" aria-labelledby="knowledge-available">
+                <h2 id="knowledge-available">@(View == "tildelinger" ? "Mine tildelinger" : "Frie øvelser")</h2>
+                @if (View == "oev")
+                {
+                    <div class="knowledge-filters">
+                        <label class="field">Søg i øvelser <input type="search" @bind="_search" @bind:event="oninput" placeholder="Fx C# eller Control Flow" /></label>
+                        <label class="field">Emne
+                            <select @bind="_topic">
+                                <option value="">Alle emner</option>
+                                @foreach (var topic in Topics)
+                                {
+                                    <option value="@topic">@topic</option>
+                                }
+                            </select>
+                        </label>
+                    </div>
+                }
+                @if (items.Length == 0)
+                {
+                    <p class="panel">@(View == "tildelinger" ? "Du har ingen aktive videnstjek fra dine hold." : !string.IsNullOrWhiteSpace(_search) || _topic.Length > 0 ? "Ingen øvelser matcher din søgning." : "Der er endnu ingen frie øvelser.")</p>
+                }
+                else
+                {
+                    <div class="knowledge-grid">
+                        @foreach (var publication in items)
+                        {
+                            <article class="panel knowledge-card" @key="publication.Id">
+                                <div>
+                                    <p class="knowledge-meta">@Metadata(publication.HoldName ?? publication.Topic, publication.QuestionCount, publication.EstimatedMinutes)</p>
+                                    <h3>@publication.Title</h3>
+                                    @if (!string.IsNullOrWhiteSpace(publication.Description))
+                                    {
+                                        <p class="knowledge-description">@publication.Description</p>
+                                    }
+                                </div>
+                                <a class="secondary" href="/videnstjek/@publication.Id">@ActionLabel(publication)<span class="visually-hidden"> @publication.Title</span><UiIcon Name="arrow" /></a>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        }
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "vis")] public string? RequestedView { get; set; }
+
+    private static readonly (string Key, string Label)[] Tabs =
+        [("tildelinger", "Mine tildelinger"), ("oev", "Øv dig"), ("historik", "Min historik"), ("administrer", "Administrér")];
+
+    private KnowledgeCheckIndex? _index;
+    private string? _error;
+    private string? _pilotError;
+    private string _search = "";
+    private string _topic = "";
+    private bool _creatingPilot;
+    private bool CanManage => !ViewAs.IsActive && Redirect.CurrentAppRole() == AppRole.Underviser;
+
+    private string View => RequestedView switch
+    {
+        "administrer" when CanManage => "administrer",
+        "historik" or "oev" or "tildelinger" => RequestedView,
+        _ => Assignments.Any() ? "tildelinger" : "oev"
+    };
+
+    private IEnumerable<KnowledgeCheckPublicationView> Assignments =>
+        _index?.Publications.Where(item => item.IsActive && item.HoldId is not null && !item.CanManage) ?? [];
+    private IEnumerable<KnowledgeCheckPublicationView> Practice =>
+        _index?.Publications.Where(item => item.IsActive && item.HoldId is null) ?? [];
+    private IEnumerable<KnowledgeCheckPublicationView> Managed =>
+        _index?.Publications.Where(item => item.CanManage) ?? [];
+    private IEnumerable<string> Topics => Practice.Select(item => item.Topic)
+        .Where(topic => !string.IsNullOrWhiteSpace(topic)).Distinct(StringComparer.CurrentCultureIgnoreCase)
+        .Order(StringComparer.CurrentCultureIgnoreCase);
+    private IEnumerable<KnowledgeCheckPublicationView> FilteredPractice =>
+        Practice.Where(item => (_topic.Length == 0 || string.Equals(item.Topic, _topic, StringComparison.CurrentCultureIgnoreCase))
+            && $"{item.Title} {item.Topic} {item.Description}".Contains(_search.Trim(), StringComparison.CurrentCultureIgnoreCase));
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        if (ViewAs.IsActive) return;
+        _error = null;
+        try
+        {
+            _index = await Client.GetAsync<KnowledgeCheckIndex>();
+        }
+        catch (KnowledgeCheckException ex) { _error = ex.Message; }
+        catch (HttpRequestException) { _error = "Videnstjek kunne ikke hentes. Prøv igen."; }
+    }
+
+    private async Task CreatePilotAsync()
+    {
+        if (_creatingPilot) return;
+        _pilotError = null;
+        _creatingPilot = true;
+        try
+        {
+            var draft = await Client.SendAsync<KnowledgeCheckDraftView>(HttpMethod.Post, "pilot");
+            Nav.NavigateTo($"/videnstjek/rediger/{draft.Id}");
+        }
+        catch (KnowledgeCheckException ex) { _pilotError = ex.Message; }
+        catch (HttpRequestException) { _pilotError = "Eksemplet kunne ikke oprettes. Prøv igen."; }
+        finally { _creatingPilot = false; }
+    }
+
+    private static string Metadata(string? topic, int count, int? minutes = null)
+    {
+        var questions = $"{count} spørgsmål";
+        var text = string.IsNullOrWhiteSpace(topic) ? questions : $"{topic} · {questions}";
+        return minutes > 0 ? $"{text} · {minutes} min." : text;
+    }
+
+    private static string StatusLabel(string status) => status switch
+    {
+        "started" => "I gang",
+        "submitted" => "Afleveret",
+        "graded" => "Vurderet",
+        _ => "Forsøg"
+    };
+
+    private static string ActionLabel(KnowledgeCheckPublicationView item) => item.ActiveAttemptId is not null
+        ? "Fortsæt"
+        : item.LatestAttemptId is not null ? "Åbn videnstjek" : "Start";
+
+    private static string FormatDate(DateTime date) => date.ToLocalTime().ToString("d. MMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("da-DK"));
+}

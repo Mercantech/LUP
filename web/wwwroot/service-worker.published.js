@@ -44,6 +44,7 @@ function isEditorRuntimeAsset(url) {
     return url.origin === baseUrl.origin && (
         url.pathname === '/notion-editor/editor.js'
         || url.pathname === '/notion-editor/editor.css'
+        || url.pathname === '/notion-editor/videnstjek.js'
     );
 }
 

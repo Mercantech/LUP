@@ -98,6 +98,7 @@ public sealed class NotionClient(HttpClient http)
                 "group_changed" => "Gruppen er ændret af en anden. Opdatér listen, og prøv igen.",
                 "draft_changed" or "stale_draft" or "publication_conflict" => "Kladden er ændret. Vent på lagring, og prøv at udgive igen.",
                 "invalid_assets" => "En vedhæftning er ikke tilgængelig på denne side. Fjern den, eller upload den igen.",
+                "invalid_knowledge_check_publication" => "Et videnstjek på siden er lukket eller tilhører et andet hold. Vælg en anden udgivelse, eller fjern blokken.",
                 "invalid_icon" => "Ikonet er ikke længere tilgængeligt. Vælg et andet.",
                 "invalid_parent" or "parent_cycle" or "invalid_page_position" => "Vælg en anden placering. En side kan ikke flyttes under sig selv eller en underside.",
                 "page_tree_changed" => "Undersiderne er ændret. Åbn slettehandlingen igen, og kontrollér, hvad der bliver slettet.",

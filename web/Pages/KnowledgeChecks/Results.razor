@@ -1,0 +1,192 @@
+@page "/videnstjek/{DistributionId:guid}/resultater"
+@using Mercantec.Tech.Web.KnowledgeChecks
+@inject KnowledgeCheckClient Client
+@inject AuthRedirect Redirect
+@inject ViewAsStudentContext ViewAs
+
+<PageTitle>Holdresultater · Videnstjek · LUP</PageTitle>
+
+<div class="knowledge-results">
+    <nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/videnstjek?vis=administrer">Videnstjek</a><span>›</span><span aria-current="page">Holdresultater</span></nav>
+    <header class="page-title">
+        <div>
+            <h1>@(_report?.Publication.Title ?? "Holdresultater")</h1>
+            @if (_report is not null) { <p>Holdresultater · @_report.Publication.HoldName</p> }
+        </div>
+        @if (_report?.Publication is { FeedbackMode: "manual", FeedbackReleased: false })
+        {
+            @if (_confirmRelease)
+            {
+                <div class="actions">
+                    <button type="button" class="action" disabled="@_busy" @onclick="ReleaseAsync">Bekræft frigivelse</button>
+                    <button type="button" class="secondary" disabled="@_busy" @onclick="() => _confirmRelease = false">Annuller</button>
+                </div>
+            }
+            else
+            {
+                <button type="button" class="secondary" disabled="@_busy" @onclick="() => _confirmRelease = true">Frigiv facit</button>
+            }
+        }
+    </header>
+
+    @if (!CanManage)
+    {
+        <p class="panel">Holdresultater er tilgængelige for holdets undervisere.</p>
+    }
+    else if (_loading && _report is null)
+    {
+        <p role="status">Henter holdresultater…</p>
+    }
+    else
+    {
+        @if (_message is not null)
+        {
+            <p role="status">@_message</p>
+        }
+        @if (_error is not null)
+        {
+            <div class="panel">
+                <p role="alert">@_error</p>
+                <button type="button" class="secondary" @onclick="LoadAsync" disabled="@_busy">Opdatér resultater</button>
+            </div>
+        }
+        @if (_report is { } report)
+        {
+            @if (report.PendingGrades.Length > 0)
+            {
+                <section class="knowledge-result-section" aria-labelledby="knowledge-review">
+                    <h2 id="knowledge-review">Svar til vurdering</h2>
+                    @foreach (var item in report.PendingGrades)
+                    {
+                        var key = (item.AttemptId, item.QuestionId);
+                        <article class="panel knowledge-result-card" @key="key">
+                            <h3>@item.DisplayName</h3>
+                            <p class="knowledge-result-prompt">@item.Prompt</p>
+                            <blockquote>@item.Answer</blockquote>
+                            <label class="field">
+                                Kommentar til eleven
+                                <textarea rows="2" maxlength="2000" value="@_comments.GetValueOrDefault(key)" @onchange="e => _comments[key] = e.Value?.ToString() ?? string.Empty"></textarea>
+                            </label>
+                            <div class="actions">
+                                <button type="button" class="action" disabled="@_busy" @onclick="() => GradeAsync(key, true)">Giv 1 point</button>
+                                <button type="button" class="secondary" disabled="@_busy" @onclick="() => GradeAsync(key, false)">Giv 0 point</button>
+                            </div>
+                        </article>
+                    }
+                </section>
+            }
+
+            <div class="knowledge-result-grid">
+                <section class="knowledge-result-section" aria-labelledby="knowledge-distribution">
+                    <h2 id="knowledge-distribution">Svarfordeling</h2>
+                    <p class="knowledge-result-muted">Viser seneste aflevering pr. elev.</p>
+                    @foreach (var question in report.Questions.Select((item, position) => (item, position)))
+                    {
+                        <article class="panel knowledge-result-card" @key="question.item.Id">
+                            <h3>Spørgsmål @(question.position + 1)</h3>
+                            <p class="knowledge-result-prompt">@question.item.Prompt</p>
+                            <p class="knowledge-result-muted">@question.item.AnsweredCount svar · @question.item.CorrectCount af @question.item.GradedCount vurderede svar var korrekte</p>
+                            @if (question.item.Options.Length > 0)
+                            {
+                                <ul class="knowledge-answer-counts">
+                                    @for (var position = 0; position < question.item.Options.Length; position++)
+                                    {
+                                        var count = question.item.OptionCounts.ElementAtOrDefault(position);
+                                        <li><span>@question.item.Options[position]</span><strong>@count</strong></li>
+                                    }
+                                </ul>
+                            }
+                        </article>
+                    }
+                </section>
+                <section class="knowledge-result-section" aria-labelledby="knowledge-participants">
+                    <h2 id="knowledge-participants">Deltagelse</h2>
+                    @if (report.Participants.Length == 0)
+                    {
+                        <p class="panel">Ingen elever har afleveret endnu.</p>
+                    }
+                    else
+                    {
+                        <ul class="panel knowledge-participants">
+                            @foreach (var pupil in report.Participants)
+                            {
+                                <li><strong>@pupil.DisplayName</strong><span>@StatusLabel(pupil.Status)</span></li>
+                            }
+                        </ul>
+                    }
+                </section>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public Guid DistributionId { get; set; }
+
+    private KnowledgeCheckReport? _report;
+    private readonly Dictionary<(Guid Attempt, Guid Question), string> _comments = [];
+    private string? _error;
+    private string? _message;
+    private bool _loading;
+    private bool _busy;
+    private bool _confirmRelease;
+    private bool CanManage => !ViewAs.IsActive && Redirect.CurrentAppRole() == AppRole.Underviser;
+    private string PublicationPath => $"publications/{DistributionId}";
+
+    protected override Task OnParametersSetAsync()
+    {
+        _report = null;
+        _confirmRelease = false;
+        _message = null;
+        _comments.Clear();
+        return LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (!CanManage) return;
+        _loading = true;
+        _error = null;
+        var id = DistributionId;
+        try
+        {
+            var result = await Client.GetAsync<KnowledgeCheckReport>($"{PublicationPath}/report");
+            if (DistributionId == id) _report = result;
+        }
+        catch (KnowledgeCheckException ex) { if (DistributionId == id) _error = ex.Message; }
+        catch (HttpRequestException) { if (DistributionId == id) _error = "Resultaterne kunne ikke hentes. Prøv igen."; }
+        finally { if (DistributionId == id) _loading = false; }
+    }
+
+    private Task ReleaseAsync() => MutateAsync(HttpMethod.Post, $"{PublicationPath}/release-feedback", null, "Facit er frigivet.");
+
+    private Task GradeAsync((Guid Attempt, Guid Question) key, bool correct) =>
+        MutateAsync(HttpMethod.Put, $"{PublicationPath}/attempts/{key.Attempt}/grades/{key.Question}",
+            new KnowledgeCheckGrade(correct, _comments.GetValueOrDefault(key)), "Vurderingen er gemt.");
+
+    private async Task MutateAsync(HttpMethod method, string endpoint, object? data, string message)
+    {
+        if (_busy) return;
+        _busy = true;
+        _error = null;
+        _message = null;
+        try
+        {
+            await Client.SendAsync(method, endpoint, data);
+            _message = message;
+            _confirmRelease = false;
+            await LoadAsync();
+        }
+        catch (KnowledgeCheckException ex) { _error = ex.Message; }
+        catch (HttpRequestException) { _error = "Ændringen kunne ikke gemmes. Prøv igen."; }
+        finally { _busy = false; }
+    }
+
+    private static string StatusLabel(string status) => status switch
+    {
+        "started" => "I gang",
+        "submitted" => "Venter på vurdering",
+        "graded" => "Afleveret",
+        _ => status
+    };
+}

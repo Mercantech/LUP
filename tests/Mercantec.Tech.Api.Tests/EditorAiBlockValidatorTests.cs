@@ -32,6 +32,7 @@ public sealed class EditorAiBlockValidatorTests
     [InlineData("pageMedia")]
     [InlineData("holdPoll")]
     [InlineData("classRoster")]
+    [InlineData("knowledgeCheck")]
     [InlineData("futureWidget")]
     public void OpaqueNativeBlocksCanOnlyBePreservedExactly(string type)
     {

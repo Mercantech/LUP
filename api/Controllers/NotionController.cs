@@ -3,6 +3,7 @@ using System.Text.Json;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Drawings;
+using Mercantec.Tech.Api.KnowledgeChecks;
 using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Api.Notebooks;
 using Mercantec.Tech.Api.Notion;
@@ -294,6 +295,17 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
             edit ? [] : DrawingAccess.Bindings(page.PublishedDrawingsJson), scope.CollectionId, edit ? page.LifecycleVersion : 0));
     }
 
+    [HttpGet("pages/{id:guid}/knowledge-checks")]
+    public async Task<IActionResult> KnowledgeChecks(Guid id, CancellationToken ct)
+    {
+        var page = await db.NotionPages.AsNoTracking().Where(p => p.Id == id)
+            .Select(p => new { p.HoldId }).SingleOrDefaultAsync(ct);
+        if (page is null || !await pagesAccess.CanManageScopeAsync(page.HoldId, User, ct)) return NotFound();
+        Response.Headers.CacheControl = "no-store";
+        return Ok(await KnowledgeCheckNotebookAccess.Options(db, page.HoldId).OrderBy(p => p.Version.Title).ThenBy(p => p.Id)
+            .Select(p => new NotionKnowledgeCheckOption(p.Id, p.Version.Title, p.HoldId)).ToArrayAsync(ct));
+    }
+
     [HttpPost("pages/{id:guid}/publish")]
     public async Task<IActionResult> Publish(Guid id, PublishNotionPage request, CancellationToken ct)
     {
@@ -333,19 +345,23 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
         transaction ??= await db.Database.BeginTransactionAsync(ct);
         await db.NotionPages.Where(p => p.Id == id).ExecuteUpdateAsync(s => s
             .SetProperty(p => p.PublicationVersion, p => p.PublicationVersion), ct);
+        if (!await KnowledgeCheckNotebookAccess.CanPublishAsync(db, page.HoldId, page.DraftKnowledgeChecksJson, ct))
+            return BadRequest(new { error = "invalid_knowledge_check_publication" });
         var references = new Mercantec.Tech.Api.References.ReferenceService(db);
         await references.BaselineNotionAsync(id, ct);
         var drawingManifest = JsonSerializer.Serialize(bindings, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         // The snapshot and its file grants change in one conditional SQL update. New draft saves,
         // title changes or a concurrent withdrawal invalidate this publication attempt.
         var written = await db.NotionPages.Where(p => p.Id == id && p.DraftRevision == request.ExpectedRevision
-            && p.DraftFingerprint == request.ExpectedFingerprint && p.PublicationVersion == page.PublicationVersion)
+            && p.DraftFingerprint == request.ExpectedFingerprint && p.PublicationVersion == page.PublicationVersion
+            && p.DraftKnowledgeChecksJson == page.DraftKnowledgeChecksJson)
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.PublishedState, page.YjsState)
                 .SetProperty(p => p.PublishedTitle, page.Title).SetProperty(p => p.PublishedAtUtc, now)
                 .SetProperty(p => p.PublishedEditorName, p => p.LastEditedByName)
                 .SetProperty(p => p.PublishedEditedAtUtc, p => p.UpdatedAtUtc)
                 .SetProperty(p => p.PublishedBySub, sub).SetProperty(p => p.PublishedRevision, request.ExpectedRevision)
                 .SetProperty(p => p.PublishedAssetIdsJson, assets).SetProperty(p => p.PublishedDrawingsJson, drawingManifest)
+                .SetProperty(p => p.PublishedKnowledgeChecksJson, page.DraftKnowledgeChecksJson)
                 .SetProperty(p => p.PublicationVersion, p => p.PublicationVersion + 1), ct);
         if (written == 0) return Conflict(new { error = "draft_changed" });
         await references.RefreshNotionAsync(id, ct, published: true);
@@ -375,6 +391,7 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
             .SetProperty(p => p.PublishedAtUtc, (DateTimeOffset?)null).SetProperty(p => p.PublishedBySub, (Guid?)null)
             .SetProperty(p => p.PublishedEditorName, (string?)null).SetProperty(p => p.PublishedEditedAtUtc, (DateTimeOffset?)null)
             .SetProperty(p => p.PublishedRevision, (long?)null).SetProperty(p => p.PublishedAssetIdsJson, "[]").SetProperty(p => p.PublishedDrawingsJson, "[]")
+            .SetProperty(p => p.PublishedKnowledgeChecksJson, "{}")
             .SetProperty(p => p.PublicationVersion, p => p.PublicationVersion + 1), ct);
         await references.RefreshNotionAsync(id, ct, published: true);
         var unpublished = await db.NotionPages.AsNoTracking().SingleAsync(p => p.Id == id, ct);

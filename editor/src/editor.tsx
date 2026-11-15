@@ -34,6 +34,7 @@ import { captureEmojiQuery, resolveEmojiQuery } from './emoji-query-target.mjs';
 import { createDrawing } from './drawing-block';
 import { DrawingEnvironmentProvider, requestCreateDrawing, requestOpenDrawing, collectDrawingPublicationData, type DrawingEnvironment } from './drawing-context';
 import { useViewport } from './use-viewport';
+import { NotionKnowledgeCheck } from './notion-knowledge-check';
 import { ensureEditorResources } from './editor-resources.mjs';
 import { ReferenceProvider, ReferenceView, ReferencePicker, useReferenceSearch, mentionStatusLabel, type EntityReference, type ResolvedReference } from './entity-reference-components';
 import { legacyReference, entityReference, referenceKindLabel } from './entity-references.mjs';
@@ -59,6 +60,7 @@ export interface EditorContext {
   updatedAtUtc: string;
   userName?: string;
   userSub?: string;
+  isStudentPreview?: boolean;
   drawings?: { drawingId:string;blockId:string;mode:string;snapshotId:string|null;revision:number;fingerprint:string }[];
   pages?: {id:string;title:string;parentPageId?:string|null}[];
   groups?: {id:string;name:string;members:{id:string;displayName:string}[]}[];
@@ -130,6 +132,33 @@ const createPoll = createReactBlockSpec({
   },
   toExternalHTML: () => <p>Afstemning fra holdet</p>,
 });
+const createKnowledgeCheck = createReactBlockSpec({
+  type: 'knowledgeCheck',
+  propSchema: { publicationId: { default: '' } },
+  content: 'none',
+}, {
+  render: ({ block, editor }) => <KnowledgeCheckBlock publicationId={block.props.publicationId} blockId={block.id}
+    onChange={editor.isEditable ? id => editor.updateBlock(block, { props: { publicationId: id } }) : undefined} />,
+  toExternalHTML: () => <p>Videnstjek</p>,
+});
+
+function KnowledgeCheckBlock({ publicationId, blockId, onChange }:
+  { publicationId: string; blockId: string; onChange?: (id: string) => void }) {
+  const session = useContext(Runtime);
+  const context = useData();
+  const getToken = React.useCallback(async (rejectedAccess?: string) => {
+    if (!session || session.context.isStudentPreview) return null;
+    if (!session.callbacks) return session.accessToken || null;
+    const token = await session.callbacks.invokeMethodAsync('GetNotionKnowledgeCheckToken', rejectedAccess ?? '');
+    return typeof token === 'string' ? token : null;
+  }, [session]);
+  if (!session || !context || context.domain === 'notebook') return null;
+  return <NotionKnowledgeCheck publicationId={publicationId} blockId={blockId} pageId={context.pageId} holdId={context.holdId}
+    apiBase={context.apiBase || '/api'} getToken={getToken}
+    display={context.isStudentPreview ? 'preview' : session.readOnly ? 'published' : 'draft'}
+    onChange={context.canEdit ? onChange : undefined} />;
+}
+
 const createSlideBreak = createReactBlockSpec({type:'slideBreak',propSchema:{schemaVersion:{default:1}},content:'none'}, {
   render: () => <div className="notion-slide-break" contentEditable={false}><span>Slidegrænse</span></div>,
   toExternalHTML: () => <hr />,
@@ -304,7 +333,7 @@ const createMedia=createReactBlockSpec({type:'pageMedia',propSchema:{schemaVersi
   toExternalHTML:()=> <p>Vedhæftet undervisningsfil</p>,
 });
 const schema = BlockNoteSchema.create({
-  blockSpecs: {...defaultBlockSpecs, codeBlock:createNotionCodeBlock(), classRoster:createRoster(),holdPoll:createPoll(),slideBreak:createSlideBreak(),learningGoal:createLearningGoal(),pageLink:createPageLink(),entityLink:createEntityLink(),holdGroup:createGroup(),pageMedia:createMedia(),mermaidDiagram:createMermaidDiagram(),callout:createCallout(),drawing:createDrawing()},
+  blockSpecs: {...defaultBlockSpecs, codeBlock:createNotionCodeBlock(), classRoster:createRoster(),holdPoll:createPoll(),knowledgeCheck:createKnowledgeCheck(),slideBreak:createSlideBreak(),learningGoal:createLearningGoal(),pageLink:createPageLink(),entityLink:createEntityLink(),holdGroup:createGroup(),pageMedia:createMedia(),mermaidDiagram:createMermaidDiagram(),callout:createCallout(),drawing:createDrawing()},
   inlineContentSpecs:{...defaultInlineContentSpecs,pageMention,studentMention,entityMention,customEmoji},
 });
 type Editor = BlockNoteEditor<typeof schema.blockSchema, typeof schema.inlineContentSchema, typeof schema.styleSchema>;
@@ -530,7 +559,7 @@ function ConnectedEditor({session}:{session:Session}) {
       });
     },false);
   },[editor,emojis,session]);;
-  const insert=(type:'classRoster'|'holdPoll'|'slideBreak'|'learningGoal'|'entityLink'|'holdGroup'|'pageMedia'|'mermaidDiagram'|'callout'|'codeBlock',kind='download') => {
+  const insert=(type:'classRoster'|'holdPoll'|'knowledgeCheck'|'slideBreak'|'learningGoal'|'entityLink'|'holdGroup'|'pageMedia'|'mermaidDiagram'|'callout'|'codeBlock',kind='download') => {
     if(!enabled) return;
     editor.focus();
     const cursor=editor.getTextCursorPosition().block;
@@ -575,6 +604,7 @@ function ConnectedEditor({session}:{session:Session}) {
     {title:'Emoji',subtext:'Vælg en emoji eller tilføj din egen',aliases:['emoji','emojis','smiley'],group:'Medier',onItemClick:openEmoji},
     {title:'Elever fra holdet',subtext:'Indsæt en levende elevliste',aliases:['elever','klasse','hold','students'],group:'Undervisning',icon:<span aria-hidden="true">◉</span>,onItemClick:()=>insert('classRoster')},
     {title:'Afstemning',subtext:'Kobl en afstemning fra holdet på siden',aliases:['afstemning','poll','stemning'],group:'Undervisning',icon:<span aria-hidden="true">▥</span>,onItemClick:()=>insert('holdPoll')},
+    {title:'Videnstjek',subtext:'Lad eleven svare direkte på siden',aliases:['videnstjek','quiz','spørgsmål'],group:'Undervisning',onItemClick:()=>insert('knowledgeCheck')},
     {title:'Slidegrænse',subtext:'Start næste slide i præsentationen',aliases:['slide','slides','præsentation'],group:'Undervisning',icon:<span aria-hidden="true">▱</span>,onItemClick:()=>insert('slideBreak')},
     {title:'Læringsmål',subtext:'Fremhæv målet for aktiviteten',aliases:['læringsmål','mål','learning'],group:'Undervisning',icon:<span aria-hidden="true">◎</span>,onItemClick:()=>insert('learningGoal')},
     {title:'Diagram',subtext:'Mermaid flowchart, sequence m.m.',aliases:['diagram','mermaid','flowchart','graf'],group:'Undervisning',icon:<span aria-hidden="true">◈</span>,onItemClick:()=>insert('mermaidDiagram')},
@@ -582,7 +612,7 @@ function ConnectedEditor({session}:{session:Session}) {
     {title:'Callout',subtext:'Fremhæv info, tip, advarsel eller vigtigt',aliases:['callout','info','tip','advarsel','note'],group:'Undervisning',icon:<span aria-hidden="true">▣</span>,onItemClick:()=>insert('callout')},
     {title:'AI',subtext:'Generér blokke, omskriv tekst eller lav et diagram',aliases:['ai','openai','hjælp','assistent'],group:'Undervisning',icon:<span aria-hidden="true">✦</span>,onItemClick:()=>openAi()},
     {title:'Præsenter',subtext:'Vis dokumentet som slides',aliases:['præsenter','præsentation','slides','presentation'],group:'Visning',onItemClick:()=>openPresentation(session)},
-  ].filter(item=>(!notebook || !['Gemt gruppe','Elever fra holdet','Afstemning','Slidegrænse','Emoji','AI','Præsenter'].includes(item.title)) && (session.context.holdId || !['Gemt gruppe','Elever fra holdet','Afstemning'].includes(item.title)));
+  ].filter(item=>(!notebook || !['Gemt gruppe','Elever fra holdet','Afstemning','Videnstjek','Slidegrænse','Emoji','AI','Præsenter'].includes(item.title)) && (session.context.holdId || !['Gemt gruppe','Elever fra holdet','Afstemning'].includes(item.title)));
   return <OpenAiOnBlockProvider openOnBlock={notebook?null:openAi}>
     {!session.readOnly && !notebook && enabled && createEmoji && <input ref={colonFileInput} className="notion-emoji-file notion-emoji-colon-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" aria-label="Vælg emoji-billede fra kolonmenu" onChange={chooseColonFile} tabIndex={-1} />}
     {emojiInsertError && <p className="notion-editor-persistence-error" role="alert">{emojiInsertError}</p>}

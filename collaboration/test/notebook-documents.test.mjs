@@ -17,6 +17,25 @@ const element = (name, attrs, children = []) => {
   return node;
 };
 
+test('knowledge check bindings derive only from the live teaching document and retain block IDs', () => {
+  const doc = new Y.Doc({ gc: false });
+  const group = element('blockGroup', {}, [
+    element('blockContainer', { id: 'check-one' }, [element('knowledgeCheck', { publicationId: id })]),
+    element('blockContainer', { id: 'check-two' }, [element('knowledgeCheck', { publicationId: id.toUpperCase() })]),
+    element('blockContainer', { id: 'deleted' }, [element('knowledgeCheck', { publicationId: targetId })]),
+    element('blockContainer', { id: 'unconfigured' }, [element('knowledgeCheck', {})]),
+  ]);
+  doc.getXmlFragment('document-store').insert(0, [group]);
+  group.delete(2, 1);
+  doc.getMap('fake-bindings').set('fake-block', targetId);
+  const projection = projectNotebookDocument(doc, 'notion');
+  assert.deepEqual(projection.knowledgeCheckBlocks, { 'check-one': id, 'check-two': id });
+  assert.equal(projectNotebookDocument(doc, 'notebook').knowledgeCheckBlocks, undefined);
+  group.push([element('blockContainer', { id: 'check-one' }, [element('knowledgeCheck', { publicationId: targetId })])]);
+  assert.throws(() => projectNotebookDocument(doc, 'notion'), /Invalid knowledge check block/);
+  doc.destroy();
+});
+
 test('AI projection preserves block boundaries, heading context and code without reading deleted history or side maps', () => {
   const doc = new Y.Doc({ gc: false });
   const nested = element('blockContainer', { id: 'nested' }, [element('codeBlock', { language: 'csharp' }, [new Y.XmlText('var x = 42;')])]);

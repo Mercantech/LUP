@@ -174,7 +174,7 @@ export function createApiClient({ apiBaseUrl, serviceSecret, fetchImpl = fetch, 
         throw new Error('A canonical document fingerprint is required');
       }
       const projected = drawing ? drawingStateProjection(state) : notebookStateProjection(state, domain);
-      const projection = domain === 'notion' ? { stateBase64: projected.stateBase64, fingerprint: projected.fingerprint, drawingIds: projected.drawingIds, drawingBlocks: projected.drawingBlocks, references: projected.references } : projected;
+      const projection = domain === 'notion' ? { stateBase64: projected.stateBase64, fingerprint: projected.fingerprint, drawingIds: projected.drawingIds, drawingBlocks: projected.drawingBlocks, references: projected.references, knowledgeCheckBlocks: projected.knowledgeCheckBlocks } : projected;
       if (typeof metadata.editorName === 'string') projection.editorName = metadata.editorName;
       if (metadata.preserveEditMetadata) projection.preserveEditMetadata = true;
       const lifecycle = documentLifecycleFromName(documentName);

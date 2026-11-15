@@ -36,6 +36,19 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="VersionKnowledgeCheckAssets" BeforeTargets="GetAssemblyAttributes"
+          Condition="Exists('wwwroot/notion-editor/videnstjek.js')">
+    <GetFileHash Files="wwwroot/notion-editor/videnstjek.js" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_KnowledgeCheckAssetHash" />
+    </GetFileHash>
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>KnowledgeCheckAssets</_Parameter1>
+        <_Parameter2>@(_KnowledgeCheckAssetHash->'%(FileHash)')</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
   <!-- Undgå at Development-API-URL (localhost:8080) ender i Docker/prod-image -->
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
     <Content Remove="wwwroot\appsettings.Development.json" />

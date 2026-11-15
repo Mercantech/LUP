@@ -254,7 +254,8 @@ public partial class Index
         canEdit = IsEditing, lifecycleVersion = _current.LifecycleVersion, members = _current.Members, polls = _current.Polls,
         pages = _current.Pages ?? [], groups = _groups, resourcesLoaded = _resourcesLoaded, publishedStateBase64 = _current.PublishedStateBase64,
         publishedAtUtc = _current.PublishedAtUtc, updatedAtUtc = _current.UpdatedAtUtc,
-        userName = Auth.DisplayName ?? "Bruger", userSub = Auth.Subject, drawings = _current.Drawings
+        userName = Auth.DisplayName ?? "Bruger", userSub = Auth.Subject, drawings = _current.Drawings,
+        isStudentPreview = ViewAs.IsActive || PublishedPreview && CanManageHold
     };
     private void AccountChanged() => _ = InvokeAsync(SyncAccount);
     private async Task SyncAccount()
@@ -589,6 +590,9 @@ public partial class Index
         finally { _busy = false; }
     }
     [JSInvokable] public Task<string?> GetNotionToken() => Auth.IsAuthenticated ? Auth.GetValidAccessTokenAsync() : Task.FromResult<string?>(null);
+    [JSInvokable] public Task<string?> GetNotionKnowledgeCheckToken(string? rejectedAccess) => !Auth.IsAuthenticated || ViewAs.IsActive
+        ? Task.FromResult<string?>(null)
+        : string.IsNullOrEmpty(rejectedAccess) ? Auth.GetValidAccessTokenAsync() : Auth.RefreshAfterUnauthorizedAsync(rejectedAccess);
     [JSInvokable] public Task OnNotionStatus(string status, string detail) => InvokeAsync(() => { if (_disposed) return; _status = status; _statusDetail = detail; StateHasChanged(); });
     [JSInvokable] public Task OnNotionCreateGroup(string membershipIdsJson) => InvokeAsync(async () =>
     {

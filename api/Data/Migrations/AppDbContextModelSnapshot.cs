@@ -1309,6 +1309,199 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("hold_lectio_sources", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AnswersJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("GradesJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PublicationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuestionIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Score")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<DateTime?>("SubmittedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicationId", "SubmittedAtUtc");
+
+                    b.HasIndex("PublicationId", "UserSub")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 'started'");
+
+                    b.HasIndex("UserSub", "StartedAtUtc");
+
+                    b.HasIndex("PublicationId", "UserSub", "RequestId")
+                        .IsUnique();
+
+                    b.ToTable("knowledge_check_attempts", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckPublication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FeedbackMode")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<bool>("FeedbackReleased")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("HoldId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("MaxAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("VersionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VersionId", "RequestId")
+                        .IsUnique();
+
+                    b.HasIndex("HoldId", "IsActive", "CreatedAtUtc");
+
+                    b.ToTable("knowledge_check_publications", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckQuiz", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int?>("EstimatedMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("OwnerSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuestionCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("QuestionsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerSub", "UpdatedAtUtc");
+
+                    b.ToTable("knowledge_check_quizzes", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<long>("DraftRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("EstimatedMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuestionCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("QuestionsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("QuizId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizId", "DraftRevision")
+                        .IsUnique();
+
+                    b.ToTable("knowledge_check_versions", (string)null);
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.LearningGroup", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2140,6 +2333,12 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
+                    b.Property<string>("DraftKnowledgeChecksJson")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("{}");
+
                     b.Property<long>("DraftRevision")
                         .HasColumnType("bigint");
 
@@ -2183,6 +2382,12 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.Property<string>("PublishedEditorName")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PublishedKnowledgeChecksJson")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("{}");
 
                     b.Property<long?>("PublishedRevision")
                         .HasColumnType("bigint");
@@ -3000,6 +3205,46 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Hold");
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckAttempt", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckPublication", "Publication")
+                        .WithMany()
+                        .HasForeignKey("PublicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Publication");
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckPublication", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.Hold", "Hold")
+                        .WithMany()
+                        .HasForeignKey("HoldId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckVersion", "Version")
+                        .WithMany()
+                        .HasForeignKey("VersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Hold");
+
+                    b.Navigation("Version");
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckVersion", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.KnowledgeCheckQuiz", "Quiz")
+                        .WithMany()
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.LearningGroup", b =>

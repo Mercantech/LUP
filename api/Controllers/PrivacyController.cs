@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Data;
+using Mercantec.Tech.Api.KnowledgeChecks;
+using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -100,6 +102,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
         object[] uploadedGames = [];
         object[] wordlePlays = [];
         object[] dailyGamePlays = [];
+        object[] knowledgeCheckAttempts = [];
         var dailyRankingVisible = false;
         if (subGuid is not null)
         {
@@ -163,6 +166,20 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 .Select(r => (object)new { r.UserSub, r.Kind, r.ResourceId, r.ReadAtUtc }).ToArrayAsync(ct);
             pollResponses = await db.PollResponses.AsNoTracking().Where(r => r.UserSub == giftSub)
                 .Select(r => (object)new { r.PollId, r.Poll.Question, r.Choice, r.Text, r.UpdatedAtUtc }).ToArrayAsync(ct);
+            var attempts = await db.KnowledgeCheckAttempts.AsNoTracking().Where(attempt => attempt.UserSub == giftSub)
+                .OrderBy(attempt => attempt.StartedAtUtc)
+                .Select(attempt => new
+                {
+                    attempt.Id, attempt.PublicationId, attempt.Publication.Version.Title, attempt.Publication.VersionId,
+                    attempt.Status, attempt.StartedAtUtc, attempt.SubmittedAtUtc, attempt.AnswersJson, attempt.Score,
+                    FeedbackVisible = attempt.Publication.FeedbackMode == KnowledgeCheckRules.AfterSubmit || attempt.Publication.FeedbackReleased
+                }).ToArrayAsync(ct);
+            knowledgeCheckAttempts = attempts.Select(attempt => (object)new
+            {
+                attempt.Id, attempt.PublicationId, attempt.Title, attempt.VersionId, attempt.Status, attempt.StartedAtUtc,
+                attempt.SubmittedAtUtc, answers = KnowledgeCheckRules.Read<KnowledgeCheckAnswer>(attempt.AnswersJson),
+                score = attempt.FeedbackVisible ? attempt.Score : null
+            }).ToArray();
             electiveEnrollments = await db.ElectiveEnrollments.AsNoTracking().Where(e => e.UserSub == giftSub)
                 .Select(e => (object)new { e.ElectiveId, e.Elective.Title, e.DisplayName, e.EnrolledAtUtc }).ToArrayAsync(ct);
             gifts = await db.ChristmasGifts.AsNoTracking().Where(g => g.SenderSub == giftSub || g.RecipientSub == giftSub)
@@ -194,6 +211,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 dailyGamePlays,
                 dailyRankingVisible,
                 pollResponses,
+                knowledgeCheckAttempts,
                 electiveEnrollments,
                 actionReadReceipts,
                 submissions = Array.Empty<object>(),

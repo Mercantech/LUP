@@ -47,6 +47,10 @@ undervisningssider og personlige notesbøger. Rapport og screenshots gemmes i
 `node editor/tests/qa-notebook-tree-browser.mjs` afprøver sidemenuen, flytning med træk og tastatur,
 sletning og gendannelse med samme ID i personlige notesbøger og teorinotesbøger.
 
+`node editor/tests/qa-knowledge-check-notebook-browser.mjs` afprøver indsættelse og udgivelse
+af Videnstjek fra desktop. En elev på mobil starter i notesbogen, genindlæser, fortsætter
+samme forsøg på den selvstændige side og ser derefter resultatet i notesbogen.
+
 ## Tegninger: automatiseret browseraccept
 
 Fixture registrerer de rigtige `DrawingAccess`/`DrawingService`-tjenester, alle40 indlejrede

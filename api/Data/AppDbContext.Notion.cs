@@ -31,6 +31,8 @@ public partial class AppDbContext
             e.HasIndex(x => x.ParentPageId);
             e.HasIndex(x => new { x.CollectionId, x.ParentPageId });
             e.Property(x => x.DraftFingerprint).HasMaxLength(64);
+            e.Property(x => x.DraftKnowledgeChecksJson).HasDefaultValue("{}");
+            e.Property(x => x.PublishedKnowledgeChecksJson).HasDefaultValue("{}");
             e.Property(x => x.PublishedTitle).HasMaxLength(200);
             e.HasIndex(x => new { x.HoldId, x.PublishedAtUtc });
             e.HasOne<Hold>().WithMany().HasForeignKey(x => x.HoldId).OnDelete(DeleteBehavior.Restrict);

@@ -18,6 +18,7 @@ function decode(encoded) {
 /** Only integrated, live XML children are visited. Deleted CRDT history is never searchable. */
 export function projectNotebookDocument(doc, domain = 'notebook') {
   const text = [], links = new Set(), assets = new Set(), drawings = new Set(), drawingBlocks = {}, references = new Map();
+  const knowledgeCheckBlocks = new Map();
   const reference = (kind, id) => {
     if (typeof kind !== 'string' || !/^[a-z][a-z0-9-]{0,47}$/.test(kind) || typeof id !== 'string' || !id || id.length > 240 || /[\u0000-\u001f\u007f]/.test(id)) return;
     if (guid.test(id)) id = id.toLowerCase();
@@ -39,6 +40,12 @@ export function projectNotebookDocument(doc, domain = 'notebook') {
       if (node.nodeName === 'entityMention' || node.nodeName === 'entityLink') reference(attrs.kind, attrs.id);
       if (node.nodeName === 'studentMention') reference('member', attrs.membershipId);
       if (node.nodeName === 'holdPoll') reference('poll', attrs.pollId);
+      if (domain === 'notion' && node.nodeName === 'knowledgeCheck' && attrs.publicationId) {
+        if (typeof attrs.publicationId !== 'string' || !guid.test(attrs.publicationId)
+          || typeof blockId !== 'string' || !/^[a-z0-9_-]{1,128}$/i.test(blockId) || knowledgeCheckBlocks.has(blockId))
+          throw new Error('Invalid knowledge check block');
+        knowledgeCheckBlocks.set(blockId, attrs.publicationId.toLowerCase());
+      }
       if (node.nodeName === 'holdGroup') reference('group', attrs.groupId);
       if (node.nodeName === 'classRoster') {
         reference('hold', attrs.holdId);
@@ -62,7 +69,7 @@ export function projectNotebookDocument(doc, domain = 'notebook') {
     }
   };
   visit(doc.getXmlFragment('document-store'));
-  return { plainText: text.join('').replace(/\n{3,}/g, '\n\n').trim(), linkIds: [...links].sort(), references: [...references].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, value]) => value), assetIds: [...assets].sort(), drawingIds: [...drawings].sort(), drawingBlocks: Object.fromEntries(Object.entries(drawingBlocks).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) };
+  return { plainText: text.join('').replace(/\n{3,}/g, '\n\n').trim(), linkIds: [...links].sort(), references: [...references].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, value]) => value), assetIds: [...assets].sort(), drawingIds: [...drawings].sort(), drawingBlocks: Object.fromEntries(Object.entries(drawingBlocks).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)), ...(domain === 'notion' && { knowledgeCheckBlocks: Object.fromEntries([...knowledgeCheckBlocks].sort()) }) };
 }
 
 export function notebookStateProjection(state, domain = 'notebook') {

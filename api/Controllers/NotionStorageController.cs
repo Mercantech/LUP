@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Data;
+using Mercantec.Tech.Api.KnowledgeChecks;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +44,7 @@ public sealed class NotionStorageController(AppDbContext db, IConfiguration conf
         byte[] bytes;
         string? fingerprint;
         string? drawingManifest = null;
+        var knowledgeCheckManifest = "{}";
         StoreNotionMcpChange? mcpChange = null;
         long lifecycleVersion = 0;
         string? editorName = null;
@@ -72,6 +74,12 @@ public sealed class NotionStorageController(AppDbContext db, IConfiguration conf
             }
             fingerprint = projection.Fingerprint;
             drawingManifest = JsonSerializer.Serialize(drawingIds);
+            if (projection.KnowledgeCheckBlocks is { } blocks)
+            {
+                if (blocks.Count > 1000 || blocks.Any(pair => !KnowledgeCheckNotebookAccess.ValidBlockId(pair.Key) || pair.Value == Guid.Empty))
+                    return BadRequest(new { error = "invalid_knowledge_check_blocks" });
+                knowledgeCheckManifest = JsonSerializer.Serialize(blocks);
+            }
             mcpChange = projection.McpChange;
             lifecycleVersion = projection.LifecycleVersion;
             editorName = UserClaims.CleanEditorName(projection.EditorName);
@@ -122,6 +130,7 @@ public sealed class NotionStorageController(AppDbContext db, IConfiguration conf
             // those bytes, but require the v2 service to stamp them before publication.
             .SetProperty(p => p.DraftRevision, p => fingerprint != null && p.DraftFingerprint == fingerprint ? p.DraftRevision : p.DraftRevision + 1)
             .SetProperty(p => p.DraftFingerprint, fingerprint)
+            .SetProperty(p => p.DraftKnowledgeChecksJson, knowledgeCheckManifest)
             .SetProperty(p => p.DrawingIdsJson, p => drawingManifest ?? p.DrawingIdsJson), ct);
         if (written == 0) return NotFound();
         await references.RefreshNotionAsync(id, ct);

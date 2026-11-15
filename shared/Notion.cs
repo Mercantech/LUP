@@ -20,7 +20,9 @@ public sealed record PublishNotionPage(long ExpectedRevision, string ExpectedFin
     DrawingPublicationRequest[]? Drawings = null);
 public sealed record StoreNotionDocument(string StateBase64, string Fingerprint, Guid[]? DrawingIds = null,
     Dictionary<string, string>? DrawingBlocks = null, EntityReference[]? References = null,
-    StoreNotionMcpChange? McpChange = null, string? EditorName = null, bool PreserveEditMetadata = false, long LifecycleVersion = 0);
+    StoreNotionMcpChange? McpChange = null, string? EditorName = null, bool PreserveEditMetadata = false, long LifecycleVersion = 0,
+    Dictionary<string, Guid>? KnowledgeCheckBlocks = null);
+public sealed record NotionKnowledgeCheckOption(Guid Id, string Title, Guid? HoldId);
 public sealed record AuthorizeNotionCollaboration(string DocumentName);
 public sealed record NotionCollaborationAccess(Guid DocumentId, bool CanEdit, string? EditorName = null, long LifecycleVersion = 0);
 public sealed record NotionGraph(Guid? HoldId, Guid CollectionId, string Title, bool CanRename,

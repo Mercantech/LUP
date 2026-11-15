@@ -31,6 +31,8 @@ public sealed class NotionPage
     public string PublishedAssetIdsJson { get; set; } = "[]";
     public string DrawingIdsJson { get; set; } = "[]";
     public string PublishedDrawingsJson { get; set; } = "[]";
+    public string DraftKnowledgeChecksJson { get; set; } = "{}";
+    public string PublishedKnowledgeChecksJson { get; set; } = "{}";
     public int SchemaVersion { get; set; } = 1;
 }
 

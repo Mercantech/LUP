@@ -34,7 +34,10 @@ export default defineConfig({
     target: 'es2022',
     outDir: '../web/wwwroot/notion-editor',
     emptyOutDir: true,
-    lib: { entry: 'src/editor.tsx', formats: ['es'], fileName: () => 'editor.js', cssFileName: 'editor' },
+    lib: {
+      entry: { editor: 'src/editor.tsx', videnstjek: 'src/knowledge-check-runner-mount.tsx' },
+      formats: ['es'], fileName: (_format, name) => `${name}.js`, cssFileName: 'editor',
+    },
     rollupOptions: { onwarn(warning, defaultHandler) { if(warning.code === 'MODULE_LEVEL_DIRECTIVE' && warning.message.includes('use client')) return; defaultHandler(warning); }, output: {
       assetFileNames: '[name][extname]', chunkFileNames: '[name]-[hash].js',
       manualChunks(id) {

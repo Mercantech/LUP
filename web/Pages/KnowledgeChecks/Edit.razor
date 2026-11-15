@@ -1,0 +1,223 @@
+@page "/videnstjek/rediger/ny"
+@page "/videnstjek/rediger/{Id:guid}"
+@using Mercantec.Tech.Web.KnowledgeChecks
+@inject KnowledgeCheckClient Client
+@inject AuthRedirect Redirect
+@inject ViewAsStudentContext ViewAs
+@inject NavigationManager Nav
+
+<PageTitle>@(Id is null ? "Opret videnstjek · LUP" : "Rediger videnstjek · LUP")</PageTitle>
+
+<div class="knowledge-editor">
+    <nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/videnstjek?vis=administrer">Videnstjek</a><span>›</span><span aria-current="page">@(Id is null ? "Opret" : "Rediger")</span></nav>
+    <header class="page-title">
+        <div><h1>@(Id is null ? "Opret videnstjek" : "Rediger videnstjek")</h1><p>Byg spørgsmål med forklaringer, som eleverne kan bruge efter aflevering.</p></div>
+    </header>
+    @if (!CanManage)
+    {
+        <p class="panel">Kladder kan redigeres af undervisere.</p>
+    }
+    else if (_loading)
+    {
+        <p role="status">Henter kladden…</p>
+    }
+    else if (!_ready)
+    {
+        <section class="panel">
+            <p role="alert">@_error</p>
+            <button type="button" class="secondary" @onclick="LoadAsync">Prøv igen</button>
+        </section>
+    }
+    else
+    {
+        <fieldset disabled="@_busy" class="knowledge-editor-form">
+            <section class="panel knowledge-panel">
+                <h2>Om videnstjekket</h2>
+                <label class="field">Titel <input @bind="_title" maxlength="160" /></label>
+                <label class="field">Beskrivelse <textarea @bind="_description" rows="2" maxlength="1000"></textarea></label>
+                <div class="knowledge-fields-pair">
+                    <label class="field">Emne <input @bind="_topic" maxlength="80" placeholder="Fx GF2" /></label>
+                    <label class="field">Forventet tid i minutter <input type="number" @bind="_minutes" min="1" max="240" /></label>
+                </div>
+            </section>
+
+            <section class="knowledge-panel">
+                <div class="knowledge-heading">
+                    <h2>Spørgsmål</h2>
+                    <div class="actions">
+                        <button type="button" class="secondary" @onclick="TogglePreview" disabled="@(_questions.Count == 0)" aria-expanded="@(_preview ? "true" : "false")"><UiIcon Name="eye" /> Forhåndsvis</button>
+                        <button type="button" class="secondary" @onclick="AddQuestion" disabled="@(_questions.Count >= 60)"><UiIcon Name="plus" /> Tilføj spørgsmål</button>
+                    </div>
+                </div>
+                @if (_preview && _questions.Count > 0)
+                {
+                    var preview = _questions[_previewIndex];
+                    <section class="panel knowledge-preview" aria-label="Elevvisning">
+                        <p>Forhåndsvisning · Spørgsmål @(_previewIndex + 1) af @_questions.Count</p>
+                        <p class="knowledge-prompt">@preview.Prompt</p>
+                        @if (preview.Kind == "short")
+                        {
+                            <label class="field">Dit svar <input @key="preview.Id" /></label>
+                        }
+                        else
+                        {
+                            <fieldset @key="preview.Id">
+                                <legend class="visually-hidden">Svarmuligheder</legend>
+                                @foreach (var option in preview.Options)
+                                {
+                                    <label class="knowledge-checkline"><input type="@(preview.Kind == "multiple" ? "checkbox" : "radio")" name="knowledge-preview" /> @option</label>
+                                }
+                            </fieldset>
+                        }
+                        <div class="actions">
+                            <button type="button" class="secondary" disabled="@(_previewIndex == 0)" @onclick="() => _previewIndex--">Forrige</button>
+                            <button type="button" class="secondary" disabled="@(_previewIndex + 1 == _questions.Count)" @onclick="() => _previewIndex++">Næste</button>
+                        </div>
+                    </section>
+                }
+                @for (var index = 0; index < _questions.Count; index++)
+                {
+                    var position = index;
+                    var question = _questions[position];
+                    <section class="panel knowledge-question" @key="question.Id">
+                        <div class="knowledge-heading">
+                            <h3>Spørgsmål @(position + 1)</h3>
+                            <div class="actions">
+                                <button type="button" class="secondary" disabled="@(position == 0)" @onclick="() => Move(position, -1)" aria-label="@($"Flyt spørgsmål {position + 1} op")">↑</button>
+                                <button type="button" class="secondary" disabled="@(position + 1 == _questions.Count)" @onclick="() => Move(position, 1)" aria-label="@($"Flyt spørgsmål {position + 1} ned")">↓</button>
+                                <button type="button" class="secondary" @onclick="() => Remove(position)" aria-label="@($"Fjern spørgsmål {position + 1}")">Fjern</button>
+                            </div>
+                        </div>
+                        <label class="field">Spørgsmålstype
+                            <select value="@question.Kind" @onchange="e => ChangeKind(position, Text(e))">
+                                <option value="single">Ét korrekt valg</option>
+                                <option value="multiple">Flere korrekte valg</option>
+                                <option value="boolean">Sandt eller falsk</option>
+                                <option value="short">Kortsvar</option>
+                            </select>
+                        </label>
+                        <label class="field">Spørgsmål
+                            <textarea rows="3" maxlength="2400" value="@question.Prompt" @onchange="e => Update(position, q => q with { Prompt = Text(e) })"></textarea>
+                        </label>
+                        @if (question.Kind == "short")
+                        {
+                            <label class="knowledge-checkline">
+                                <input type="checkbox" checked="@question.ManualGrading" @onchange="e => Update(position, q => q with { ManualGrading = e.Value is true })" />
+                                Vurder svaret manuelt
+                            </label>
+                            @if (!question.ManualGrading)
+                            {
+                                <label class="field">Accepterede svar, ét pr. linje
+                                    <textarea rows="2" value="@string.Join('\n', question.AcceptedAnswers)" @onchange="e => Update(position, q => q with { AcceptedAnswers = Text(e).Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) })"></textarea>
+                                </label>
+                            }
+                        }
+                        else
+                        {
+                            <fieldset class="knowledge-options">
+                                <legend>Svarmuligheder og facit</legend>
+                                @for (var optionIndex = 0; optionIndex < question.Options.Length; optionIndex++)
+                                {
+                                    var choice = optionIndex;
+                                    <div class="knowledge-option">
+                                        <label class="knowledge-checkline">
+                                            <input type="@(question.Kind == "multiple" ? "checkbox" : "radio")" name="@($"knowledge-correct-{question.Id}")"
+                                                   checked="@question.CorrectOptions.Contains(choice)" @onchange="e => ChangeCorrect(position, choice, e.Value is true)" />
+                                            <span>Korrekt<span class="visually-hidden"> svar @(choice + 1)</span></span>
+                                        </label>
+                                        @if (question.Kind == "boolean")
+                                        {
+                                            <span>@question.Options[choice]</span>
+                                        }
+                                        else
+                                        {
+                                            <input maxlength="500" value="@question.Options[choice]" @onchange="e => ChangeOption(position, choice, Text(e))" aria-label="@($"Svarmulighed {choice + 1}")" />
+                                            <button type="button" class="secondary" disabled="@(question.Options.Length <= 2)" @onclick="() => RemoveOption(position, choice)" aria-label="@($"Fjern svarmulighed {choice + 1}")">Fjern</button>
+                                        }
+                                    </div>
+                                }
+                                @if (question.Kind != "boolean" && question.Options.Length < 8)
+                                {
+                                    <button type="button" class="secondary" @onclick="() => AddOption(position)">Tilføj svarmulighed</button>
+                                }
+                            </fieldset>
+                        }
+                        <label class="field">Forklaring efter aflevering
+                            <textarea rows="2" maxlength="2400" value="@question.Explanation" @onchange="e => Update(position, q => q with { Explanation = Text(e) })"></textarea>
+                        </label>
+                        <label class="field">Link til stoffet
+                            <input maxlength="1500" value="@question.LearnMoreUrl" @onchange="e => Update(position, q => q with { LearnMoreUrl = Text(e) })" placeholder="/notion/… eller https://…" />
+                        </label>
+                    </section>
+                }
+            </section>
+
+            <section class="panel knowledge-panel" aria-labelledby="knowledge-publish-title">
+                <h2 id="knowledge-publish-title">Udgiv videnstjekket</h2>
+                <label class="field">Målgruppe
+                    <select @bind="_holdId">
+                        <option value="">Fri øvelse for alle med LUP-login</option>
+                        @foreach (var hold in _holds)
+                        {
+                            <option value="@hold.Id">@hold.Name</option>
+                        }
+                    </select>
+                </label>
+                @if (_holdId is not null)
+                {
+                    <div class="knowledge-fields-pair">
+                        <label class="field">Maks. antal forsøg <input type="number" min="1" max="100" @bind="_maxAttempts" placeholder="Ubegrænset" /></label>
+                        <label class="field">Facit vises
+                            <select @bind="_feedbackMode">
+                                <option value="after-submit">Efter aflevering og vurdering</option>
+                                <option value="manual">Når underviseren frigiver det</option>
+                            </select>
+                        </label>
+                    </div>
+                }
+                else
+                {
+                    <p>Frie øvelser har ubegrænsede forsøg og viser facit efter aflevering.</p>
+                }
+                <div class="actions">
+                    <button type="button" class="secondary" @onclick="() => SaveAsync(publish: false)">Gem kladde</button>
+                    <button type="button" class="action" @onclick="() => SaveAsync(publish: true)">Udgiv</button>
+                </div>
+                @if (_error is not null) { <p role="alert">@_error</p> }
+                @if (_status is not null) { <p role="status">@_status</p> }
+            </section>
+
+            @if (_publications.Length > 0)
+            {
+                <section id="udgivelser" class="knowledge-panel">
+                    <h2>Udgivelser</h2>
+                    @foreach (var item in _publications)
+                    {
+                        <article class="panel knowledge-heading" @key="item.Id">
+                            <div><h3>@(item.HoldName ?? "Fri øvelse")</h3><p>@item.Title · @(item.IsActive ? "Aktiv" : "Lukket")</p></div>
+                            <div class="actions">
+                                @if (item.HoldId is not null)
+                                {
+                                    <a class="secondary" href="/videnstjek/@item.Id/resultater">Holdresultater</a>
+                                }
+                                @if (item.IsActive)
+                                {
+                                    <a class="secondary" href="/videnstjek/@item.Id">Åbn</a>
+                                    @if (_confirmClose == item.Id)
+                                    {
+                                        <button type="button" class="secondary" @onclick="() => CloseAsync(item.Id)">Bekræft lukning</button>
+                                        <button type="button" class="secondary" @onclick="() => _confirmClose = null">Annuller</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="secondary" @onclick="() => _confirmClose = item.Id">Luk udgivelse</button>
+                                    }
+                                }
+                            </div>
+                        </article>
+                    }
+                </section>
+            }
+        </fieldset>
+    }
+</div>

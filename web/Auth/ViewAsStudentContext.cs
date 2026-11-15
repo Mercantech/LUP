@@ -83,6 +83,9 @@ public sealed class ViewAsStudentContext
         if (p.StartsWith("/teacher/view-as", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        return p.StartsWith("/teacher/", StringComparison.OrdinalIgnoreCase);
+        return p.StartsWith("/teacher/", StringComparison.OrdinalIgnoreCase)
+            || p.StartsWith("/videnstjek/rediger/", StringComparison.OrdinalIgnoreCase)
+            || (p.StartsWith("/videnstjek/", StringComparison.OrdinalIgnoreCase)
+                && p.EndsWith("/resultater", StringComparison.OrdinalIgnoreCase));
     }
 }
