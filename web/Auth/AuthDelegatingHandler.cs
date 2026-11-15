@@ -15,18 +15,15 @@ public sealed class AuthDelegatingHandler(AuthService auth) : DelegatingHandler
 
         var response = await base.SendAsync(request, cancellationToken);
 
-        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        if (response.StatusCode == HttpStatusCode.Unauthorized && !string.IsNullOrEmpty(token))
         {
             try
             {
-                if (!await auth.TryRefreshOnUnauthorizedAsync())
-                    return response;
-
-                using var retry = await CloneRequestAsync(request, cancellationToken);
-                var newToken = await auth.GetValidAccessTokenAsync();
+                var newToken = await auth.RefreshAfterUnauthorizedAsync(token);
                 if (string.IsNullOrEmpty(newToken))
                     return response;
 
+                using var retry = await CloneRequestAsync(request, cancellationToken);
                 retry.Headers.Authorization = new AuthenticationHeaderValue("Bearer", newToken);
                 // A failed refresh must return the original readable401. Only
                 // release it once an actual retry will replace the response.

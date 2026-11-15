@@ -11,12 +11,24 @@
         <Found Context="routeData">
             @if (!Auth.IsInitialized)
             {
-                <LayoutView Layout="@typeof(MainLayout)"><p role="status">Indlæser…</p></LayoutView>
+                <LayoutView Layout="@typeof(MainLayout)"><p role="status">@(_restoring ? "Genopretter login…" : "Indlæser…")</p></LayoutView>
             }
             else if (!Auth.IsAuthenticated && !PublicPageAccess.Allows(Nav.ToBaseRelativePath(Nav.Uri))
                 && !ExtensionEmojiDraft.IsImportPath(Nav.ToBaseRelativePath(Nav.Uri)))
             {
-                <LayoutView Layout="@typeof(MainLayout)"><PageTitle>Log ind · LUP</PageTitle><header class="page-title"><div><h1>Log ind</h1><p>Denne side kræver login.</p></div></header><a class="action" href="@Auth.LoginPath()">Log ind</a></LayoutView>
+                @if (Auth.SessionRecoveryPending)
+                {
+                    <LayoutView Layout="@typeof(MainLayout)">
+                        <PageTitle>Genopret login · LUP</PageTitle>
+                        <header class="page-title"><div><h1>Genopret login</h1></div></header>
+                        <p role="status">@(_restoring ? "Genopretter login…" : "Forbindelsen til Mercantec Auth er midlertidigt utilgængelig.")</p>
+                        <button type="button" class="action" @onclick="RestoreSessionAsync" disabled="@_restoring">Prøv igen</button>
+                    </LayoutView>
+                }
+                else
+                {
+                    <LayoutView Layout="@typeof(MainLayout)"><PageTitle>Log ind · LUP</PageTitle><header class="page-title"><div><h1>Log ind</h1><p>Denne side kræver login.</p></div></header><a class="action" href="@Auth.LoginPath()">Log ind</a></LayoutView>
+                }
             }
             else
             {
@@ -29,6 +41,7 @@
 
 @code {
     private bool _initialized;
+    private bool _restoring;
     protected override void OnInitialized() => Auth.AuthStateChanged += OnAuth;
     private void OnAuth() => InvokeAsync(StateHasChanged);
     public void Dispose() => Auth.AuthStateChanged -= OnAuth;
@@ -39,7 +52,22 @@
             return;
 
         _initialized = true;
-        await Auth.InitializeAsync();
+        await RestoreSessionAsync();
         StateHasChanged();
+    }
+
+    private async Task RestoreSessionAsync()
+    {
+        if (_restoring) return;
+        _restoring = true;
+        StateHasChanged();
+        try
+        {
+            await Auth.InitializeAsync();
+        }
+        finally
+        {
+            _restoring = false;
+        }
     }
 }

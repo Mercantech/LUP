@@ -1,0 +1,6 @@
+{
+  "date": "2026-11-15",
+  "title": "LUP bevarer dit login ved opdateringer",
+  "description": "Når LUP genindlæses, bevares dit login i fanen. Hvis Mercantec Auth kortvarigt er utilgængelig, prøver LUP igen. Du kan også genoprette forbindelsen fra den side, du var på.",
+  "authors": ["Mathias"]
+}
