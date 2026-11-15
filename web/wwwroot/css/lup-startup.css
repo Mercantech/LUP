@@ -65,7 +65,7 @@ html[data-theme="hacker"] .lup-startup {
     background: var(--startup-tint);
 }
 
-.lup-startup__logo svg { width: 1.65rem; height: 1.65rem; }
+.lup-startup__logo svg { width: 2.65rem; height: 2.65rem; }
 
 .lup-startup__heading h1 {
     margin: 0;

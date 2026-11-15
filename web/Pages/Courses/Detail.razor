@@ -4,7 +4,7 @@
 <PageTitle>@(_workspace?.Name ?? "Hold") · LUP</PageTitle>
 @if (!Auth.IsInitialized || _loading)
 {
-    <p role="status">Henter holdets overblik…</p>
+    <LupLoading Message="Henter holdets overblik…" />
 }
 else if (!Auth.IsAuthenticated)
 {

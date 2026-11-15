@@ -1,0 +1,84 @@
+@using Mercantec.Tech.Web.Branding
+@inject NavigationManager Nav
+@inject IJSRuntime Js
+
+<section class="logo-animations" id="logoanimationer" aria-labelledby="logo-animations-title">
+    <h3 id="logo-animations-title">Logoanimationer</h3>
+    <div class="logo-gallery">
+        <div class="logo-player">
+            <div class="logo-stage" aria-hidden="true">
+                @switch (_scene)
+                {
+                    case Scene.SharedStrokes:
+                        <LupLogoSharedStrokes @key="_playback" Animate="@HasPlayed" />
+                        break;
+                    case Scene.Assembly:
+                        <div class="logo-stage-mark" @key="_playback"><LupLogoAssembly Animate="@HasPlayed" /></div>
+                        break;
+                    default:
+                        <LupLogoNameReveal @key="_playback" Expansion="_expansion" Animate="@HasPlayed" />
+                        break;
+                }
+            </div>
+            <div class="logo-player-bar">
+                <p aria-live="polite">@Caption</p>
+                <button type="button" class="logo-play" @onclick="Play">
+                    <UiIcon Name="@(HasPlayed ? "loop" : "screen")" />
+                    @(HasPlayed ? "Afspil igen" : "Afspil")
+                </button>
+            </div>
+        </div>
+
+        <div class="logo-choices">
+            <div class="logo-choice-group" role="group" aria-labelledby="logo-choice-names">
+                <h4 id="logo-choice-names">Navnet foldes ud</h4>
+                @foreach (var expansion in LupIdentity.Expansions)
+                {
+                    <button type="button" class="logo-choice"
+                            aria-pressed="@(_scene == Scene.Name && _expansion == expansion ? "true" : "false")"
+                            @onclick="() => Select(Scene.Name, expansion)">
+                        @expansion.Name
+                    </button>
+                }
+            </div>
+            <div class="logo-choice-group" role="group" aria-labelledby="logo-choice-motion">
+                <h4 id="logo-choice-motion">Bogstaverne i logoet</h4>
+                <button type="button" class="logo-choice" aria-pressed="@(_scene == Scene.SharedStrokes ? "true" : "false")"
+                        @onclick="() => Select(Scene.SharedStrokes)">Fælles streger</button>
+                <button type="button" class="logo-choice" aria-pressed="@(_scene == Scene.Assembly ? "true" : "false")"
+                        @onclick="() => Select(Scene.Assembly)">Samling</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private enum Scene { Name, SharedStrokes, Assembly }
+
+    private Scene _scene;
+    private LupExpansion _expansion = LupIdentity.Expansions[0];
+    private int _playback;
+    private bool HasPlayed => _playback > 0;
+
+    private string Caption => _scene switch
+    {
+        Scene.SharedStrokes => "L, U og P deler den lodrette streg. L og U deler også bunden.",
+        Scene.Assembly => "De tre dele klikker på plads, mens LUP indlæser.",
+        _ => _expansion.Description
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && new Uri(Nav.Uri).Fragment == "#logoanimationer")
+            await Js.InvokeVoidAsync("lupSectionUi.scrollToSection", "logoanimationer", Nav.Uri);
+    }
+
+    private void Select(Scene scene, LupExpansion? expansion = null)
+    {
+        _scene = scene;
+        _expansion = expansion ?? _expansion;
+        Play();
+    }
+
+    private void Play() => _playback++;
+}

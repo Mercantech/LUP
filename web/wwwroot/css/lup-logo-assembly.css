@@ -1,0 +1,39 @@
+.lup-logo-assembly {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+}
+
+.lup-logo-assembly .lup-logo-l {
+    --piece-x: -18%;
+    --piece-y: 13%;
+    --piece-delay: 0ms;
+}
+
+.lup-logo-assembly .lup-logo-u {
+    --piece-x: 18%;
+    --piece-y: 6%;
+    --piece-delay: 120ms;
+}
+
+.lup-logo-assembly .lup-logo-p {
+    --piece-x: 0%;
+    --piece-y: -15%;
+    --piece-delay: 240ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .lup-logo-assembly--animated use {
+        transform-box: view-box;
+        animation: lup-logo-assemble 3.4s steps(4, end) var(--piece-delay) both;
+    }
+
+    .lup-logo-assembly--loop use {
+        animation-iteration-count: infinite;
+    }
+}
+
+@keyframes lup-logo-assemble {
+    0%, 4%, 40%, 100% { transform: translate(0, 0); }
+    16%, 22% { transform: translate(var(--piece-x), var(--piece-y)); }
+}

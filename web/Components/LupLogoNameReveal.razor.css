@@ -1,0 +1,121 @@
+.name-reveal {
+    display: grid;
+    place-items: center;
+    container-type: inline-size;
+    width: 100%;
+    height: 100%;
+}
+
+.name-words {
+    --word-width: min(81cqw, 18.5rem);
+    --word-height: 3.2rem;
+    --glyph-size: 1.875rem;
+    --mark-x: calc((var(--word-width) - var(--glyph-size)) / 2);
+    width: var(--word-width);
+}
+
+.name-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: var(--word-height);
+}
+
+.name-row--l {
+    --letter-color: var(--lup-logo-l);
+    --mark-y: var(--word-height);
+    --word-delay: 0ms;
+}
+
+.name-row--u {
+    --letter-color: var(--lup-logo-u);
+    --mark-y: 0px;
+    --word-delay: 105ms;
+}
+
+.name-row--p {
+    --letter-color: var(--lup-logo-p);
+    --mark-y: calc(-1 * var(--word-height));
+    --word-delay: 210ms;
+}
+
+.name-piece {
+    position: absolute;
+    inset: calc((var(--word-height) - var(--glyph-size)) / 2) auto auto 0;
+    width: var(--glyph-size);
+    height: var(--glyph-size);
+    opacity: 0;
+}
+
+.name-shared-piece {
+    --lup-logo-l: var(--letter-color);
+    opacity: 0;
+}
+
+.name-word {
+    color: var(--ink);
+    font: 700 clamp(1.4rem, 8.6cqw, 2.7rem)/1 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+    letter-spacing: -.055em;
+    white-space: nowrap;
+}
+
+.name-initial {
+    color: var(--letter-color);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .is-ready .name-piece {
+        opacity: 1;
+        transform: translate(var(--mark-x), var(--mark-y)) scale(2.8);
+    }
+
+    .is-ready .name-word {
+        opacity: 0;
+    }
+
+    .is-playing .name-piece {
+        animation: lup-name-piece 2.5s both;
+    }
+
+    .is-playing .name-shared-piece {
+        animation: lup-name-share 2.5s both;
+    }
+
+    .is-playing .name-word {
+        animation: lup-name-word .52s cubic-bezier(.2, .7, .3, 1) calc(1.64s + var(--word-delay)) both;
+    }
+}
+
+@keyframes lup-name-piece {
+    0%, 20% {
+        opacity: 1;
+        transform: translate(var(--mark-x), var(--mark-y)) scale(2.8);
+        animation-timing-function: cubic-bezier(.22, .8, .2, 1);
+    }
+    54%, 64% {
+        opacity: 1;
+        transform: translate(0) scale(1);
+    }
+    86%, 100% {
+        opacity: 0;
+        transform: translate(-.45rem) scale(.82);
+    }
+}
+
+@keyframes lup-name-share {
+    0%, 24% { opacity: 0; }
+    40%, 100% { opacity: 1; }
+}
+
+@keyframes lup-name-word {
+    from {
+        opacity: 0;
+        transform: translateX(-.4rem);
+        clip-path: inset(0 100% 0 0);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+        clip-path: inset(0);
+    }
+}

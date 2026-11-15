@@ -212,7 +212,7 @@ window.lupCyberLabScroll = log => {
     if (log) log.scrollTop = log.scrollHeight;
 };
 
-window.lupProfileUi = window.lupCharacterUi = {
+window.lupSectionUi = window.lupProfileUi = window.lupCharacterUi = {
     async scrollToSection(id, expectedLocation) {
         // Let the route and its heading render before moving keyboard focus.
         await new Promise(resolve => requestAnimationFrame(resolve));

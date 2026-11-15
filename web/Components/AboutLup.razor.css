@@ -19,6 +19,7 @@
 .about-benefits strong { font-size:14px; font-weight:600; }
 .about-benefits span { color:var(--muted); font-size:13px; line-height:1.7; }
 .about-text-link { display:inline-block; min-height:26px; font-size:13px; font-weight:600; text-decoration:underline!important; text-underline-offset:4px; }
+.about-logo-link { margin-top:15px; }
 .about-teacher { border-left:1px solid var(--rule); padding-left:clamp(28px,4vw,48px); }
 .about-section-heading { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px 32px; }
 .about-section-heading h2,.about-people h2 { font-size:27px; line-height:1.25; letter-spacing:-.8px; }

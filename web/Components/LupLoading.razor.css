@@ -1,0 +1,15 @@
+.lup-loading {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    width: fit-content;
+    color: var(--muted, inherit);
+    font-weight: 600;
+}
+
+.lup-loading-mark {
+    flex: none;
+    width: 2.75rem;
+    border-radius: .75rem;
+    background: var(--lup-logo-tile, #f3f6fb);
+}

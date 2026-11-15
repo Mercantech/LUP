@@ -87,8 +87,14 @@ async function check(name, theme, expectedCharacter, random, options) {
     await splash.getByText('LUP starter…', { exact: true }).waitFor();
     const attribution = splash.locator('[data-startup-character]');
     await attribution.getByText(expectedCharacter, { exact: true }).waitFor();
-    const logo = splash.locator('use[href*="pixel-lup.svg"], img[src*="pixel-lup.svg"]');
-    assert.equal(await logo.count(), 1);
+    const logo = splash.locator('.lup-logo-assembly');
+    assert.deepEqual(await logo.locator('use').evaluateAll(parts => parts.map(part => part.getAttribute('href'))), [
+      'images/branding/pixel-lup.svg#letter-l',
+      'images/branding/pixel-lup.svg#letter-u',
+      'images/branding/pixel-lup.svg#letter-p',
+    ]);
+    const logoAnimations = await logo.evaluate(mark => mark.getAnimations({ subtree: true }).length);
+    assert.equal(logoAnimations, options.reducedMotion === 'reduce' ? 0 : 3);
     assert.equal(await page.locator('.loading-progress, .loading-progress-text').count(), 0);
     assert.ok(!(await splash.innerText()).includes('100%'));
 

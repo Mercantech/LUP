@@ -1,0 +1,71 @@
+.shared-strokes {
+    display: block;
+    width: min(100%, 17rem);
+    height: auto;
+}
+
+.shared-branches {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 0.18;
+    opacity: 0.4;
+    shape-rendering: auto;
+}
+
+.shared-original {
+    opacity: 0;
+}
+
+.shared-letter {
+    transform: translateX(var(--letter-position));
+}
+
+.shared-letter-l { --letter-position: -14px; }
+.shared-letter-u { --letter-position: 0px; }
+.shared-letter-p { --letter-position: 17px; }
+
+.shared-captions {
+    fill: currentColor;
+    font-size: 2.3px;
+    font-weight: 700;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .is-playing .shared-original {
+        animation: show-original 3.7s both;
+    }
+
+    .is-playing .shared-letter {
+        animation: unfold-letter 3.7s cubic-bezier(.23, .77, .29, 1) both;
+    }
+
+    .is-playing .shared-detail {
+        animation: show-shared-stem 3.7s both;
+    }
+
+    .is-playing .shared-source,
+    .is-playing .shared-captions {
+        animation: show-diagram 3.7s both;
+    }
+}
+
+@keyframes show-original {
+    0%, 15% { opacity: 1; }
+    22%, 100% { opacity: 0; }
+}
+
+@keyframes unfold-letter {
+    0%, 14% { opacity: 0; transform: translateX(0); }
+    19% { opacity: 1; transform: translateX(0); }
+    53%, 100% { opacity: 1; transform: translateX(var(--letter-position)); }
+}
+
+@keyframes show-shared-stem {
+    0%, 57%, 100% { opacity: 1; }
+    69%, 83% { opacity: 0.25; }
+}
+
+@keyframes show-diagram {
+    0%, 42% { opacity: 0; }
+    61%, 100% { opacity: 1; }
+}

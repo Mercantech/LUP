@@ -1,0 +1,47 @@
+@using Mercantec.Tech.Web.Branding
+
+<div class="name-reveal @(Animate ? "is-playing" : "is-ready")">
+    <div class="name-words" aria-hidden="true">
+        @for (var index = 0; index < _words.Length; index++)
+        {
+            var word = _words[index];
+            var initial = char.ToLowerInvariant(word[0]);
+            <div class="name-row name-row--@initial">
+                <svg class="name-piece" viewBox="0 0 10 10" shape-rendering="crispEdges" focusable="false">
+                    <use href="@($"images/branding/pixel-lup.svg#letter-{initial}")" />
+                    @if (initial == 'u')
+                    {
+                        <use class="name-shared-piece" href="images/branding/pixel-lup.svg#letter-l" />
+                    }
+                    @if (initial == 'p')
+                    {
+                        <svg class="name-shared-piece" x="0" y="0" width="2" height="10" viewBox="0 0 2 10" overflow="hidden">
+                            <use href="images/branding/pixel-lup.svg#letter-l" />
+                        </svg>
+                    }
+                </svg>
+                <span class="name-word"><span class="name-initial">@word[0]</span>@word[1..]</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public LupExpansion Expansion { get; set; } = default!;
+    [Parameter] public bool Animate { get; set; }
+
+    private string[] _words = [];
+
+    protected override void OnParametersSet()
+    {
+        var parts = Expansion.Name.Split(' ', 3);
+        if (Expansion.IsOfficial)
+        {
+            // The established name joins the U and P words at the capital P.
+            var platformStart = parts[1].IndexOf('P');
+            parts = [parts[0], parts[1][..platformStart], parts[1][platformStart..]];
+        }
+
+        _words = parts;
+    }
+}
