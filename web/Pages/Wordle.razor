@@ -164,6 +164,7 @@
                             <div><dt>Din rekord</dt><dd>@DaysLabel(progress.BestStreak)</dd></div>
                         </dl>
                         <p>Både sejr og nederlag tæller, når du gør runden færdig i dag.</p>
+                        <a href="@(GamesCatalog.ProgressPath + "?game=" + DailyGameProgressCatalog.Wordle)">Historik og ranglister</a>
                     </section>
                 }
                 <details class="wordle-panel wordle-rules" open="@(!_playedBefore)" @key="_subject">

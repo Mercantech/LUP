@@ -19,6 +19,7 @@ public static class GamesCatalog
     public const string WordlePath = Path + "/wordle";
     public const string DailyWordPath = Path + "/" + DailyGameIds.Word;
     public const string TaljagtPath = Path + "/" + DailyGameIds.Numbers;
+    public const string ProgressPath = Path + "/fremskridt";
     public const string ProjectsPath = "/projects/mine";
     public const string GameCategory = "spil";
     public const string GameProjectsPath = ProjectsPath + "?category=" + GameCategory;

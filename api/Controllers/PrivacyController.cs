@@ -100,6 +100,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
         object[] uploadedGames = [];
         object[] wordlePlays = [];
         object[] dailyGamePlays = [];
+        var dailyRankingVisible = false;
         if (subGuid is not null)
         {
             displayName = await db.ProfileNames.AsNoTracking().Where(profile => profile.UserSub == subGuid.Value)
@@ -124,6 +125,8 @@ public class PrivacyController(AppDbContext db) : ControllerBase
 
         if (subGuid is Guid giftSub)
         {
+            dailyRankingVisible = await db.DailyGameRankingPreferences.AsNoTracking()
+                .AnyAsync(preference => preference.UserSub == giftSub, ct);
             uploadedGames = await db.UploadedGames.AsNoTracking()
                 .Where(game => game.OwnerSub == giftSub && game.FileAsset.OwnerSub == giftSub)
                 .OrderBy(game => game.CreatedAtUtc)
@@ -189,6 +192,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 uploadedGames,
                 wordlePlays,
                 dailyGamePlays,
+                dailyRankingVisible,
                 pollResponses,
                 electiveEnrollments,
                 actionReadReceipts,

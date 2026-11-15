@@ -19,7 +19,8 @@ public enum DailyGameStatus { Playing, Won, Lost }
 
 public sealed record DailyGameDay(
     DateOnly Date, DateTimeOffset NextRoundAt, string HostSlug, string Theme,
-    string? Clue = null, IReadOnlyList<int>? Tiles = null, int? Target = null);
+    string? Clue = null, IReadOnlyList<int>? Tiles = null, int? Target = null,
+    string? WordPattern = null);
 
 public sealed record DailyGameRound(
     DailyGameDay Day, int Version, DailyGameStatus Status, int Streak, int BestStreak,

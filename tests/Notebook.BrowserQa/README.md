@@ -35,6 +35,9 @@ genåbning på samme konto og en anden kontos separate runde.
 med en frisk fixture på desktop og mobil. Testen gennemfører begge spil og
 kontrollerer, at hints, facit og resultat følger den fiktive konto efter genåbning.
 
+`node editor/tests/qa-daily-progress-browser.mjs` bruger en frisk fixture til
+at afprøve privat spilhistorik, holdadgang og frivillig deltagelse på ranglister.
+
 `node editor/tests/qa-references-browser.mjs` bruger samme fixture og fjerde fiktive bruger
 uden hold til at teste oprettelse af teori via oversigten, rigtige globale mentions,
 udgivelse, private linkmåls synlighed, personnotifikationer og graf på tværs af

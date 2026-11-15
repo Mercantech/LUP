@@ -80,7 +80,10 @@ public sealed class DailyGamesTests : IAsyncLifetime
         Assert.Equal("lupp", metadata.HostSlug);
         Assert.NotNull(metadata.Clue);
         Assert.DoesNotContain("Answer", JsonSerializer.Serialize(metadata));
-        Assert.Null(Ok(await player.Round(Word, default)).Answer);
+        Assert.Equal(new string('_', original.Answer!.Length), metadata.WordPattern);
+        var started = Ok(await player.Round(Word, default));
+        Assert.Null(started.Answer);
+        Assert.Equal(metadata.WordPattern, started.Day.WordPattern);
         var invalid = Assert.IsType<UnprocessableEntityObjectResult>(await player.Guess(Word, Move(0, "😀"), default));
         Assert.Equal("invalid_word", Assert.IsType<DailyGameRound>(invalid.Value).Error);
 
@@ -89,14 +92,24 @@ public sealed class DailyGamesTests : IAsyncLifetime
         Assert.Equal(1, hinted.Version);
         Assert.Single(hinted.Hints);
         Assert.Empty(hinted.Guesses);
-        Assert.Equal(1, Ok(await player.Hint(Word, hint, default)).Version);
+        Assert.Null(hinted.Answer);
+        Assert.Equal(original.Answer[0], hinted.Day.WordPattern![0]);
+        var replay = Ok(await player.Hint(Word, hint, default));
+        Assert.Equal(1, replay.Version);
+        Assert.Equal(hinted.Day.WordPattern, replay.Day.WordPattern);
         var stale = Assert.IsType<ConflictObjectResult>(await player.Guess(Word, Move(0, "banan"), default));
         Assert.Equal("round_changed", Assert.IsType<DailyGameRound>(stale.Value).Error);
-        Assert.Equal(2, Ok(await player.Hint(Word, Move(1), default)).Hints.Count);
+        var twiceHinted = Ok(await player.Hint(Word, Move(1), default));
+        Assert.Equal(2, twiceHinted.Hints.Count);
+        Assert.Contains('_', twiceHinted.Day.WordPattern!);
+        Assert.NotEqual(hinted.Day.WordPattern, twiceHinted.Day.WordPattern);
+        Assert.Equal(twiceHinted.Day.WordPattern, Ok(await player.Round(Word, default)).Day.WordPattern);
         var noMore = Assert.IsType<UnprocessableEntityObjectResult>(await player.Hint(Word, Move(2), default));
         Assert.Equal("hints_exhausted", Assert.IsType<DailyGameRound>(noMore.Value).Error);
         var other = Controller(db, Guid.NewGuid());
-        Assert.Empty(Ok(await other.Round(Word, default)).Hints);
+        var otherRound = Ok(await other.Round(Word, default));
+        Assert.Empty(otherRound.Hints);
+        Assert.Equal(metadata.WordPattern, otherRound.Day.WordPattern);
         other.Request.Headers["X-LUP-Daily-Subject"] = _user.ToString();
         var account = Assert.IsType<ConflictObjectResult>(await other.Guess(Word, Move(0, "banan"), default));
         Assert.Equal("account_changed", JsonSerializer.SerializeToElement(account.Value).GetProperty("error").GetString());
@@ -110,6 +123,17 @@ public sealed class DailyGamesTests : IAsyncLifetime
         Assert.Equal(0, Ok(await player.Round(Numbers, default)).Streak);
     }
 
+    [Theory]
+    [InlineData("bøs-bås", 0, "___-___")]
+    [InlineData("rød tråd", 1, "r__ _r__")]
+    [InlineData("bøs-bås", 2, "bø_-b__")]
+    [InlineData("sø", 2, "s_")]
+    [InlineData("aa", 2, "__")]
+    public void WordPatternKeepsSeparatorsAndNeverRevealsEntireAnswer(string answer, int hints, string expected)
+    {
+        Assert.Equal(expected, DailyGameRules.WordPattern(answer, hints));
+    }
+
     [Fact]
     public async Task NumberSubmissionScoresOnServerAndMidnightUsesCopenhagenDate()
     {
@@ -117,6 +141,7 @@ public sealed class DailyGamesTests : IAsyncLifetime
         var player = Controller(db, _user);
         var starting = Ok(await player.Round(Numbers, default));
         Assert.Null(starting.Example);
+        Assert.Null(starting.Day.WordPattern);
         var duplicate = Assert.IsType<UnprocessableEntityObjectResult>(
             await player.Submit(Numbers, Move(0, tokens: ["0", "+", "0"]), default));
         Assert.Equal("invalid_expression", Assert.IsType<DailyGameRound>(duplicate.Value).Error);

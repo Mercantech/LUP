@@ -1,0 +1,236 @@
+.game-progress {
+    max-width: 73rem;
+    margin-inline: auto;
+    color: var(--ink);
+}
+
+.game-progress-heading {
+    padding-block: clamp(1.125rem, 4vw, 2rem);
+}
+
+.game-progress a {
+    color: var(--blue);
+}
+
+.game-progress-heading h1 {
+    margin: .5rem 0 .25rem;
+    font-size: clamp(2.1rem, 6vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+
+.game-progress-heading p, .game-progress-period, .game-progress-detail {
+    margin: 0;
+    color: var(--muted);
+}
+
+.game-progress-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin-block-end: .85rem;
+}
+
+.game-progress-picker a, .game-progress-secondary, .game-progress a.game-progress-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: .45rem .8rem;
+    border: 1px solid var(--rule);
+    border-radius: .65rem;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.game-progress-picker a[aria-current="page"], .game-progress a.game-progress-action {
+    border-color: var(--blue);
+    background: var(--blue);
+    color: var(--on-blue);
+}
+
+.game-progress :is(a, button, summary, select):focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 3px;
+}
+
+.game-progress-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: clamp(.75rem, 2.5vw, 1.5rem);
+    align-items: start;
+}
+
+.game-progress-panel {
+    min-width: 0;
+    padding: clamp(.8rem, 2.7vw, 1.5rem);
+    border: 1px solid var(--rule);
+    border-radius: 1rem;
+    background: var(--paper);
+}
+
+.progress-section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-bottom: .8rem;
+}
+
+.game-progress h2, .game-progress h3 {
+    margin: 0;
+    letter-spacing: -.025em;
+}
+
+.game-progress h2 {
+    font-size: 1.35rem;
+}
+
+.game-progress h3 {
+    font-size: 1.05rem;
+}
+
+.game-progress-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .4rem;
+    margin: 0 0 .85rem;
+}
+
+.game-progress-summary div {
+    padding: .55rem .65rem;
+    border-radius: .6rem;
+    background: var(--tint);
+}
+
+.game-progress-summary dt, .game-progress-detail, .game-progress-period {
+    font-size: .85rem;
+}
+
+.game-progress-summary dd {
+    margin: .15rem 0 0;
+    color: var(--blue);
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.game-progress-table {
+    width: 100%;
+    margin: .35rem 0 .85rem;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: .95rem;
+}
+
+.game-progress-table tbody tr {
+    border-top: 1px solid var(--rule);
+}
+
+.game-progress-table :is(th, td) {
+    padding: .55rem .35rem;
+    vertical-align: top;
+}
+
+.game-progress-table thead th {
+    color: var(--muted);
+    font-size: .85rem;
+}
+
+.game-progress-history th[scope=row] {
+    white-space: nowrap;
+}
+
+.game-progress-table :is(th, td):last-child {
+    text-align: right;
+}
+
+.game-progress-ranking th[scope=row] {
+    overflow-wrap: anywhere;
+}
+
+.game-progress-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+.game-progress-detail {
+    display: block;
+    font-weight: 400;
+}
+
+.game-progress-own-row {
+    background: var(--tint);
+}
+
+.game-progress-you {
+    font-size: .8rem;
+    color: var(--blue);
+}
+
+.game-progress-own {
+    border-radius: .65rem;
+    background: var(--tint);
+    padding: .65rem;
+}
+
+.game-progress-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .6rem;
+    margin: 0 0 .65rem;
+}
+
+.game-progress-filters label {
+    display: block;
+    margin: 0 0 .2rem;
+    color: var(--muted);
+    font-size: .9rem;
+}
+
+.game-progress-filters select {
+    min-height: 2.75rem;
+    width: 100%;
+    border: 1px solid var(--rule);
+    border-radius: .65rem;
+    padding-inline: .45rem;
+    color: var(--ink);
+    background: var(--bg);
+    font: inherit;
+}
+
+.game-progress-visibility {
+    margin-top: 1rem;
+    padding-top: .9rem;
+    border-top: 1px solid var(--rule);
+}
+
+.game-progress-visibility p, .game-progress-rules p, .game-progress-guest p {
+    margin: .45rem 0;
+    color: var(--muted);
+}
+
+.game-progress-rules summary {
+    min-height: 2.75rem;
+    padding-block: .55rem;
+    cursor: pointer;
+}
+
+.game-progress-secondary:disabled {
+    opacity: .65;
+}
+
+@media (max-width: 48rem) {
+    .game-progress-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 34rem) {
+    .game-progress-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

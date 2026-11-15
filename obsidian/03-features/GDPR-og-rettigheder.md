@@ -30,6 +30,8 @@ Brugere (elever/undervisere) skal kunne forstå, hvilke personoplysninger platfo
 
 Wordle, Dagens ord og Taljagt gemmer den officielle rundes dato, svar og status med spillerens Auth-sub. Brugeren kan hente sine egne runder med privatlivseksporten. Ved en verificeret sletteanmodning skal drift også slette rækker fra `wordle_plays` og `daily_game_plays`, der matcher brugerens `UserSub`. Dagens fælles opgaver og planlægningsnøgler er fælles driftsdata uden brugeroplysninger.
 
+Ranglister i minispil kræver, at spilleren aktivt vælger at vise sit LUP-visningsnavn og sine scoretal. Valget gælder for den fælles rangliste og brugerens hold. Indstillingen fremgår af privatlivseksporten. Slet spillerens række i `daily_game_ranking_preferences` ved en verificeret sletteanmodning. Sletning af det valgte profilnavn fjerner også tilmeldingen.
+
 ## Afhængigheder
 
 - Auth (JWT / `sub`)

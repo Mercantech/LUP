@@ -10,7 +10,7 @@
     <header class="daily-word-heading">
         <a href="@GamesCatalog.Path">← Alle spil</a>
         <h1>Dagens ord</h1>
-        <p>Gæt et fagord ud fra dagens ledetråd.</p>
+        <p>Brug dagens ledetråd og bogstavfelterne til at gætte fagordet.</p>
     </header>
 
     @if (Puzzle is { } puzzle)
@@ -24,6 +24,30 @@
                     </div>
                     <h2 id="daily-word-clue">Dagens ledetråd</h2>
                     <p>@puzzle.Clue</p>
+                    @if (puzzle.WordPattern is { } pattern)
+                    {
+                        var finished = CanPlay ? _round?.Answer : null;
+                        var board = finished ?? pattern;
+                        <div class="daily-word-board">
+                            <span class="daily-word-size">@board.Count(character => character == '_' || char.IsLetter(character)) bogstaver</span>
+                            <div class="daily-word-tiles" aria-hidden="true">
+                                @foreach (var character in board)
+                                {
+                                    if (character is ' ' or '-')
+                                    {
+                                        <span class="daily-word-separator">@(character == '-' ? "–" : null)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="daily-word-tile @(char.IsLetter(character) ? "is-revealed" : null)">
+                                            @(char.IsLetter(character) ? char.ToUpperInvariant(character).ToString() : null)
+                                        </span>
+                                    }
+                                }
+                            </div>
+                            <span class="visually-hidden" role="status" aria-atomic="true">@DescribePattern(board)</span>
+                        </div>
+                    }
                 </div>
 
                 @if (!CanPlay)
@@ -51,7 +75,7 @@
                                 <label for="daily-word-input">Dit gæt</label>
                                 <span class="daily-word-count">@(3 - round.Guesses.Count) forsøg tilbage</span>
                                 <input id="daily-word-input" type="text" @bind="_input" @bind:event="oninput"
-                                       @ref="_entry" placeholder="Skriv ordet" readonly="@_busy" maxlength="32"
+                                       @ref="_entry" placeholder="Skriv hele ordet" readonly="@_busy" maxlength="32"
                                        autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
                                 <button class="daily-word-action" type="submit" disabled="@(_busy || string.IsNullOrWhiteSpace(_input))">Gæt</button>
                             </form>
@@ -108,7 +132,7 @@
 
             <aside class="daily-word-sidebar" aria-label="Vært og fremskridt">
                 <DailyGameHost Day="@puzzle" />
-                @if (_round is { } progress)
+                @if (CanPlay && _round is { } progress)
                 {
                     <section class="daily-word-panel daily-word-progress" aria-labelledby="daily-word-progress">
                         <h2 id="daily-word-progress">Din streak</h2>
@@ -116,11 +140,13 @@
                             <div><dt>I træk nu</dt><dd>@DaysLabel(progress.Streak)</dd></div>
                             <div><dt>Din rekord</dt><dd>@DaysLabel(progress.BestStreak)</dd></div>
                         </dl>
+                        <a class="daily-word-progress-link" href="@(GamesCatalog.ProgressPath + "?game=" + DailyGameIds.Word)">Historik og ranglister</a>
                     </section>
                 }
                 <details class="daily-word-panel daily-word-rules">
                     <summary>Sådan spiller du</summary>
-                    <p>Du har tre forsøg og kan åbne to ekstra ledetråde. Både sejr og nederlag tæller med i din streak, når du afslutter runden.</p>
+                    <p>Felterne viser, hvor mange bogstaver der er i dagens ord. Hver ekstra ledetråd afslører også bogstaver i felterne. Skriv hele ordet, når du vil gætte. Du har tre forsøg.</p>
+                    <p>Både sejr og nederlag tæller med i din streak, når du afslutter runden.</p>
                 </details>
             </aside>
         </div>

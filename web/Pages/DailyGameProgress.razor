@@ -1,0 +1,196 @@
+@page "/games/fremskridt"
+@using Mercantec.Tech.Web.Games
+@implements IDisposable
+@inject DailyGameProgressClient Progress
+@inject AuthService Auth
+
+<PageTitle>Dine daglige spil · LUP</PageTitle>
+
+<div class="game-progress">
+    <header class="game-progress-heading">
+        <a href="@GamesCatalog.Path">← Alle spil</a>
+        <h1>Dine daglige spil</h1>
+        <p>Se dine tidligere runder, og sammenlign resultater på ranglisterne.</p>
+    </header>
+
+    <nav class="game-progress-picker" aria-label="Vælg spil">
+        @foreach (var game in DailyGameProgressCatalog.Games)
+        {
+            <a href="@($"{GamesCatalog.ProgressPath}?game={game.Id}")"
+               aria-current="@(game == Selected ? "page" : null)">@game.Title</a>
+        }
+    </nav>
+
+    @if (!CanView)
+    {
+        <section class="game-progress-panel game-progress-guest">
+            <h2>Gem dine fremskridt på din LUP-konto</h2>
+            <p>Log ind for at se din historik og holdets ranglister.</p>
+            <a class="game-progress-action" href="@Auth.LoginPath()">Log ind</a>
+        </section>
+    }
+    else
+    {
+        <div class="game-progress-grid">
+            <section class="game-progress-panel game-progress-history" aria-labelledby="game-history-heading">
+                <header class="progress-section-header">
+                    <h2 id="game-history-heading">Din historik</h2>
+                    <a href="@($"{GamesCatalog.Path}/{Selected.Id}")">Spil @Selected.Title <span aria-hidden="true">→</span></a>
+                </header>
+                @if (_history is { } history)
+                {
+                    <dl class="game-progress-summary">
+                        <div><dt>Gennemførte</dt><dd>@history.Completed</dd></div>
+                        <div><dt>Sejre</dt><dd>@history.Wins</dd></div>
+                        <div><dt>Streak</dt><dd>@Days(history.Streak)</dd></div>
+                        <div><dt>Bedste streak</dt><dd>@Days(history.BestStreak)</dd></div>
+                    </dl>
+                    @if (_entries.Count == 0)
+                    {
+                        <p>Din første gennemførte runde vises her.</p>
+                    }
+                    else
+                    {
+                        <table class="game-progress-table">
+                            <caption class="visually-hidden">Dine runder i @Selected.Title</caption>
+                            <thead><tr><th scope="col">Dato</th><th scope="col">Resultat</th><th scope="col">Point</th></tr></thead>
+                            <tbody>
+                                @foreach (var entry in _entries)
+                                {
+                                    <tr>
+                                        <th scope="row"><time datetime="@entry.Date.ToString("yyyy-MM-dd")">@FormatDate(entry.Date)</time></th>
+                                        <td>
+                                            <strong>@(entry.Won ? "Løst" : "Gennemført")</strong>
+                                            @if (EntryDetail(entry) is { } detail)
+                                            {
+                                                <span class="game-progress-detail">@detail</span>
+                                            }
+                                        </td>
+                                        <td class="game-progress-value">@entry.Score</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    @if (history.HasMore)
+                    {
+                        <button type="button" class="game-progress-secondary" disabled="@_loadingHistory"
+                                @onclick="LoadMoreAsync">Vis ældre runder</button>
+                    }
+                }
+                @if (_loadingHistory || _historyError is not null)
+                {
+                    <p role="status">@(_historyError ?? "Henter historik …")</p>
+                }
+                @if (_historyError is not null)
+                {
+                    <button type="button" class="game-progress-secondary" @onclick="RetryHistoryAsync">Prøv at hente historik igen</button>
+                }
+            </section>
+
+            <section class="game-progress-panel game-progress-ranking" aria-labelledby="game-ranking-heading">
+                <header class="progress-section-header"><h2 id="game-ranking-heading">Rangliste</h2></header>
+                <div class="game-progress-filters">
+                    <div>
+                        <label for="daily-progress-period">Periode</label>
+                        <select id="daily-progress-period" @bind="_period" @bind:after="LoadRankingAsync">
+                            <option value="day">I dag</option>
+                            <option value="week">Denne uge</option>
+                            <option value="month">Denne måned</option>
+                        </select>
+                    </div>
+                    @if (_settings is { Holds.Count: > 0 } settings)
+                    {
+                        <div>
+                            <label for="daily-progress-hold">Vis rangliste for</label>
+                            <select id="daily-progress-hold" @bind="_hold" @bind:after="LoadRankingAsync">
+                                <option value="">Hele LUP</option>
+                                @foreach (var hold in settings.Holds)
+                                {
+                                    <option value="@hold.Id">@hold.Name</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                </div>
+                @if (_ranking is { } ranking)
+                {
+                    <p class="game-progress-period">@FormatPeriod(ranking.From, ranking.To)</p>
+                    @if (ranking.Entries.Count == 0)
+                    {
+                        <p>Der er endnu ingen deltagere på denne rangliste.</p>
+                    }
+                    else
+                    {
+                        <table class="game-progress-table">
+                            <caption class="visually-hidden">Placeringer i @Selected.Title</caption>
+                            <thead><tr><th scope="col">Plads</th><th scope="col">Spiller</th><th scope="col">Point</th></tr></thead>
+                            <tbody>
+                                @foreach (var player in ranking.Entries)
+                                {
+                                    <tr class="@(player.IsMe ? "game-progress-own-row" : null)">
+                                        <td>@player.Rank</td>
+                                        <th scope="row">
+                                            @player.Name @if (player.IsMe) { <span class="game-progress-you">dig</span> }
+                                            <span class="game-progress-detail">@Rounds(player.Played) · @Wins(player.Wins)</span>
+                                        </th>
+                                        <td class="game-progress-value">@player.Score</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    @if (ranking.Own is { } own && !ranking.Entries.Any(entry => entry.IsMe))
+                    {
+                        <p class="game-progress-own">Din placering <strong>@own.Rank</strong> · @own.Score point</p>
+                    }
+                    <details class="game-progress-rules">
+                        <summary>Sådan beregnes point</summary>
+                        <p>@Selected.ScoreDescription</p>
+                        <p>Ranglisten lægger periodens point sammen. Lige mange point giver samme placering.</p>
+                    </details>
+                }
+                @if (_loadingRanking || _rankingError is not null)
+                {
+                    <p role="status">@(_rankingError ?? "Henter rangliste …")</p>
+                }
+                @if (_rankingError is not null)
+                {
+                    <button type="button" class="game-progress-secondary" @onclick="LoadRankingAsync">Prøv at hente ranglisten igen</button>
+                }
+                <div class="game-progress-visibility">
+                    <h3>Din synlighed</h3>
+                    @if (_settings is { } preferences)
+                    {
+                        @if (preferences.Visible && !string.IsNullOrWhiteSpace(preferences.DisplayName))
+                        {
+                            <p>Du vises som <strong>@preferences.DisplayName</strong> på ranglisterne.</p>
+                        }
+                        else
+                        {
+                            <p>Dine resultater er private. Du kan vælge at vise dit profilnavn og dine point på ranglisterne.</p>
+                        }
+                        @if (preferences.Visible || !string.IsNullOrWhiteSpace(preferences.DisplayName))
+                        {
+                            <button type="button" class="game-progress-secondary" disabled="@_saving"
+                                    @onclick="ToggleVisibilityAsync">@(preferences.Visible ? "Skjul mig på ranglister" : "Vis mig på ranglister")</button>
+                        }
+                        @if (string.IsNullOrWhiteSpace(preferences.DisplayName))
+                        {
+                            <a href="/profile">Vælg dit visningsnavn</a>
+                        }
+                    }
+                    @if (_settingsError is not null)
+                    {
+                        <p role="status">@_settingsError</p>
+                        <button type="button" class="game-progress-secondary" @onclick="LoadSettingsAsync">Prøv at hente indstillinger igen</button>
+                    }
+                    @if (_settings is null && _settingsError is null)
+                    {
+                        <p role="status">Henter dine indstillinger …</p>
+                    }
+                </div>
+            </section>
+        </div>
+    }
+</div>

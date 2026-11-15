@@ -51,6 +51,12 @@ try {
   const desktop = await client({ viewport: { width: 1440, height: 950 } });
   await signIn(desktop, 'pupil', 'dagens-ord');
   await desktop.getByRole('textbox', { name: 'Dit gæt' }).waitFor();
+  const tiles = desktop.locator('.daily-word-tile');
+  const revealed = desktop.locator('.daily-word-tile.is-revealed');
+  const initialSize = await tiles.count();
+  assert.ok(initialSize >= 2);
+  assert.equal(await revealed.count(), 0);
+  let previousRevealCount = 0;
   for (const number of [1, 2]) {
     const hint = nextMove(desktop, 'dagens-ord', 'hint');
     await desktop.getByRole('button', { name: 'Vis ekstra ledetråd ' + number }).click();
@@ -59,11 +65,18 @@ try {
     const round = await response.json();
     assert.equal(round.hints.length, number);
     assert.equal(round.answer ?? null, null);
+    assert.ok(round.day.wordPattern.includes('_'));
     const hints = desktop.getByRole('list', { name: 'Åbnede ledetråde' });
     await hints.getByText(round.hints.at(-1), { exact: false }).waitFor();
+    const currentRevealCount = [...round.day.wordPattern].filter(letter => /[a-zæøå]/iu.test(letter)).length;
+    assert.ok(currentRevealCount > previousRevealCount);
+    assert.equal(await tiles.count(), initialSize);
+    assert.equal(await revealed.count(), currentRevealCount);
+    previousRevealCount = currentRevealCount;
     if (number === 1) {
       await desktop.reload();
       await hints.getByText(round.hints[0], { exact: false }).waitFor();
+      assert.equal(await revealed.count(), currentRevealCount);
     }
   }
   let finished;
@@ -80,6 +93,7 @@ try {
   assert.equal(finished.streak, 1);
   assert.ok(finished.answer && finished.explanation && finished.example);
   await desktop.getByText(finished.explanation, { exact: true }).waitFor();
+  assert.equal(await revealed.count(), initialSize);
   await desktop.reload();
   await desktop.getByText(finished.explanation, { exact: true }).waitFor();
   await desktop.goto(base + '/games/taljagt');
@@ -89,6 +103,7 @@ try {
   await signIn(mobile, 'peer', 'dagens-ord');
   await mobile.getByRole('textbox', { name: 'Dit gæt' }).waitFor();
   assert.equal(await mobile.getByRole('list', { name: 'Åbnede ledetråde' }).count(), 0);
+  assert.equal(await mobile.locator('.daily-word-tile.is-revealed').count(), 0);
   assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await signIn(mobile, 'peer', 'taljagt');
   const firstTile = mobile.getByRole('button', { name: /brik 1/ });

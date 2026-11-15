@@ -84,6 +84,18 @@ internal static partial class DailyGameRules
         return word.Length is >= 2 and <= 32 && DanishWord().IsMatch(word) ? word : null;
     }
 
+    internal static string? WordPattern(string? answer, int hints)
+    {
+        if (answer is null) return null;
+
+        var letters = answer.Where(char.IsLetter).Distinct().ToArray();
+        // Always keep at least one distinct letter hidden, including in short words.
+        var revealCount = Math.Clamp(hints, 0, Math.Max(0, letters.Length - 1));
+        var revealed = letters.Take(revealCount).ToHashSet();
+        return new string(answer.Select(letter => char.IsLetter(letter) && !revealed.Contains(letter) ? '_' : letter)
+            .ToArray());
+    }
+
     [GeneratedRegex(@"\A[a-zæøå]+(?:[ -][a-zæøå]+)*\z", RegexOptions.CultureInvariant)]
     private static partial Regex DanishWord();
 }

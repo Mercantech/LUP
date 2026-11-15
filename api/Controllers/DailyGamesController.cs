@@ -189,9 +189,9 @@ public sealed class DailyGamesController(AppDbContext db, TimeProvider clock, IC
         var finished = status != DailyGameStatus.Playing;
         var hints = puzzle.ExtraHints?.Take(state.HintCount).ToArray() ?? [];
         var distance = state.Value is int value && puzzle.Target is int target ? Math.Abs(target - value) : (int?)null;
-        return new(ToDay(date, puzzle), play?.Version ?? 0, status, streaks.Current, streaks.Best,
+        return new(ToDay(date, puzzle, state.HintCount), play?.Version ?? 0, status, streaks.Current, streaks.Best,
             state.Guesses, hints, finished ? puzzle.Answer : null, finished ? puzzle.Explanation : null,
-            finished ? puzzle.Example : null, state.Value, distance, distance is int delta ? Math.Max(0, 100 - delta) : null,
+            finished ? puzzle.Example : null, state.Value, distance, distance is int delta ? DailyGameScoring.Numbers(delta) : null,
             state.Expression, error);
     }
 
@@ -201,8 +201,9 @@ public sealed class DailyGamesController(AppDbContext db, TimeProvider clock, IC
     private static DailyPuzzleData DeserializePuzzle(string data) =>
         JsonSerializer.Deserialize<DailyPuzzleData>(data) ?? throw new InvalidDataException("Invalid daily puzzle.");
 
-    private static DailyGameDay ToDay(DateOnly date, DailyPuzzleData puzzle) =>
-        new(date, WordleRules.NextRound(date), puzzle.Host, puzzle.Theme, puzzle.Clue, puzzle.Tiles, puzzle.Target);
+    private static DailyGameDay ToDay(DateOnly date, DailyPuzzleData puzzle, int hints = 0) =>
+        new(date, WordleRules.NextRound(date), puzzle.Host, puzzle.Theme, puzzle.Clue, puzzle.Tiles, puzzle.Target,
+            DailyGameRules.WordPattern(puzzle.Answer, hints));
 
     private IActionResult NotStarted() => StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "game_not_started" });
 }

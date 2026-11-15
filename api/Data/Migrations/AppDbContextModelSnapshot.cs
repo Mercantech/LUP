@@ -319,6 +319,16 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("daily_game_puzzles", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.DailyGameRankingPreference", b =>
+                {
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserSub");
+
+                    b.ToTable("daily_game_ranking_preferences", (string)null);
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.DailyGameSchedule", b =>
                 {
                     b.Property<int>("Id")
@@ -2804,6 +2814,15 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.HasOne("Mercantec.Tech.Api.Data.Entities.DailyGamePuzzle", null)
                         .WithMany()
                         .HasForeignKey("Game", "Date")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.DailyGameRankingPreference", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.ProfileName", null)
+                        .WithOne()
+                        .HasForeignKey("Mercantec.Tech.Api.Data.Entities.DailyGameRankingPreference", "UserSub")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

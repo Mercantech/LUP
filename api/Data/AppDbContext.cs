@@ -24,6 +24,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         ConfigureUploadedGames(modelBuilder);
         ConfigureWordle(modelBuilder);
         ConfigureDailyGames(modelBuilder);
+        ConfigureDailyGameRanking(modelBuilder);
         ConfigureActionCenter(modelBuilder);
         ConfigureLearning(modelBuilder);
         ConfigureGroupSets(modelBuilder);

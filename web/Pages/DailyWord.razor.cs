@@ -26,7 +26,7 @@ public partial class DailyWord
     private bool _disposed;
 
     private bool CanPlay => Auth.IsAuthenticated && !_loginRequired;
-    private DailyGameDay? Puzzle => _round?.Day ?? _day;
+    private DailyGameDay? Puzzle => CanPlay ? _round?.Day ?? _day : _day;
 
     protected override async Task OnInitializedAsync()
     {
@@ -185,7 +185,10 @@ public partial class DailyWord
             _feedback = null;
             _pending = null;
         }
-        _day = round.Day;
+        // Keep the same public board while an account change is loading.
+        _day = round.Day.WordPattern is { } pattern
+            ? round.Day with { WordPattern = new string(pattern.Select(character => char.IsLetter(character) ? '_' : character).ToArray()) }
+            : round.Day;
         _round = round;
     }
 
@@ -214,6 +217,19 @@ public partial class DailyWord
         _input = "";
         _feedback = null;
         _busy = false;
+    }
+
+    private static string DescribePattern(string pattern)
+    {
+        var letters = pattern.Where(character => character == '_' || char.IsLetter(character)).ToArray();
+        var revealed = letters.Select((character, index) => (character, index))
+            .Where(tile => char.IsLetter(tile.character))
+            .Select(tile => $"Bogstav {tile.index + 1} er {char.ToUpperInvariant(tile.character)}")
+            .ToArray();
+        var description = $"{letters.Length} bogstaver.";
+        if (pattern.IndexOfAny([' ', '-']) >= 0)
+            description += " Feltgrupper med " + string.Join(" og ", pattern.Split([' ', '-']).Select(word => word.Length)) + " bogstaver.";
+        return description + (revealed.Length == 0 ? " Ingen bogstaver er afsløret." : " " + string.Join(". ", revealed) + ".");
     }
 
     private static string DaysLabel(int days) => days == 1 ? "1 dag" : $"{days} dage";
