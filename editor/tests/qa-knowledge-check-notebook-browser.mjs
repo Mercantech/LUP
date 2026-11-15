@@ -99,6 +99,18 @@ try {
   const attempt = await attemptResponse.json();
   assert.ok(attempt.questions.every(item => !Object.hasOwn(item, 'correctOptions')));
   await block.getByRole('radio', { name: 'if', exact: true }).check();
+  await learner.evaluate(async () => {
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
+  });
+  assert.equal(await block.getByRole('radio', { name: 'if', exact: true }).count(), 1,
+    'A started attempt must stay mounted when its tab is hidden.');
+  assert.equal(await block.getByRole('radio', { name: 'if', exact: true }).isChecked(), true);
+  await learner.evaluate(() => {
+    delete document.visibilityState;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
   await block.getByRole('button', { name: 'Næste', exact: true }).click();
   await block.getByRole('status').filter({ hasText: /^Gemt$/ }).waitFor();
   await learner.reload();

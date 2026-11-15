@@ -18,13 +18,15 @@ interface Props {
 
 export function NotionKnowledgeCheck({ publicationId, blockId, pageId, holdId, apiBase, getToken, display, onChange }: Props) {
   const [container, nearViewport] = useViewport<HTMLElement>();
+  const [activated, setActivated] = useState(false);
+  useEffect(() => { if (nearViewport) setActivated(true); }, [nearViewport]);
   return <section ref={container} className="notion-knowledge-check" contentEditable={false} aria-label="Videnstjek">
     {display !== 'published' && <header><strong>Videnstjek</strong></header>}
     {display === 'draft' && <Picker pageId={pageId} holdId={holdId} apiBase={apiBase} getToken={getToken}
       publicationId={publicationId} onChange={onChange} />}
     {display === 'preview' && <p>Eleven kan gennemføre videnstjekket på den udgivne side.</p>}
     {display === 'published' && (publicationId
-      ? nearViewport && <Suspense fallback={<p role="status">Henter videnstjek…</p>}>
+      ? (nearViewport || activated) && <Suspense fallback={<p role="status">Henter videnstjek…</p>}>
         <Runner distributionId={publicationId} apiBase={apiBase} getToken={getToken} inline pageId={pageId} blockId={blockId} />
       </Suspense>
       : <p>Der er endnu ikke valgt et videnstjek.</p>)}
