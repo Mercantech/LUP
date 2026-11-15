@@ -121,12 +121,20 @@ try {
   attempt.results = questions.map((question, index) => ({
     questionId: question.id, correct: true, correctOptions: [[1], [0, 2], [0], []][index],
     acceptedAnswers: question.kind === 'short' ? ['break'] : [], explanation: 'En faglig forklaring.',
-    learnMoreUrl: index === 0 ? '/notion/33333333-3333-4333-8333-333333333333#loops' : null,
+    learnMoreUrl: index <= 1 ? '/notion/33333333-3333-4333-8333-333333333333#loops' : null,
+    learnMoreTitle: index === 0 ? 'Løkkernes dokumentation' : null,
+    learnMoreDescription: index === 0 ? 'Beskriver, hvordan løkken udskriver to.' : null,
+    optionExplanations: index === 0 ? ['Forklaringen til det første valg.', 'Forklaringen til det andet valg.'] : null,
     comment: question.kind === 'short' ? 'Godt forklaret.' : null,
   }));
   await page.getByRole('button', { name: 'Opdatér resultat', exact: true }).click();
   await page.getByRole('heading', { name: '4 af 4 point', exact: true }).waitFor();
   assert.match(await page.getByRole('link', { name: 'Læs mere', exact: true }).getAttribute('href'), /#loops$/);
+  assert.match(await page.getByRole('link', { name: 'Løkkernes dokumentation', exact: true }).getAttribute('href'), /#loops$/);
+  await page.getByText('Beskriver, hvordan løkken udskriver to.', { exact: true }).waitFor();
+  const explanations = page.getByRole('list', { name: 'Forklaringer til svarmuligheder' });
+  await explanations.getByRole('listitem').filter({ hasText: 'Forklaringen til det første valg.' }).waitFor();
+  await explanations.getByRole('listitem').filter({ hasText: 'Forklaringen til det andet valg.' }).waitFor();
   assert.match(await page.locator('.lup-knowledge-feedback').innerText(), /Godt forklaret/);
   assert.equal(await page.getByRole('button', { name: 'Nyt forsøg', exact: true }).count(), 0);
 

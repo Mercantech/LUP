@@ -174,7 +174,8 @@ public partial class Edit
             Options = kind switch { "boolean" => ["Sandt", "Falsk"], "short" => [], _ => ["", ""] },
             CorrectOptions = [],
             AcceptedAnswers = [],
-            ManualGrading = false
+            ManualGrading = false,
+            OptionExplanations = null
         };
     });
 
@@ -185,11 +186,23 @@ public partial class Edit
         return question with { Options = options };
     });
 
-    private void AddOption(int index) => Update(index, question => question with { Options = [.. question.Options, ""] });
+    private void ChangeOptionExplanation(int index, int choice, string text) => Update(index, question =>
+    {
+        var explanations = question.OptionExplanations?.ToArray() ?? Enumerable.Repeat("", question.Options.Length).ToArray();
+        explanations[choice] = text;
+        return question with { OptionExplanations = explanations };
+    });
+
+    private void AddOption(int index) => Update(index, question => question with
+    {
+        Options = [.. question.Options, ""],
+        OptionExplanations = question.OptionExplanations is { } explanations ? [.. explanations, ""] : null
+    });
 
     private void RemoveOption(int index, int choice) => Update(index, question => question with
     {
         Options = question.Options.Where((_, position) => position != choice).ToArray(),
+        OptionExplanations = question.OptionExplanations?.Where((_, position) => position != choice).ToArray(),
         CorrectOptions = question.CorrectOptions.Where(position => position != choice)
             .Select(position => position > choice ? position - 1 : position).ToArray()
     });

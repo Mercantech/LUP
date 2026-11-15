@@ -137,7 +137,8 @@ public sealed partial class KnowledgeChecksController
             Read<KnowledgeCheckAnswer>(attempt.AnswersJson), showResults ? attempt.Score : null,
             grades is null ? null : questions.Select(question => new KnowledgeCheckResult(question.Id,
                 grades[question.Id].Correct == true, question.CorrectOptions, question.AcceptedAnswers,
-                question.Explanation, question.LearnMoreUrl, grades[question.Id].Comment)).ToArray(),
+                question.Explanation, question.LearnMoreUrl, grades[question.Id].Comment,
+                question.OptionExplanations, question.LearnMoreTitle, question.LearnMoreDescription)).ToArray(),
             attempt.StartedAtUtc, attempt.SubmittedAtUtc);
     }
 

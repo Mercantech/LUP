@@ -141,6 +141,20 @@
                                     <button type="button" class="secondary" @onclick="() => AddOption(position)">Tilføj svarmulighed</button>
                                 }
                             </fieldset>
+                            <details class="knowledge-detail">
+                                <summary>Forklaringer til svarmuligheder</summary>
+                                <div class="knowledge-detail-fields">
+                                    @for (var optionIndex = 0; optionIndex < question.Options.Length; optionIndex++)
+                                    {
+                                        var choice = optionIndex;
+                                        <label class="field">
+                                            Forklaring til svar @(choice + 1)
+                                            <textarea rows="2" maxlength="2400" value="@(question.OptionExplanations?.ElementAtOrDefault(choice))"
+                                                      @onchange="e => ChangeOptionExplanation(position, choice, Text(e))"></textarea>
+                                        </label>
+                                    }
+                                </div>
+                            </details>
                         }
                         <label class="field">Forklaring efter aflevering
                             <textarea rows="2" maxlength="2400" value="@question.Explanation" @onchange="e => Update(position, q => q with { Explanation = Text(e) })"></textarea>
@@ -148,6 +162,21 @@
                         <label class="field">Link til stoffet
                             <input maxlength="1500" value="@question.LearnMoreUrl" @onchange="e => Update(position, q => q with { LearnMoreUrl = Text(e) })" placeholder="/notion/… eller https://…" />
                         </label>
+                        @if (!string.IsNullOrWhiteSpace(question.LearnMoreUrl))
+                        {
+                            <details class="knowledge-detail">
+                                <summary>Kildeoplysninger</summary>
+                                <div class="knowledge-detail-fields">
+                                    <label class="field">Kildens titel
+                                        <input maxlength="200" value="@question.LearnMoreTitle" @onchange="e => Update(position, q => q with { LearnMoreTitle = Text(e) })" />
+                                    </label>
+                                    <label class="field">Kildens beskrivelse
+                                        <textarea rows="2" maxlength="1000" value="@question.LearnMoreDescription"
+                                                  @onchange="e => Update(position, q => q with { LearnMoreDescription = Text(e) })"></textarea>
+                                    </label>
+                                </div>
+                            </details>
+                        }
                     </section>
                 }
             </section>

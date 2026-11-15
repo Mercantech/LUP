@@ -1,7 +1,12 @@
+using System.Text.Json.Serialization;
+
 namespace Mercantec.Tech.Contracts;
 
 public sealed record KnowledgeCheckQuestion(Guid Id, string Kind, string Prompt, string[] Options, int[] CorrectOptions,
-    string[] AcceptedAnswers, bool ManualGrading, string Explanation, string? LearnMoreUrl);
+    string[] AcceptedAnswers, bool ManualGrading, string Explanation, string? LearnMoreUrl,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string[]? OptionExplanations = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? LearnMoreTitle = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? LearnMoreDescription = null);
 
 public sealed record KnowledgeCheckDraft(string Title, string Description, string Topic, int? EstimatedMinutes,
     KnowledgeCheckQuestion[] Questions, long? Revision = null);
@@ -38,7 +43,10 @@ public sealed record KnowledgeCheckSubmit(long Revision);
 public sealed record KnowledgeCheckLearnerQuestion(Guid Id, string Prompt, string Kind, string[] Options);
 
 public sealed record KnowledgeCheckResult(Guid QuestionId, bool Correct, int[] CorrectOptions, string[] AcceptedAnswers,
-    string Explanation, string? LearnMoreUrl, string? Comment);
+    string Explanation, string? LearnMoreUrl, string? Comment,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string[]? OptionExplanations = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? LearnMoreTitle = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? LearnMoreDescription = null);
 
 public sealed record KnowledgeCheckAttemptView(Guid Id, Guid PublicationId, string Status, long Revision, int QuestionIndex,
     KnowledgeCheckLearnerQuestion[] Questions, KnowledgeCheckAnswer[] Answers, int? Score, KnowledgeCheckResult[]? Results,
@@ -55,3 +63,5 @@ public sealed record KnowledgeCheckPendingGrade(Guid AttemptId, Guid QuestionId,
 
 public sealed record KnowledgeCheckReport(KnowledgeCheckPublicationView Publication, KnowledgeCheckParticipant[] Participants,
     KnowledgeCheckQuestionReport[] Questions, KnowledgeCheckPendingGrade[] PendingGrades);
+
+public sealed record KnowledgeCheckLegacyImport(int Added, int Existing);

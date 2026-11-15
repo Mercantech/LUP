@@ -63,15 +63,24 @@ internal static class KnowledgeCheckRules
         var prompt = Trim(question.Prompt);
         var explanation = Trim(question.Explanation);
         var url = Trim(question.LearnMoreUrl);
+        var optionExplanations = question.Kind == Short ? null : question.OptionExplanations?.Select(Trim).ToArray();
+        var sourceTitle = url.Length > 0 ? Trim(question.LearnMoreTitle) : "";
+        var sourceDescription = url.Length > 0 ? Trim(question.LearnMoreDescription) : "";
         if (prompt.Length > 2400 || explanation.Length > 2400 || !IsSafeLink(url) || options.Length > 8
             || options.Any(option => option.Length > 500) || correct.Any(index => index < 0 || index >= options.Length)
-            || accepted.Length > 20 || accepted.Any(option => option.Length > 250)) return null;
+            || accepted.Length > 20 || accepted.Any(option => option.Length > 250)
+            || optionExplanations is { Length: > 0 } && (optionExplanations.Length != options.Length
+                || optionExplanations.Any(text => text.Length > 2400))
+            || sourceTitle.Length > 200 || sourceDescription.Length > 1000) return null;
 
         return question with
         {
             Prompt = prompt, Options = options, CorrectOptions = correct, AcceptedAnswers = accepted,
             ManualGrading = question.Kind == Short && question.ManualGrading,
-            Explanation = explanation, LearnMoreUrl = url.Length == 0 ? null : url
+            Explanation = explanation, LearnMoreUrl = url.Length == 0 ? null : url,
+            OptionExplanations = optionExplanations?.Any(text => text.Length > 0) == true ? optionExplanations : null,
+            LearnMoreTitle = sourceTitle.Length == 0 ? null : sourceTitle,
+            LearnMoreDescription = sourceDescription.Length == 0 ? null : sourceDescription
         };
     }
 

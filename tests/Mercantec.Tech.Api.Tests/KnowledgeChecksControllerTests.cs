@@ -69,7 +69,13 @@ public sealed class KnowledgeChecksControllerTests : IAsyncLifetime
     [Fact]
     public async Task AttemptsResumeGradeAndProtectFeedbackUntilReleased()
     {
-        var single = Choice();
+        var single = Choice() with
+        {
+            OptionExplanations = ["  Den første forklaring.  ", "Den anden forklaring."],
+            LearnMoreUrl = "https://example.com/guide",
+            LearnMoreTitle = "  Kildens navn  ",
+            LearnMoreDescription = "Læs om svarmulighederne."
+        };
         var multiple = Choice() with { Kind = "multiple", CorrectOptions = [0, 1] };
         var boolean = Choice() with { Kind = "boolean", CorrectOptions = [0] };
         var automatic = Question("short", accepted: ["  Øl & blåbær  "]);
@@ -82,6 +88,8 @@ public sealed class KnowledgeChecksControllerTests : IAsyncLifetime
         var first = Read<KnowledgeCheckAttemptView>(await student.StartAttempt(publication.Id, new(), null, null, default));
         Assert.Null(first.Results);
         Assert.DoesNotContain("DEN KORREKTE FORKLARING", JsonSerializer.Serialize(first));
+        Assert.DoesNotContain("Den første forklaring.", JsonSerializer.Serialize(first));
+        Assert.DoesNotContain("Kildens navn", JsonSerializer.Serialize(first));
         Assert.IsType<ConflictObjectResult>(
             await student.SubmitAttempt(publication.Id, first.Id, new(first.Revision), null, null, default));
 
@@ -124,13 +132,22 @@ public sealed class KnowledgeChecksControllerTests : IAsyncLifetime
         var result = Read<KnowledgeCheckAttemptView>(await student.GetAttempt(publication.Id, first.Id, null, null, default));
         Assert.Equal(5, result.Score);
         Assert.Equal("God begrundelse", result.Results![4].Comment);
+        Assert.Equal(new[] { "Den første forklaring.", "Den anden forklaring." }, result.Results[0].OptionExplanations);
+        Assert.Equal("https://example.com/guide", result.Results[0].LearnMoreUrl);
+        Assert.Equal("Kildens navn", result.Results[0].LearnMoreTitle);
+        Assert.Equal("Læs om svarmulighederne.", result.Results[0].LearnMoreDescription);
         Assert.Null(Assert.Single(Read<KnowledgeCheckIndex>(await As(_peer).List(default)).Publications).LatestAttemptId);
     }
 
     [Fact]
     public async Task VersionAndAttemptsRemainStableAcrossRepublishRetrialAndClose()
     {
-        var question = Choice();
+        var question = Choice() with
+        {
+            OptionExplanations = ["Den oprindelige forklaring.", ""],
+            LearnMoreUrl = "https://example.com/oprindelig",
+            LearnMoreTitle = "Oprindelig kilde"
+        };
         var teacher = As(_teacher, true);
         var draft = Read<KnowledgeCheckDraftView>(await teacher.Create(Draft(question), default));
         var publish = new KnowledgeCheckPublish(_hold, 2, "after-submit", draft.Revision, Guid.NewGuid());
@@ -155,7 +172,13 @@ public sealed class KnowledgeChecksControllerTests : IAsyncLifetime
         Assert.Equal(second.Id, Assert.Single(report.Participants).AttemptId);
         Assert.Equal(new[] { 0, 1 }, Assert.Single(report.Questions).OptionCounts);
 
-        var change = Draft(question with { CorrectOptions = [1] }) with { Revision = draft.Revision, Title = "Nyt navn" };
+        var change = Draft(question with
+        {
+            CorrectOptions = [1],
+            OptionExplanations = ["", "Den nye forklaring."],
+            LearnMoreUrl = "https://example.com/ny",
+            LearnMoreTitle = "Ny kilde"
+        }) with { Revision = draft.Revision, Title = "Nyt navn" };
         var updated = Read<KnowledgeCheckDraftView>(await teacher.Update(draft.Id, change, default));
         Assert.IsType<ConflictObjectResult>(await teacher.Update(draft.Id, change, default));
         var next = Read<KnowledgeCheckPublicationView>(await teacher.Publish(draft.Id, publish with
@@ -165,7 +188,12 @@ public sealed class KnowledgeChecksControllerTests : IAsyncLifetime
         Assert.NotEqual(initial.Id, next.Id);
         await teacher.ClosePublication(initial.Id, default);
         Assert.IsType<ConflictObjectResult>(await students.StartAttempt(initial.Id, new(), null, null, default));
-        Assert.Equal(1, Read<KnowledgeCheckAttemptView>(await students.GetAttempt(initial.Id, first.Id, null, null, default)).Score);
+        var historical = Read<KnowledgeCheckAttemptView>(await students.GetAttempt(initial.Id, first.Id, null, null, default));
+        Assert.Equal(1, historical.Score);
+        var historicalFeedback = Assert.Single(historical.Results!);
+        Assert.Equal("Den oprindelige forklaring.", historicalFeedback.OptionExplanations![0]);
+        Assert.Equal("Oprindelig kilde", historicalFeedback.LearnMoreTitle);
+        Assert.Equal("https://example.com/oprindelig", historicalFeedback.LearnMoreUrl);
         var list = Read<KnowledgeCheckIndex>(await students.List(default));
         Assert.Equal(next.Id, Assert.Single(list.Publications).Id);
         Assert.All(list.History, item => Assert.True(item.CanOpen));

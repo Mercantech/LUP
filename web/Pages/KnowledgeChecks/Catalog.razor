@@ -57,6 +57,23 @@
                 {
                     <p role="alert">@_pilotError</p>
                 }
+                <details class="panel knowledge-import">
+                    <summary>Importér fra det gamle Videnstjek</summary>
+                    <p>Tilføj videnstjek fra GF2, backend, frontend og Flutter til dine kladder med forklaringer og links til kilderne.</p>
+                    <div class="actions">
+                        <button type="button" class="secondary" @onclick="ImportLegacyAsync" disabled="@_importingLegacy">
+                            @(_importingLegacy ? "Importerer…" : "Importér som kladder")
+                        </button>
+                    </div>
+                    @if (_importError is not null)
+                    {
+                        <p role="alert">@_importError</p>
+                    }
+                    @if (_importStatus is not null)
+                    {
+                        <p role="status">@_importStatus</p>
+                    }
+                </details>
                 @if (!_index.Owned.Any())
                 {
                     <p class="panel">Opret et videnstjek, eller prøv med et færdigt GF2-eksempel.</p>
@@ -201,9 +218,12 @@
     private KnowledgeCheckIndex? _index;
     private string? _error;
     private string? _pilotError;
+    private string? _importError;
+    private string? _importStatus;
     private string _search = "";
     private string _topic = "";
     private bool _creatingPilot;
+    private bool _importingLegacy;
     private bool CanManage => !ViewAs.IsActive && Redirect.CurrentAppRole() == AppRole.Underviser;
 
     private string View => RequestedView switch
@@ -253,6 +273,26 @@
         catch (KnowledgeCheckException ex) { _pilotError = ex.Message; }
         catch (HttpRequestException) { _pilotError = "Eksemplet kunne ikke oprettes. Prøv igen."; }
         finally { _creatingPilot = false; }
+    }
+
+    private async Task ImportLegacyAsync()
+    {
+        if (_importingLegacy) return;
+        _importingLegacy = true;
+        _importError = null;
+        _importStatus = null;
+        try
+        {
+            var result = await Client.SendAsync<KnowledgeCheckLegacyImport>(HttpMethod.Post, "legacy-import");
+            _importStatus = result.Added == 0
+                ? "Du har allerede importeret alle videnstjek i udvalget."
+                : $"{result.Added} videnstjek er tilføjet som kladder."
+                    + (result.Existing > 0 ? $" {result.Existing} var allerede importeret." : "");
+            await LoadAsync();
+        }
+        catch (KnowledgeCheckException ex) { _importError = ex.Message; }
+        catch (HttpRequestException) { _importError = "Importen kunne ikke gennemføres. Prøv igen."; }
+        finally { _importingLegacy = false; }
     }
 
     private static string Metadata(string? topic, int count, int? minutes = null)

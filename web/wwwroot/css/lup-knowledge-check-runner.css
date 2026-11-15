@@ -85,8 +85,11 @@
 }
 .lup-knowledge-error button { margin-top: .2rem; }
 .lup-knowledge-review { margin: .75rem 0 0; padding-inline-start: 1.65rem; }
-.lup-knowledge-review li { padding: .875rem 0; border-top: 1px solid var(--rule, #bbc9da); }
-.lup-knowledge-review li p { margin: 0 0 .45rem; }
-.lup-knowledge-review li .lup-knowledge-prompt { margin-bottom: .45rem; font-size: 1rem; }
+.lup-knowledge-review > li { padding: .875rem 0; border-top: 1px solid var(--rule, #bbc9da); }
+.lup-knowledge-review > li > p { margin: 0 0 .45rem; }
+.lup-knowledge-review > li .lup-knowledge-prompt { margin-bottom: .45rem; font-size: 1rem; }
+.lup-knowledge-option-explanations { list-style: none; padding: 0; margin: .65rem 0; display: grid; gap: .6rem; }
+.lup-knowledge-option-explanations li { padding-inline-start: .7rem; border-inline-start: 2px solid var(--rule, #bbc9da); }
+.lup-knowledge-option-explanations li p, .lup-knowledge-source p { margin: .18rem 0 0; }
 .lup-knowledge-correct, .lup-knowledge-incorrect { font-weight: 700; }
 .lup-knowledge-feedback { margin-top: .75rem; }

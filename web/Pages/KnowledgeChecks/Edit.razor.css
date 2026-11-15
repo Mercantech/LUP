@@ -10,6 +10,8 @@
 .knowledge-options > button { justify-self: start; }
 .knowledge-option { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .65rem; }
 .knowledge-option > input { min-width: 0; }
+.knowledge-detail summary { width: fit-content; cursor: pointer; color: var(--blue); font-weight: 650; }
+.knowledge-detail-fields { display: grid; gap: .65rem; padding-top: .55rem; }
 .knowledge-checkline { display: flex; align-items: center; gap: .4rem; }
 .knowledge-checkline input { accent-color: var(--blue); }
 .knowledge-preview { display: grid; gap: .6rem; border-color: var(--blue); }

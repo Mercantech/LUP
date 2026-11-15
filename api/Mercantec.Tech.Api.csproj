@@ -9,6 +9,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Notebooks/default-template.json" LogicalName="Mercantec.Tech.Api.DefaultNotebookTemplate.json" />
     <EmbeddedResource Include="KnowledgeChecks/ControlFlowPilot.json" LogicalName="Mercantec.Tech.Api.ControlFlowPilot.json" />
+    <Content Remove="KnowledgeChecks/LegacyTemplates.json" />
+    <EmbeddedResource Include="KnowledgeChecks/LegacyTemplates.json" LogicalName="Mercantec.Tech.Api.LegacyKnowledgeChecks.json" />
     <EmbeddedResource Include="Emojis/Standard/*.png" LogicalName="standard-emojis/%(Filename)%(Extension)" />
     <EmbeddedResource Include="Updates/Images/*.webp" LogicalName="platform-updates/%(Filename)%(Extension)" />
     <EmbeddedResource Include="Updates/coverage.json" LogicalName="platform-updates/coverage.json" />

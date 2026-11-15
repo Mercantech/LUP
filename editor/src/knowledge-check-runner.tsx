@@ -10,6 +10,9 @@ type Review = {
   acceptedAnswers: string[];
   explanation?: string | null;
   learnMoreUrl?: string | null;
+  optionExplanations?: string[] | null;
+  learnMoreTitle?: string | null;
+  learnMoreDescription?: string | null;
   comment?: string | null;
 };
 type Attempt = {
@@ -512,8 +515,21 @@ function AttemptReview({ attempt, actions }: { attempt: Attempt; actions: ReactN
           {selection && <p>Dit svar er <QuestionText text={selection} /></p>}
           {expected && expected.length > 0 && <p>Facit er <QuestionText text={expected.join(' · ')} /></p>}
           {review.explanation && <p><QuestionText text={review.explanation} /></p>}
+          {review.optionExplanations?.some(Boolean) &&
+            <ul className="lup-knowledge-option-explanations" aria-label="Forklaringer til svarmuligheder">
+              {options.map((option, index) => {
+                const explanation = review.optionExplanations?.[index];
+                return explanation && <li key={index}>
+                  <strong><QuestionText text={option} /></strong>
+                  <p><QuestionText text={explanation} /></p>
+                </li>;
+              })}
+            </ul>}
           {review.comment && <p className="lup-knowledge-feedback">Underviserens kommentar. {review.comment}</p>}
-          {link && <a href={link.href} rel={link.origin === window.location.origin ? undefined : 'noreferrer'}>Læs mere</a>}
+          {link && <div className="lup-knowledge-source">
+            <a href={link.href} rel={link.origin === window.location.origin ? undefined : 'noreferrer'}>{review.learnMoreTitle || 'Læs mere'}</a>
+            {review.learnMoreDescription && <p>{review.learnMoreDescription}</p>}
+          </div>}
         </li>;
       })}
     </ol>}

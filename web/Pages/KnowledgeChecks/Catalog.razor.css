@@ -6,6 +6,9 @@
 .knowledge-section { display: grid; gap: .8rem; }
 .knowledge-section h2, .knowledge-section h3, .knowledge-section p { margin: 0; }
 .knowledge-section-heading, .knowledge-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem 1.15rem; flex-wrap: wrap; }
+.knowledge-import > summary { cursor: pointer; font-weight: 650; }
+.knowledge-import[open] > * + * { margin-top: .65rem; }
+.knowledge-import > p { color: var(--muted); }
 .knowledge-list { display: grid; gap: .6rem; }
 .knowledge-row h3 { font-size: 1rem; }
 .knowledge-row p { margin-top: .2rem; color: var(--muted); }

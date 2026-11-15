@@ -76,12 +76,7 @@ public sealed partial class KnowledgeChecksController(AppDbContext db, CourseAcc
         if (UserClaims.GetSub(User) is not Guid sub) return Unauthorized();
         if (!UserClaims.IsTeacher(User)) return Forbid();
         if (!NormalizeDraft(request, out var draft, out var invalidQuestion)) return DraftError(invalidQuestion);
-        var quiz = new KnowledgeCheckQuiz
-        {
-            Id = Guid.NewGuid(), OwnerSub = sub, Title = draft.Title, Description = draft.Description, Topic = draft.Topic,
-            EstimatedMinutes = draft.EstimatedMinutes, QuestionsJson = Write(draft.Questions), QuestionCount = draft.Questions.Length,
-            UpdatedAtUtc = DateTime.UtcNow, Revision = 1
-        };
+        var quiz = NewDraftQuiz(Guid.NewGuid(), sub, draft, DateTime.UtcNow);
         db.KnowledgeCheckQuizzes.Add(quiz);
         await db.SaveChangesAsync(ct);
         return Ok(DraftView(quiz));
@@ -226,6 +221,14 @@ public sealed partial class KnowledgeChecksController(AppDbContext db, CourseAcc
     private static KnowledgeCheckDraftView DraftView(KnowledgeCheckQuiz quiz) =>
         new(quiz.Id, quiz.Title, quiz.Description, quiz.Topic, quiz.EstimatedMinutes, Read<KnowledgeCheckQuestion>(quiz.QuestionsJson),
             quiz.UpdatedAtUtc, quiz.Revision);
+
+    private static KnowledgeCheckQuiz NewDraftQuiz(Guid id, Guid owner, KnowledgeCheckDraft draft, DateTime now) =>
+        new()
+        {
+            Id = id, OwnerSub = owner, Title = draft.Title, Description = draft.Description, Topic = draft.Topic,
+            EstimatedMinutes = draft.EstimatedMinutes, QuestionsJson = Write(draft.Questions),
+            QuestionCount = draft.Questions.Length, UpdatedAtUtc = now, Revision = 1
+        };
 
     private BadRequestObjectResult DraftError(int? index) => index is int questionIndex
         ? BadRequest(new { error = "invalid_question", questionIndex })

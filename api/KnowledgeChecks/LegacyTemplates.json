@@ -1,0 +1,2383 @@
+{
+  "sourceCommit": "fe02232b2eec14af7b9c883e7e18f22f38dc625f",
+  "drafts": [
+    {
+      "key": "gf2-dag1-grundlaeggende-csharp",
+      "draft": {
+        "title": "GF2 Kapitel 1 - Dit første program & Variabler",
+        "description": "Test din viden om C# grundlæggende koncepter: namespace, class, static, void, Main metode og variabeltyper",
+        "topic": "GF2",
+        "estimatedMinutes": 10,
+        "questions": [
+          {
+            "id": "6ed44b64-827d-5bd5-bdd6-4175b6b1d7dd",
+            "kind": "single",
+            "prompt": "Hvad betyder 'void' i en metode?",
+            "options": [
+              "At metoden er tom",
+              "At metoden ikke returnerer noget",
+              "At metoden er privat",
+              "At metoden er hurtig"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/methods",
+            "optionExplanations": [
+              "'void' betyder ikke at metoden er tom - den kan indeholde kode.",
+              "'void' betyder at metoden ikke returnerer nogen værdi - den udfører kun handlinger.",
+              "'void' handler ikke om synlighed - det gør 'public', 'private' osv.",
+              "'void' påvirker ikke hastigheden af metoden."
+            ],
+            "learnMoreTitle": "Void Methods in C#",
+            "learnMoreDescription": "Microsofts dokumentation om void metoder i C#."
+          },
+          {
+            "id": "4beaf94b-9c11-5ec3-ad16-469e54eda146",
+            "kind": "single",
+            "prompt": "Hvilken datatype bruges til at gemme hele tal i C#?",
+            "options": [
+              "string",
+              "int",
+              "bool",
+              "char"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/integral-numeric-types",
+            "optionExplanations": [
+              "'string' bruges til tekst, ikke hele tal.",
+              "'int' bruges til hele tal (heltal) i C#.",
+              "'bool' bruges til sand/falsk værdier (true/false).",
+              "'char' bruges til enkelttegn, ikke hele tal."
+            ],
+            "learnMoreTitle": "Integer Types in C#",
+            "learnMoreDescription": "Microsofts guide til heltal typer i C#."
+          },
+          {
+            "id": "aa8d45cd-4f72-571a-a46c-4a8dd2ec3403",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er korrekte måder at erklære en int-variabel og give den værdien 5 (uden at bruge 'var')?",
+            "options": [
+              "int nummer; nummer = 5;",
+              "int nummer = 5;",
+              "var nummer = 5;",
+              "int nummer, tal = 10;"
+            ],
+            "correctOptions": [
+              0,
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/variables",
+            "optionExplanations": [
+              "Korrekt - først erklæring, derefter tildeling.",
+              "Korrekt - erklæring og initialisering på samme linje.",
+              "Ikke i denne opgave - her må du ikke bruge 'var'.",
+              "Ikke korrekt her - du giver ikke variablen 'nummer' værdien 5 (og 'tal' bliver 10)."
+            ],
+            "learnMoreTitle": "Variable Declaration in C#",
+            "learnMoreDescription": "Microsofts guide til variabel erklæring i C#."
+          },
+          {
+            "id": "5fe48114-51a8-55e3-834b-6c7afc0eb44b",
+            "kind": "single",
+            "prompt": "Hvilken datatype bruges til at gemme tekst i C#?",
+            "options": [
+              "text",
+              "string",
+              "char",
+              "str"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/reference-types#the-string-type",
+            "optionExplanations": [
+              "'text' er ikke en datatype i C#.",
+              "'string' bruges til at gemme tekst i C#.",
+              "'char' bruges kun til enkelttegn, ikke hele tekststrenge.",
+              "'str' er ikke en datatype i C# - det er 'string'."
+            ],
+            "learnMoreTitle": "String Type in C#",
+            "learnMoreDescription": "Microsofts dokumentation om string typen i C#."
+          },
+          {
+            "id": "94928d9c-275d-5de8-ba7e-71a15326a7a3",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende skriver tekst til konsollen uden automatisk linjeskift?",
+            "options": [
+              "Console.Write(\"Hej verden\");",
+              "Console.WriteLine(\"Hej verden\");",
+              "Console.Write(\"Hej \" + navn);",
+              "print(\"Hej verden\");"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.console",
+            "optionExplanations": [
+              "Console.Write() skriver tekst uden linjeskift.",
+              "Console.WriteLine() skriver tekst med linjeskift efter.",
+              "Console.Write() kan også bruges med variabler og concatenation.",
+              "'print' er ikke en C# metode - det er Console.Write() eller Console.WriteLine()."
+            ],
+            "learnMoreTitle": "Console Class in C#",
+            "learnMoreDescription": "Microsofts dokumentation om Console klassen i C#."
+          },
+          {
+            "id": "0d44d03e-dfc9-5607-b71a-75a12c5824b6",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende bruger placeholder-format med '{0}' i C#?",
+            "options": [
+              "string message = \"Hej \" + navn + \"!\";",
+              "string message = $\"Hej {navn}!\";",
+              "string message = String.Format(\"Hej {0}!\", navn);",
+              "Console.WriteLine(\"Hej {0}!\", navn);"
+            ],
+            "correctOptions": [
+              2,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated",
+            "optionExplanations": [
+              "Her bruges ikke '{0}' - det er string concatenation.",
+              "Her bruges ikke '{0}' - det er string interpolation med $ og {navn}.",
+              "Korrekt - String.Format() bruger '{0}' placeholders.",
+              "Korrekt - Console.WriteLine() kan formatere med '{0}' placeholders."
+            ],
+            "learnMoreTitle": "String Interpolation in C#",
+            "learnMoreDescription": "Microsofts guide til string interpolation i C#."
+          },
+          {
+            "id": "76dedb51-d913-56d9-99f6-6665d82dc4f1",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende regnes som integrale typer i C#-sprogspecifikationen?",
+            "options": [
+              "int",
+              "string",
+              "bool",
+              "char"
+            ],
+            "correctOptions": [
+              0,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/built-in-types",
+            "optionExplanations": [
+              "'int' er en integral (heltal) type.",
+              "'string' er en reference type (klasse), ikke en integral type.",
+              "'bool' er ikke en integral/numerisk type - den er kun true/false.",
+              "'char' er også en integral type (et 16-bit Unicode-tegn)."
+            ],
+            "learnMoreTitle": "Built-in Types in C#",
+            "learnMoreDescription": "Microsofts dokumentation om indbyggede typer i C#."
+          },
+          {
+            "id": "584ea697-09f7-5df6-9069-e407180f3a3f",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er altid sande om Main metoden i C#?",
+            "options": [
+              "Den skal være static",
+              "Den er programmets startpunkt",
+              "Den skal have void som returtype",
+              "Den skal have string[] args som parameter"
+            ],
+            "correctOptions": [
+              0,
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/program-structure/main-command-line",
+            "optionExplanations": [
+              "Main metoden skal være static for at kunne kaldes uden instans.",
+              "Main metoden er programmets startpunkt - den køres automatisk.",
+              "Main kan også returnere f.eks. int (exit code) eller være async (Task/Task<int>) - den behøver ikke være void.",
+              "Parameteren 'string[] args' er valgfri - du kan have Main uden args."
+            ],
+            "learnMoreTitle": "Main Method in C#",
+            "learnMoreDescription": "Microsofts guide til Main metoden i C#."
+          },
+          {
+            "id": "3d041aee-8830-5efe-bafe-14b987400139",
+            "kind": "single",
+            "prompt": "Hvad er formålet med 'namespace' i C#?",
+            "options": [
+              "At definere en metode",
+              "At organisere kode og separere den i logiske grupper",
+              "At erklære en variabel",
+              "At definere en datatype"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/namespaces",
+            "optionExplanations": [
+              "Namespace bruges ikke til at definere metoder - det gør man med 'void' eller datatype + navn.",
+              "Namespace bruges til at organisere kode og separere den i logiske grupper, så man kan undgå navnekonflikter.",
+              "Namespace bruges ikke til at erklære variabler - det gør man med datatype + navn.",
+              "Namespace definerer ikke datatyper - det er keywords som 'int', 'string', 'bool' osv."
+            ],
+            "learnMoreTitle": "Namespaces in C#",
+            "learnMoreDescription": "Microsofts officielle dokumentation om namespaces i C#."
+          },
+          {
+            "id": "765ef5d0-f197-5719-8f41-5416e640b92c",
+            "kind": "single",
+            "prompt": "Hvad betyder 'static' i en Main metode?",
+            "options": [
+              "At metoden ikke kan ændres",
+              "At metoden kan kaldes uden at lave en instans af klassen",
+              "At metoden returnerer en værdi",
+              "At metoden kun kan bruges én gang"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static",
+            "optionExplanations": [
+              "'static' gør ikke metoden uændret - det handler om hvordan metoden kaldes.",
+              "'static' betyder at Main metoden kan kaldes direkte uden at lave en instans af Program klassen.",
+              "'static' påvirker ikke om metoden returnerer en værdi - det gør 'void' eller datatype.",
+              "'static' betyder ikke at metoden kun kan bruges én gang."
+            ],
+            "learnMoreTitle": "Static Methods in C#",
+            "learnMoreDescription": "Microsofts guide til static metoder i C#."
+          }
+        ]
+      }
+    },
+    {
+      "key": "gf2-dag2-expressions-operators",
+      "draft": {
+        "title": "GF2 Kapitel 2 - Expressions og Operatører",
+        "description": "Test din viden om C# expressions, aritmetiske operatorer, sammenligningsoperatorer og logiske operatorer",
+        "topic": "GF2",
+        "estimatedMinutes": 7,
+        "questions": [
+          {
+            "id": "4d9389e7-7510-515e-af45-cb2d4fe79532",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er korrekte aritmetiske operatorer i C#?",
+            "options": [
+              "+ (plus)",
+              "- (minus)",
+              "** (eksponent)",
+              "% (modulus)"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/arithmetic-operators",
+            "optionExplanations": [
+              "+ bruges til addition (5 + 3 = 8).",
+              "- bruges til subtraktion (5 - 3 = 2).",
+              "** er ikke en aritmetisk operator i C# - brug Math.Pow() i stedet.",
+              "% bruges til modulus/rest (10 % 3 = 1)."
+            ],
+            "learnMoreTitle": "Arithmetic Operators in C#",
+            "learnMoreDescription": "Microsofts dokumentation om aritmetiske operatorer i C#."
+          },
+          {
+            "id": "c10ad4a4-4a60-53e8-b3c3-62a0fe067e75",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er korrekte sammenligningsoperatorer i C#?",
+            "options": [
+              "== (lig med)",
+              "!= (ikke lig med)",
+              "= (tildeling)",
+              "<= (mindre end eller lig med)"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/comparison-operators",
+            "optionExplanations": [
+              "== sammenligner om to værdier er lige (5 == 5 er true).",
+              "!= sammenligner om to værdier er forskellige (5 != 3 er true).",
+              "= er en tildelingsoperator, ikke en sammenligningsoperator - brug == til sammenligning.",
+              "<= sammenligner om en værdi er mindre end eller lig med en anden (5 <= 5 er true)."
+            ],
+            "learnMoreTitle": "Comparison Operators in C#",
+            "learnMoreDescription": "Microsofts dokumentation om sammenligningsoperatorer i C#."
+          },
+          {
+            "id": "88623846-e57e-5c58-b6f5-2e9d17ecb27e",
+            "kind": "single",
+            "prompt": "Hvad er resultatet af følgende expression: (5 > 3) && (2 < 4)?",
+            "options": [
+              "true",
+              "false",
+              "5",
+              "2"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/boolean-logical-operators",
+            "optionExplanations": [
+              "(5 > 3) er true OG (2 < 4) er true, så true && true = true.",
+              "Begge betingelser er sande, så resultatet er true.",
+              "Expression returnerer en bool værdi, ikke et tal.",
+              "Expression returnerer en bool værdi, ikke et tal."
+            ],
+            "learnMoreTitle": "Logical Operators in C#",
+            "learnMoreDescription": "Microsofts dokumentation om logiske operatorer i C#."
+          },
+          {
+            "id": "02907210-88af-5b43-af21-afdcada53d54",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er korrekte logiske operatorer i C#?",
+            "options": [
+              "&& (logisk OG)",
+              "|| (logisk ELLER)",
+              "! (logisk IKKE)",
+              "<< (venstreskift)"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/boolean-logical-operators",
+            "optionExplanations": [
+              "&& er logisk OG - true hvis begge betingelser er sande.",
+              "|| er logisk ELLER - true hvis mindst én betingelse er sand.",
+              "! er logisk IKKE - negerer en betingelse.",
+              "Operatoren << forskyder bit mod venstre og bruges ikke som logisk operator."
+            ],
+            "learnMoreTitle": "Boolean Logical Operators",
+            "learnMoreDescription": "Microsofts guide til logiske operatorer i C#."
+          },
+          {
+            "id": "4043cdd0-8f74-5d6b-981e-787263ef879d",
+            "kind": "single",
+            "prompt": "Hvad er resultatet af følgende expression: 10 % 3?",
+            "options": [
+              "1",
+              "3",
+              "3.33",
+              "0"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/arithmetic-operators#remainder-operator-",
+            "optionExplanations": [
+              "10 % 3 = 1 (resten når 10 divideres med 3).",
+              "3 er ikke resten - det er kvotienten.",
+              "Modulus returnerer heltal, ikke decimaler.",
+              "10 går ikke op i 3, så resten er ikke 0."
+            ],
+            "learnMoreTitle": "Modulus Operator in C#",
+            "learnMoreDescription": "Forklaring af modulus operatoren i C#."
+          },
+          {
+            "id": "0afbeeed-3884-57ca-bd05-04c4c7848df1",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er korrekte typer af expressions i C#?",
+            "options": [
+              "Bogstavelige udtryk (literals)",
+              "Variable udtryk",
+              "Aritmetiske udtryk",
+              "Logiske udtryk"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/",
+            "optionExplanations": [
+              "Bogstavelige udtryk er direkte værdier som 5 eller \"Hej\".",
+              "Variable udtryk er variabler der gemmer værdier.",
+              "Aritmetiske udtryk bruger matematiske operatorer (5 + 3).",
+              "Logiske udtryk evaluerer til true/false (5 > 3)."
+            ],
+            "learnMoreTitle": "Expressions in C#",
+            "learnMoreDescription": "Microsofts dokumentation om expressions i C#."
+          }
+        ]
+      }
+    },
+    {
+      "key": "gf2-dag4-klasser-objekter",
+      "draft": {
+        "title": "GF2 Kapitel 4 - Klasser og Objekter",
+        "description": "Test din viden om objektorienteret programmering i C#: klasser, objekter, properties, metoder og instantiering",
+        "topic": "GF2",
+        "estimatedMinutes": 9,
+        "questions": [
+          {
+            "id": "ba16de60-c3be-582f-9025-f998ee674a61",
+            "kind": "single",
+            "prompt": "Hvilket af svarene giver den mest dækkende beskrivelse af en klasse i C#?",
+            "options": [
+              "En skabelon til at oprette objekter",
+              "En samling af data og metoder",
+              "En datatype der definerer egenskaber og adfærd",
+              "Alle ovenstående er korrekte"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/classes",
+            "optionExplanations": [
+              "En klasse fungerer som en skabelon til at oprette objekter.",
+              "En klasse indeholder både data (properties) og metoder.",
+              "En klasse definerer egenskaber og adfærd for objekter.",
+              "Alle svar er korrekte - en klasse er en skabelon der indeholder data og metoder."
+            ],
+            "learnMoreTitle": "Classes in C#",
+            "learnMoreDescription": "Microsofts dokumentation om klasser i C#."
+          },
+          {
+            "id": "f14fd630-04eb-591f-9654-7023ffdf31e6",
+            "kind": "single",
+            "prompt": "Vælg det svar, der omfatter alle gyldige måder at oprette et Car-objekt blandt de viste eksempler. Antag, at klassen har en parameterløs konstruktør samt skrivbare Brand- og Model-properties.",
+            "options": [
+              "Car myCar = new Car();",
+              "Car myCar = new Car() { Brand = \"Ford\", Model = \"Mustang\" };",
+              "var myCar = new Car();",
+              "Alle ovenstående er korrekte"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/classes#creating-objects",
+            "optionExplanations": [
+              "Grundlæggende objekt oprettelse med new nøgleordet.",
+              "Objekt oprettelse med object initializer syntax.",
+              "Objekt oprettelse med var nøgleordet (type inference).",
+              "Alle metoder er korrekte måder at oprette objekter på."
+            ],
+            "learnMoreTitle": "Object Creation in C#",
+            "learnMoreDescription": "Microsofts dokumentation om objekt oprettelse i C#."
+          },
+          {
+            "id": "097ffce3-65cf-5c5c-853b-5ca98460b899",
+            "kind": "single",
+            "prompt": "Hvilket udsagn beskriver forskellen på properties og metoder i en klasse?",
+            "options": [
+              "Properties repræsenterer data/tilstand, metoder repræsenterer adfærd/handlinger",
+              "Properties er lokale variabler, og metoder kan kun læse dem.",
+              "Properties kan kun gengive en gemt værdi, og metoder kan aldrig returnere værdier.",
+              "Properties og metoder har altid samme syntaks."
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/properties",
+            "optionExplanations": [
+              "Properties giver adgang til værdier, som kan gemmes eller beregnes. Metoder kan udføre handlinger og eventuelt returnere en værdi.",
+              "En property er et medlem af typen og kan for eksempel have en getter og en setter.",
+              "Properties kan beregne en værdi, og metoder kan både returnere værdier og udføre handlinger.",
+              "En property tilgås normalt med punktnotation, mens et metodekald også har parenteser."
+            ],
+            "learnMoreTitle": "Properties vs Methods in C#",
+            "learnMoreDescription": "Microsofts dokumentation om properties og metoder i C#."
+          },
+          {
+            "id": "8bfaf488-e768-58f4-84cc-099660f0ba24",
+            "kind": "single",
+            "prompt": "Vælg det svar, der omfatter alle gyldige måder at bruge Brand og StartEngine på objektet myCar. Antag, at Brand kan læses og sættes, og at StartEngine ikke kræver parametre.",
+            "options": [
+              "myCar.Brand = \"Ford\";",
+              "myCar.StartEngine();",
+              "string brand = myCar.Brand;",
+              "Alle ovenstående er korrekte"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/classes#accessing-members",
+            "optionExplanations": [
+              "Korrekt syntaks for at sætte en property værdi.",
+              "Korrekt syntaks for at kalde en metode.",
+              "Korrekt syntaks for at læse en property værdi.",
+              "Alle syntakser er korrekte for at tilgå properties og metoder."
+            ],
+            "learnMoreTitle": "Accessing Object Members in C#",
+            "learnMoreDescription": "Microsofts dokumentation om at tilgå objekt medlemmer i C#."
+          },
+          {
+            "id": "7fe40d56-897e-5846-b4de-ab0e262a8619",
+            "kind": "single",
+            "prompt": "Hvilket svar beskriver mest dækkende, hvad der sker, når new Car() opretter en instans af klassen Car?",
+            "options": [
+              "At oprette nye objekter",
+              "At allokere hukommelse til et objekt",
+              "At kalde en konstruktør",
+              "Alle ovenstående er korrekte"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/new-operator",
+            "optionExplanations": [
+              "'new' bruges til at oprette nye objekter fra en klasse.",
+              "'new' allokerer hukommelse til det nye objekt.",
+              "'new' kalder klassens konstruktør for at initialisere objektet.",
+              "Alle svar er korrekte - 'new' gør alle disse ting."
+            ],
+            "learnMoreTitle": "New Keyword in C#",
+            "learnMoreDescription": "Microsofts dokumentation om new nøgleordet i C#."
+          },
+          {
+            "id": "49505d78-646f-5a62-8c6f-45262d2864ff",
+            "kind": "single",
+            "prompt": "Hvilket svar giver den mest dækkende beskrivelse af objektorienteret programmering (OOP)?",
+            "options": [
+              "En programmeringsparadigme baseret på objekter",
+              "En måde at organisere kode i klasser og objekter",
+              "En metode til at modellere virkelige verden i kode",
+              "Alle ovenstående er korrekte"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/",
+            "optionExplanations": [
+              "OOP er et programmeringsparadigme der fokuserer på objekter.",
+              "OOP organiserer kode i klasser og objekter.",
+              "OOP gør det muligt at modellere virkelige verden i kode.",
+              "Alle svar beskriver korrekt hvad OOP er."
+            ],
+            "learnMoreTitle": "Object-Oriented Programming in C#",
+            "learnMoreDescription": "Microsofts dokumentation om OOP i C#."
+          },
+          {
+            "id": "49a7e166-6516-5047-8059-843b4e6703d3",
+            "kind": "single",
+            "prompt": "Hvad vil følgende kode udskrive? Car myCar = new Car(); myCar.Brand = \"Toyota\"; myCar.Model = \"Camry\"; Console.WriteLine(myCar.Brand + \" \" + myCar.Model);",
+            "options": [
+              "Toyota Camry",
+              "Ford Mustang",
+              "Ingen output",
+              "Fejl i koden"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/properties",
+            "optionExplanations": [
+              "Koden opretter et Car objekt, sætter Brand til \"Toyota\" og Model til \"Camry\", og udskriver begge værdier.",
+              "Brand og Model er sat til \"Toyota\" og \"Camry\", ikke \"Ford\" og \"Mustang\".",
+              "Koden vil udskrive output til konsollen.",
+              "Koden er syntaktisk korrekt og vil køre uden fejl."
+            ],
+            "learnMoreTitle": "Object Property Assignment in C#",
+            "learnMoreDescription": "Microsofts dokumentation om at tildele værdier til objekt properties."
+          },
+          {
+            "id": "5e37136d-6cb2-5925-ac1b-540013dd15ae",
+            "kind": "single",
+            "prompt": "Vælg det svar, der omfatter alle gyldige C#-deklarationer af klassen Car.",
+            "options": [
+              "public class Car { }",
+              "class Car { }",
+              "public class Car { public string Brand; }",
+              "Alle ovenstående er korrekte"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/class",
+            "optionExplanations": [
+              "Tom klasse med public access modifier er korrekt.",
+              "Tom klasse uden access modifier er korrekt (default internal).",
+              "En klasse kan deklareres med et felt som Brand.",
+              "Alle syntakser er korrekte - klasser kan være tomme eller indeholde medlemmer."
+            ],
+            "learnMoreTitle": "Class Declaration in C#",
+            "learnMoreDescription": "Microsofts dokumentation om klasse deklaration i C#."
+          }
+        ]
+      }
+    },
+    {
+      "key": "gf2-dag6-arrays-lists-dictionary",
+      "draft": {
+        "title": "GF2 Kapitel 6 - Arrays, Lists & Dictionary",
+        "description": "Test din viden om arrays, lister og dictionaries i C# - hvordan man opretter, tilgår og manipulerer datastrukturer",
+        "topic": "GF2",
+        "estimatedMinutes": 11,
+        "questions": [
+          {
+            "id": "52e6f926-3ba0-5f4b-acfb-0d0376a3e9de",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er korrekte måder at oprette et array i C#?",
+            "options": [
+              "int[] numbers = new int[10];",
+              "int[] numbers = {1, 2, 3, 4, 5};",
+              "int numbers[] = new int[10];",
+              "int[] numbers = new int[] {1, 2, 3};"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/arrays",
+            "optionExplanations": [
+              "Korrekt - opretter et array med 10 elementer.",
+              "Korrekt - opretter og initialiserer array med værdier.",
+              "Forkert syntaks - [] skal komme efter typen, ikke efter navnet.",
+              "Korrekt - eksplicit størrelse med initialisering."
+            ],
+            "learnMoreTitle": "Arrays in C#",
+            "learnMoreDescription": "Microsofts dokumentation om arrays i C#."
+          },
+          {
+            "id": "ae923ac0-954a-506e-b4d3-21e9646bed04",
+            "kind": "single",
+            "prompt": "Hvad er det korrekte indeks for det første element i et array?",
+            "options": [
+              "1",
+              "0",
+              "-1",
+              "Det afhænger af arrayets størrelse"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/arrays#array-access",
+            "optionExplanations": [
+              "Arrays starter altid fra indeks 0, ikke 1.",
+              "Arrays i C# starter altid fra indeks 0.",
+              "Negative indekser er ikke gyldige i standard arrays.",
+              "Indekset er altid 0 for det første element, uanset størrelse."
+            ],
+            "learnMoreTitle": "Array Indexing in C#",
+            "learnMoreDescription": "Microsofts guide til array indeksering."
+          },
+          {
+            "id": "d5968f18-5028-5301-889b-0393cc9105b7",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er korrekte måder at oprette en List i C#?",
+            "options": [
+              "List<int> numbers = new List<int>();",
+              "List<int> numbers = new List<int> {1, 2, 3};",
+              "List numbers = new List();",
+              "using System.Collections.Generic; List<string> names = new List<string>();"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1",
+            "optionExplanations": [
+              "Korrekt - opretter en tom liste af integers.",
+              "Korrekt - opretter og initialiserer liste med værdier.",
+              "Forkert - List skal have type parameter <int>.",
+              "Korrekt - inkluderer using statement og opretter string liste."
+            ],
+            "learnMoreTitle": "List<T> in C#",
+            "learnMoreDescription": "Microsofts dokumentation om List<T> i C#."
+          },
+          {
+            "id": "8389580a-7807-5e6c-bd95-cd70f66815ca",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er korrekte metoder til at manipulere en List?",
+            "options": [
+              "Add()",
+              "Remove()",
+              "Insert()",
+              "Clear()"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1#methods",
+            "optionExplanations": [
+              "Add() tilføjer et element til slutningen af listen.",
+              "Remove() fjerner et element fra listen.",
+              "Insert() indsætter et element på en specifik position.",
+              "Clear() fjerner alle elementer fra listen."
+            ],
+            "learnMoreTitle": "List Methods in C#",
+            "learnMoreDescription": "Microsofts guide til List metoder."
+          },
+          {
+            "id": "2f194034-a768-57d2-aa52-800b0061ecbc",
+            "kind": "single",
+            "prompt": "Hvad er hovedforskellen mellem arrays og lister?",
+            "options": [
+              "Arrays har fast størrelse, lister har dynamisk størrelse",
+              "Arrays bruger mindre hukommelse end lister",
+              "Lister har flere indbyggede metoder end arrays",
+              "Alle ovenstående er korrekte"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/arrays",
+            "optionExplanations": [
+              "Arrays har fast størrelse, lister kan ændre størrelse dynamisk.",
+              "Hukommelsesforbruget afhænger blandt andet af kapacitet. Det er fast størrelse over for dynamisk størrelse, der er hovedforskellen her.",
+              "List<T> har blandt andet Add og Remove. De metoder lader listen ændre størrelse, som svar A beskriver.",
+              "A beskriver hovedforskellen. B og C er ikke en mere præcis beskrivelse af den."
+            ],
+            "learnMoreTitle": "Arrays vs Lists in C#",
+            "learnMoreDescription": "Sammenligning af arrays og lister i C#."
+          },
+          {
+            "id": "46db6dae-1920-563a-8911-78d0aee29093",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende er korrekte måder at oprette en Dictionary i C#?",
+            "options": [
+              "Dictionary<string, int> ageMap = new Dictionary<string, int>();",
+              "Dictionary<string, int> ageMap = new Dictionary<string, int> {{\"Alice\", 25}, {\"Bob\", 30}};",
+              "Dictionary ageMap = new Dictionary();",
+              "using System.Collections.Generic; Dictionary<int, string> names = new Dictionary<int, string>();"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2",
+            "optionExplanations": [
+              "Korrekt - opretter en tom dictionary med string keys og int values.",
+              "Korrekt - opretter og initialiserer dictionary med nøgle-værdi par.",
+              "Forkert - Dictionary skal have type parametre <TKey, TValue>.",
+              "Korrekt - inkluderer using statement og opretter dictionary med int keys."
+            ],
+            "learnMoreTitle": "Dictionary<TKey,TValue> in C#",
+            "learnMoreDescription": "Microsofts dokumentation om Dictionary i C#."
+          },
+          {
+            "id": "1d8bea6b-a686-50d3-9d4e-dedcb4a6ce74",
+            "kind": "single",
+            "prompt": "Hvilket udtryk henter en værdi fra en Dictionary<string, int> via dens indeksering med nøglen \"key\"?",
+            "options": [
+              "dictionary[\"key\"]",
+              "dictionary.TryGetValue(\"key\", out var value)",
+              "dictionary.GetValue(\"key\")",
+              "dictionary.Find(\"key\")"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2#properties",
+            "optionExplanations": [
+              "Du kan bruge firkantede parenteser med nøglen. Indeksering kræver, at nøglen findes.",
+              "TryGetValue slår værdien op uden at kaste en fejl for en manglende nøgle. Det er et metodekald og bruger ikke indekseringen.",
+              "GetValue() er ikke en Dictionary metode.",
+              "Find() er ikke en Dictionary metode."
+            ],
+            "learnMoreTitle": "Dictionary Access in C#",
+            "learnMoreDescription": "Microsofts guide til at tilgå Dictionary værdier."
+          },
+          {
+            "id": "475771d3-0443-5c6a-8b95-09a1a9c8d1db",
+            "kind": "multiple",
+            "prompt": "Hvilke af følgende metoder findes på Dictionary<TKey, TValue>?",
+            "options": [
+              "Add(key, value)",
+              "Remove(key)",
+              "ContainsKey(key)",
+              "Clear()"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2#methods",
+            "optionExplanations": [
+              "Add() tilføjer et nøgle-værdi par til dictionary.",
+              "Remove() fjerner et nøgle-værdi par fra dictionary.",
+              "ContainsKey() tjekker om en nøgle eksisterer i dictionary.",
+              "Clear() fjerner alle nøgle-værdi par fra dictionary."
+            ],
+            "learnMoreTitle": "Dictionary Methods in C#",
+            "learnMoreDescription": "Microsofts guide til Dictionary metoder."
+          },
+          {
+            "id": "d7aacc88-ec07-5043-b249-402be8dae3fc",
+            "kind": "single",
+            "prompt": "Hvilket svar opsummerer fordelene ved at bruge en Dictionary frem for en List, når du vil finde værdier via en nøgle?",
+            "options": [
+              "Hurtigt opslag via en nøgle (typisk cirka O(1))",
+              "Nøgle-værdi par struktur",
+              "Effektiv til at finde specifikke elementer",
+              "Alle ovenstående er korrekte"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2#remarks",
+            "optionExplanations": [
+              "Dictionary bruger hashmap implementering for hurtig opslag.",
+              "Dictionary er designet til nøgle-værdi par, List er kun værdier.",
+              "Dictionary er meget effektiv til at finde elementer baseret på nøgle.",
+              "Alle tre fordele er korrekte ved brug af Dictionary."
+            ],
+            "learnMoreTitle": "Dictionary Benefits in C#",
+            "learnMoreDescription": "Fordele ved at bruge Dictionary i C#."
+          },
+          {
+            "id": "1694ca15-6c08-56be-830a-59082ef5ba90",
+            "kind": "multiple",
+            "prompt": "Hvilke viste løkkehoveder kan bruges til at gennemløbe en Dictionary<string, int> eller dens nøgler uden selv at slå elementer op?",
+            "options": [
+              "foreach (var kvp in dictionary)",
+              "foreach (KeyValuePair<string, int> kvp in dictionary)",
+              "for (int i = 0; i < dictionary.Count; i++)",
+              "foreach (string key in dictionary.Keys)"
+            ],
+            "correctOptions": [
+              0,
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2#examples",
+            "optionExplanations": [
+              "Korrekt - var lader compileren udlede KeyValuePair typen.",
+              "Korrekt - eksplicit KeyValuePair type med generics.",
+              "Denne løkke tæller blot indeks. En Dictionary tilbyder ikke opslag ud fra elementets position.",
+              "Korrekt - looper gennem alle nøgler i dictionary."
+            ],
+            "learnMoreTitle": "Iterating Dictionary in C#",
+            "learnMoreDescription": "Microsofts guide til at iterere gennem Dictionary."
+          }
+        ]
+      }
+    },
+    {
+      "key": "dhcp-gf2",
+      "draft": {
+        "title": "GF2 - DHCP (helt grundlæggende)",
+        "description": "Test din viden om DHCP: hvad det er, DORA-forløbet, leases, scope/pool, reservationer og typiske fejlscenarier",
+        "topic": "GF2",
+        "estimatedMinutes": 10,
+        "questions": [
+          {
+            "id": "7a38c4c7-fbd6-5833-ab5f-7512cc6cf1ab",
+            "kind": "single",
+            "prompt": "Hvad er DHCP?",
+            "options": [
+              "En protokol der krypterer webtrafik",
+              "En protokol der automatisk tildeler IP-konfiguration til klienter",
+              "En protokol der oversætter domænenavne til IP-adresser",
+              "En firewall der blokerer uønsket trafik"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/windows-server/networking/technologies/dhcp/dhcp-top",
+            "optionExplanations": [
+              "Det er typisk HTTPS/TLS, der krypterer webtrafik.",
+              "DHCP (Dynamic Host Configuration Protocol) bruges til automatisk at give klienter fx IP-adresse, subnetmaske, gateway og DNS.",
+              "Det er DNS, der oversætter domænenavne til IP-adresser.",
+              "En firewall er ikke en DHCP-protokol."
+            ],
+            "learnMoreTitle": "Hvad er en DHCP-server?",
+            "learnMoreDescription": "Microsoft Learn forklarer, hvordan DHCP automatisk tildeler IP-adresser og netværksindstillinger."
+          },
+          {
+            "id": "5d10242b-2245-5da9-beaa-07ce5c7d9628",
+            "kind": "multiple",
+            "prompt": "Hvilke UDP-porte bruges typisk af DHCP (IPv4)?",
+            "options": [
+              "UDP 67 (server)",
+              "UDP 68 (klient)",
+              "TCP 443 (HTTPS)",
+              "UDP 53 (DNS)"
+            ],
+            "correctOptions": [
+              0,
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "DHCP-serveren lytter typisk på UDP port 67.",
+              "DHCP-klienten bruger typisk UDP port 68.",
+              "TCP 443 bruges af HTTPS, ikke DHCP.",
+              "UDP 53 bruges af DNS, ikke DHCP."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "59f1138f-9091-5bd1-8166-5649f0ab5b7d",
+            "kind": "single",
+            "prompt": "Hvad er den korrekte rækkefølge i det klassiske DHCP-forløb (DORA)?",
+            "options": [
+              "Discover → Request → Offer → Acknowledge",
+              "Discover → Offer → Request → Acknowledge",
+              "Offer → Discover → Request → Acknowledge",
+              "Discover → Offer → Acknowledge → Request"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol",
+            "optionExplanations": [
+              "Offer kommer før Request.",
+              "DORA står for Discover, Offer, Request, Acknowledge (ACK).",
+              "Klienten starter med Discover, ikke Offer.",
+              "Request kommer før Acknowledge."
+            ],
+            "learnMoreTitle": "Dynamic Host Configuration Protocol (DHCP)",
+            "learnMoreDescription": "Overblik over DHCP og hvordan tildelingen typisk foregår."
+          },
+          {
+            "id": "254394a6-f225-5c02-a25e-1d91598dfcdc",
+            "kind": "single",
+            "prompt": "Hvad betyder det, at en IP-adresse er tildelt som en 'lease'?",
+            "options": [
+              "At IP-adressen er låst til en bestemt switchport for altid",
+              "At IP-adressen er midlertidigt tildelt i en bestemt tidsperiode",
+              "At IP-adressen kun virker til internettet, ikke i LAN",
+              "At IP-adressen automatisk bliver en public IP"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "DHCP lease handler ikke om switchporte eller 'for altid'.",
+              "En lease er en tidsbegrænset tildeling, som klienten typisk fornyer automatisk.",
+              "Leases har ikke noget at gøre med om IP’en virker i LAN eller internet.",
+              "DHCP gør ikke i sig selv en IP-adresse public."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "0a03bdaf-943a-5bac-b96c-380de7b71b2b",
+            "kind": "single",
+            "prompt": "Hvad er en DHCP scope/pool?",
+            "options": [
+              "En liste over MAC-adresser som må få internet",
+              "Et interval af IP-adresser som DHCP må uddele",
+              "En liste over DNS-navne der må bruges",
+              "En krypteringsnøgle til netværket"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Det beskriver mere en adgangsliste/filtrering, ikke en DHCP pool.",
+              "En pool/scope er det område af IP-adresser, som serveren kan uddele til klienter.",
+              "DNS-navne styres ikke af DHCP scope/pool.",
+              "DHCP bruger ikke en 'krypteringsnøgle' på den måde."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "ec13e8f8-350a-51c0-9946-c6dea9509d6c",
+            "kind": "multiple",
+            "prompt": "Hvilke udsagn om DHCP-reservation og statisk IP er korrekte?",
+            "options": [
+              "En DHCP-reservation giver samme IP til en bestemt enhed (typisk via MAC-adresse)",
+              "En statisk IP betyder at klienten ikke behøver DHCP for at få sin IP",
+              "En DHCP-reservation virker kun på Wi-Fi, ikke på kabel",
+              "En statisk IP kræver altid en DHCP-server for at fungere"
+            ],
+            "correctOptions": [
+              0,
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Korrekt - en reservation gør, at en bestemt klient får en fast IP via DHCP.",
+              "Korrekt - ved statisk IP sættes IP-konfiguration direkte på klienten.",
+              "Reservationer er ikke bundet til Wi‑Fi; de virker også på kabel (og generelt uanset medie).",
+              "Statisk IP fungerer uden DHCP-server."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "a069c7df-502e-5afb-9a13-88f3045473f3",
+            "kind": "multiple",
+            "prompt": "Hvilke 2 oplysninger er mest almindelige at få med fra DHCP i et standard LAN (ud over selve IP-adressen)?",
+            "options": [
+              "Default gateway",
+              "DNS-server",
+              "CPU-type på computeren",
+              "Administratorens adgangskode"
+            ],
+            "correctOptions": [
+              0,
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Default gateway bruges til at nå ud af subnettet (fx til internettet via routeren).",
+              "DNS-server bruges til navneopslag (fx `google.com` → IP).",
+              "Hardwareinfo som CPU-type udleveres ikke typisk via DHCP.",
+              "Passwords udleveres ikke via DHCP."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "8aadfdf2-c04b-52e1-b200-1301ff507c2e",
+            "kind": "single",
+            "prompt": "Hvad betyder det typisk, når en Windows-klient får en IP-adresse i 169.254.x.x?",
+            "options": [
+              "Klienten har fået en public IP fra internettet",
+              "DHCP fejlede, og klienten brugte APIPA (automatisk lokal adresse)",
+              "DNS virker ikke, så IP’en skifter til 169.254.x.x",
+              "Subnetmasken er altid 255.255.0.0 på alle netværk"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "169.254.0.0/16 er et link-local område, ikke public IP.",
+              "Det er typisk APIPA/link-local, når klienten ikke kan få svar fra DHCP.",
+              "DNS-problemer giver normalt ikke 169.254.x.x.",
+              "Subnetmaske afhænger af netværket; den er ikke 'altid' det samme."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "69e9f130-6df6-5df0-b4a2-357ef634dc2a",
+            "kind": "single",
+            "prompt": "Hvorfor sendes en DHCP Discover typisk som broadcast?",
+            "options": [
+              "Fordi klienten ikke kender DHCP-serverens IP-adresse endnu",
+              "Fordi broadcast er hurtigere end unicast",
+              "Fordi DHCP altid bruger TCP",
+              "Fordi DNS kun virker med broadcast"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Klienten har endnu ikke en IP-konfiguration og kender ikke serveren, så den råber ud til hele subnettet.",
+              "Det handler ikke om at være 'hurtigere', men om at nå en ukendt server i samme subnet.",
+              "DHCP bruger typisk UDP, ikke TCP.",
+              "DNS har ikke noget med broadcast Discover at gøre."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "61a6039a-f9ce-5671-8aa2-d4b4782a1575",
+            "kind": "single",
+            "prompt": "Hvornår har man typisk brug for en DHCP relay (ofte kaldet 'IP helper')?",
+            "options": [
+              "Når DHCP-serveren ligger i et andet subnet, og routere normalt ikke videresender broadcasts",
+              "Når man vil gøre Wi‑Fi hurtigere",
+              "Når man vil kryptere DHCP-trafik",
+              "Når man vil slå DNS helt fra"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://en.wikipedia.org/wiki/DHCP_relay",
+            "optionExplanations": [
+              "DHCP relay hjælper DHCP-broadcasts med at komme mellem subnets/VLANs til en central DHCP-server.",
+              "DHCP relay handler ikke om Wi‑Fi performance.",
+              "DHCP relay krypterer ikke trafikken.",
+              "DHCP relay har ikke som formål at deaktivere DNS."
+            ],
+            "learnMoreTitle": "DHCP relay agent",
+            "learnMoreDescription": "Kort forklaring af hvorfor og hvornår man bruger DHCP relay på tværs af subnets."
+          }
+        ]
+      }
+    },
+    {
+      "key": "api-calls",
+      "draft": {
+        "title": "API-kald & HTTP",
+        "description": "Test din viden om API-kald, HTTP-metoder, statuskoder og sikker kommunikation med HTTPS",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "c8aa00d4-5328-5afc-a2f4-74b7e88273d1",
+            "kind": "single",
+            "prompt": "Hvilken HTTP-metode bruges typisk til at hente data fra en server?",
+            "options": [
+              "POST",
+              "GET",
+              "PUT",
+              "DELETE"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods",
+            "optionExplanations": [
+              "POST bruges til at oprette nye ressourcer.",
+              "GET bruges til at hente data og ændrer ikke noget på serveren.",
+              "PUT bruges til at opdatere eksisterende data.",
+              "DELETE bruges til at slette data."
+            ],
+            "learnMoreTitle": "HTTP Methods Explained",
+            "learnMoreDescription": "Læs om de mest brugte HTTP-metoder og hvordan de bruges i REST API'er."
+          },
+          {
+            "id": "3d49fa5b-7767-5577-8e84-a58a694cb85c",
+            "kind": "single",
+            "prompt": "Hvilken statuskode returneres typisk når en ressource oprettes succesfuldt?",
+            "options": [
+              "200 OK",
+              "201 Created",
+              "204 No Content",
+              "404 Not Found"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "200 OK betyder succes, men bruges mest til GET.",
+              "201 Created er korrekt, når en ny ressource oprettes.",
+              "204 No Content bruges når en operation lykkes men intet returneres.",
+              "404 betyder at ressourcen ikke findes."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "1ca1dfdf-5af0-507f-b948-f8b840753ab5",
+            "kind": "single",
+            "prompt": "Hvorfor er HTTPS mere sikker end HTTP?",
+            "options": [
+              "Fordi den er hurtigere",
+              "Fordi data krypteres mellem klient og server",
+              "Fordi den bruger færre statuskoder",
+              "Fordi serveren altid svarer med 200 OK"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.cloudflare.com/learning/ssl/what-is-https/",
+            "optionExplanations": [
+              "HTTPS kan faktisk være en smule langsommere pga. kryptering.",
+              "HTTPS krypterer al data og verificerer serverens identitet.",
+              "Antallet af statuskoder er det samme.",
+              "Serveren kan stadig returnere fejlstatus under HTTPS."
+            ],
+            "learnMoreTitle": "How HTTPS Works",
+            "learnMoreDescription": "En introduktion til HTTPS og SSL/TLS handshake, skrevet af Cloudflare."
+          },
+          {
+            "id": "8be5c773-4775-5547-a00c-0c8b578ae038",
+            "kind": "single",
+            "prompt": "Hvilken af disse HTTP-metoder bruges til at opdatere en ressource delvist?",
+            "options": [
+              "PUT",
+              "PATCH",
+              "POST",
+              "OPTIONS"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "PUT opdaterer hele ressourcen, ikke dele af den.",
+              "PATCH bruges til at ændre specifikke felter i en ressource.",
+              "POST bruges til at oprette nye ressourcer.",
+              "OPTIONS bruges til at se hvilke metoder serveren understøtter."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "923538e3-cd9b-53d7-8ff2-b35764be42f6",
+            "kind": "single",
+            "prompt": "Hvad betyder statuskoden 401 Unauthorized?",
+            "options": [
+              "Brugeren er ikke logget ind eller mangler gyldige credentials",
+              "Serveren er gået ned",
+              "Ressourcen findes ikke",
+              "Du har ikke tilladelse, selvom du er logget ind"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "401 betyder at du mangler gyldig login eller token.",
+              "Det ville være en 5xx serverfejl.",
+              "Det ville være 404 Not Found.",
+              "Det ville være 403 Forbidden."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "54602141-9cf5-570d-a77a-07c1d325f388",
+            "kind": "single",
+            "prompt": "Hvad betyder statuskoden 204 No Content?",
+            "options": [
+              "Operationen lykkedes, men der er ingen data at returnere",
+              "Serveren er midlertidigt nede",
+              "Din forespørgsel var ugyldig",
+              "En ny ressource blev oprettet"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "204 betyder at alt gik godt, men svaret er tomt.",
+              "Det ville være 503 Service Unavailable.",
+              "Det ville være 400 Bad Request.",
+              "Det ville være 201 Created."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "6b6a0094-7aef-5b8b-aae3-a70fab3bfdfd",
+            "kind": "single",
+            "prompt": "Hvilken HTTP-metode bruges til at spørge serveren hvilke metoder, den understøtter?",
+            "options": [
+              "OPTIONS",
+              "HEAD",
+              "TRACE",
+              "GET"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/OPTIONS",
+            "optionExplanations": [
+              "OPTIONS returnerer en liste over tilladte metoder.",
+              "HEAD returnerer kun headers – ikke metodeinfo.",
+              "TRACE bruges til fejlfinding.",
+              "GET henter data, men viser ikke understøttede metoder."
+            ],
+            "learnMoreTitle": "MDN: OPTIONS method",
+            "learnMoreDescription": "Se hvordan OPTIONS-metoden bruges, og hvornår den er nyttig i API-kald."
+          },
+          {
+            "id": "708c1459-c6d2-59d7-baff-3cac8fb894ec",
+            "kind": "single",
+            "prompt": "Hvordan fungerer HEAD-metoden?",
+            "options": [
+              "Den henter hele ressourcen som GET",
+              "Den henter kun headers uden selve indholdet",
+              "Den opretter en ny ressource",
+              "Den sletter ressourcen"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "GET henter hele ressourcen.",
+              "HEAD returnerer kun metadata (headers), ikke indholdet.",
+              "POST bruges til at oprette ressourcer.",
+              "DELETE bruges til at slette ressourcer."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "7a4ec8ed-58c2-564a-9286-365a6ad680d1",
+            "kind": "single",
+            "prompt": "Hvad sker der typisk i begyndelsen af den TLS-forhandling, der sikrer en HTTPS-forbindelse?",
+            "options": [
+              "Serveren sender data krypteret",
+              "Klient og server laver et handshake og aftaler kryptering",
+              "Brugeren logger ind",
+              "Serveren returnerer statuskode 200"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Før den normale HTTPS-dataudveksling etablerer håndtrykket sikkerhedsparametrene.",
+              "Klient og server udveksler blandt andet de oplysninger, de skal bruge til at aftale kryptering og etablere sessionen.",
+              "Login kan ske senere, men er ikke en del af HTTPS-opstarten.",
+              "Statuskoder har intet at gøre med oprettelsen af krypteret forbindelse."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "e8222116-a997-5410-b017-e7712ef85962",
+            "kind": "single",
+            "prompt": "Hvad er en sikkerhedsfordel ved at bruge HTTPS i stedet for HTTP?",
+            "options": [
+              "Alle forespørgsler bliver hurtigere",
+              "HTTP-statuskoderne bliver ændret",
+              "Trafikken beskyttes mod aflæsning og manipulation under overførslen",
+              "Serveren skal returnere JSON"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Hastigheden afhænger blandt andet af netværket og HTTP-versionen.",
+              "Statuskoder er de samme uanset HTTP eller HTTPS.",
+              "Ved en korrekt etableret HTTPS-forbindelse beskytter TLS forbindelsens fortrolighed og integritet.",
+              "HTTPS har intet at gøre med dataformatet (JSON, XML osv.)."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          }
+        ]
+      }
+    },
+    {
+      "key": "dtos-data-transfer",
+      "draft": {
+        "title": "DTO'er & Data Transfer Objekter",
+        "description": "Test din viden om DTO'er, deres formål og hvordan de hjælper med at optimere API-performance og datastruktur",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "aa39b66c-c383-5f9a-b542-c5c674412f45",
+            "kind": "single",
+            "prompt": "Hvad står DTO for og hvad er formålet?",
+            "options": [
+              "Data Type Object - at definere datatyper",
+              "Data Transfer Object - at overføre data mellem lag uden at eksponere intern struktur",
+              "Database Table Object - at mappe database tabeller",
+              "Data Type Output - at formatere output data"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.baeldung.com/java-dto-pattern",
+            "optionExplanations": [
+              "Data Type Object er ikke det korrekte udtryk.",
+              "DTO står for Data Transfer Object og bruges til at overføre data mellem lag.",
+              "Database Table Object er ikke det korrekte udtryk.",
+              "Data Type Output er ikke det korrekte udtryk."
+            ],
+            "learnMoreTitle": "DTO Pattern",
+            "learnMoreDescription": "En forklaring af DTO-mønsteret og dets fordele."
+          },
+          {
+            "id": "5302d7a1-90a3-5b63-b987-4aca47e2c6ae",
+            "kind": "single",
+            "prompt": "Hvad er hovedfordelen ved at bruge DTO'er i stedet for at returnere database-entiteter direkte?",
+            "options": [
+              "DTO'er er altid hurtigere at oprette",
+              "DTO'er giver kontrol over hvilke data der eksponeres og kan optimere API-performance",
+              "DTO'er eliminerer behovet for database queries",
+              "DTO'er gør det nemmere at skrive SQL"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.c-sharpcorner.com/article/why-we-use-dto-data-transfer-objects/",
+            "optionExplanations": [
+              "DTO'er er ikke nødvendigvis hurtigere at oprette.",
+              "DTO'er giver kontrol over dataeksponering og kan optimere performance.",
+              "DTO'er eliminerer ikke behovet for database queries.",
+              "DTO'er er ikke relateret til SQL-skrivning."
+            ],
+            "learnMoreTitle": "Why Use DTOs",
+            "learnMoreDescription": "En forklaring af fordelene ved at bruge DTO'er i stedet for direkte entiteter."
+          },
+          {
+            "id": "aa8b9fb3-e7d4-5841-aef4-d6c99a651b83",
+            "kind": "single",
+            "prompt": "Hvad er forskellen mellem en DTO og en ViewModel?",
+            "options": [
+              "Der er ingen forskel - de er det samme",
+              "DTO'er bruges til API-kommunikation, ViewModels til UI-binding",
+              "DTO'er kan kun bruges i backend, ViewModels kun i frontend",
+              "DTO'er er altid mindre end ViewModels"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://stackoverflow.com/questions/1051182/what-are-the-differences-between-dto-vo-pojo-javabeans",
+            "optionExplanations": [
+              "DTO'er og ViewModels har forskellige formål og bruges i forskellige lag.",
+              "DTO'er er til dataoverførsel mellem lag, ViewModels til UI-binding.",
+              "Både DTO'er og ViewModels kan bruges i både backend og frontend.",
+              "Størrelsen afhænger af formålet, ikke typen."
+            ],
+            "learnMoreTitle": "DTO vs ViewModel",
+            "learnMoreDescription": "En sammenligning af DTO'er og ViewModels og hvornår man bruger hver."
+          },
+          {
+            "id": "2b3b7101-0ad5-5b48-a476-6e1d9b7a9a45",
+            "kind": "single",
+            "prompt": "Hvordan kan DTO'er hjælpe med at undgå N+1 query problemer?",
+            "options": [
+              "DTO'er eliminerer automatisk alle database queries",
+              "En databaseforespørgsel kan projicere de nødvendige relaterede felter direkte til en DTO",
+              "DTO'er cacher altid data i hukommelsen",
+              "DTO'er bruger kun stored procedures"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://planetscale.com/blog/what-is-n-1-query-problem-and-how-to-solve-it",
+            "optionExplanations": [
+              "DTO'er eliminerer ikke automatisk database queries.",
+              "En projection med de nødvendige felter kan undgå separate databaseforespørgsler for hvert element. DTO-typen ændrer ikke i sig selv antallet af forespørgsler.",
+              "DTO'er cacher ikke automatisk data.",
+              "DTO'er er ikke begrænset til stored procedures."
+            ],
+            "learnMoreTitle": "N+1 Query Problem",
+            "learnMoreDescription": "En forklaring af N+1 query problemet og hvordan man løser det."
+          },
+          {
+            "id": "c2a86942-f180-5aac-88ac-20c6b4e798b4",
+            "kind": "single",
+            "prompt": "Hvad er en AutoMapper og hvornår bruger man den med DTO'er?",
+            "options": [
+              "En database-mapper der automatisk opretter tabeller",
+              "Et bibliotek der automatisk mapper mellem entiteter og DTO'er for at undgå manuel mapping",
+              "En EF Core funktion der mapper relations",
+              "En JSON-serializer der mapper properties"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://docs.automapper.io/en/stable/Getting-started.html",
+            "optionExplanations": [
+              "AutoMapper er ikke en database-mapper.",
+              "AutoMapper automatiserer mapping mellem entiteter og DTO'er.",
+              "AutoMapper er ikke en del af EF Core.",
+              "AutoMapper er ikke en JSON-serializer."
+            ],
+            "learnMoreTitle": "Kom godt i gang med AutoMapper",
+            "learnMoreDescription": "AutoMappers egen guide til at mappe mellem objekter, for eksempel fra en entitet til en DTO."
+          },
+          {
+            "id": "a1a3230d-0e88-52f3-9c46-ac13cfb799de",
+            "kind": "single",
+            "prompt": "Hvad er fordelene ved at bruge separate DTO'er for input og output?",
+            "options": [
+              "Det gør API'et langsommere",
+              "Det giver bedre kontrol over data-validering og sikkerhed",
+              "Det eliminerer behovet for DataAnnotations",
+              "Det gør det nemmere at skrive SQL"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.c-sharpcorner.com/article/input-and-output-dto-pattern/",
+            "optionExplanations": [
+              "Separate DTO'er gør ikke API'et langsommere.",
+              "Separate DTO'er giver bedre kontrol over input-validering og output-struktur.",
+              "DataAnnotations kan stadig bruges i DTO'er.",
+              "DTO'er er ikke relateret til SQL-skrivning."
+            ],
+            "learnMoreTitle": "Input vs Output DTOs",
+            "learnMoreDescription": "En guide til at designe separate DTO'er for input og output."
+          },
+          {
+            "id": "687998b2-fb25-5130-a0d9-8c225e6f199e",
+            "kind": "single",
+            "prompt": "Hvordan håndterer du validering i DTO'er?",
+            "options": [
+              "Validering sker automatisk i alle DTO'er",
+              "Du kan bruge DataAnnotations som [Required], [EmailAddress] osv. på DTO properties",
+              "Validering skal altid skrives manuelt i controllers",
+              "DTO'er kan ikke valideres"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations",
+            "optionExplanations": [
+              "Validering sker ikke automatisk - du skal konfigurere det.",
+              "DataAnnotations kan bruges på DTO properties for automatisk validering.",
+              "Validering kan automatiseres med DataAnnotations.",
+              "DTO'er kan sagtens valideres med DataAnnotations."
+            ],
+            "learnMoreTitle": "Data Annotations in .NET",
+            "learnMoreDescription": "Microsofts guide til DataAnnotations og validering."
+          },
+          {
+            "id": "df3ff5b8-05f3-5652-b02f-18b73018df50",
+            "kind": "single",
+            "prompt": "Hvad er en vigtig best practice ved design af DTO'er?",
+            "options": [
+              "DTO'er skal altid være identiske med database-entiteter",
+              "DTO'er skal kun indeholde de data der faktisk er nødvendige for det specifikke use case",
+              "DTO'er skal altid være større end entiteter",
+              "DTO'er skal altid bruge samme navne som entiteter"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.c-sharpcorner.com/article/dto-design-patterns-and-best-practices/",
+            "optionExplanations": [
+              "DTO'er skal ikke altid være identiske med entiteter - det er pointen med DTO'er.",
+              "DTO'er skal kun indeholde nødvendig data for det specifikke use case.",
+              "DTO'er skal ikke altid være større - de kan være mindre for at optimere performance.",
+              "DTO'er kan have andre navne end entiteter for bedre læsbarhed."
+            ],
+            "learnMoreTitle": "DTO Design Best Practices",
+            "learnMoreDescription": "En guide til at designe effektive DTO'er."
+          }
+        ]
+      }
+    },
+    {
+      "key": "efcore-relations",
+      "draft": {
+        "title": "EF Core Relationer & Datamodellering",
+        "description": "Test din viden om 1:1, 1:n og n:m relationer i Entity Framework Core og hvordan man designer effektive databaser",
+        "topic": "Backend",
+        "estimatedMinutes": 13,
+        "questions": [
+          {
+            "id": "f41a4987-adaf-53cf-ba6e-a0c295196df3",
+            "kind": "single",
+            "prompt": "Hvad betyder 1:1 relation i datamodellering?",
+            "options": [
+              "En række på hver side kan forbindes til højst én række på den anden side",
+              "Én entitet har mange relaterede entiteter",
+              "Mange entiteter kan være relateret til mange andre",
+              "Én entitet kan være relateret til alle andre"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/modeling/relationships",
+            "optionExplanations": [
+              "I en 1:1-relation er forbindelsen unik. En relation kan også være valgfri, så en række på den ene side ikke behøver at have en relateret række.",
+              "Det beskriver en 1:n relation.",
+              "Det beskriver en n:m relation.",
+              "Det er ikke en standard relationstype i datamodellering."
+            ],
+            "learnMoreTitle": "EF Core Relationships",
+            "learnMoreDescription": "Microsofts guide til relationer i Entity Framework Core."
+          },
+          {
+            "id": "6b4bc04c-27d7-5a6c-b79b-ecd9196bdd1e",
+            "kind": "single",
+            "prompt": "Hvornår bruger man en 1:1 relation i stedet for at putte alt i én tabel?",
+            "options": [
+              "Når man vil gøre databasen større",
+              "Når man vil normalisere data og undgå at hente unødvendige felter",
+              "Når man vil gøre queries langsommere",
+              "Når man vil undgå at bruge foreign keys"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.guru99.com/database-normalization.html",
+            "optionExplanations": [
+              "1:1 relationer gør ikke databasen større - de hjælper med normalisering.",
+              "Normalisering giver hurtigere queries og mindre dataoverførsel.",
+              "Normalisering gør queries hurtigere, ikke langsommere.",
+              "1:1 relationer bruger stadig foreign keys."
+            ],
+            "learnMoreTitle": "Database Normalization",
+            "learnMoreDescription": "En forklaring af database normalisering og dens fordele."
+          },
+          {
+            "id": "12e4ee4f-6325-52c3-83e5-e573426fe625",
+            "kind": "single",
+            "prompt": "Hvad er forskellen på 1:n og n:m relationer?",
+            "options": [
+              "1:n har kun én foreign key, n:m har to",
+              "1:n betyder at én entitet har mange relaterede, n:m betyder at mange kan være relateret til mange andre",
+              "1:n er hurtigere end n:m",
+              "1:n bruger ikke join-tabeller, n:m gør"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://www.baeldung.com/jpa-many-to-many",
+            "optionExplanations": [
+              "Antallet af foreign keys er ikke den primære forskel.",
+              "1:n er hierarkisk (hotel har værelser), n:m er netværksbaseret (brugere booker værelser).",
+              "Hastighed afhænger af implementering, ikke relationstype.",
+              "Både 1:n og n:m kan bruge join-tabeller afhængigt af implementering."
+            ],
+            "learnMoreTitle": "One-to-Many vs Many-to-Many",
+            "learnMoreDescription": "En dybdegående forklaring af forskellen mellem relationstyper."
+          },
+          {
+            "id": "e8eb2d97-6ca1-59ff-90e1-ff197e0e0608",
+            "kind": "single",
+            "prompt": "Hvordan konfigurerer du en 1:n relation i EF Core?",
+            "options": [
+              "modelBuilder.Entity<Hotel>().HasOne(h => h.Rooms).WithMany(r => r.Hotel)",
+              "modelBuilder.Entity<Hotel>().HasMany(h => h.Rooms).WithOne(r => r.Hotel)",
+              "modelBuilder.Entity<Hotel>().HasMany(h => h.Rooms).WithMany(r => r.Hotel)",
+              "modelBuilder.Entity<Hotel>().HasOne(h => h.Rooms).WithOne(r => r.Hotel)"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/modeling/relationships#one-to-many",
+            "optionExplanations": [
+              "HasOne/WithMany er for 1:1 relationer.",
+              "HasMany/WithOne er korrekt for 1:n relationer.",
+              "HasMany/WithMany er for n:m relationer.",
+              "HasOne/WithOne er for 1:1 relationer."
+            ],
+            "learnMoreTitle": "EF Core One-to-Many",
+            "learnMoreDescription": "Microsofts guide til 1:n relationer i EF Core."
+          },
+          {
+            "id": "086d525e-8877-5f04-a6ac-c9436a0d4bb9",
+            "kind": "single",
+            "prompt": "Hvad er formålet med en join-tabel i n:m relationer?",
+            "options": [
+              "At gøre databasen hurtigere",
+              "At gemme forbindelser mellem rækker på de to sider og eventuelt data om hver forbindelse",
+              "At undgå at bruge foreign keys",
+              "At reducere antallet af tabeller"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/modeling/relationships#many-to-many",
+            "optionExplanations": [
+              "Join-tabeller gør ikke nødvendigvis databasen hurtigere.",
+              "Hver række i en join-tabel repræsenterer en forbindelse mellem to rækker. Der kan også gemmes oplysninger som startdato eller pris.",
+              "Join-tabeller bruger stadig foreign keys.",
+              "Join-tabeller øger antallet af tabeller, ikke reducerer det."
+            ],
+            "learnMoreTitle": "Many-to-Many with Join Table",
+            "learnMoreDescription": "En guide til n:m relationer med join-tabeller i EF Core."
+          },
+          {
+            "id": "18ad12cc-4a4d-57d6-be53-66d7893c58fe",
+            "kind": "single",
+            "prompt": "Hvad er fordelene ved at bruge navigation properties i EF Core?",
+            "options": [
+              "De gør alle queries hurtigere automatisk",
+              "De giver type-sikker adgang til relaterede data og understøtter lazy loading",
+              "De eliminerer behovet for foreign keys",
+              "De reducerer hukommelsesforbruget"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/modeling/relationships#navigation-properties",
+            "optionExplanations": [
+              "Navigation properties gør ikke alle queries hurtigere - det afhænger af hvordan de bruges.",
+              "Navigation properties giver type-sikkerhed og understøtter lazy/eager loading.",
+              "Foreign keys er stadig nødvendige i databasen.",
+              "Navigation properties kan faktisk øge hukommelsesforbruget ved lazy loading."
+            ],
+            "learnMoreTitle": "Navigation Properties in EF Core",
+            "learnMoreDescription": "Microsofts dokumentation om navigation properties."
+          },
+          {
+            "id": "d86b8d4e-cc1f-5186-a86b-a8686abb6133",
+            "kind": "single",
+            "prompt": "Hvad sker der hvis du ikke konfigurerer relationer eksplicit i OnModelCreating?",
+            "options": [
+              "EF Core kan ikke oprette databasen",
+              "EF Core bruger konventioner til at gætte relationerne baseret på property-navne",
+              "Alle relationer bliver n:m som standard",
+              "Du skal altid skrive SQL-manuelt"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/modeling/relationships#conventions",
+            "optionExplanations": [
+              "EF Core kan stadig oprette databasen med konventioner.",
+              "EF Core har intelligente konventioner der kan gætte de fleste relationer.",
+              "Standardrelationer afhænger af property-navne og typer, ikke altid n:m.",
+              "EF Core genererer stadig SQL automatisk."
+            ],
+            "learnMoreTitle": "EF Core Conventions",
+            "learnMoreDescription": "Microsofts guide til EF Core konventioner og hvordan de fungerer."
+          },
+          {
+            "id": "0520054f-f521-5f25-bc9e-7955a22e75b4",
+            "kind": "single",
+            "prompt": "Hvornår bør du bruge Include() i EF Core queries?",
+            "options": [
+              "Altid, for at sikre at al data hentes",
+              "Kun når du faktisk har brug for relaterede data for at undgå N+1 queries",
+              "Kun i development, ikke i produktion",
+              "Kun når du bruger stored procedures"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/ef/core/querying/related-data",
+            "optionExplanations": [
+              "At inkludere alt kan give unødvendig dataoverførsel og langsommere queries.",
+              "Include() bør kun bruges når du faktisk har brug for relaterede data.",
+              "Include() kan bruges både i development og produktion.",
+              "Include() er ikke relateret til stored procedures."
+            ],
+            "learnMoreTitle": "Loading Related Data",
+            "learnMoreDescription": "Microsofts guide til at indlæse relaterede data i EF Core."
+          }
+        ]
+      }
+    },
+    {
+      "key": "blazor-signalr",
+      "draft": {
+        "title": "Blazor & SignalR - Real-time Kommunikation",
+        "description": "Test din viden om Blazor WebAssembly, SignalR real-time kommunikation og WebSocket forbindelser",
+        "topic": "Frontend",
+        "estimatedMinutes": 14,
+        "questions": [
+          {
+            "id": "81706fad-35df-5eaa-bb59-fc4222eb6883",
+            "kind": "single",
+            "prompt": "Hvad er SignalR's hovedformål i en Blazor applikation?",
+            "options": [
+              "At håndtere database operationer",
+              "At skabe real-time kommunikation mellem klient og server",
+              "At validere bruger input",
+              "At håndtere authentication"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://learn.microsoft.com/en-us/aspnet/core/blazor/tutorials/signalr-blazor",
+            "optionExplanations": [
+              "SignalR er ikke til database operationer - det er til real-time kommunikation.",
+              "SignalR gør det muligt at sende beskeder i real-time mellem server og klienter.",
+              "Input validering håndteres af Blazor's valideringssystem, ikke SignalR.",
+              "Authentication håndteres af ASP.NET Core Identity eller lignende, ikke SignalR."
+            ],
+            "learnMoreTitle": "SignalR med Blazor",
+            "learnMoreDescription": "Microsofts dokumentation om hvordan man integrerer SignalR med Blazor WebAssembly."
+          },
+          {
+            "id": "0de184c4-8942-5ffc-8ae4-b5f8aa6a6ba8",
+            "kind": "single",
+            "prompt": "Hvilken transport metode bruger SignalR som standard?",
+            "options": [
+              "WebSockets",
+              "Server-Sent Events (SSE)",
+              "Long Polling",
+              "Den bedste tilgængelige transport automatisk"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "WebSockets er kun én af de mulige transport metoder.",
+              "SSE er kun én af de mulige transport metoder.",
+              "Long Polling er kun én af de mulige transport metoder.",
+              "SignalR vælger automatisk den bedste transport metode baseret på browser og server support."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "8f0d2998-f953-5ee5-b149-7ceb80a03cdd",
+            "kind": "single",
+            "prompt": "Hvilken basisklasse bruger man til en SignalR-hub uden et stærkt typet klientinterface?",
+            "options": [
+              "Ved at arve fra Hub<T>",
+              "Ved at arve fra Hub",
+              "Ved at implementere IHub interface",
+              "Ved at bruge [Hub] attribute"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Hub<T> er den generiske variant til hubs med et stærkt typet klientinterface.",
+              "Man arver fra Hub klassen og definerer metoder som kan kaldes fra klienten.",
+              "IHub er ikke et interface man implementerer direkte.",
+              "[Hub] attribute findes ikke i SignalR."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "8dc034dd-e750-541a-847a-d92b98ad3fe5",
+            "kind": "single",
+            "prompt": "Hvilket svar beskriver mest dækkende forskellen mellem Blazor Server og Blazor WebAssembly i forhold til SignalR?",
+            "options": [
+              "Blazor Server bruger ikke SignalR",
+              "Blazor WebAssembly kræver ekstra konfiguration for SignalR",
+              "Blazor Server bruger SignalR internt, WebAssembly kræver eksplicit forbindelse",
+              "Der er ingen forskel"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Blazor Server bruger faktisk SignalR internt til kommunikation.",
+              "Begge kræver konfiguration, men på forskellige måder.",
+              "Blazor Server bruger SignalR internt, mens WebAssembly kræver eksplicit forbindelse til SignalR Hub.",
+              "Der er betydelige forskelle i hvordan de håndterer SignalR."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "89bd65e9-141b-5a59-932b-bbcb412dfecd",
+            "kind": "single",
+            "prompt": "Hvilken metode bruger en SignalR-hub uden et stærkt typet klientinterface til at sende en navngivet besked til alle forbundne klienter?",
+            "options": [
+              "SendToAllAsync()",
+              "BroadcastAsync()",
+              "Clients.All.SendAsync()",
+              "SendToEveryoneAsync()"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "SendToAllAsync() er ikke en standard SignalR metode.",
+              "BroadcastAsync() er ikke en standard SignalR metode.",
+              "Clients.All.SendAsync() er den korrekte måde at sende til alle klienter.",
+              "SendToEveryoneAsync() er ikke en standard SignalR metode."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "52834f1f-d7dc-5463-9fc3-d9b62f71e4ea",
+            "kind": "single",
+            "prompt": "Hvordan håndterer man connection state i Blazor WebAssembly med SignalR?",
+            "options": [
+              "Ved at bruge HubConnectionState enum",
+              "Ved at tjekke HubConnection.State property",
+              "Ved at bruge ConnectionState interface",
+              "Ved at implementere IConnectionState"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "HubConnectionState er enumtypen. Det er egenskaben State på HubConnection, der giver den aktuelle værdi.",
+              "HubConnection.State property giver information om forbindelsens tilstand.",
+              "ConnectionState interface findes ikke i SignalR.",
+              "IConnectionState interface findes ikke i SignalR."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          }
+        ]
+      }
+    },
+    {
+      "key": "flutter-bloc",
+      "draft": {
+        "title": "Flutter - BLoC (grundlæggende)",
+        "description": "Test din viden om BLoC i Flutter: hvad det er, Cubit vs Bloc, events og states, BlocProvider, BlocBuilder og typisk brug",
+        "topic": "Flutter",
+        "estimatedMinutes": 10,
+        "questions": [
+          {
+            "id": "d8a3a196-2d3f-50a5-9eeb-931c8cd1fcdd",
+            "kind": "single",
+            "prompt": "Hvad står BLoC for?",
+            "options": [
+              "Binary Logic Controller",
+              "Business Logic Component",
+              "Bloc Layer of Code",
+              "Base Layout and Components"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://bloclibrary.dev/#/gettingstarted",
+            "optionExplanations": [
+              "BLoC er ikke en 'Binary Logic Controller'.",
+              "BLoC står for Business Logic Component – en måde at flytte forretningslogik væk fra UI.",
+              "Det er ikke 'Bloc Layer of Code'.",
+              "BLoC handler om state/logik, ikke layout-komponenter."
+            ],
+            "learnMoreTitle": "BLoC Library – Introduction",
+            "learnMoreDescription": "Officiel intro til BLoC-pattern og flutter_bloc."
+          },
+          {
+            "id": "0d36c90d-375f-5d56-88f6-6675fdac1eca",
+            "kind": "single",
+            "prompt": "Hvad er hovedidéen med BLoC-patternet?",
+            "options": [
+              "At skille forretningslogik fra UI og lade UI reagere på state-ændringer",
+              "At erstatte alle widgets med custom painters",
+              "At fjerne behovet for setState() ved at bruge global state overalt",
+              "At kun bruge BLoC til API-kald og intet andet"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "BLoC holder logik og state ét sted; UI lytter og bygger om når state ændres.",
+              "BLoC har intet at gøre med CustomPainter.",
+              "BLoC bruges ikke til at 'erstatte setState overalt' – det er et valgt arkitekturmønster.",
+              "BLoC kan bruges til meget mere end kun API-kald."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "349f26fe-98a8-53e1-995a-c290b33daa48",
+            "kind": "single",
+            "prompt": "Hvad er den vigtigste forskel mellem Cubit og Bloc?",
+            "options": [
+              "Cubit er hurtigere end Bloc",
+              "Cubit har ingen events – man kalder metoder direkte; Bloc modtager events og mapper dem til states",
+              "Bloc kan ikke bruge Streams",
+              "Cubit er kun til Flutter, Bloc til alle platforme"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://bloclibrary.dev/#/coreconcepts?id=cubit-vs-bloc",
+            "optionExplanations": [
+              "Forskellen handler ikke primært om hastighed.",
+              "Cubit: du kalder fx cubit.loadData(); Bloc: du add'er events, og Bloc mapper dem til nye states.",
+              "Bloc bruger netop Streams (events → states).",
+              "Både Cubit og Bloc bruges i Flutter (og andre Dart-apps)."
+            ],
+            "learnMoreTitle": "Cubit vs Bloc",
+            "learnMoreDescription": "Hvornår du vælger Cubit vs Bloc i praksis."
+          },
+          {
+            "id": "80aeca70-c275-55a1-824e-7ebecd2499b0",
+            "kind": "single",
+            "prompt": "Hvordan giver du en Bloc/Cubit til widget-træet, så børn kan bruge den?",
+            "options": [
+              "BlocBuilder",
+              "BlocProvider",
+              "BlocListener",
+              "BlocConsumer"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "BlocBuilder bruges til at bygge UI ud fra state – den giver ikke Bloc til træet.",
+              "BlocProvider er den der 'injecter' Bloc/Cubit, så den er tilgængelig for børn.",
+              "BlocListener lytter på state (fx til SnackBar) – den opretter ikke Bloc.",
+              "BlocConsumer kombinerer builder + listener, men provideren er stadig BlocProvider."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "f8e10104-a589-5c98-ae65-7145ba7dfbda",
+            "kind": "multiple",
+            "prompt": "Hvilke viste widgets kan genbygge UI ud fra nyere tilstande fra en Bloc eller Cubit? Antag, at StreamBuilder får tilstandene via dens stream.",
+            "options": [
+              "BlocProvider",
+              "BlocBuilder",
+              "StreamBuilder",
+              "FutureBuilder"
+            ],
+            "correctOptions": [
+              1,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "BlocProvider giver Bloc til træet; den bygger ikke UI ud fra state.",
+              "BlocBuilder genbygger widget når state ændres – standard med BLoC.",
+              "Du kan også bruge StreamBuilder direkte på Bloc's stream, men BlocBuilder er mere praktisk.",
+              "FutureBuilder er til enkeltstående Future, ikke løbende Stream/state."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "ee73c80f-a420-5e7f-86ab-1ddc91c94631",
+            "kind": "single",
+            "prompt": "Hvordan bør states i BLoC typisk være designet?",
+            "options": [
+              "Mutable, så Bloc kan ændre felter direkte",
+              "Immutabel – nye state-objekter ved hver ændring",
+              "Private, så kun Bloc kan læse dem",
+              "Altid nullable (kan være null)"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "Mutabel state gør det sværere at forudsige og teste.",
+              "Man emitter nye state-objekter (fx kopier med ændringer) i stedet for at mutere.",
+              "Det handler om immutabilitet, ikke synlighed.",
+              "State kan godt være non-nullable (fx en enum eller en data-klasse)."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "2bdfe31b-0061-5df3-93f7-833c6af12660",
+            "kind": "single",
+            "prompt": "Hvor 'bor' forretningslogikken typisk i en BLoC-arkitektur?",
+            "options": [
+              "I build()-metoden i widgets",
+              "I Bloc/Cubit-klassen",
+              "Kun i repositories",
+              "I BlocProvider-konstruktøren"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "build() bør være ren præsentation – ingen forretningslogik.",
+              "Bloc/Cubit indeholder logikken: hvordan events/reducer/metoder ændrer state.",
+              "Repositories henter/gemmer data; logikken (hvad der sker ved brugerhandlinger) ligger ofte i Bloc.",
+              "BlocProvider opretter kun instansen; logikken er i Bloc/Cubit selv."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "3c3f3099-fadd-5b00-81e2-d1aa9ae03318",
+            "kind": "single",
+            "prompt": "I en Bloc (ikke Cubit): hvad er forholdet mellem Events og States?",
+            "options": [
+              "Events er input fra UI; States er output som UI lytter på",
+              "Events og States er det samme",
+              "States sendes til Bloc, Events returneres",
+              "Kun States bruges; Events findes ikke i Bloc"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "UI add'er events (fx LoadPressed); Bloc konverterer dem til nye states som UI bygger efter.",
+              "De er forskellige: events = input, states = output.",
+              "Det er omvendt: events ind, states ud.",
+              "Bloc bruger netop events som input."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "d8e98192-5747-5e3c-8499-25daf205f5f1",
+            "kind": "single",
+            "prompt": "Hvilket pakkenavn er det officielle BLoC-pakke til Flutter?",
+            "options": [
+              "bloc",
+              "flutter_bloc",
+              "dart_bloc",
+              "state_bloc"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": null,
+            "optionExplanations": [
+              "'bloc' er den kerne-Dart pakke (Stream + Cubit/Bloc); Flutter-widgets kommer i flutter_bloc.",
+              "flutter_bloc indeholder BlocProvider, BlocBuilder, BlocListener m.m. til Flutter.",
+              "Der findes ikke et officielt pakkenavn 'dart_bloc' på den måde.",
+              "'state_bloc' er ikke det officielle navn."
+            ],
+            "learnMoreTitle": null,
+            "learnMoreDescription": null
+          },
+          {
+            "id": "91fae709-8c2f-5592-be0c-1281e5e14597",
+            "kind": "single",
+            "prompt": "Hvornår vælger du ofte BlocListener i stedet for (eller sammen med) BlocBuilder?",
+            "options": [
+              "Når du ikke må bruge BlocProvider",
+              "Når du skal reagere på state (fx vise SnackBar eller navigere) uden nødvendigvis at genbygge UI",
+              "Når du vil skjule Bloc fra børn",
+              "Kun når du bruger Cubit og ikke Bloc"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "",
+            "learnMoreUrl": "https://bloclibrary.dev/#/flutterblocwidgets?id=bloclistener",
+            "optionExplanations": [
+              "BlocListener har ikke at gøre med at undgå BlocProvider.",
+              "BlocListener lytter og kan vise dialog/SnackBar/navigation uden at genbygge hele widget-træet.",
+              "Det handler om side effects (reaktioner), ikke om at skjule Bloc.",
+              "BlocListener virker med både Bloc og Cubit."
+            ],
+            "learnMoreTitle": "BlocListener",
+            "learnMoreDescription": "Dokumentation af BlocListener og hvornår den bruges."
+          }
+        ]
+      }
+    }
+  ]
+}
