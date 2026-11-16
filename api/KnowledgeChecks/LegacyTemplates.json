@@ -3,6 +3,12 @@
   "drafts": [
     {
       "key": "gf2-dag1-grundlaeggende-csharp",
+      "legacyDiscovery": {
+        "categories": [
+          "GF2"
+        ],
+        "difficulty": "Begynder"
+      },
       "draft": {
         "title": "GF2 Kapitel 1 - Dit første program & Variabler",
         "description": "Test din viden om C# grundlæggende koncepter: namespace, class, static, void, Main metode og variabeltyper",
@@ -279,6 +285,12 @@
     },
     {
       "key": "gf2-dag2-expressions-operators",
+      "legacyDiscovery": {
+        "categories": [
+          "GF2"
+        ],
+        "difficulty": "Begynder"
+      },
       "draft": {
         "title": "GF2 Kapitel 2 - Expressions og Operatører",
         "description": "Test din viden om C# expressions, aritmetiske operatorer, sammenligningsoperatorer og logiske operatorer",
@@ -455,6 +467,12 @@
     },
     {
       "key": "gf2-dag4-klasser-objekter",
+      "legacyDiscovery": {
+        "categories": [
+          "GF2"
+        ],
+        "difficulty": "Begynder"
+      },
       "draft": {
         "title": "GF2 Kapitel 4 - Klasser og Objekter",
         "description": "Test din viden om objektorienteret programmering i C#: klasser, objekter, properties, metoder og instantiering",
@@ -674,6 +692,12 @@
     },
     {
       "key": "gf2-dag6-arrays-lists-dictionary",
+      "legacyDiscovery": {
+        "categories": [
+          "GF2"
+        ],
+        "difficulty": "Begynder"
+      },
       "draft": {
         "title": "GF2 Kapitel 6 - Arrays, Lists & Dictionary",
         "description": "Test din viden om arrays, lister og dictionaries i C# - hvordan man opretter, tilgår og manipulerer datastrukturer",
@@ -959,6 +983,12 @@
     },
     {
       "key": "dhcp-gf2",
+      "legacyDiscovery": {
+        "categories": [
+          "GF2"
+        ],
+        "difficulty": "Begynder"
+      },
       "draft": {
         "title": "GF2 - DHCP (helt grundlæggende)",
         "description": "Test din viden om DHCP: hvad det er, DORA-forløbet, leases, scope/pool, reservationer og typiske fejlscenarier",
@@ -1233,6 +1263,13 @@
     },
     {
       "key": "api-calls",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend",
+          "Frontend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "API-kald & HTTP",
         "description": "Test din viden om API-kald, HTTP-metoder, statuskoder og sikker kommunikation med HTTPS",
@@ -1504,6 +1541,12 @@
     },
     {
       "key": "dtos-data-transfer",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "DTO'er & Data Transfer Objekter",
         "description": "Test din viden om DTO'er, deres formål og hvordan de hjælper med at optimere API-performance og datastruktur",
@@ -1723,6 +1766,12 @@
     },
     {
       "key": "efcore-relations",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "EF Core Relationer & Datamodellering",
         "description": "Test din viden om 1:1, 1:n og n:m relationer i Entity Framework Core og hvordan man designer effektive databaser",
@@ -1942,6 +1991,13 @@
     },
     {
       "key": "blazor-signalr",
+      "legacyDiscovery": {
+        "categories": [
+          "Frontend",
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "Blazor & SignalR - Real-time Kommunikation",
         "description": "Test din viden om Blazor WebAssembly, SignalR real-time kommunikation og WebSocket forbindelser",
@@ -2109,6 +2165,12 @@
     },
     {
       "key": "flutter-bloc",
+      "legacyDiscovery": {
+        "categories": [
+          "Flutter"
+        ],
+        "difficulty": "Begynder"
+      },
       "draft": {
         "title": "Flutter - BLoC (grundlæggende)",
         "description": "Test din viden om BLoC i Flutter: hvad det er, Cubit vs Bloc, events og states, BlocProvider, BlocBuilder og typisk brug",
@@ -2381,6 +2443,12 @@
     },
     {
       "key": "bcrypt-security",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "BCrypt & Password Sikkerhed",
         "description": "Test din viden om BCrypt hashing, password sikkerhed, salt og hvordan man implementerer sikker brugerautentificering i C#",
@@ -2600,6 +2668,12 @@
     },
     {
       "key": "bogus-faker",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "Bogus (Faker) - Test Data Generering",
         "description": "Test din viden om Bogus biblioteket, hvordan man genererer realistisk test data og best practices for data seeding",
@@ -2871,6 +2945,12 @@
     },
     {
       "key": "caching-redis",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Avanceret"
+      },
       "draft": {
         "title": "Caching med Redis - Performance Optimering",
         "description": "Test din viden om caching strategier, Redis implementering og performance optimering i .NET",
@@ -3142,6 +3222,12 @@
     },
     {
       "key": "cors-xss-security",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "CORS & XSS Sikkerhed",
         "description": "Test din viden om Cross-Origin Resource Sharing, Cross-Site Scripting og hvordan man beskytter webapplikationer mod sikkerhedsangreb",
@@ -3283,6 +3369,12 @@
     },
     {
       "key": "data-serialization",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "Data Serialisering & JSON",
         "description": "Test din viden om JSON håndtering, data mapping og serialisering i C# med System.Text.Json",
@@ -3424,6 +3516,12 @@
     },
     {
       "key": "efcore-linq-querying",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Avanceret"
+      },
       "draft": {
         "title": "EF Core & LINQ Querying - Avancerede Koncepter",
         "description": "Test din viden om EF Core querying, Eager vs Lazy Loading, filtering, sorting og RESTful conventions",
@@ -3695,6 +3793,12 @@
     },
     {
       "key": "error-handling",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "Error Handling i C#",
         "description": "Test din viden om fejlhåndtering i C# og API-kommunikation",
@@ -3836,6 +3940,12 @@
     },
     {
       "key": "gf2-dag3-control-flow",
+      "legacyDiscovery": {
+        "categories": [
+          "GF2"
+        ],
+        "difficulty": "Begynder"
+      },
       "draft": {
         "title": "GF2 Kapitel 3 - Control Flow",
         "description": "Test din viden om control flow i C#: if/else statements, switch statements, ternary operator, brugerinput og scope",
@@ -4107,6 +4217,12 @@
     },
     {
       "key": "gf2-dag7-loops-iterationer",
+      "legacyDiscovery": {
+        "categories": [
+          "GF2"
+        ],
+        "difficulty": "Begynder"
+      },
       "draft": {
         "title": "GF2 Kapitel 7 - Loops og Iterationer",
         "description": "Test din viden om for, while, do-while og foreach loops i C# samt iteration over arrays, lister og dictionaries",
@@ -4378,6 +4494,12 @@
     },
     {
       "key": "gf2-kapitel-8-metoder-funktioner",
+      "legacyDiscovery": {
+        "categories": [
+          "GF2"
+        ],
+        "difficulty": "Begynder"
+      },
       "draft": {
         "title": "GF2 Kapitel 8 - Metoder & Funktioner",
         "description": "Test din viden om metoder, parametre, returværdier, overloading, rekursion og valgfrie parametre i C#",
@@ -4649,6 +4771,12 @@
     },
     {
       "key": "jwt-security",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "JWT & Token Sikkerhed",
         "description": "Test din viden om JWT tokens, refresh tokens og sikkerhedsaspekter",
@@ -4766,6 +4894,12 @@
     },
     {
       "key": "oauth",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "OAuth 2.0 (grundlæggende)",
         "description": "Test din viden om OAuth 2.0: roller, authorization code flow, tokens, scopes, PKCE og sikkerhed",
@@ -5038,6 +5172,13 @@
     },
     {
       "key": "oop-advanced",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend",
+          "Frontend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "Udvidet OOP & Trådprogrammering i C#",
         "description": "Test din viden om delegates, asynkron programmering, thread safety og OOP-konceptet i C#",
@@ -5257,6 +5398,12 @@
     },
     {
       "key": "rate-limiting-security",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "Rate Limiting & Sikkerhed",
         "description": "Test din viden om rate limiting, brute force beskyttelse og login sikkerhed",
@@ -5398,6 +5545,12 @@
     },
     {
       "key": "solid-principles",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "SOLID Principper",
         "description": "Test din viden om SOLID-principperne i objektorienteret programmering og hvordan de hjælper med at skrive ren, vedligeholdelsesvenlig kode",
@@ -5617,6 +5770,12 @@
     },
     {
       "key": "xml-comments",
+      "legacyDiscovery": {
+        "categories": [
+          "Backend"
+        ],
+        "difficulty": "Mellem"
+      },
       "draft": {
         "title": "XML-kommentarer & API-dokumentation",
         "description": "Test din viden om XML-kommentarer i C#, hvordan man dokumenterer API'er og aktiverer Swagger-dokumentation",

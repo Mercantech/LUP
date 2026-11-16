@@ -9,7 +9,7 @@
 <PageTitle>Videnstjek · LUP</PageTitle>
 <header class="page-title">
     <div>
-        <nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/videnstjek">Alle videnstjek</a></nav>
+        <nav class="breadcrumbs" aria-label="Brødkrummer"><a href="@CatalogUrl">Alle videnstjek</a></nav>
         <h1>Videnstjek</h1>
     </div>
 </header>
@@ -35,6 +35,9 @@ else if (_mountedScope != Scope)
 @code {
     [Parameter] public Guid DistributionId { get; set; }
     [SupplyParameterFromQuery(Name = "forsog")] public Guid? AttemptId { get; set; }
+    [SupplyParameterFromQuery(Name = "q")] public string? Search { get; set; }
+    [SupplyParameterFromQuery(Name = "emne")] public string? Topic { get; set; }
+    [SupplyParameterFromQuery(Name = "niveau")] public string? Difficulty { get; set; }
 
     private DotNetObjectReference<Runner>? _callback;
     private IJSObjectReference? _module;
@@ -45,6 +48,17 @@ else if (_mountedScope != Scope)
     private MountScope? Scope => Auth.IsAuthenticated && Auth.Subject is { } account && !ViewAs.IsActive
         ? new(DistributionId, AttemptId, account, Http.BaseAddress?.AbsoluteUri ?? "/api/")
         : null;
+
+    private string CatalogUrl
+    {
+        get
+        {
+            (string Key, string? Value)[] filters = [("q", Search), ("emne", Topic), ("niveau", Difficulty)];
+            var query = string.Join("&", filters.Where(filter => !string.IsNullOrWhiteSpace(filter.Value))
+                .Select(filter => $"{filter.Key}={Uri.EscapeDataString(filter.Value!)}"));
+            return query.Length > 0 ? $"/videnstjek?vis=oev&{query}" : "/videnstjek";
+        }
+    }
 
     protected override void OnInitialized()
     {

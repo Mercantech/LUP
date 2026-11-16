@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { MouseEvent, ReactNode } from 'react';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 
 type Question = { id: string; prompt: string; kind: 'single' | 'multiple' | 'boolean' | 'short'; options: string[] };
 type Answer = { questionId: string; selectedOptions: number[]; text: string | null };
@@ -32,6 +32,7 @@ type Publication = {
   topic: string;
   estimatedMinutes: number | null;
   questionCount: number;
+  holdId: string | null;
   holdName: string | null;
   maxAttempts: number | null;
   isActive: boolean;
@@ -174,6 +175,12 @@ export function KnowledgeCheckRunner(props: KnowledgeCheckRunnerProps) {
     try {
       const next = await api.start(requestId.current);
       requestId.current = null;
+      if (practice && attemptId) {
+        const target = new URL(window.location.href);
+        target.searchParams.set('forsog', next.id);
+        window.location.assign(target.href);
+        return;
+      }
       setAttempt(next);
       setPublication(current => current && next.status === 'started' && current.activeAttemptId !== next.id
         ? { ...current, activeAttemptId: next.id, latestAttemptId: next.id, attemptsUsed: current.attemptsUsed + 1 }
@@ -193,8 +200,11 @@ export function KnowledgeCheckRunner(props: KnowledgeCheckRunnerProps) {
   };
   const mayStart = publication?.isActive
     && (publication.maxAttempts == null || publication.attemptsUsed < publication.maxAttempts);
+  const practice = !inline && publication?.holdId === null;
+  const anotherAttemptIsActive = practice && publication?.activeAttemptId && publication.activeAttemptId !== attempt?.id;
+  const retryLabel = anotherAttemptIsActive ? 'Fortsæt igangværende forsøg' : 'Nyt forsøg';
 
-  return <section className={`lup-knowledge-player${inline ? ' is-inline' : ''}`} aria-labelledby={headingId}>
+  return <section className={`lup-knowledge-player${inline ? ' is-inline' : ''}${practice ? ' is-practice' : ''}`} aria-labelledby={headingId}>
     <header className="lup-knowledge-header">
       <div>
         <h2 id={headingId}>{publication?.title ?? 'Videnstjek'}</h2>
@@ -222,13 +232,13 @@ export function KnowledgeCheckRunner(props: KnowledgeCheckRunnerProps) {
     </>}
     {attempt?.status === 'started' &&
       <AttemptForm key={attempt.id} initialAttempt={attempt} api={api} onAttempt={onAttemptChanged}
-        openUrl={inline ? openUrl : undefined} />}
+        openUrl={inline ? openUrl : undefined} practice={practice} />}
     {attempt && attempt.status !== 'started' &&
-      <AttemptReview attempt={attempt} actions={
+      <AttemptReview key={attempt.id} attempt={attempt} practice={practice} actions={
         <>
-          {attemptId ? <a className="secondary" href={openUrl}>Tilbage til videnstjekket</a>
+          {attemptId && !practice ? <a className="secondary" href={openUrl}>Tilbage til videnstjekket</a>
             : mayStart && <button type="button" className="action" onClick={start} disabled={starting}>
-              {starting ? 'Starter…' : 'Nyt forsøg'}
+              {starting ? 'Starter…' : retryLabel}
             </button>}
           {!attempt.results && <button type="button" className="secondary"
             onClick={() => setReload(current => current + 1)}>Opdatér resultat</button>}
@@ -257,8 +267,8 @@ function DraftStatus({ busy, error, dirty, retry }: { busy: boolean; error: stri
   return <p className="lup-knowledge-meta" role="status">{busy || dirty ? 'Gemmer…' : 'Gemt'}</p>;
 }
 
-function AttemptForm({ initialAttempt, api, onAttempt, openUrl }: {
-  initialAttempt: Attempt; api: CheckApi; onAttempt: (attempt: Attempt) => void; openUrl?: string;
+function AttemptForm({ initialAttempt, api, onAttempt, openUrl, practice }: {
+  initialAttempt: Attempt; api: CheckApi; onAttempt: (attempt: Attempt) => void; openUrl?: string; practice: boolean;
 }) {
   const [draft, setDraft] = useState(() => draftOf(initialAttempt));
   const [saving, setSaving] = useState(false);
@@ -272,7 +282,7 @@ function AttemptForm({ initialAttempt, api, onAttempt, openUrl }: {
   const timer = useRef<number | null>(null);
   const writer = useRef<Promise<Attempt | null> | null>(null);
   const live = useRef(true);
-  const focusNext = useRef(false);
+  const focusNext = useRef(practice);
   const prompt = useRef<HTMLDivElement>(null);
   const fieldId = useId();
   const question = questionOf(initialAttempt, draft.questionIndex);
@@ -371,6 +381,10 @@ function AttemptForm({ initialAttempt, api, onAttempt, openUrl }: {
   }
 
   function move(index: number) {
+    if (index === currentDraft.current.questionIndex && !confirming) {
+      prompt.current?.focus();
+      return;
+    }
     focusNext.current = true;
     setConfirming(false);
     update({ ...currentDraft.current, questionIndex: index });
@@ -411,74 +425,166 @@ function AttemptForm({ initialAttempt, api, onAttempt, openUrl }: {
 
   if (!question) return <p>Der er ingen spørgsmål i dette videnstjek.</p>;
   const count = initialAttempt.questions.length;
-  const missing = initialAttempt.questions.findIndex(item => !draft.answers.some(answer => answer.questionId === item.id && answered(answer)));
-  const answeredCount = draft.answers.filter(answered).length;
+  const answeredIds = new Set(draft.answers.filter(answered).map(answer => answer.questionId));
+  const missing = initialAttempt.questions.findIndex(item => !answeredIds.has(item.id));
+  const answeredCount = answeredIds.size;
   const selected = draft.answers.find(answer => answer.questionId === question.id);
   const options = question.kind === 'boolean' && question.options.length === 0 ? ['Sandt', 'Falsk'] : question.options;
   const disabled = submitting;
+  const hasNext = draft.questionIndex + 1 < count;
+
+  function changeOption(index: number, checked: boolean) {
+    if (!question) return;
+    const previous = currentDraft.current.answers.find(answer => answer.questionId === question.id)?.selectedOptions ?? [];
+    const selectedOptions = question.kind !== 'multiple' ? [index]
+      : checked ? [...previous, index] : previous.filter(value => value !== index);
+    choose({ questionId: question.id, selectedOptions, text: null });
+  }
+
+  function next() {
+    if (hasNext) move(draft.questionIndex + 1);
+    else {
+      focusNext.current = true;
+      setConfirming(true);
+      void flush();
+    }
+  }
+
+  function keyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (!question || disabled || confirming || event.defaultPrevented || event.repeat || event.nativeEvent.isComposing
+        || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (!(event.target instanceof HTMLElement) || event.target.closest(
+      'button, a, textarea, select, [contenteditable], input:not([type=radio]):not([type=checkbox])',
+    )) return;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      next();
+      return;
+    }
+    const letter = event.key.toLowerCase();
+    if (question.kind === 'short' || !/^[a-z]$/.test(letter)) return;
+    const index = letter.charCodeAt(0) - 97;
+    if (index >= options.length) return;
+    event.preventDefault();
+    const picked = currentDraft.current.answers.find(answer => answer.questionId === question.id)?.selectedOptions;
+    changeOption(index, !picked?.includes(index));
+  }
 
   return <>
     <div className="lup-knowledge-topline">
-      <label htmlFor={fieldId + '-progress'}>Spørgsmål {draft.questionIndex + 1} af {count}</label>
+      {practice ? <>
+        <span>Spørgsmål {draft.questionIndex + 1} af {count}</span>
+        <label htmlFor={fieldId + '-progress'}>{answeredCount} af {count} besvaret</label>
+      </> : <label htmlFor={fieldId + '-progress'}>Spørgsmål {draft.questionIndex + 1} af {count}</label>}
       {openUrl && <a className="secondary" href={openUrl} onClick={open}>Åbn på egen side</a>}
     </div>
-    <progress className="lup-knowledge-progress" id={fieldId + '-progress'} max={count} value={draft.questionIndex + 1} />
-    <div className="lup-knowledge-prompt" tabIndex={-1} ref={prompt}>
-      {confirming ? <h3>Aflever videnstjek</h3> : <QuestionText text={question.prompt} />}
-    </div>
-    {confirming ? <>
-      <p>{answeredCount} af {count} spørgsmål besvaret.</p>
-      {missing !== -1 && <p>Besvar alle spørgsmål, før du afleverer.</p>}
-      <div className="lup-knowledge-actions">
-        <button type="button" className="secondary" onClick={() => move(missing === -1 ? draft.questionIndex : missing)} disabled={disabled}>
-          {missing === -1 ? 'Gennemgå svar' : 'Gå til første ubesvarede'}
-        </button>
-        <button type="button" className="action" onClick={submit} disabled={disabled || missing !== -1}>
-          {submitting ? 'Afleverer…' : 'Aflever'}
-        </button>
+    <progress className="lup-knowledge-progress" id={fieldId + '-progress'} max={count}
+      value={practice ? answeredCount : draft.questionIndex + 1} />
+    <div className={practice ? 'lup-knowledge-workspace' : undefined}>
+      <div className={practice ? 'lup-knowledge-question' : undefined} onKeyDown={practice ? keyDown : undefined}>
+        <div className="lup-knowledge-prompt" tabIndex={-1} ref={prompt}>
+          {confirming ? <h3>Aflever videnstjek</h3> : <QuestionText key={question.id} text={question.prompt} copyCode={practice} />}
+        </div>
+        {confirming ? <>
+          <p>{answeredCount} af {count} spørgsmål besvaret.</p>
+          {missing !== -1 && <p>Besvar alle spørgsmål, før du afleverer.</p>}
+          <div className="lup-knowledge-actions">
+            <button type="button" className="secondary" onClick={() => move(missing === -1 ? draft.questionIndex : missing)} disabled={disabled}>
+              {missing === -1 ? 'Gennemgå svar' : 'Gå til første ubesvarede'}
+            </button>
+            <button type="button" className="action" onClick={submit} disabled={disabled || missing !== -1}>
+              {submitting ? 'Afleverer…' : 'Aflever'}
+            </button>
+          </div>
+        </> : <>
+          {question.kind === 'short'
+            ? <label className="lup-knowledge-short">Dit svar
+              <textarea rows={3} maxLength={1000} value={selected?.text ?? ''} disabled={disabled}
+                onChange={event => choose({ questionId: question.id, selectedOptions: [], text: event.target.value }, 350)}
+                onBlur={() => { if (currentDraft.current !== savedDraft.current && !saveError) void flush(); }} />
+            </label>
+            : <fieldset className="lup-knowledge-options" disabled={disabled}>
+              <legend>{question.kind === 'multiple' ? 'Vælg alle korrekte svar' : 'Vælg ét svar'}</legend>
+              {options.map((option, index) => {
+                const checked = selected?.selectedOptions.includes(index) ?? false;
+                const letter = String.fromCharCode(65 + index);
+                return <label className={checked ? 'is-selected' : ''} key={index}>
+                  <input name={fieldId + '-' + question.id} type={question.kind === 'multiple' ? 'checkbox' : 'radio'} checked={checked}
+                    aria-keyshortcuts={practice ? letter : undefined} onChange={event => changeOption(index, event.target.checked)} />
+                  {practice && <kbd aria-hidden="true">{letter}</kbd>}
+                  <QuestionText text={option} />
+                </label>;
+              })}
+            </fieldset>}
+          <div className="lup-knowledge-actions">
+            <button type="button" className="secondary" disabled={disabled || draft.questionIndex === 0}
+              onClick={() => move(draft.questionIndex - 1)}>Forrige</button>
+            <button type="button" className="action" disabled={disabled} onClick={next} aria-keyshortcuts={practice ? 'Enter' : undefined}>
+              {hasNext ? 'Næste' : 'Gå til aflevering'}
+            </button>
+          </div>
+          {practice && options.length > 1 && question.kind !== 'short' && <p className="lup-knowledge-key-hint">
+            <kbd>A</kbd>–<kbd>{String.fromCharCode(64 + options.length)}</kbd> vælger svar. <kbd>Enter</kbd> går videre.
+          </p>}
+        </>}
+        {submitError && <p className="lup-knowledge-error" role="alert">{submitError}</p>}
+        <DraftStatus busy={saving || submitting} error={saveError} dirty={draft !== savedDraft.current} retry={() => { void flush(); }} />
       </div>
-    </> : <>
-      {question.kind === 'short'
-        ? <label className="lup-knowledge-short">Dit svar
-          <textarea rows={3} maxLength={1000} value={selected?.text ?? ''} disabled={disabled}
-            onChange={event => choose({ questionId: question.id, selectedOptions: [], text: event.target.value }, 350)}
-            onBlur={() => { if (currentDraft.current !== savedDraft.current && !saveError) void flush(); }} />
-        </label>
-        : <fieldset className="lup-knowledge-options" disabled={disabled}>
-          <legend>{question.kind === 'multiple' ? 'Vælg alle korrekte svar' : 'Vælg ét svar'}</legend>
-          {options.map((option, index) => {
-            const checked = selected?.selectedOptions.includes(index) ?? false;
-            return <label className={checked ? 'is-selected' : ''} key={index}>
-              <input name={fieldId + '-' + question.id} type={question.kind === 'multiple' ? 'checkbox' : 'radio'} checked={checked}
-                onChange={event => {
-                  const previous = currentDraft.current.answers.find(answer => answer.questionId === question.id)?.selectedOptions ?? [];
-                  const selectedOptions = question.kind !== 'multiple' ? [index]
-                    : event.target.checked ? [...previous, index] : previous.filter(value => value !== index);
-                  choose({ questionId: question.id, selectedOptions, text: null });
-                }} />
-              <QuestionText text={option} />
-            </label>;
+      {practice && <nav className="lup-knowledge-question-nav" aria-label="Spørgsmålsoversigt">
+        <h3>Spørgsmålsoversigt</h3>
+        <ol>
+          {initialAttempt.questions.map((item, index) => {
+            const complete = answeredIds.has(item.id);
+            const here = !confirming && index === draft.questionIndex;
+            return <li key={item.id}>
+              <button type="button" aria-current={here ? 'step' : undefined}
+                aria-label={`Spørgsmål ${index + 1}, ${complete ? 'besvaret' : 'ubesvaret'}`}
+                className={complete ? 'is-answered' : undefined} disabled={disabled} onClick={() => move(index)}>
+                {index + 1}{complete && <span aria-hidden="true">✓</span>}
+              </button>
+            </li>;
           })}
-        </fieldset>}
-      <div className="lup-knowledge-actions">
-        <button type="button" className="secondary" disabled={draft.questionIndex === 0}
-          onClick={() => move(draft.questionIndex - 1)}>Forrige</button>
-        <button type="button" className="action" onClick={() => {
-          if (draft.questionIndex + 1 < count) move(draft.questionIndex + 1);
-          else { focusNext.current = true; setConfirming(true); void flush(); }
-        }}>{draft.questionIndex + 1 < count ? 'Næste' : 'Gå til aflevering'}</button>
-      </div>
-    </>}
-    {submitError && <p className="lup-knowledge-error" role="alert">{submitError}</p>}
-    <DraftStatus busy={saving || submitting} error={saveError} dirty={draft !== savedDraft.current} retry={() => { void flush(); }} />
+        </ol>
+      </nav>}
+    </div>
   </>;
 }
 
-function QuestionText({ text }: { text: string }) {
-  const parts = text.split(/\x60{3}[^\r\n\x60]*\r?\n([\s\S]*?)\x60{3}/g);
+function CopyableCode({ code }: { code: string }) {
+  const [status, setStatus] = useState('');
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(code);
+      setStatus('Koden er kopieret.');
+    } catch {
+      setStatus('Koden kunne ikke kopieres. Markér den for at kopiere manuelt.');
+    }
+  }
+
+  return <span className="lup-knowledge-code-block">
+    <span className="lup-knowledge-code"><code>{code}</code></span>
+    <button className="secondary" type="button" onClick={copy}>Kopiér kode</button>
+    <span role="status" className="lup-knowledge-copy-status">{status}</span>
+  </span>;
+}
+
+function QuestionText({ text, copyCode = false }: { text: string; copyCode?: boolean }) {
+  let parts = text.split(/\x60{3}[^\r\n\x60]*\r?\n([\s\S]*?)\x60{3}/g);
+  if (copyCode && parts.length === 1) {
+    // The legacy C# prompts put complete examples directly after the question.
+    const example = /^([\s\S]+?[?:])\s+([\s\S]+[;}])(\?)?$/.exec(text);
+    const startsWithCode = /^(?:(?:for|foreach|while|if|switch)\s*\(|(?:public\s+)?(?:bool|int|string|var|double|[A-Z]\w*)\s+[A-Za-z_]\w*\s*[=(]|Console\.Write(?:Line)?\s*\()/;
+    if (example && startsWithCode.test(example[2])) {
+      const [, intro, code, suffix] = example;
+      if (!suffix) parts = [intro, code];
+      else if (intro.endsWith(':')) parts = [intro.slice(0, -1) + suffix, code];
+    }
+  }
   return <span className="lup-knowledge-text">
     {parts.map((part, index) => index % 2
-      ? <span className="lup-knowledge-code" key={index}><code>{part.trimEnd()}</code></span>
+      ? copyCode ? <CopyableCode key={index} code={part.trimEnd()} />
+        : <span className="lup-knowledge-code" key={index}><code>{part.trimEnd()}</code></span>
       : <Fragment key={index}>{part.split(/\x60([^\x60\r\n]+)\x60/g).map((word, i) =>
         i % 2 ? <code key={i}>{word}</code> : <Fragment key={i}>{word}</Fragment>)}</Fragment>)}
   </span>;
@@ -494,22 +600,30 @@ function learnMore(value: string | null | undefined): URL | null {
   }
 }
 
-function AttemptReview({ attempt, actions }: { attempt: Attempt; actions: ReactNode }) {
+function AttemptReview({ attempt, actions, practice }: { attempt: Attempt; actions: ReactNode; practice: boolean }) {
+  const [onlyWrong, setOnlyWrong] = useState(false);
+  const wrongCount = attempt.results?.filter(result => !result.correct).length ?? 0;
+
   return <div className="lup-knowledge-result">
     <h3>{attempt.score == null ? 'Afleveret' : `${attempt.score} af ${attempt.questions.length} point`}</h3>
     {attempt.status === 'submitted' && <p>Venter på underviserens vurdering.</p>}
     {attempt.status === 'graded' && !attempt.results && <p>Facit og forklaringer vises, når underviseren frigiver dem.</p>}
-    {attempt.results && <ol className="lup-knowledge-review">
-      {attempt.questions.map(question => {
+    {practice && attempt.results && <div className="lup-knowledge-review-filters" role="group" aria-label="Vis spørgsmål i gennemgangen">
+      <button className="secondary" type="button" aria-pressed={!onlyWrong} onClick={() => setOnlyWrong(false)}>Alle spørgsmål</button>
+      <button className="secondary" type="button" aria-pressed={onlyWrong} onClick={() => setOnlyWrong(true)}>Kun forkerte ({wrongCount})</button>
+    </div>}
+    {onlyWrong && wrongCount === 0 && <p role="status">Du havde ingen forkerte svar.</p>}
+    {attempt.results && (!onlyWrong || wrongCount > 0) && <ol className="lup-knowledge-review">
+      {attempt.questions.map((question, index) => {
         const review = attempt.results?.find(item => item.questionId === question.id);
-        if (!review) return null;
+        if (!review || onlyWrong && review.correct) return null;
         const answer = attempt.answers.find(item => item.questionId === question.id);
         const options = question.kind === 'boolean' && question.options.length === 0 ? ['Sandt', 'Falsk'] : question.options;
         const selection = answer?.text || answer?.selectedOptions.map(index => options[index]).filter(Boolean).join(' · ');
         const expected = review.acceptedAnswers?.length ? review.acceptedAnswers
           : review.correctOptions?.map(index => options[index]).filter(Boolean);
         const link = learnMore(review.learnMoreUrl);
-        return <li key={question.id}>
+        return <li key={question.id} value={index + 1}>
           <p className={review.correct ? 'lup-knowledge-correct' : 'lup-knowledge-incorrect'}>{review.correct ? 'Korrekt' : 'Forkert'}</p>
           <div className="lup-knowledge-prompt"><QuestionText text={question.prompt} /></div>
           {selection && <p>Dit svar er <QuestionText text={selection} /></p>}

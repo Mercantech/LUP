@@ -44,13 +44,21 @@ public sealed partial class KnowledgeChecksController(AppDbContext db, CourseAcc
                 HasAccess = attempt.Publication.HoldId == null || allowed.Contains(attempt.Publication.HoldId.Value)
             }).ToArrayAsync(ct);
         var ownByPublication = attempts.ToLookup(attempt => attempt.PublicationId);
+        var legacyByOwner = visible.Where(publication => publication.IsActive && publication.HoldId is null)
+            .Select(publication => publication.Version.Quiz.OwnerSub).Distinct()
+            .ToDictionary(owner => owner, LegacyKnowledgeCheckCatalog.ForOwner);
         var views = visible.Select(publication =>
         {
             var own = ownByPublication[publication.Id];
+            var owner = publication.Version.Quiz.OwnerSub;
             var canManage = publication.HoldId is Guid hold
-                ? managed.Contains(hold) : teacher && publication.Version.Quiz.OwnerSub == sub;
-            return View(publication, canManage, own.FirstOrDefault(attempt => attempt.Status == Started)?.Id,
+                ? managed.Contains(hold) : teacher && owner == sub;
+            var view = View(publication, canManage, own.FirstOrDefault(attempt => attempt.Status == Started)?.Id,
                 own.FirstOrDefault()?.Id, own.Count());
+            return publication.IsActive && publication.HoldId is null
+                && legacyByOwner[owner].TryGetValue(publication.Version.QuizId, out var legacy)
+                ? view with { LegacyDiscovery = legacy.DiscoveryForTopic(publication.Version.Topic) }
+                : view;
         }).ToArray();
         var history = attempts.Where(attempt => attempt.SubmittedAtUtc is not null || attempt.HasAccess && attempt.IsActive)
             .Select(attempt => new KnowledgeCheckHistory(attempt.PublicationId, attempt.Id, attempt.Title, attempt.Status,

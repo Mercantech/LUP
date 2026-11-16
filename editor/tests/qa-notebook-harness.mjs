@@ -71,13 +71,17 @@ try {
     if (url.pathname === '/_qa/login') {
       const identity = identities.find(item => item.key === url.searchParams.get('user'));
       if (!identity) { response.writeHead(400).end('Choose pupil, peer, outsider or teacher.'); return; }
+      const target = url.searchParams.get('screen') === 'videnstjek' ? '/videnstjek?vis=oev' : identity.home;
+      const requestedTheme = url.searchParams.get('theme');
+      const theme = ['dark', 'light'].includes(requestedTheme) ? requestedTheme : null;
       response.setHeader('Content-Type', 'text/html;charset=utf-8');
       response.end(`<!doctype html><html lang="da"><title>Fiktivt QA-login</title><body><p>Åbner ${identity.name}…</p><script>
         sessionStorage.setItem('mt_access_token',${JSON.stringify(identity.token)});
         sessionStorage.setItem('mt_refresh_token','');
         sessionStorage.setItem('mt_expires_at',${JSON.stringify(String(identity.expiresAt))});
+        if (${JSON.stringify(theme)}) localStorage.setItem('lup-theme',${JSON.stringify(theme)});
         Promise.all([navigator.serviceWorker?.getRegistrations().then(items=>Promise.all(items.map(item=>item.unregister()))),
-          globalThis.caches?.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))]).then(()=>location.replace(${JSON.stringify(identity.home)}));
+          globalThis.caches?.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))]).then(()=>location.replace(${JSON.stringify(target)}));
       </script></body></html>`);
       return;
     }

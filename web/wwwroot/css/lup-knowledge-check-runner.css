@@ -1,3 +1,7 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: brand · redesign: full
+ * signature: question progress linked to navigation · states: ready, saving, checking, submitted */
+/* Hallmark · pre-emit critique: the question and its choices lead, with progress available alongside on wide screens. */
+
 .lup-knowledge-player {
     max-width: 48rem;
     color: var(--ink, inherit);
@@ -93,3 +97,117 @@
 .lup-knowledge-option-explanations li p, .lup-knowledge-source p { margin: .18rem 0 0; }
 .lup-knowledge-correct, .lup-knowledge-incorrect { font-weight: 700; }
 .lup-knowledge-feedback { margin-top: .75rem; }
+
+.lup-knowledge-player.is-practice {
+    --practice-ink: var(--ink);
+    --practice-muted: var(--muted);
+    --practice-rule: var(--rule);
+    --practice-accent: var(--blue);
+    --practice-tint: var(--tint);
+    --practice-answer: var(--green);
+    --practice-answer-tint: var(--green-tint);
+    --practice-paper: var(--paper);
+    --practice-code: var(--bg);
+    max-width: 62rem;
+    container-type: inline-size;
+}
+
+.lup-knowledge-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 1.5rem;
+}
+
+.lup-knowledge-question { min-width: 0; }
+.is-practice .lup-knowledge-topline > :first-child { color: var(--practice-ink); font-weight: 700; }
+.is-practice .lup-knowledge-topline label { font-variant-numeric: tabular-nums; }
+.is-practice fieldset label { grid-template-columns: auto auto minmax(0, 1fr); }
+.is-practice fieldset label:has(input:focus-visible) { outline: 2px solid var(--practice-accent); outline-offset: 2px; }
+.is-practice :is(button, a):focus-visible { outline: 2px solid var(--practice-accent); outline-offset: 3px; }
+.is-practice .lup-knowledge-short textarea { border-color: var(--practice-muted); }
+.is-practice .lup-knowledge-actions button,
+.is-practice .lup-knowledge-review-filters button,
+.is-practice .lup-knowledge-code-block button { min-height: 2.75rem; }
+
+.is-practice kbd {
+    display: inline-block;
+    min-width: 1.35em;
+    padding: .05em .25em;
+    text-align: center;
+    border: 1px solid var(--practice-rule);
+    border-radius: .25rem;
+    color: var(--practice-ink);
+    background: var(--practice-code);
+    font-size: .82em;
+}
+
+.lup-knowledge-key-hint, .lup-knowledge-copy-status {
+    color: var(--practice-muted);
+    font-size: .875rem;
+    font-weight: 400;
+}
+
+.lup-knowledge-code-block { display: block; margin-block: .5rem; }
+.lup-knowledge-code-block .lup-knowledge-code { margin-block-start: 0; white-space: pre-wrap; }
+.lup-knowledge-copy-status { margin-inline-start: .65rem; }
+
+.lup-knowledge-question-nav {
+    padding-block-start: 1rem;
+    border-block-start: 1px solid var(--practice-rule);
+}
+
+.lup-knowledge-question-nav h3 { margin: 0 0 .75rem; font-size: .95rem; }
+.lup-knowledge-question-nav ol {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
+    gap: .4rem;
+    max-width: 24rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lup-knowledge-question-nav button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .15rem;
+    width: 100%;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: .125rem;
+    border: 1px solid var(--practice-rule);
+    border-radius: .5rem;
+    color: var(--practice-ink);
+    background: var(--practice-paper);
+    font: inherit;
+    font-size: .875rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+}
+
+.lup-knowledge-question-nav button:disabled { cursor: default; }
+.lup-knowledge-question-nav button.is-answered { color: var(--practice-answer); background: var(--practice-answer-tint); }
+.lup-knowledge-question-nav button[aria-current="step"],
+.lup-knowledge-question-nav button:hover:not(:disabled) { border-color: var(--practice-accent); }
+.lup-knowledge-question-nav button[aria-current="step"] { box-shadow: inset 0 0 0 1px var(--practice-accent); }
+.lup-knowledge-question-nav button span { font-size: .78em; }
+
+.lup-knowledge-review-filters { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .75rem; }
+.lup-knowledge-review-filters button[aria-pressed="true"] {
+    border-color: var(--practice-accent);
+    color: var(--practice-accent);
+    background: var(--practice-tint);
+}
+
+@container (min-width: 44rem) {
+    .lup-knowledge-workspace { grid-template-columns: minmax(0, 1fr) 11.5rem; }
+    .lup-knowledge-question-nav {
+        padding-block-start: 0;
+        padding-inline-start: 1rem;
+        border-block-start: 0;
+        border-inline-start: 1px solid var(--practice-rule);
+    }
+}

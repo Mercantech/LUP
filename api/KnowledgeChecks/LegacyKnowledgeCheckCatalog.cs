@@ -39,5 +39,11 @@ internal static class LegacyKnowledgeCheckCatalog
     }
 
     private sealed record Bundle(Template[] Drafts);
-    internal sealed record Template(string Key, KnowledgeCheckDraft Draft);
+    internal sealed record Template(string Key, KnowledgeCheckDraft Draft, KnowledgeCheckLegacyDiscovery? LegacyDiscovery)
+    {
+        internal KnowledgeCheckLegacyDiscovery? DiscoveryForTopic(string topic) =>
+            LegacyDiscovery is { } discovery && !discovery.Categories.Contains(topic, StringComparer.OrdinalIgnoreCase)
+                ? discovery with { Categories = string.IsNullOrWhiteSpace(topic) ? [] : [topic] }
+                : LegacyDiscovery;
+    }
 }

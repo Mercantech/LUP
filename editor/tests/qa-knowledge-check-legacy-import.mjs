@@ -17,24 +17,26 @@ const browser = await chromium.launch();
 try {
   const teacher = await open('teacher');
   await teacher.goto(origin + '/videnstjek?vis=administrer');
-  await teacher.getByText('Importér fra det gamle Videnstjek', { exact: true }).click();
-  const importer = teacher.getByRole('button', { name: 'Importér som kladder', exact: true });
+  const drafts = teacher.getByRole('region', { name: 'Kladder' });
+  await drafts.getByText('Importér fra det gamle Videnstjek', { exact: true }).click();
+  const importer = drafts.getByRole('button', { name: 'Importér som kladder', exact: true });
   await importer.click();
   await teacher.getByRole('status').filter({ hasText: /er tilføjet som kladder|allerede importeret alle/ }).waitFor();
   for (const entry of templates.drafts) {
-    await teacher.getByRole('heading', { name: entry.draft.title, exact: true }).waitFor();
+    await drafts.getByRole('heading', { name: entry.draft.title, exact: true }).waitFor();
   }
   await importer.click();
   await teacher.getByText('Du har allerede importeret alle videnstjek fra det gamle katalog.', { exact: true }).waitFor();
-  assert.equal(await teacher.getByRole('heading', { name: draft.title, exact: true }).count(), 1);
+  assert.equal(await drafts.getByRole('heading', { name: draft.title, exact: true }).count(), 1);
 
-  await teacher.getByRole('article').filter({ has: teacher.getByRole('heading', { name: draft.title, exact: true }) })
+  await drafts.getByRole('article').filter({ has: teacher.getByRole('heading', { name: draft.title, exact: true }) })
     .getByRole('link', { name: /^Rediger/ }).click();
   const exerciseTitle = draft.title + ' · QA ' + Date.now().toString(36);
   await teacher.getByLabel('Titel', { exact: true }).fill(exerciseTitle);
   await teacher.getByRole('button', { name: 'Udgiv', exact: true }).click();
   await teacher.getByText('Videnstjekket er udgivet.', { exact: true }).waitFor();
-  const exercise = await teacher.getByRole('link', { name: 'Åbn', exact: true }).getAttribute('href');
+  const exercise = await teacher.locator('#udgivelser').getByRole('article').filter({ hasText: exerciseTitle })
+    .getByRole('link', { name: 'Åbn', exact: true }).getAttribute('href');
   assert.ok(exercise);
 
   const learner = await open('pupil');

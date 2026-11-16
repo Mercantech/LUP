@@ -40,7 +40,7 @@ try {
   await mobile.getByLabel('Søg i øvelser').fill('ukendt-fagligt-emne');
   await mobile.getByText('Ingen øvelser matcher din søgning.').waitFor();
   await mobile.getByLabel('Søg i øvelser').fill(freeTitle);
-  await mobile.getByRole('combobox').selectOption('GF2');
+  await mobile.getByRole('link', { name: 'GF2', exact: true }).click();
   await mobile.getByRole('heading', { name: freeTitle, exact: true }).waitFor();
   assert.ok(await mobile.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
 

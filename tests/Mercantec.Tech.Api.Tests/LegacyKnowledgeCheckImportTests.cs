@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Mercantec.Tech.Api.Controllers;
 using Mercantec.Tech.Api.Data;
+using Mercantec.Tech.Api.KnowledgeChecks;
 using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Http;
@@ -51,6 +52,71 @@ public sealed class LegacyKnowledgeCheckImportTests
         Assert.IsType<NotFoundResult>(await otherTeacher.GetDraft(item.Id, default));
         Assert.Equal(imported.Added * 2, await db.KnowledgeCheckQuizzes.CountAsync());
         Assert.Empty(await db.KnowledgeCheckPublications.ToListAsync());
+    }
+
+    [Fact]
+    public async Task PublicCatalogPreservesLegacyCategoriesAndDifficultyByDraftIdentity()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        var owner = Guid.NewGuid();
+        var teacher = As(db, owner, teacher: true);
+        var student = As(db, Guid.NewGuid());
+
+        await teacher.ImportLegacy(default);
+        var legacyId = LegacyKnowledgeCheckCatalog.ForOwner(owner).Single(entry => entry.Value.Key == "api-calls").Key;
+        var original = Read<KnowledgeCheckDraftView>(await teacher.GetDraft(legacyId, default));
+        var editedTitle = "HTTP i praksis";
+        var edit = new KnowledgeCheckDraft(editedTitle, original.Description, original.Topic,
+            original.EstimatedMinutes, original.Questions, original.Revision);
+        var edited = Read<KnowledgeCheckDraftView>(await teacher.Update(legacyId, edit, default));
+        var batch = await LegacyKnowledgeCheckPublisher.RunAsync(db, owner, dryRun: false);
+        Assert.Empty(batch.Issues);
+        Assert.Equal(26, batch.Published);
+
+        var custom = Read<KnowledgeCheckDraftView>(await teacher.Create(edit with { Topic = "HTTP", Revision = null }, default));
+        await teacher.Publish(custom.Id, new(null, null, "after-submit"), default);
+        var catalog = Read<KnowledgeCheckIndex>(await student.List(default));
+        var legacy = catalog.Publications.Where(publication => publication.LegacyDiscovery is not null).ToArray();
+        Assert.Equal(26, legacy.Length);
+
+        var renamed = Assert.Single(legacy, publication => publication.QuizId == legacyId);
+        Assert.Equal(editedTitle, renamed.Title);
+        Assert.Equal(original.Topic, renamed.Topic);
+        var metadata = Assert.IsType<KnowledgeCheckLegacyDiscovery>(renamed.LegacyDiscovery);
+        Assert.Equal(new[] { "Backend", "Frontend" }, metadata.Categories);
+        Assert.Equal("Mellem", metadata.Difficulty);
+
+        var categories = legacy.SelectMany(publication => publication.LegacyDiscovery!.Categories).ToLookup(category => category);
+        Assert.Equal(8, categories["GF2"].Count());
+        Assert.Equal(17, categories["Backend"].Count());
+        Assert.Equal(3, categories["Frontend"].Count());
+        Assert.Single(categories["Flutter"]);
+        var difficulty = legacy.ToLookup(publication => publication.LegacyDiscovery!.Difficulty);
+        Assert.Equal(9, difficulty["Begynder"].Count());
+        Assert.Equal(15, difficulty["Mellem"].Count());
+        Assert.Equal(2, difficulty["Avanceret"].Count());
+
+        var sameTitle = Assert.Single(catalog.Publications, publication => publication.QuizId == custom.Id);
+        Assert.Equal(editedTitle, sameTitle.Title);
+        Assert.Equal("HTTP", sameTitle.Topic);
+        Assert.Null(sameTitle.LegacyDiscovery);
+
+        await teacher.ClosePublication(renamed.Id, default);
+        Assert.DoesNotContain(Read<KnowledgeCheckIndex>(await student.List(default)).Publications, publication => publication.Id == renamed.Id);
+        var closed = Assert.Single(Read<KnowledgeCheckIndex>(await teacher.List(default)).Publications, publication => publication.Id == renamed.Id);
+        Assert.False(closed.IsActive);
+        Assert.Null(closed.LegacyDiscovery);
+
+        await teacher.Update(legacyId, edit with { Topic = "Webteknologi", Revision = edited.Revision }, default);
+        var moved = Read<KnowledgeCheckPublicationView>(await teacher.Publish(legacyId, new(null, null, "after-submit"), default));
+        var movedInCatalog = Assert.Single(Read<KnowledgeCheckIndex>(await student.List(default)).Publications, publication => publication.Id == moved.Id);
+        Assert.Equal("Webteknologi", movedInCatalog.Topic);
+        var movedDiscovery = Assert.IsType<KnowledgeCheckLegacyDiscovery>(movedInCatalog.LegacyDiscovery);
+        Assert.Equal(new[] { "Webteknologi" }, movedDiscovery.Categories);
+        Assert.Equal("Mellem", movedDiscovery.Difficulty);
     }
 
     [Fact]
