@@ -100,6 +100,10 @@ services:
       context: .
       dockerfile: api/Dockerfile
     environment:
+      HomeGame__Enabled: ${HOME_GAME_ENABLED:-false}
+      HomeGame__RunnerUrl: ${HOME_GAME_RUNNER_URL:-}
+      HomeGame__RunnerToken: ${HOME_GAME_RUNNER_TOKEN:-}
+      HomeGame__WorkerSlots: ${HOME_GAME_WORKER_SLOTS:-8}
       ASPNETCORE_URLS: http://+:8080
       DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE: "false"
       ConnectionStrings__Default: ${CONNECTION_STRING:-Host=mercantec-tech-db;Port=5432;Database=mercantec;Username=mercantec;Password=mercantec}

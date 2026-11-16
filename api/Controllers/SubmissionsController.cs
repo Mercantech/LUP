@@ -215,8 +215,15 @@ public sealed class SubmissionsController(AppDbContext db, CourseAccess access) 
         if (request.Decision is not null) submission.State = request.Decision;
         submission.Version++;
         submission.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        await using var transaction = request.Decision == "approved" ? await db.Database.BeginTransactionAsync(ct) : null;
         try { await db.SaveChangesAsync(ct); }
         catch (DbUpdateConcurrencyException) { return Conflict(new { error = "submission_changed" }); }
+        if (transaction is not null)
+        {
+            if (!await QuestGoldRewards.TryAward(db, submission.Quest, revision, feedback, ct))
+                return Conflict(new { error = "quest_gold_not_awarded" });
+            await transaction.CommitAsync(ct);
+        }
         db.ChangeTracker.Clear();
         return await Get(id, ct);
     }

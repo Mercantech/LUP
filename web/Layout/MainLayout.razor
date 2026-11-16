@@ -64,6 +64,7 @@
                             }
                             @foreach (var link in NotebookLinks.Skip(1)) { <NavLink href="@link.Href">@link.Label</NavLink> }
                             <NavLink href="/arena">LUP Arena</NavLink>
+                            @if (!ViewAs.IsActive) { <NavLink href="/spil/hjem">@(IsTeacher ? "Prøv Hjem.exe" : "Hjem.exe")</NavLink> }
                             <NavLink href="/games">Spil</NavLink>
                             <NavLink href="/characters">Karakterer</NavLink>
                             @if (IsTeacher)

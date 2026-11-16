@@ -145,7 +145,7 @@ public sealed class AvatarsController(AppDbContext db) : ControllerBase
                 var created = profile is null;
                 if (created)
                 {
-                    profile = NewProfile(subject.Value);
+                    profile = AvatarWallet.CreateProfile(subject.Value);
                     db.AvatarProfiles.Add(profile);
                 }
 
@@ -179,15 +179,6 @@ public sealed class AvatarsController(AppDbContext db) : ControllerBase
         }
 
         return Failure(409, "avatar_conflict", "Samlingen blev ændret samtidig. Prøv igen.");
-    }
-
-    private static AvatarProfile NewProfile(Guid subject)
-    {
-        var profile = new AvatarProfile { UserSub = subject };
-        profile.Avatars.Add(new AvatarOwnership { UserSub = subject, AvatarId = AvatarEconomy.StarterId });
-        foreach (var id in AvatarEconomy.InitialItemIds)
-            profile.Items.Add(new AvatarItemOwnership { UserSub = subject, ItemId = id });
-        return profile;
     }
 
     private static AvatarProfileDto ToDto(AvatarProfile profile, IReadOnlyList<AvatarUnlockProgressDto> progress) => new(

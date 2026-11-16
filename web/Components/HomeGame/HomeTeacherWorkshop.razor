@@ -1,0 +1,251 @@
+@using Mercantec.Tech.Contracts.HomeGame
+@using Mercantec.Tech.Web.HomeGame
+@inject HomeGameClient Client
+@inject Mercantec.Tech.Web.Notion.NotionClient Notion
+@implements IDisposable
+
+<nav class="breadcrumbs" aria-label="Brødkrummer">
+    <a href="/teacher/tools">Underviserværktøjer</a><span>›</span><span aria-current="page">Hjem.exe</span>
+</nav>
+<header class="page-title">
+    <div><h1>Hjem.exe for undervisere</h1><p>Vælg opgaver, del starterkode og følg elevernes forsøg.</p></div>
+    <a class="action" href="/spil/hjem">Åbn min prøvebolig</a>
+</header>
+<section class="panel teacher-home">
+    @if (_holds.Count > 0)
+    {
+        <label>Hold
+            <select value="@_hold" @onchange="SelectHoldAsync" disabled="@_working">
+                <option value="">Vælg hold</option>
+                @foreach (var hold in _holds)
+                {
+                    <option value="@hold.Id">@hold.Name</option>
+                }
+            </select>
+        </label>
+    }
+    @if (_working) { <p role="status">Indlæser…</p> }
+    @if (_error is not null)
+    {
+        <p role="alert">@_error</p>
+        <button type="button" class="secondary" disabled="@_working" @onclick="RefreshAsync">Hent igen</button>
+    }
+    @if (_success is not null) { <p role="status">@_success</p> }
+    @if (!_working && _error is null && _holds.Count == 0)
+    {
+        <p>Du har endnu ingen hold med læreradgang.</p>
+    }
+
+    @if (_overview is { } overview)
+    {
+        <details open>
+            <summary>Opgaver og starterkode</summary>
+            <div class="teacher-controls">
+                <label>Åbn opgaver til og med
+                    <select @bind="_openThrough">
+                        @for (var i = 1; i <= HomeLessons.All.Count; i++)
+                        {
+                            <option value="@i">@($"P{i:00}") @HomeLessons.All[i - 1].Title</option>
+                        }
+                    </select>
+                </label>
+                <label>Foreslå første opgave
+                    <select @bind="_suggested">
+                        <option value="0">Elevens næste opgave</option>
+                        @for (var i = 1; i <= _openThrough; i++)
+                        {
+                            <option value="@i">@($"P{i:00}") @HomeLessons.All[i - 1].Title</option>
+                        }
+                    </select>
+                </label>
+                <label>Foreslå sprog
+                    <select @bind="_language">
+                        <option value="">Elevens valgte sprog</option>
+                        @foreach (var language in Languages)
+                        {
+                            <option value="@language">@HomeLessons.Label(language)</option>
+                        }
+                    </select>
+                </label>
+            </div>
+            @foreach (var language in Languages)
+            {
+                <details>
+                    <summary>Starterkode til @HomeLessons.Label(language)</summary>
+                    <label>
+                        Redigér starterkode
+                        <textarea rows="5" spellcheck="false" maxlength="@HomeGameVersion.MaxSourceBytes" value="@_starter.GetValueOrDefault(language)"
+                                  @oninput="args => _starter[language] = args.Value?.ToString() ?? string.Empty"></textarea>
+                    </label>
+                </details>
+            }
+            <button class="action" type="button" disabled="@_working" @onclick="SaveAsync">Gem for holdet</button>
+        </details>
+
+        <h2>Elever</h2>
+        @if (overview.Students.Count == 0) { <p>Der er ingen elever på holdet endnu.</p> }
+        else
+        {
+            <div class="teacher-table">
+                <table class="table">
+                    <thead><tr><th>Elev</th><th>Opgaver bestået</th><th>Seneste forsøg</th><th>Elevens arbejde</th></tr></thead>
+                    <tbody>
+                        @foreach (var student in overview.Students)
+                        {
+                            <tr>
+                                <th scope="row">@student.Name</th>
+                                <td>@student.Progress.Count / @HomeLessons.All.Count</td>
+                                <td>@Status(student.LastRun)</td>
+                                <td><button type="button" class="secondary" disabled="@_working" @onclick="() => OpenStudentAsync(student.StudentSub)">Vis kode og log</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        @if (_student is { } detail)
+        {
+            <section class="student-work">
+                <div class="student-header"><h3>@detail.Student.Name</h3><button type="button" class="secondary" @onclick="() => _student = null">Luk</button></div>
+                <p>@Status(detail.LastRun?.Run ?? detail.Student.LastRun)</p>
+                @if (!string.IsNullOrWhiteSpace(detail.Student.Reflection))
+                {
+                    <h4>Refleksion</h4><p class="plain-reflection">@detail.Student.Reflection</p>
+                }
+                @if (detail.LastRun is { } run)
+                {
+                    <details open>
+                        <summary>Resultat og log</summary>
+                        @if (run.ErrorMessage is not null) { <p>@run.ErrorMessage</p> }
+                        <ul>
+                            @foreach (var outcome in run.Outcomes)
+                            {
+                                <li>@(HomeCatalog.Scenarios.GetValueOrDefault(outcome.ScenarioId)?.Title ?? outcome.ScenarioId): @(outcome.Passed ? "Bestået" : "Ikke bestået")</li>
+                            }
+                        </ul>
+                        @if (run.Logs.Count > 0) { <pre>@string.Join("\n", run.Logs)</pre> }
+                    </details>
+                }
+                @if (detail.RunProgram is { } program)
+                {
+                    <details open><summary>Kode fra forsøget (@HomeLessons.Label(program.Language))</summary><pre>@program.Source</pre></details>
+                }
+                @foreach (var draft in detail.Drafts)
+                {
+                    <details><summary>Senest gemt i @HomeLessons.Label(draft.Language)</summary><pre>@draft.Source</pre></details>
+                }
+            </section>
+        }
+
+        <h2>Spørgsmål fra elever</h2>
+        @if (overview.HelpRequests.Count == 0) { <p>Ingen spørgsmål endnu.</p> }
+        else
+        {
+            <ul class="student-questions">
+                @foreach (var help in overview.HelpRequests)
+                {
+                    <li>
+                        <strong>@(overview.Students.FirstOrDefault(student => student.StudentSub == help.StudentSub)?.Name ?? "Elev")</strong>
+                        <small>@($"P{help.Task:00}") · @Status(help.Run)</small>
+                        <p class="plain-reflection">@help.Question</p>
+                        <button class="secondary" type="button" disabled="@_working" @onclick="() => OpenStudentAsync(help.StudentSub, help.Run?.Id)">Åbn elevens arbejde</button>
+                    </li>
+                }
+            </ul>
+        }
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Subject { get; set; } = "";
+    [Parameter] public Guid? InitialHold { get; set; }
+    private static readonly string[] Languages = ["python", "csharp", "arduino"];
+    private readonly CancellationTokenSource _lifetime = new();
+    private IReadOnlyList<NotionHold> _holds = [];
+    private Dictionary<string, string> _starter = new(StringComparer.Ordinal);
+    private HomeTeacherOverview? _overview;
+    private HomeTeacherStudentDetail? _student;
+    private Guid? _hold;
+    private string _language = "";
+    private string? _error;
+    private string? _success;
+    private int _openThrough = 1;
+    private int _suggested;
+    private bool _working;
+
+    protected override Task OnInitializedAsync() => RefreshAsync();
+
+    private Task RefreshAsync() => PerformAsync(async () =>
+    {
+        _holds = (await Notion.Holds(_lifetime.Token)).Where(hold => hold.CanManage).ToArray();
+        _hold ??= InitialHold ?? (_holds.Count == 1 ? _holds[0].Id : null);
+        if (_hold is { } id) SetOverview(await Client.ClassAsync(Subject, id, _lifetime.Token));
+    });
+
+    private Task SelectHoldAsync(ChangeEventArgs args) => PerformAsync(async () =>
+    {
+        _hold = Guid.TryParse(args.Value?.ToString(), out var id) ? id : null;
+        _overview = null;
+        _student = null;
+        if (_hold is { } selected) SetOverview(await Client.ClassAsync(Subject, selected, _lifetime.Token));
+    });
+
+    private void SetOverview(HomeTeacherOverview overview)
+    {
+        _overview = overview;
+        _openThrough = overview.Settings.OpenThroughTask;
+        _suggested = overview.Settings.SuggestedTask;
+        _language = overview.Settings.SuggestedLanguage ?? "";
+        _starter = new(overview.Settings.StarterCode, StringComparer.Ordinal);
+    }
+
+    private Task SaveAsync() => PerformAsync(async () =>
+    {
+        if (_overview is not { } old) return;
+        var code = _starter.Where(entry => !string.IsNullOrWhiteSpace(entry.Value))
+            .ToDictionary(entry => entry.Key, entry => entry.Value, StringComparer.Ordinal);
+        var settings = new HomeTeacherSettings(old.Settings.Revision, _openThrough, Math.Min(_suggested, _openThrough),
+            _language.Length == 0 ? null : _language, code);
+        var saved = await Client.SettingsAsync(Subject, old.HoldId, settings, _lifetime.Token);
+        SetOverview(old with { Settings = saved });
+        _success = "Holdets indstillinger er gemt.";
+    });
+
+    private Task OpenStudentAsync(Guid student, Guid? run = null) => PerformAsync(async () =>
+    {
+        if (_hold is { } hold) _student = await Client.StudentAsync(Subject, hold, student, _lifetime.Token, run);
+    });
+
+    private async Task PerformAsync(Func<Task> action)
+    {
+        if (_working) return;
+        _working = true;
+        _error = _success = null;
+        try { await action(); }
+        catch (HomeGameRequestException ex) { _error = ex.Message; }
+        catch (HttpRequestException) { _error = "Forbindelsen blev afbrudt. Prøv igen."; }
+        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+        finally { _working = false; }
+    }
+
+    private static string Status(HomeRunSummary? run) => run?.Status switch
+    {
+        "passed" when run.IsTeacherSandbox => "Prøvevurdering bestået",
+        "failed" when run.IsTeacherSandbox => "Prøvevurdering med mangler",
+        "passed" => "Bestået",
+        "failed" => "Mangler mål",
+        "completed" => "Øveforsøg",
+        "paused" => "Pauset",
+        "compiling" or "queued" or "running" => "I gang",
+        "cancelled" => "Stoppet",
+        "error" => "Fejl i forsøg",
+        "expired" => "Udløbet",
+        _ => "Ingen forsøg"
+    };
+
+    public void Dispose()
+    {
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+    }
+}
