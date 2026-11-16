@@ -27,6 +27,8 @@
     <!-- Compile the existing editorial metadata directly; frontend and references share one source. -->
     <Compile Include="../web/Courses/CourseTemplateCatalog.cs" Link="References/Catalog/CourseTemplateCatalog.cs" />
     <Compile Include="../web/Public/PublicCatalog.cs" Link="References/Catalog/PublicCatalog.cs" />
+    <Compile Include="../web/Public/PublicGlobalSearch.cs" Link="Search/PublicGlobalSearch.cs" />
+    <Compile Include="../web/Games/GamesCatalog.cs" Link="Search/GamesCatalog.cs" />
     <Compile Include="../web/Demo/DemoCatalog.cs" Link="References/Catalog/DemoCatalog.cs" />
     <Compile Include="../web/Demo/LearningContent.cs" Link="References/Catalog/LearningContent.cs" />
     <Compile Include="../web/Characters/CharacterCatalog.cs" Link="References/Catalog/CharacterCatalog.cs" />

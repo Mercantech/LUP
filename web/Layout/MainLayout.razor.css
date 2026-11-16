@@ -31,6 +31,7 @@ main { flex:1; }
 }
 
 .lup-header.member-header .lup-tools { margin-left:auto; }
+.lup-header .lup-search-link[aria-current="page"] { color:var(--blue); }
 .lup-header.member-header .member-nav ::deep a { white-space:nowrap; }
 .lup-header.member-header .lup-account .v3-menu { min-width:215px; }
 @media(max-width:900px) { .lup-header.member-header .member-nav { display:none; } .lup-header.member-header .lup-mobile-nav { display:block; } }
