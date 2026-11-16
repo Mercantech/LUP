@@ -64,6 +64,13 @@ main { flex:1; }
     .brand-mark { width:22px; height:22px; }
     .lup-header .brand.is-current::after { bottom:-10px; }
 }
+@media(max-width:360px) {
+    .lup-header.public-header { gap:6px; padding-inline:10px; }
+    .lup-header.public-header .brand { gap:5px; }
+    .lup-header.public-header .lup-mobile-nav>summary { gap:4px; }
+    .lup-header.public-header .lup-tools { gap:4px; }
+    .lup-header.public-header .lup-tools>.action { padding-inline:9px; }
+}
 
 .lup-account-name {
     overflow-wrap: anywhere;
