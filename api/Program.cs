@@ -60,7 +60,8 @@ builder.Services.AddSingleton<Mercantec.Tech.Api.HomeGame.HomeRunnerClient>();
 builder.Services.AddSingleton<Mercantec.Tech.Api.HomeGame.HomeRunCoordinator>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<Mercantec.Tech.Api.HomeGame.HomeRunCoordinator>());
 builder.Services.AddHttpClient("home-game", client => client.Timeout = Timeout.InfiniteTimeSpan)
-    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false, UseProxy = false });
+    .ConfigurePrimaryHttpMessageHandler(sp => Mercantec.Tech.Api.HomeGame.HomeRunnerClient.CreateHttpHandler(
+        sp.GetRequiredService<IOptions<Mercantec.Tech.Api.HomeGame.HomeGameOptions>>().Value.RunnerCertSha256));
 builder.Services.AddScoped<Mercantec.Tech.Api.Notebooks.NotebookAccess>();
 builder.Services.AddHostedService<Mercantec.Tech.Api.References.ReferenceBackfill>();
 builder.Services.AddScoped<Mercantec.Tech.Api.Drawings.DrawingAccess>();

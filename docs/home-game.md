@@ -47,12 +47,14 @@ Undervisere åbner deres prøvebolig via `/teacher/home-game` og **Åbn min prø
 ## Drift
 
 1. Sæt en separat Linux-vært op som beskrevet i `tools/home-runner/README.md`. Installér den valgte container-runtime og byg de tre SDK-images. Kodeexport, netværk og værtsdata forbliver afgrænset til de dokumenterede runnerprofiler.
-2. Konfigurér `HOME_GAME_RUNNER_URL` til workerens HTTPS-adresse og `HOME_GAME_RUNNER_TOKEN` til et tilfældigt secret på mindst 32 tegn. Læg det samme secret i workerens `HOME_RUNNER_TOKEN`. HTTP accepteres til lokal udvikling via loopback. Afstem `HOME_GAME_WORKER_SLOTS` med workerens kapacitet. Standard er 8 samtidige kørsler og op til 24 i alt med ventende forsøg.
+2. Konfigurér `HOME_GAME_RUNNER_URL` til workerens HTTPS-adresse og `HOME_GAME_RUNNER_TOKEN` til et tilfældigt secret på mindst 32 tegn. Læg det samme secret i workerens `HOME_RUNNER_TOKEN`. Ved et privat, selvsigneret certifikat skal `HOME_GAME_RUNNER_CERT_SHA256` være SHA-256 for certifikatets DER-fil som 64 hextegn. Certifikatet skal være gyldigt og have URL'ens værtsnavn i sit SAN-felt. En tom pin bruger platformens almindelige certifikattillid. HTTP via loopback er til lokal udvikling med tom pin. Afstem `HOME_GAME_WORKER_SLOTS` med workerens kapacitet. Standard er 8 samtidige kørsler og op til 24 i alt med ventende forsøg.
 3. Afprøv status, stop, tidsgrænser og oprydning på workerens faktiske Linux-runtime. Kør `verify.py DeployedRunnerTests` med gatewayens URL og token.
 4. Sæt `HOME_GAME_ENABLED=true` i produktionsmiljøet, når workeren er klar. Kør platformens sædvanlige migrations- og deploymentsproces. API'et anvender migrationen ved opstart. Pilotens levende simulation kører i én API-proces, på samme måde som Arena. Efter servergenstart markeres uafsluttede forsøg som udløbne. Layout, kode og afsluttet fremgang er vedvarende.
 5. Kør de seks opgaver med rigtige programmer i de tre elevsprog. Godkend en quest på et prøvesæt med en testkonto som elev, køb et møbel i Hjem.exe, og sammenlign den opdaterede saldo med elevens avatarsamling.
 
 Produktionens compose lader Hjem.exe være deaktiveret, indtil `HOME_GAME_ENABLED=true` sættes eksplicit. Hvis den konfigurerede kodearbejder bliver utilgængelig, kan eleven gemme indretning og kode. Kørselsstatus forklarer, at forbindelsen mangler. Der kan ikke tildeles opgavebelønning ved en runnerfejl.
+
+Når workeren kører i en separat VM på produktionens Docker-vært, oprettes det eksterne net med `docker network create --internal --driver bridge lup-home-runner-control` før Compose-udrulningen. Kun API og VM'ens værtscontainer tilsluttes dette net. Værtscontaineren bruger netalias `lup-home-worker`, og API'et bruger `https://lup-home-worker:8443`. Netnavnet kan ændres med `HOME_GAME_CONTROL_NETWORK`. Det eksterne net består, når Compose genopretter API-containeren. Netværket er udeladt af den lokale Compose-variant.
 
 ## Gennemfør pilotforløbet
 

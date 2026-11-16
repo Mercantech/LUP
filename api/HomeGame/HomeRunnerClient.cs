@@ -1,5 +1,8 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Security;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,6 +16,7 @@ public sealed class HomeGameOptions
     public bool Enabled { get; set; } = true;
     public string? RunnerUrl { get; set; }
     public string? RunnerToken { get; set; }
+    public string? RunnerCertSha256 { get; set; }
     public int WorkerSlots { get; set; } = 8;
 }
 
@@ -41,13 +45,53 @@ internal sealed class HomeRunnerException(string code, string message) : Excepti
 public sealed class HomeRunnerClient(IHttpClientFactory clients, IOptions<HomeGameOptions> options)
 {
     private const int MaxReplyBytes = 96 * 1024;
+
+    internal static HttpClientHandler CreateHttpHandler(string? certificatePin)
+    {
+        var handler = new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false };
+        if (string.IsNullOrEmpty(certificatePin)) return handler;
+
+        if (certificatePin.Length != 64 || certificatePin.Any(character => !Uri.IsHexDigit(character)))
+        {
+            handler.ServerCertificateCustomValidationCallback = static (_, _, _, _) => false;
+            return handler;
+        }
+
+        var expectedPin = Convert.FromHexString(certificatePin);
+        handler.ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) =>
+            ValidatePinnedCertificate(request, certificate, chain, errors, expectedPin);
+        return handler;
+    }
+
+    private static bool ValidatePinnedCertificate(HttpRequestMessage request, X509Certificate2? certificate,
+        X509Chain? chain, SslPolicyErrors errors, byte[] expectedPin)
+    {
+        if (request.RequestUri is not { Scheme: "https" } uri || certificate is null
+            || errors is not (SslPolicyErrors.None or SslPolicyErrors.RemoteCertificateChainErrors)
+            || !CryptographicOperations.FixedTimeEquals(certificate.GetCertHash(HashAlgorithmName.SHA256), expectedPin))
+            return false;
+
+        var now = DateTime.UtcNow;
+        if (now < certificate.NotBefore.ToUniversalTime() || now >= certificate.NotAfter.ToUniversalTime()
+            || !certificate.MatchesHostname(uri.IdnHost, allowCommonName: false))
+            return false;
+
+        if (errors == SslPolicyErrors.None) return true;
+
+        // Only the trust error of an otherwise valid self-signed leaf may be bypassed.
+        return chain is { ChainElements.Count: 1, ChainStatus.Length: > 0 }
+            && certificate.SubjectName.RawData.AsSpan().SequenceEqual(certificate.IssuerName.RawData)
+            && chain.ChainStatus.All(status => status.Status == X509ChainStatusFlags.UntrustedRoot);
+    }
+
     private Uri? BaseUri
     {
         get
         {
             var url = options.Value.RunnerUrl?.Trim().TrimEnd('/');
             return Uri.TryCreate(url + "/", UriKind.Absolute, out var baseUri)
-                && (baseUri.Scheme == Uri.UriSchemeHttps || baseUri.Scheme == Uri.UriSchemeHttp && baseUri.IsLoopback)
+                && (baseUri.Scheme == Uri.UriSchemeHttps || baseUri.Scheme == Uri.UriSchemeHttp && baseUri.IsLoopback
+                    && string.IsNullOrEmpty(options.Value.RunnerCertSha256))
                 && baseUri.UserInfo.Length == 0 && baseUri.Query.Length == 0 && baseUri.Fragment.Length == 0
                 && options.Value.RunnerToken is { Length: >= 32 }
                     ? baseUri : null;

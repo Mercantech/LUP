@@ -21,6 +21,10 @@ API'et ejer bolig, vurdering, simulationstid, aflæsninger og anvendelse af komm
    python3 verify.py DeployedRunnerTests
    ```
 
+Hvis gatewayen bruger et selvsigneret certifikat, sættes `SSL_CERT_FILE` til certifikatets PEM-fil under testene. API'et får certifikatets SHA-256-pin i `HOME_GAME_RUNNER_CERT_SHA256`. Beregn den med `openssl x509 -in worker-tls.crt -outform DER | sha256sum`, og brug de første 64 hextegn. Certifikatet skal indeholde gatewayens DNS-navn i sit SAN-felt.
+
+På produktionens Docker-vært oprettes den [private bro](../../docs/home-game.md#drift) før VM'en startes. Kør gatewaytestene, og sæt URL, token, pin og `HOME_GAME_ENABLED=true` i Dokploy før Compose-udrulningen.
+
 ## Isolation og levetid
 
 - En ny gVisor-sandbox får et read-only image, numerisk bruger uden root, ingen ekstra capabilities, intet container- eller værtsvolumen, ingen netværksplade og kun størrelsesbegrænset midlertidigt filsystem. Compiler og elevproces bruger samme sandbox. Dockers CPU-, memory- og proceskvoter anvendes både ved kompilering og afvikling. [Docker containerindstillinger](https://docs.docker.com/reference/cli/docker/container/run/) · [gVisors isolationsmodel](https://gvisor.dev/docs/architecture_guide/security/)
