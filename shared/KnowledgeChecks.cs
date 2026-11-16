@@ -23,11 +23,18 @@ public sealed record KnowledgeCheckPublish(Guid? HoldId, int? MaxAttempts, strin
 
 public sealed record KnowledgeCheckLegacyDiscovery(string[] Categories, string Difficulty);
 
+public sealed record KnowledgeCheckCharacterHost(string Slug, string Intro, string Difficulty);
+
+public sealed record KnowledgeCheckCharacterSummary(Guid Id, string Title, string Topic,
+    int? EstimatedMinutes, int QuestionCount, string Difficulty);
+
 public sealed record KnowledgeCheckPublicationView(Guid Id, Guid QuizId, string Title, string Description, string Topic,
     int? EstimatedMinutes, int QuestionCount, Guid? HoldId, string? HoldName, int? MaxAttempts, bool IsActive,
     bool CanManage, string FeedbackMode, bool FeedbackReleased, Guid? ActiveAttemptId, Guid? LatestAttemptId,
     int AttemptsUsed, DateTime CreatedAtUtc,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] KnowledgeCheckLegacyDiscovery? LegacyDiscovery = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] KnowledgeCheckLegacyDiscovery? LegacyDiscovery = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] KnowledgeCheckCharacterHost? CharacterHost = null,
+    bool IsCurrentPractice = true);
 
 public sealed record KnowledgeCheckHistory(Guid PublicationId, Guid AttemptId, string Title, string Status, int? Score,
     int QuestionCount, DateTime StartedAtUtc, DateTime? SubmittedAtUtc, bool CanOpen);

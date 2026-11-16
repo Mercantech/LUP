@@ -1,0 +1,71 @@
+@using Mercantec.Tech.Web.Characters
+@using Mercantec.Tech.Web.KnowledgeChecks
+@using System.Text.Json
+@inject AuthService Auth
+@inject KnowledgeCheckClient Client
+@implements IDisposable
+
+@if (_quizzes.Length > 0 || _failed)
+{
+    <section class="character-quizzes" id="videnstjek" aria-labelledby="character-quiz-title">
+        <h2 id="character-quiz-title">Videnstjek med @Character.Name</h2>
+        @if (_failed)
+        {
+            <p role="alert">Videnstjek kunne ikke hentes.</p>
+            <button class="secondary" type="button" @onclick="LoadAsync">Prøv igen</button>
+        }
+        @foreach (var quiz in _quizzes)
+        {
+            var quizUrl = $"/videnstjek/{quiz.Id}?karakter={Uri.EscapeDataString(Character.Slug)}";
+            var linkText = Auth.IsAuthenticated ? "Åbn quiz" : "Log ind og åbn quiz";
+            <article class="character-quiz" @key="quiz.Id">
+                <div>
+                    <h3>@quiz.Title</h3>
+                    <p class="character-quiz-facts">
+                        <span>@quiz.Topic</span>
+                        <span>@quiz.Difficulty</span>
+                        <span>@quiz.QuestionCount spørgsmål</span>
+                        @if (quiz.EstimatedMinutes is > 0)
+                        {
+                            <span>Ca. @quiz.EstimatedMinutes min.</span>
+                        }
+                    </p>
+                </div>
+                <a class="action" href="@(Auth.IsAuthenticated ? quizUrl : AuthReturnPath.LoginUrl(quizUrl))">
+                    @linkText<span class="visually-hidden">: @quiz.Title</span>
+                </a>
+            </article>
+        }
+    </section>
+}
+
+@code {
+    [Parameter, EditorRequired] public CharacterProfile Character { get; set; } = default!;
+
+    private readonly CancellationTokenSource _lifetime = new();
+    private KnowledgeCheckCharacterSummary[] _quizzes = [];
+    private bool _failed;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _failed = false;
+        try
+        {
+            _quizzes = await Client.GetAsync<KnowledgeCheckCharacterSummary[]>(
+                $"characters/{Uri.EscapeDataString(Character.Slug)}", _lifetime.Token);
+        }
+        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
+        catch (Exception ex) when (ex is KnowledgeCheckException or HttpRequestException or JsonException or OperationCanceledException)
+        {
+            _failed = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+    }
+}

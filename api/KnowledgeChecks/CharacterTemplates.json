@@ -1,0 +1,1423 @@
+{
+  "drafts": [
+    {
+      "key": "lupp-gameplay-loop",
+      "characterSlug": "lupp",
+      "intro": "Kom med ind på banen. Vi følger én rune hele vejen fra din beslutning til det, spillet viser.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Fra idé til gameplay loop",
+        "topic": "Game Design",
+        "description": "Følg Rune Run fra spillerens tastetryk til næste rune.",
+        "estimatedMinutes": 7,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000101",
+            "kind": "single",
+            "prompt": "Den lilla figur ser en rune ved siden af portalen. Spilleren trykker på højre piletast, og figuren bevæger sig. Hvad er spillerens input?",
+            "options": [
+              "Runens placering ved portalen",
+              "Trykket på højre piletast",
+              "Figurens bevægelse",
+              "Lyden ved portalen"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg starter med spillerens hånd. Tastetrykket er inputtet, som spillets regelsæt oversætter til bevægelse.",
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Fra input til handling"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000102",
+            "kind": "single",
+            "prompt": "Spillet har reglen: Når figuren rører en rune, stiger runetælleren med én. Hvad er reglen i denne situation?",
+            "options": [
+              "Figuren bevæger sig mod runen",
+              "Runetælleren viser tre",
+              "Spilleren beslutter at tage runen",
+              "Berøring af en rune øger tælleren med én"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En regel forbinder en betingelse med en konsekvens. Her er berøring betingelsen, og en ekstra rune er konsekvensen.",
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Fra input til handling"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000103",
+            "kind": "multiple",
+            "prompt": "Figuren tager en rune. Hvilke to ting kan fungere som feedback, der fortæller spilleren, at den er samlet op?",
+            "options": [
+              "Runetælleren skifter fra to til tre",
+              "Spilleren trykker på piletasten igen",
+              "En kort tone lyder ved opsamlingen",
+              "Banen får et nyt navn i projektmappen"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En synlig ændring og en hørbar tone kan hver især bekræfte det, der skete. Det næste tastetryk er endnu et input.",
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Output og feedback"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000104",
+            "kind": "single",
+            "prompt": "Hvilken rækkefølge beskriver en runde af Rune Runs gameplay loop?",
+            "options": [
+              "Saml op → vælg en rune → bevæg dig → se resultatet",
+              "Se resultatet → bevæg dig → vælg en rune → saml op",
+              "Vælg en rune → bevæg dig → saml op → se resultatet → vælg igen",
+              "Bevæg dig → se resultatet → saml op → vælg en rune"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg følger spillerens næste beslutning. Når resultatet er tydeligt, kan spilleren vælge en ny rune, og løkken starter igen.",
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Rune Runs gameplay loop"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000105",
+            "kind": "single",
+            "prompt": "En spiller rører en rune, men kan ikke afgøre, om spillet registrerede den. Hvilken første ændring undersøger problemet mest direkte?",
+            "options": [
+              "Vis en kort markering ved tælleren, når runen tæller med",
+              "Tilføj to baner med flere portaler",
+              "Skift baggrundsfarven på startmenuen",
+              "Gør alle figurer lige store"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En markering knyttet til opsamlingen giver spilleren et signal om resultatet. Den kan afprøves uden at ændre banens regler.",
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Mulighed, signal og feedback"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000106",
+            "kind": "single",
+            "prompt": "I en afprøvning beder LUPP spilleren om at samle tre runer. Hvilken observation fortæller mest om, hvor tydelig feedbacken er?",
+            "options": [
+              "Hvor lang tid det tog at tegne figuren",
+              "Om spilleren kan sige, hvornår tælleren steg, uden hjælp",
+              "Hvor mange farver der er i baggrunden",
+              "Hvor mange linjer kode banen fylder"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Spillerens forklaring viser, om signalet blev opdaget og forstået. Kildetekstens størrelse siger intet om, hvor tydeligt spillet svarer.",
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Præsentation og feedback"
+          }
+        ]
+      }
+    },
+    {
+      "key": "vatson-mindste-prototype",
+      "characterSlug": "vatson",
+      "intro": "Jeg er på besøg fra VATek. Her i LUPs værksted prøver vi én idé af: en lampe, der viser, om porten er lukket.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Byg den mindste prototype",
+        "topic": "Automation",
+        "description": "Planlæg og afprøv en model af en statuslampe til et fiktivt værksted.",
+        "estimatedMinutes": 7,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000201",
+            "kind": "single",
+            "prompt": "Et fiktivt værksted vil kunne se fra den anden side af lokalet, om en port er helt lukket. Hvilken sætning beskriver behovet?",
+            "options": [
+              "Vi skal programmere med den nyeste controller",
+              "Vi skal købe tre sensorer",
+              "En person ved arbejdsbordet skal kunne se, om porten er lukket",
+              "Vi skal lave et diagram over hele værkstedet"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg åbner ringmappen på første side og skriver, hvad brugeren vil kunne afgøre. Valget af udstyr kommer bagefter.",
+            "learnMoreUrl": "/characters/vatson",
+            "learnMoreTitle": "En nysgerrig værkstedsvært"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000202",
+            "kind": "single",
+            "prompt": "Den første model af porten står på et bord. Hvilken funktion er nok til at afprøve idéen?",
+            "options": [
+              "Lampen lyser kun, når modellens lukket-kontakt er sluttet",
+              "Modellen sender en besked til alle medarbejdere",
+              "Værkstedet gemmer statistik over portens brug",
+              "Porten lukker selv, når en timer udløber"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En kontakt og en lampe kan vise sammenhængen mellem portens tilstand og den synlige status. Det er den funktion, holdet vil undersøge.",
+            "learnMoreUrl": "/characters/vatson",
+            "learnMoreTitle": "Fra viden til afprøvning"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000203",
+            "kind": "single",
+            "prompt": "I modellen ændrer kontakten tilstand, når porten når sin lukkede position. Hvad er prototypens output?",
+            "options": [
+              "At nogen skubber porten",
+              "Kontaktens signal til styringen",
+              "Reglen for, hvornår lampen skal tænde",
+              "Om lampen er tændt eller slukket"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Output er det, prototypen sender ud og gør synligt. Kontaktens tilstand er input til reglen.",
+            "learnMoreUrl": "/characters/vatson",
+            "learnMoreTitle": "Fra viden til afprøvning"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000204",
+            "kind": "multiple",
+            "prompt": "Holdet skal afprøve, at lampen kun er tændt ved helt lukket port. Hvilke to resultater skal holdet se efter?",
+            "options": [
+              "Åben port → lampen tændt",
+              "Åben port → lampen slukket",
+              "Lukket port → lampen slukket",
+              "Lukket port → lampen tændt"
+            ],
+            "correctOptions": [
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg sætter to flueben i ringmappen. Én prøve undersøger, at lampen tænder, og én undersøger, at den slukker igen.",
+            "learnMoreUrl": "/characters/vatson",
+            "learnMoreTitle": "En nysgerrig værkstedsvært"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000205",
+            "kind": "single",
+            "prompt": "Lampen tændes også, når modelporten står lidt på klem. Hvilket næste skridt giver mest viden?",
+            "options": [
+              "Byt til en stærkere lampe",
+              "Undersøg, hvor kontakten skifter, justér placeringen, og gentag begge prøver",
+              "Tilføj en anden lampe uden at måle den første",
+              "Afslut afprøvningen og skriv, at prototypen virker"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Når signalet kommer for tidligt, kan kontaktens placering være årsagen. En justering fulgt af de samme prøver viser, om den hjalp.",
+            "learnMoreUrl": "/characters/vatson",
+            "learnMoreTitle": "Fra viden til afprøvning"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000206",
+            "kind": "single",
+            "prompt": "Hvilken notits hjælper næste hold bedst med at forstå og gentage afprøvningen?",
+            "options": [
+              "Porten stod 5 mm på klem. Lampen skulle være slukket, men lyste. Vi flyttede kontakten og gentog prøven.",
+              "Lampen var pæn, og alle kunne se den.",
+              "Porten var svær, så vi prøver igen en anden dag.",
+              "Vi brugte vist en lampe og noget ledning."
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Notitsen beskriver prøvens betingelse, det forventede og faktiske resultat samt ændringen. Den giver næste hold noget konkret at efterprøve.",
+            "learnMoreUrl": "/characters/vatson",
+            "learnMoreTitle": "Fra viden til afprøvning"
+          }
+        ]
+      }
+    },
+    {
+      "key": "gummianden-find-fejlen",
+      "characterSlug": "gummianden",
+      "intro": "Jeg lytter fra skrivebordet. Fortæl mig, hvad der skulle ske med prisen, og hvad programmet faktisk viste.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Find fejlen, før du retter den",
+        "topic": "Fejlfinding",
+        "description": "Undersøg en C#-beregning, der finder prisen på en pose med tre boller.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000301",
+            "kind": "single",
+            "prompt": "En bolle koster 4 kr. Kasseprogrammet viser 16 kr. for 3 boller. Hvordan kommer du bedst i gang med at genskabe fejlen?",
+            "options": [
+              "Prøv en anden opskrift på boller",
+              "Slet den beregnede pris fra visningen",
+              "Skift prisen til 5 kr. og se, om noget ændrer sig",
+              "Kør med antal 3 og stykpris 4 igen, og skriv resultatet ned"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Rap for mig, hvilke værdier du brugte. Med samme input kan vi se, om fejlen også dukker op, næste gang vi kører beregningen.",
+            "learnMoreUrl": "/characters/gummianden#character-gallery-title",
+            "learnMoreTitle": "Genskab fejlen"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000302",
+            "kind": "single",
+            "prompt": "Hvilken notits skelner rigtigt mellem forventet og faktisk resultat, når 3 boller til 4 kr. giver en vist pris på 16 kr.?",
+            "options": [
+              "Forventet 16 kr. · faktisk 12 kr.",
+              "Forventet 12 kr. · faktisk 16 kr.",
+              "Forventet 4 kr. · faktisk 3 kr.",
+              "Forventet 3 kr. · faktisk 4 kr."
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Forventet pris er 3 × 4 = 12 kr. Det faktiske resultat er de 16 kr., som programmet viser. Den forskel er det, vi undersøger.",
+            "learnMoreUrl": "/characters/gummianden#character-gallery-title",
+            "learnMoreTitle": "Forventet og faktisk"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000303",
+            "kind": "single",
+            "prompt": "Hvor vil et breakpoint først hjælpe dig med at skelne mellem en forkert beregning og en forkert visning af totalen?",
+            "options": [
+              "På linjen, som udskriver programmets velkomst",
+              "Efter at programmet er lukket",
+              "På linjen, der viser totalen, efter at totalen er beregnet",
+              "På linjen, der gemmer butikkens navn"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Ved breakpointet kan du læse den beregnede total før visningen. Hvis variablen allerede er 16, leder du videre i beregningen.",
+            "learnMoreUrl": "/characters/gummianden#character-gallery-title",
+            "learnMoreTitle": "Sæt et breakpoint"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000304",
+            "kind": "single",
+            "prompt": "Ved breakpointet har `antal` værdien 3 og `stykpris` værdien 4. Linjen er `int total = (antal + 1) * stykpris;`. Hvilken del skal undersøges først?",
+            "options": [
+              "Hvorfor beregningen lægger 1 til antal",
+              "Hvorfor `total` er deklareret som et heltal",
+              "Hvorfor prisen ikke står først i udtrykket",
+              "Hvorfor tallene ikke er skrevet som tekst"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Nu kan jeg høre det ekstra trin. Plus én tæller en fjerde bolle med. Gå tilbage til kravet om tre boller og sammenlign det med udtrykket.",
+            "learnMoreUrl": "/characters/gummianden#character-gallery-title",
+            "learnMoreTitle": "Locals og Watch"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000305",
+            "kind": "multiple",
+            "prompt": "Beregningen er ændret til `antal * stykpris`. Hvilke to prøver giver praktisk kontrol af rettelsen?",
+            "options": [
+              "Skriv programnavnet et andet sted",
+              "Prøv antal 3 og stykpris 4, og forvent 12",
+              "Prøv antal 0 og stykpris 4, og forvent 0",
+              "Gør teksten om forventet resultat større"
+            ],
+            "correctOptions": [
+              1,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Den samme prøve kontrollerer den oprindelige fejl. Nul boller er et enkelt grænsetilfælde, som dobbelttjekker, at der ikke tælles en ekstra bolle.",
+            "learnMoreUrl": "/characters/gummianden#character-gallery-title",
+            "learnMoreTitle": "Prøv grænserne"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000306",
+            "kind": "single",
+            "prompt": "Hvilken automatisk test ville opdage, hvis det ekstra `+ 1` kom tilbage?",
+            "options": [
+              "Test at `stykpris` er 4 lige før programstart",
+              "Test at terminalvinduet er åbent",
+              "Test at beregningen giver 12 for antal 3 og stykpris 4",
+              "Test at metoden hedder `BeregnPris`"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En regressionstest kalder beregningen med kendte værdier og forventer 12. Hvis + 1 vender tilbage, ser testen 16 og fejler.",
+            "learnMoreUrl": "/characters/gummianden#character-gallery-title",
+            "learnMoreTitle": "Lås rettelsen med en test"
+          }
+        ]
+      }
+    },
+    {
+      "key": "raymond-manglende-raekke",
+      "characterSlug": "raymond",
+      "intro": "Tag luppen frem. Jeg leder efter caféens kunder fra Viborg, og du hjælper med at finde de rigtige rækker.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Find den manglende række",
+        "topic": "SQL",
+        "description": "Brug SELECT, WHERE og ORDER BY til at læse kundelisten i SQL-H1s cafédata.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000401",
+            "kind": "single",
+            "prompt": "Hvad vælger `name, city` i `SELECT name, city FROM customers;`?",
+            "options": [
+              "Hvilke kolonner der vises i resultatet",
+              "Hvilke kunder der kommer fra Viborg",
+              "Hvilken rækkefølge rækkerne får",
+              "Hvilken tabel der ændres"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg kigger først på det, der står efter SELECT. Her beder du caféen vise kolonnerne name og city for hver række.",
+            "learnMoreUrl": "/characters/raymond#character-gallery-title",
+            "learnMoreTitle": "Find de rigtige rækker"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000402",
+            "kind": "single",
+            "prompt": "Hvad gør betingelsen `WHERE city = 'Viborg'` i caféens kundetabel?",
+            "options": [
+              "Den ændrer alle bynavne til Viborg",
+              "Den sorterer kunderne efter by",
+              "Den lader kun rækker med Viborg som by komme med",
+              "Den fjerner kolonnen `city` fra tabellen"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "WHERE er et filter for rækkerne i resultatet. Forespørgslen læser tabellen, og ingen kundedata bliver ændret.",
+            "learnMoreUrl": "/characters/raymond#animation-find-row",
+            "learnMoreTitle": "Find den manglende række"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000403",
+            "kind": "single",
+            "prompt": "Caféens Viborg-kunder hedder Anna Jensen, Clara Holm og Freja Olsen. Hvilket resultat giver `ORDER BY name DESC`?",
+            "options": [
+              "Anna Jensen, Clara Holm, Freja Olsen",
+              "Freja Olsen, Clara Holm, Anna Jensen",
+              "Clara Holm, Anna Jensen, Freja Olsen",
+              "Freja Olsen, Anna Jensen, Clara Holm"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "DESC sorterer faldende. Navnene vises derfor fra F til A i resultatet.",
+            "learnMoreUrl": "/characters/raymond#animation-sort-rows",
+            "learnMoreTitle": "Sæt rækkerne i orden"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000404",
+            "kind": "single",
+            "prompt": "Du forventer tre Viborg-kunder, men fik kunder fra en anden by. Hvad giver mest mening at læse først i forespørgslen?",
+            "options": [
+              "Kolonnenavne efter `SELECT`",
+              "Om `ORDER BY name` står sidst",
+              "Om tabelnavnet starter med et lille bogstav",
+              "Byen, der står i `WHERE`-betingelsen"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Min lup starter ved filteret. Det er værdien efter lighedstegnet i WHERE, der afgør, hvilken by rækkerne skal matche.",
+            "learnMoreUrl": "/characters/raymond#animation-find-row",
+            "learnMoreTitle": "Find den manglende række"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000405",
+            "kind": "multiple",
+            "prompt": "Du vil vise navnene på kunder fra Viborg, sorteret stigende efter navn. Hvilke to klausuler tilføjer du efter `SELECT name FROM customers`?",
+            "options": [
+              "`ORDER BY name DESC`",
+              "`WHERE city = 'Viborg'`",
+              "`GROUP BY city`",
+              "`ORDER BY name ASC`"
+            ],
+            "correctOptions": [
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "WHERE vælger rækker fra Viborg. ORDER BY name ASC sorterer navnene stigende. Filteret står før sorteringen i forespørgslen.",
+            "learnMoreUrl": "/characters/raymond#character-gallery-title",
+            "learnMoreTitle": "Find de rigtige rækker"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000406",
+            "kind": "single",
+            "prompt": "Hvad kan du regne med om rækkefølgen i `SELECT name FROM customers WHERE city = 'Viborg';`?",
+            "options": [
+              "En bestemt rækkefølge er kun garanteret med `ORDER BY`",
+              "Forespørgslen viser altid navnene alfabetisk",
+              "Forespørgslen viser altid den nyeste kunde først",
+              "Rækkefølgen er garanteret identisk på alle installationer"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Uden ORDER BY må databasen returnere de matchende rækker i den rækkefølge, der passer forespørgselsplanen. Tilføj en eksplicit sortering, hvis rækkefølgen betyder noget.",
+            "learnMoreUrl": "/characters/raymond#animation-sort-rows",
+            "learnMoreTitle": "Sæt rækkerne i orden"
+          }
+        ]
+      }
+    },
+    {
+      "key": "bilbo-bestillingsseddel-api",
+      "characterSlug": "bilbo",
+      "intro": "Velkommen til min syltetøjsbod. Læs bestillingssedlen ved døren, og hjælp API’et med at give et klart svar.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Fra bestillingsseddel til API",
+        "topic": "Backend",
+        "description": "Følg en ordre fra syltetøjsboden gennem rute, validering og HTTP-svar.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000501",
+            "kind": "single",
+            "prompt": "I Bilbos API opretter `POST /orders` en ordre, og `GET /orders/{id}` læser én ordre. Hvilket kald bruger kassen, når kunden lægger en ny ordre?",
+            "options": [
+              "`GET /orders/42`",
+              "`GET /orders`",
+              "`POST /orders`",
+              "`POST /orders/42`"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg bruger to forskellige bunker sedler. POST til /orders beder boden oprette ordren. Læseruten kan bruges, når ordren har fået et nummer.",
+            "learnMoreUrl": "/characters/bilbo#character-gallery-title",
+            "learnMoreTitle": "Find den rette rute"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000502",
+            "kind": "single",
+            "prompt": "Kunden er allerede logget ind. Hvad er et godt indhold i DTO’en til en ny ordre i Bilbos undervisningseksempel?",
+            "options": [
+              "Varenummer, antal og bestillingsnøgle",
+              "Kundens rolle, lagerets størrelse og pris i alt",
+              "Ordrenummer og bestillingsstatus bestemt af klienten",
+              "Kundens adgangskode og hele lagerlisten"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "DTO’en indeholder det, kunden vælger eller sender som bestillingsnøgle. API’et finder kunden via login og bestemmer selv lagerstatus og ordrenummer.",
+            "learnMoreUrl": "/characters/bilbo#character-gallery-title",
+            "learnMoreTitle": "Tjek ordren ved døren"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000503",
+            "kind": "single",
+            "prompt": "Bilbo accepterer fra 1 til 12 glas pr. ordre. Klienten sender antal `0`. Hvilket HTTP-svar beskriver situationen?",
+            "options": [
+              "`201 Created`",
+              "`400 Bad Request` med fejl på feltet antal",
+              "`200 OK` med en tom ordrebekræftelse",
+              "`404 Not Found` fordi boden mangler en rute"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Antal 0 bryder reglen for gyldigt input. Et 400-svar med feltnavn fortæller klienten, hvad der skal rettes, før den sender igen.",
+            "learnMoreUrl": "/characters/bilbo#character-gallery-title",
+            "learnMoreTitle": "Tjek ordren ved døren"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000504",
+            "kind": "single",
+            "prompt": "Bestillingen er gyldig, og serveren opretter ordre 42. Hvilket svar skal kassen forvente i Bilbos API?",
+            "options": [
+              "`400 Bad Request` og `Location: /orders/42`",
+              "`404 Not Found` og et tomt svar",
+              "`200 OK` og `Location: /orders`",
+              "`201 Created` og `Location: /orders/42`"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg kvitterer med 201 og skriver stedet for den nye ordre på kvitteringen. Klienten kan følge Location for at læse ordre 42.",
+            "learnMoreUrl": "/characters/bilbo#character-gallery-title",
+            "learnMoreTitle": "HTTP fra ordre til svar"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000505",
+            "kind": "multiple",
+            "prompt": "Bilbo tester, at intervallet 1–12 håndhæves. Hvilke to værdier er de nærmeste ugyldige grænsetilfælde?",
+            "options": [
+              "0 glas",
+              "1 glas",
+              "13 glas",
+              "12 glas"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "0 ligger umiddelbart under den nedre grænse. 13 ligger umiddelbart over den øvre. 1 og 12 er begge tilladt og bør også afprøves.",
+            "learnMoreUrl": "/characters/bilbo#character-gallery-title",
+            "learnMoreTitle": "Tjek ordren ved døren"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000506",
+            "kind": "single",
+            "prompt": "Kunden sender en gyldig bestilling på et kendt varenummer, men sidste glas er solgt i mellemtiden. Bilbos API bruger 409 ved konflikt med den aktuelle lagertilstand. Hvilket svar passer her?",
+            "options": [
+              "`201 Created` fordi inputtet har gyldigt format",
+              "`409 Conflict` fordi ordren ikke kan gennemføres med lagerets nuværende tilstand",
+              "`400 Bad Request` fordi antal mangler",
+              "`404 Not Found` fordi varenummeret er ukendt"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Ordren er korrekt udfyldt, og varen findes. Konflikten opstår ved lageropslaget, når den ønskede ordre sammenholdes med det, boden faktisk kan levere.",
+            "learnMoreUrl": "/characters/bilbo#character-gallery-title",
+            "learnMoreTitle": "HTTP fra ordre til svar"
+          }
+        ]
+      }
+    },
+    {
+      "key": "chameleon-modellens-genvej",
+      "characterSlug": "chameleon",
+      "intro": "Min model skal kende forskel på lyden af et strøg og et knips. Hjælp mig med at finde ud af, hvad den egentlig har lært.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Har modellen lært en genvej?",
+        "topic": "Machine Learning",
+        "description": "Undersøg en model, der sorterer fiktive lydoptagelser fra Kamæleonens værksted.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000601",
+            "kind": "single",
+            "prompt": "Du har optagelser mærket `strøg` og `knips`. Hvilken del bruger du til at lære modellens parametre?",
+            "options": [
+              "Testdata",
+              "Træningsdata",
+              "De næste optagelser, som modellen senere skal vurdere",
+              "Kun de optagelser, modellen tager fejl af i testen"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Når jeg stemmer et instrument, bruger jeg de toner, jeg har afsat til justering. Træningsdelen er dér, modellen lærer sine parametre.",
+            "learnMoreUrl": "/characters/chameleon#character-gallery-title",
+            "learnMoreTitle": "Train, validation og test"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000602",
+            "kind": "single",
+            "prompt": "Du sammenligner tre modeller og vælger den, der virker bedst på optagelser, som ikke er brugt til træning. Hvilken del skal du bruge til modelvalget?",
+            "options": [
+              "Træningsdata alene",
+              "De data, som er afsat til den afsluttende test",
+              "De nyeste optagelser uden bekræftede mærker",
+              "Valideringsdata"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Validering bruges til at sammenligne modeller og indstillinger. Testdelen kan bagefter give en selvstændig vurdering af det færdige valg.",
+            "learnMoreUrl": "/characters/chameleon#character-gallery-title",
+            "learnMoreTitle": "Train, validation og test"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000603",
+            "kind": "single",
+            "prompt": "Alle strøg er optaget med en rød mikrofon i et rum, og alle knips er optaget med en blå mikrofon i et andet. Hvilken observation ville vise, at modellen muligvis følger en genvej?",
+            "options": [
+              "Modellen kalder et strøg for et knips, når det optages i knipsenes rum",
+              "Modellen klassificerer både strøg og knips korrekt i et nyt rum",
+              "Modellen giver samme korrekte svar på samme optagelse to gange",
+              "Modellen gemmes efter afsluttet træning"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Et resultat, der ændrer sig med rummet, kan tyde på, at modellen bruger baggrundslyd frem for selve spilleteknikken. Optag begge teknikker i flere miljøer for at undersøge det.",
+            "learnMoreUrl": "/characters/chameleon#character-gallery-title",
+            "learnMoreTitle": "Overfitting"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000604",
+            "kind": "single",
+            "prompt": "En model rammer næsten alle træningsoptagelser, men har svært ved nye optagelser fra værkstedet. Hvad er en rimelig forklaring at undersøge?",
+            "options": [
+              "Træningsoptagelser kan aldrig bruges til at lære noget",
+              "En høj træningsscore garanterer en høj testscore",
+              "Modellen er muligvis overtilpasset optagelserne fra træningen",
+              "Modellen bliver automatisk bedre, når den ser nye optagelser"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Her skurrer prøven. Modellen kan have lært detaljer fra træningsoptagelserne, der ikke hjælper på nye lydklip. Sammenlign med en enklere model på valideringsdelen.",
+            "learnMoreUrl": "/characters/chameleon#character-gallery-title",
+            "learnMoreTitle": "Overfitting"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000605",
+            "kind": "multiple",
+            "prompt": "Du vil skalere de målte værdier uden datalækage. Hvilke to trin hører til en korrekt arbejdsgang?",
+            "options": [
+              "Del data i træning, validering og test før skaleringens parametre beregnes",
+              "Beregn skaleringens parametre ud fra alle optagelser på én gang",
+              "Beregn parametrene på træningsdata, og anvend samme skalering på de andre dele",
+              "Skift mærker på testoptagelserne, hvis modellen gætter forkert"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Skaleringens parametre lærer noget om datasættet. Når de beregnes udelukkende på træningsdelen, holdes validerings- og testoplysninger uden for træningen.",
+            "learnMoreUrl": "/characters/chameleon#character-gallery-title",
+            "learnMoreTitle": "Data-lækage"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000606",
+            "kind": "single",
+            "prompt": "Hvornår giver det bedst mening at åbne det særskilte testsæt, som du har lagt til side?",
+            "options": [
+              "Før træning, så testen kan vælge lydoptagelser til modellen",
+              "Efter modelvalget, så testsættet kan give en afsluttende vurdering",
+              "Hver gang du ændrer en indstilling, så testen kan styre justeringen",
+              "Når du vil flytte de sværeste klip fra træning til test"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Et urørt testsæt giver et mere uafhængigt billede af, hvor godt den valgte model klarer nye optagelser. Gentagne valg ud fra testen gør den til endnu et valideringssæt.",
+            "learnMoreUrl": "/characters/chameleon#character-gallery-title",
+            "learnMoreTitle": "Data-lækage"
+          }
+        ]
+      }
+    },
+    {
+      "key": "whale-dockerfile-til-tjeneste",
+      "characterSlug": "whale",
+      "intro": "Velkommen ombord. Vi gør kajstatus klar til drift og ser, hvad der følger med, når en container udskiftes.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Fra Dockerfile til kørende tjeneste",
+        "topic": "DevNet",
+        "description": "Følg en fiktiv kajstatus-app fra byggeopskrift gennem Compose til vedvarende data.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000701",
+            "kind": "single",
+            "prompt": "Holdet har skrevet en Dockerfile til kajstatus. Hvad ligger der i filen?",
+            "options": [
+              "Det komplette historiearkiv for alle tidligere containere",
+              "Databasens seneste indhold",
+              "Den kørende proces fra serveren",
+              "Instruktioner til at bygge imaget og beskrive, hvordan appen kan startes"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Læs lastplanen først. Dockerfile beskriver, hvad byggeren skal lægge i imaget, og kan sætte standarden for det, der starter ombord.",
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Fra Dockerfile til container"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000702",
+            "kind": "single",
+            "prompt": "Holdet bygger kajstatus og får et image med appen og dens afhængigheder. Hvad er en container i forhold til imaget?",
+            "options": [
+              "En instans, der kan køre en proces med udgangspunkt i imaget",
+              "En anden betegnelse for Dockerfile",
+              "Et dokument, der alene lister appens API-endpoints",
+              "En backup af alle navngivne volumes"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Imaget er den pakke, containeren tager udgangspunkt i. Den samme pakke kan bruges til at starte flere containere.",
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Fra Dockerfile til container"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000703",
+            "kind": "single",
+            "prompt": "Både web og database skal starte sammen. Hvilken opgave passer til `services` i en Compose-fil?",
+            "options": [
+              "Registrér hvem der må ændre projektets Git-historik",
+              "Tilføj et nyt login til alle databasebrugere",
+              "Beskriv web og database som tjenester med deres egne images og indstillinger",
+              "Skriv svaret for hvert HTTP-kald til webtjenesten"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "I Compose beskriver en service, hvilken proces eller app der skal køre, og hvordan den forbindes og konfigureres. Web og database har hver sin service.",
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Én Compose-fil, flere tjenester"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000704",
+            "kind": "single",
+            "prompt": "En ny databasecontainer skal overtage efter den gamle, mens de gemte kajmålinger skal bevares. Hvad bør holdet knytte til mappen med databasedata?",
+            "options": [
+              "Et nyt navn til imaget",
+              "Et navngivet volume, som den næste container også kan tilkoble",
+              "En tilfældig værtsport",
+              "Et nyt build-tag ved hver opstart"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Når skibet udskiftes, skal logbogen med. Et navngivet volume kan leve videre uden for containeren og tilkobles den næste.",
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Data der overlever containeren"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000705",
+            "kind": "multiple",
+            "prompt": "Holdet skifter til et nyt image og starter en erstatningscontainer med samme navngivne datavolume. Hvilke to ting forventer du?",
+            "options": [
+              "At navnet på imaget alene gemmer databasens rækker",
+              "At den nye container kan starte appen fra det nye image",
+              "At volume automatisk slettes, når den gamle container stoppes",
+              "At data i volumet kan bruges igen af erstatningscontaineren"
+            ],
+            "correctOptions": [
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Den nye container bruger det valgte image til appens filer. Volumet har sin egen levetid og kan levere de eksisterende data igen, når det tilkobles korrekt.",
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Data der overlever containeren"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000706",
+            "kind": "single",
+            "prompt": "Holdet vil undersøge, om Compose kan læse konfigurationen, før det starter kajstatus. Hvilket trin passer til opgaven?",
+            "options": [
+              "Genstart databasen og vent på, at web svarer",
+              "Kør endnu et image-build uden Compose-filen",
+              "Validér den samlede Compose-konfiguration, fx med `docker compose config --quiet`",
+              "Opret et nyt volume til terminaludskrifterne"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Compose config læser og opløser projektets konfiguration. Flaget --quiet validerer uden at udskrive den fulde konfiguration.",
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Én Compose-fil, flere tjenester"
+          }
+        ]
+      }
+    },
+    {
+      "key": "bee-alarmen-i-bistadet",
+      "characterSlug": "bee",
+      "intro": "Bistadets øvelsestjeneste har sendt en alarm. Hjælp mig med at kontrollere signalet og få driften sikkert tilbage.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Når alarmen går i bistadet",
+        "topic": "Cybersikkerhed",
+        "description": "Håndtér en fiktiv alarm i en skrivebordsøvelse for en skoleapp.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000801",
+            "kind": "single",
+            "prompt": "Skoleappens øvelsestjeneste melder om usædvanlig aktivitet. Alarmer kan også skyldes vedligeholdelse. Hvad er et godt første skridt i den aftalte beredskabsplan?",
+            "options": [
+              "Meld tjenesten gendannet, før nogen kontrollerer den",
+              "Sammenhold tidspunkt, kilde og hændelse med driftsloggen",
+              "Slet alle øvelsens logfiler og vent på endnu en alarm",
+              "Sluk alle skolens tjenester på grund af den ene alarm"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg følger sporene, før jeg kalder hele stadet ud. Alarmen skal sammenholdes med driftsloggen, så vi ved, hvad der faktisk er observeret.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Når alarmen går"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000802",
+            "kind": "single",
+            "prompt": "To logs fra samme øvelse har tidsstempler i forskellige tidszoner. Hvad gør det muligt at sætte hændelserne på én tidslinje?",
+            "options": [
+              "Omsæt tidspunkterne til samme tidszone, og kontrollér at urene stemmer",
+              "Brug udelukkende loggen fra den nyeste maskine",
+              "Sortér loglinjerne efter længden af teksten",
+              "Læs altid den ene log til ende før den anden"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Tidspunkterne skal kunne sammenlignes. Brug en fælles tidszone, og tjek eventuelle urafvigelser, før du konkluderer, hvilken hændelse der kom først.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Følg sporet i loggen"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000803",
+            "kind": "multiple",
+            "prompt": "En alarm er bekræftet. Hvilke to oplysninger er relevante at give øvelsens ansvarlige driftsteam, så de kan vurdere omfanget?",
+            "options": [
+              "Tidspunkt og navn på den berørte øvelsestjeneste",
+              "En liste med deltagernes adgangskoder",
+              "Den observerede hændelse og hvilke funktioner der ser ud til at være berørt",
+              "Kopier af alle elevers private dokumenter"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Tid, berørt tjeneste og observerede virkninger giver driftsteamet et udgangspunkt. Del kun de relevante oplysninger til den afgrænsede opgave.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Når alarmen går"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000804",
+            "kind": "single",
+            "prompt": "Driftsteamet bekræfter, at kun én øvelsestjeneste kan være ramt. Hvilken handling passer til at afgrænse hændelsen?",
+            "options": [
+              "Luk alle tjenester på skolen uanset deres relation til hændelsen",
+              "Genåbn den berørte tjeneste for alle, inden omfanget er vurderet",
+              "Fjern logsporene for den berørte tjeneste",
+              "Aftal en målrettet afgrænsning for den berørte tjeneste, og bevar relevante spor"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg holder efterforskningen til den berørte del af stadet. En målrettet afgrænsning kan begrænse virkningen, mens relevante logs stadig kan vise forløbet.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Når alarmen går"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000805",
+            "kind": "single",
+            "prompt": "Det aftalte team har håndteret årsagen og nu en kontrolleret version af tjenesten. Hvad hører til gendannelsen?",
+            "options": [
+              "Genåbn med det samme, fordi alarmen er blevet stille",
+              "Gendan og undlad funktionstesten, så eleverne kommer hurtigere ind",
+              "Afprøv den kontrollerede version, overvåg den, og aftal, hvornår den genåbnes",
+              "Kør kun en hastighedstest på en anden tjeneste"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Gendannelse omfatter at efterprøve den berørte funktion og følge signalerne efter genåbning. Tidspunktet aftales med de relevante ansvarlige.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Når alarmen går"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000806",
+            "kind": "single",
+            "prompt": "Øvelsen er afsluttet. Hvilket resultat gør beredskabet bedre til næste gang?",
+            "options": [
+              "Fjern den gamle plan uden at notere, hvad der virkede",
+              "Dokumentér en konkret forbedring, fx hvem der modtager alarmen, og prøv den af",
+              "Gem hele øvelsen som en uordnet samling billeder",
+              "Skriv blot, at alle skal reagere hurtigere"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En konkret ændring af ansvar eller arbejdsgang kan afprøves. Brug observationerne fra øvelsen til at afgøre, hvor den giver størst effekt.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Når alarmen går"
+          }
+        ]
+      }
+    },
+    {
+      "key": "bat-stol-paa-ekko",
+      "characterSlug": "bat",
+      "intro": "Stil en plade foran sensoren, og lyt med. Det vigtigste i min prototype er at vide, hvornår målingen kan bruges.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Kan du stole på ekkoet?",
+        "topic": "IoT",
+        "description": "Vurdér ultralydsmålinger, før en fiktiv portprototype reagerer på dem.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000901",
+            "kind": "single",
+            "prompt": "En ultralydssensor ved porten tager tid fra udsendt puls til modtaget ekko. Hvorfor halverer du lydens beregnede vej?",
+            "options": [
+              "Sensoren rammer fladen med to forskellige frekvenser",
+              "Sensoren måler kun i lige tal",
+              "Lyden rejser både hen til fladen og tilbage igen",
+              "Lyden rejser dobbelt så hurtigt om morgenen"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Min stopmåling begynder, når pulsen sendes, og slutter ved ekkoet. Det er en rundtur. Afstanden til fladen er derfor halvdelen af lydens samlede vej.",
+            "learnMoreUrl": "/characters/bat#character-gallery-title",
+            "learnMoreTitle": "Mål afstanden med ekko"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000902",
+            "kind": "single",
+            "prompt": "Med et målebånd står en plade præcis 100 cm fra sensoren. Prototypen måler 104, 105 og 106 cm. Hvad kan den kendte afstand bruges til?",
+            "options": [
+              "Som reference til at beregne afvigelsen og begynde en kalibrering",
+              "Som bevis for, at sensoren allerede er eksakt",
+              "Som værdi til at erstatte alle sensorens målinger",
+              "Som grund til at kassere alle målinger over 100 cm"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Målebåndet giver en uafhængig reference. De tre målinger er her 4–6 cm højere end den kendte afstand. Prøv flere afstande, før du vælger en korrektion.",
+            "learnMoreUrl": "/characters/bat#character-gallery-title",
+            "learnMoreTitle": "Stol på målingen"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000903",
+            "kind": "single",
+            "prompt": "Tre målinger er 98 cm, 210 cm og 102 cm. Alle tre ligger inden for sensorens dokumenterede område. Hvad er medianen?",
+            "options": [
+              "98 cm",
+              "210 cm",
+              "Ca. 137 cm",
+              "102 cm"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Sortér målingerne som 98, 102 og 210. Medianen er tallet i midten, 102. Ca. 137 cm er det aritmetiske gennemsnit.",
+            "learnMoreUrl": "/characters/bat#character-gallery-title",
+            "learnMoreTitle": "Stol på målingen"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000904",
+            "kind": "single",
+            "prompt": "Prototypen får intet brugbart ekko inden for tidsgrænsen. Hvilken status bør den give videre?",
+            "options": [
+              "0 cm, fordi der ikke blev målt noget",
+              "Ukendt afstand med status for timeout",
+              "Den største mulige afstand som en gyldig måling",
+              "Den forrige måling, mærket som en ny gyldig måling"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Når jeg ikke får et ekko inden fristen, har jeg ingen ny måling at spille videre på. En timeout bevarer forskellen mellem en kendt afstand og manglende data.",
+            "learnMoreUrl": "/characters/bat#character-gallery-title",
+            "learnMoreTitle": "Vent på ekko uden at blokere"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000905",
+            "kind": "multiple",
+            "prompt": "Næsebladet vil undersøge, om portprototypen er stabil, når pladen står stille. Hvilke to ting skal holdet gemme?",
+            "options": [
+              "Gentagne rå måleværdier ved den samme kendte afstand",
+              "Kun målingen tættest på facit",
+              "Kun den filtrerede værdi uden den kendte afstand",
+              "Status for målinger, der endte i timeout"
+            ],
+            "correctOptions": [
+              0,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Rå værdier viser spredningen ved en kendt afstand. Status for timeout fortæller, om sensoren indimellem manglede et brugbart ekko.",
+            "learnMoreUrl": "/characters/bat#character-gallery-title",
+            "learnMoreTitle": "Stol på målingen"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000000906",
+            "kind": "single",
+            "prompt": "Prototypen viser kun en gyldig vurdering af porten, når den har en gyldig måling. Hvad bør den vise, hvis de tre nyeste prøver alle er timeouts?",
+            "options": [
+              "Lukket port, fordi alle tre prøver er ens",
+              "Åben port, fordi sensoren ikke fik svar",
+              "En fejlstatus eller ukendt måling",
+              "En median på 0 cm, beregnet ud fra de tre timeouts"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Tre manglende ekkoer kan ikke bruges som tre afstande. Vis målefejlen, så brugeren ved, at prototypen ikke kan afgøre portens tilstand.",
+            "learnMoreUrl": "/characters/bat#character-gallery-title",
+            "learnMoreTitle": "Brug målingen i koden"
+          }
+        ]
+      }
+    },
+    {
+      "key": "beaver-test-der-passer-paa-adgangen",
+      "characterSlug": "beaver",
+      "intro": "Vi har rettet en regel i øveappens dokumentmappe. Hjælp mig med at bygge en test, der holder rettelsen på plads.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Byg en test, der passer på adgangen",
+        "topic": "Sikkerhed og test",
+        "description": "Gør en rettet adgangsregel holdbar med regressionstests på fiktive data.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001001",
+            "kind": "single",
+            "prompt": "I en øveapp må kun ejeren læse sit dokument. Serveren har bekræftet, hvem brugeren er. Hvad skal den derefter afgøre?",
+            "options": [
+              "Om brugerens navn står i den rigtige typografi",
+              "Om brugerens browser viser dokumentknappen",
+              "Om brugeren tidligere har besøgt forsiden",
+              "Om brugeren har ret til at læse det konkrete dokument"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg sikrer hver adgangsvej, også når vi ved, hvem der går ind ad døren. Serveren skal kontrollere retten til netop det dokument.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Hvem må se objektet?"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001002",
+            "kind": "single",
+            "prompt": "En adgangsregel for dokumentet mangler i øveappens konfiguration. Hvilket standardresultat passer til kravet om kun at tillade ejeren adgang?",
+            "options": [
+              "Giv adgang til den første indloggede bruger",
+              "Afvis læsningen, indtil der findes en gyldig regel, som tillader den",
+              "Giv alle adgang, mens reglen undersøges",
+              "Skjul knappen, men lad serveren sende dokumentet"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En sikker standard afviser handlinger, som ikke er tilladt af en gyldig regel. En manglende regel åbner derfor ikke dokumentet.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Hvem må se objektet?"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001003",
+            "kind": "multiple",
+            "prompt": "En automatisk regressionstest bruger to fiktive brugere og ét dokument. Hvilke to forventninger dækker adgangsreglen?",
+            "options": [
+              "Ejeren kan læse sit dokument",
+              "En vilkårlig indlogget bruger kan læse det",
+              "En indlogget bruger uden rettighed bliver afvist",
+              "Begge brugere bliver altid afvist"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Den positive prøve beskytter ejerens legitime adgang. Den negative prøve bekræfter, at en anden bruger fortsat bliver afvist.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Test i et aftalt miljø"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001004",
+            "kind": "single",
+            "prompt": "Øveappens aftalte svar til en indlogget bruger uden læseret er `403 Forbidden`. Hvad bør testen kontrollere ud over statuskoden?",
+            "options": [
+              "At serveren sender hele dokumentet, så testen kan genkende det",
+              "At knappen er blå i browseren",
+              "At svaret ikke indeholder dokumentets beskyttede indhold",
+              "At testbrugeren kan stave til dokumentets titel"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg kontrollerer både låsen og det, den beskytter. En afvist læsning må heller ikke sende dokumentets indhold med svaret.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Test i et aftalt miljø"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001005",
+            "kind": "single",
+            "prompt": "Efter en rettelse kan ejeren læse dokumentet. Testen for en anden indlogget bruger, der skulle afvises, fejler. Hvad betyder resultatet?",
+            "options": [
+              "Rettelsen er ikke bekræftet, fordi en del af adgangsreglen fejler",
+              "Rettelsen er bestået, fordi ejeren kan få adgang",
+              "Den negative test kan fjernes permanent",
+              "Adgangsreglen er testet, når blot én af prøverne passer"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Kravet har to sider: Ejeren får adgang, og andre afvises. Kontrollen er først bestået, når begge forventninger holder.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Test i et aftalt miljø"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001006",
+            "kind": "single",
+            "prompt": "Hvor hører den automatiserede test hjemme, hvis den også skal opdage, at en fremtidig ændring bryder reglen?",
+            "options": [
+              "Som en mundtlig huskeseddel til den næste udvikler",
+              "I projektets faste testsuite til gentagen kørsel ved ændringer",
+              "Som et enkelt skærmbillede, der ikke kan køres igen",
+              "Som en note om kun at teste efter næste års opgradering"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Regressionstesten kan køres igen med samme krav, hver gang projektet ændres. På den måde bliver en ny fejl opdaget ved en tilbagevendende kontrol.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Test i et aftalt miljø"
+          }
+        ]
+      }
+    },
+    {
+      "key": "fox-hvilket-testtilfaelde",
+      "characterSlug": "fox",
+      "intro": "Jeg har notesbogen klar. I vores aftalte øvemiljø undersøger vi reglerne for at låne et kamera.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Hvilket testtilfælde mangler?",
+        "topic": "Sikkerhed og test",
+        "description": "Find de manglende testtilfælde i en fiktiv formular til udlån af kameraer.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001101",
+            "kind": "single",
+            "prompt": "En fiktiv udlånsformular accepterer lån på 1 til 5 hele dage. Holdet har allerede afprøvet 1, 3 og 5 dage. Hvilket ekstra testtilfælde ligger lige under det tilladte interval?",
+            "options": [
+              "1, som allerede er afprøvet",
+              "3, som ligger midt i intervallet",
+              "0, som skal afvises",
+              "5, som er den øvre tilladte grænse"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg kigger altid lige på den anden side af stregen. 0 er det nærmeste heltal under 1, og det giver en målrettet test af den nedre grænse.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Cyberbiens undervisningskort · Test i et aftalt miljø"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001102",
+            "kind": "single",
+            "prompt": "Udlånsformularen skal acceptere lån på 1–5 hele dage. Hvilket sæt prøver dækker selve den øvre grænse og det nærmeste heltal over den?",
+            "options": [
+              "5 accepteres, 6 afvises",
+              "4 afvises, 5 accepteres",
+              "5 afvises, 6 accepteres",
+              "1 accepteres, 2 accepteres"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Fem dage er det længste tilladte lån. Seks dage er det nærmeste ugyldige heltal. Sammen viser prøverne, om den øvre grænse er håndhævet.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Cyberbiens undervisningskort · Test i et aftalt miljø"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001103",
+            "kind": "multiple",
+            "prompt": "En ansøgning om lån med tomt felt for antal dage skal afvises, uden at der oprettes et lån. Hvilke to forventninger skal stå i testtilfældet?",
+            "options": [
+              "Lånet registreres uden en varighed",
+              "Formularen viser en fejl ved det manglende antal dage",
+              "Kameraet registreres som udlånt i nul dage",
+              "Der findes intet nyt lån efter afvisningen"
+            ],
+            "correctOptions": [
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Test både det synlige resultat og tilstanden bagefter. En fejlbesked fortæller brugeren, hvad der mangler. Lånelisten viser, om formularen undlod at oprette lånet.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Cyberbiens undervisningskort · Test i et aftalt miljø"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001104",
+            "kind": "single",
+            "prompt": "Et testfund skal hjælpe Bæver med at vurdere udlånsformularen i øvemiljøet. Hvilken notits er mest konkret?",
+            "options": [
+              "Udlån virker underligt. Kig på formularen.",
+              "Testen er vigtig, fordi alle formularer kan have fejl.",
+              "Input er svært at forstå, så måske skal vi lave hele siden om.",
+              "I øveversionen blev et lån på 6 dage accepteret. Kravet er 1–5 dage, så ansøgningen skulle afvises, og intet lån skulle oprettes."
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg skriver det forventede ved siden af det faktiske. Så kan Bæver se både den konkrete prøve og forskellen, der skal undersøges.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Cyberbiens undervisningskort · Test i et aftalt miljø"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001105",
+            "kind": "single",
+            "prompt": "Aftalen dækker øveformularen med fiktive lån. En kollega vil gentage prøven i den rigtige udlånsløsning. Hvad er næste skridt?",
+            "options": [
+              "Brug produktionssiden uden at sige det, da input kun er et tal",
+              "Fortsæt i øvemiljøet og få særskilt aftale, før andre systemer testes",
+              "Flyt rigtige låneoplysninger til øvemiljøet for at få flere eksempler",
+              "Antag, at samme aftale gælder alle lignende formularer"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Et aftalt testmiljø afgrænser system og data. Hvis afgrænsningen skal ændres, kræver det en ny aftale med de ansvarlige.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Cyberbiens undervisningskort · Test i et aftalt miljø"
+          },
+          {
+            "id": "3923af32-2418-42b7-b9e4-000000001106",
+            "kind": "single",
+            "prompt": "Formularen er rettet. Hvilken ny afprøvning giver bedst belæg for, at den øvre grænse nu virker?",
+            "options": [
+              "Læs fejlrapportens titel, og afslut testen",
+              "Prøv et almindeligt lån på 3 dage, og antag resten",
+              "Gentag prøven med 6 dage, der skal afvises, og kontrollér at 5 dage stadig accepteres",
+              "Vælg to tilfældige låneperioder uden forventet resultat"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Den samme prøve bekræfter rettelsen. Den gyldige naboværdi viser, at ændringen heller ikke afviser det højeste tilladte antal.",
+            "learnMoreUrl": "/characters/bee#character-gallery-title",
+            "learnMoreTitle": "Cyberbiens undervisningskort · Test i et aftalt miljø"
+          }
+        ]
+      }
+    }
+  ]
+}

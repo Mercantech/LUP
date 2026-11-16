@@ -81,6 +81,8 @@ else
             </div>
         </section>
 
+        <CharacterQuizSection @key="character.Slug" Character="character" />
+
         <div class="character-features">
             @foreach (var feature in character.Features)
             {
@@ -180,8 +182,9 @@ else
 
         _handledLocation = location;
         var fragment = Uri.UnescapeDataString(uri.Fragment.TrimStart('#'));
-        var section = character.Materials.FirstOrDefault(material => material.SectionId == fragment)?.SectionId;
-        _pendingSection = section is null ? null : (section, location);
+        var hasTarget = character.Materials.Any(material => material.SectionId == fragment)
+            || character.Animations.Any(animation => $"animation-{animation.Id}" == fragment);
+        _pendingSection = hasTarget ? (fragment, location) : null;
         return _pendingSection.HasValue;
     }
 

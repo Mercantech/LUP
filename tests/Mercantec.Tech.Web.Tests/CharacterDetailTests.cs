@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Bunit;
+using Mercantec.Tech.Contracts;
 using Mercantec.Tech.Web.Characters;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,9 +13,29 @@ namespace Mercantec.Tech.Web.Tests;
 public sealed class CharacterDetailTests
 {
     [Fact]
+    public async Task Guest_can_open_the_published_exercise_after_login()
+    {
+        var id = Guid.Parse("11111111-2222-4333-8444-555555555555");
+        using var api = new CharacterQuizTestApi("raymond",
+            [new(id, "Find den manglende række", "SQL", 5, 6, "Begynder")]);
+        using var context = await LearningUiTestContext.CreateAsync(api);
+        await context.Auth.LogoutLocalAsync();
+
+        var page = context.Render<CharacterDetail>(p => p.Add(x => x.Slug, "raymond"));
+        var section = page.WaitForElement(".character-quizzes");
+        Assert.Equal("Videnstjek med Raymond", section.QuerySelector("h2")!.TextContent.Trim());
+        Assert.Equal("Find den manglende række", section.QuerySelector("h3")!.TextContent);
+        Assert.Contains("6 spørgsmål", section.TextContent);
+        var link = Assert.Single(section.QuerySelectorAll("a"));
+        Assert.StartsWith("Log ind og åbn quiz", link.TextContent.Trim());
+        Assert.Equal("/login?returnUrl=" + Uri.EscapeDataString($"/videnstjek/{id}?karakter=raymond"),
+            link.GetAttribute("href"));
+    }
+
+    [Fact]
     public async Task ChoosingAnAppearanceUpdatesThePortraitAndPressedState()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
 
@@ -29,7 +50,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task RaymondArtworkCanBeOpenedAndDownloadedWithoutReplacingTheSelectedPortrait()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
         page.FindAll(".character-appearance-picker button")[2].Click();
@@ -65,7 +86,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task RaymondArtworkDoesNotFollowTheUserToOtherProfiles()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
         Assert.Equal(2, page.FindAll(".character-artwork-gallery").Count);
@@ -95,7 +116,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task VatsonsLargeGalleryContainsAllExistingEmojisWithPublicOriginalDownloads()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "vatson"));
 
@@ -126,7 +147,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task VatsonsEmojiSearchFiltersByMotifAndCanBeClearedOrResetByProfileNavigation()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "vatson"));
 
@@ -161,7 +182,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task RaymondAnimationsStartOnlyOnRequestAndCanBeStoppedWithoutChangingThePortrait()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
         page.FindAll(".character-appearance-picker button")[2].Click();
@@ -190,7 +211,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task AnimationPlaybackIsResetWhenLeavingRaymondsProfile()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
         page.Find("button[aria-label='Afspil Find den manglende række']").Click();
@@ -208,7 +229,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task MovingBetweenProfilesResetsTheAppearanceWithoutShowingThePreviousPortrait()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
         page.FindAll(".character-appearance-picker button")[3].Click();
@@ -233,7 +254,7 @@ public sealed class CharacterDetailTests
     [InlineData("fox", "Ræv", "Rød team", "etisk")]
     public async Task SecurityTeachersHaveTheirOwnPortraitRoleAndAnimalExplanation(string slug, string name, string team, string explanation)
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, slug));
 
@@ -266,7 +287,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task GameDesignIllustrationsAreSeparateFromPortraitsAndRemainLocallyHosted()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "lupp"));
 
@@ -302,7 +323,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task Lupps48EmojisUseWebpPreviewsAndPngDownloadsWithoutChangingTheSelectedPortrait()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "lupp"));
         page.FindAll(".character-appearance-picker button")[1].Click();
@@ -349,7 +370,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task RaymondInfographicsCoverTheSuppliedObjectivesWithAccessibleTextAndOriginalDownloads()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
         page.FindAll(".character-appearance-picker button")[2].Click();
@@ -389,7 +410,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task InfographicFiltersKeepThePortraitAndResetWhenChangingProfiles()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
         page.FindAll(".character-appearance-picker button")[2].Click();
@@ -423,7 +444,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task OverviewIncludesAllElevenCharactersAndUsesStableRoutes()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterIndex>();
 
@@ -441,7 +462,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task WhaleProfileLinksAllDevNetObjectivesAndKeepsPortraitWhenFiltering()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "whale"));
 
@@ -466,7 +487,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task DuckProfileKeepsTheSelectedDuckWhileFindingAndPlayingDebuggingMaterials()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "gummianden"));
 
@@ -496,7 +517,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task UnknownProfileShowsTheReturnLinkAndRemovesPreviousProfileContent()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
 
@@ -510,7 +531,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task Raymonds48EmojisCanBeSearchedAndClearedWithoutChangingTheSelectedPortrait()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "raymond"));
         page.FindAll(".character-appearance-picker button")[2].Click();
@@ -538,7 +559,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task Artwork_galleries_start_closed_with_counts_and_stable_link_targets()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(p => p.Add(x => x.Slug, "raymond"));
         var profile = CharacterCatalog.Find("raymond")!;
@@ -554,7 +575,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task Artwork_links_follow_the_fragment_and_wait_for_the_matching_slug()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api, configure: services =>
         {
             var storage = (IJSRuntime)services.Last(service => service.ServiceType == typeof(IJSRuntime)).ImplementationInstance!;
@@ -580,7 +601,7 @@ public sealed class CharacterDetailTests
     [Fact]
     public async Task Arena_section_links_the_public_fighter_to_its_own_collection_entry()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         await context.Auth.LogoutLocalAsync();
         var page = context.Render<CharacterDetail>(p => p.Add(x => x.Slug, "raymond"));
@@ -611,11 +632,5 @@ public sealed class CharacterDetailTests
             Sections.Enqueue(((string)args![0]!, (string)args[1]!));
             return ValueTask.FromResult(default(TValue)!);
         }
-    }
-
-    private sealed class NoNetwork : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            => throw new InvalidOperationException("Character profiles must not request private account data.");
     }
 }

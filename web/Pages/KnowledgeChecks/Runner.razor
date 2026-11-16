@@ -1,4 +1,5 @@
 @page "/videnstjek/{DistributionId:guid}"
+@using Mercantec.Tech.Web.Characters
 @using Mercantec.Tech.Web.Notion
 @inject AuthService Auth
 @inject ViewAsStudentContext ViewAs
@@ -40,6 +41,11 @@
     [SupplyParameterFromQuery(Name = "q")] public string? Search { get; set; }
     [SupplyParameterFromQuery(Name = "emne")] public string? Topic { get; set; }
     [SupplyParameterFromQuery(Name = "niveau")] public string? Difficulty { get; set; }
+    [SupplyParameterFromQuery(Name = "karakter")] public string? Character { get; set; }
+
+    private static readonly HostPresentation[] Hosts = CharacterCatalog.All
+        .Select(character => new HostPresentation(character.Slug, character.Name, character.Path, character.DisplayPortrait?.Image))
+        .ToArray();
 
     private DotNetObjectReference<Runner>? _callback;
     private IJSObjectReference? _module;
@@ -55,7 +61,8 @@
     {
         get
         {
-            (string Key, string? Value)[] filters = [("q", Search), ("emne", Topic), ("niveau", Difficulty)];
+            (string Key, string? Value)[] filters = [
+                ("q", Search), ("emne", Topic), ("niveau", Difficulty), ("karakter", CharacterCatalog.Find(Character)?.Slug)];
             var query = string.Join("&", filters.Where(filter => !string.IsNullOrWhiteSpace(filter.Value))
                 .Select(filter => $"{filter.Key}={Uri.EscapeDataString(filter.Value!)}"));
             return query.Length > 0 ? $"/videnstjek?vis=oev&{query}" : "/videnstjek";
@@ -98,7 +105,7 @@
                 _module = module;
                 if (scope != Scope) return;
                 _callback ??= DotNetObjectReference.Create(this);
-                await module.InvokeVoidAsync("mount", _host, scope, _callback);
+                await module.InvokeVoidAsync("mount", _host, scope, _callback, Hosts);
             }
             _mountedScope = scope;
             _failedScope = null;
@@ -145,4 +152,5 @@
     }
 
     private sealed record MountScope(Guid DistributionId, Guid? AttemptId, string Account, string ApiBase);
+    private sealed record HostPresentation(string Slug, string Name, string ProfilePath, string? Portrait);
 }

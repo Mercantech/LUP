@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Notebooks;
@@ -9,15 +10,15 @@ using static Mercantec.Tech.Api.KnowledgeChecks.KnowledgeCheckRules;
 
 namespace Mercantec.Tech.Api.KnowledgeChecks;
 
-internal static class LegacyKnowledgeCheckPublisher
+internal static class KnowledgeCheckSeriesPublisher
 {
     internal static async Task<int> RunCommandAsync(string[] args, IConfiguration configuration)
     {
-        if (args.Length is < 3 or > 4 || args[1] != "publish-legacy"
+        if (args.Length is < 3 or > 4 || args[1] is not ("publish-legacy" or "publish-character-series")
             || !Guid.TryParse(args[2], out var owner) || owner == Guid.Empty
             || args.Length == 4 && args[3] != "--dry-run")
         {
-            Console.WriteLine(Write(new { error = "usage", command = "knowledge-checks publish-legacy OWNER_SUB [--dry-run]" }));
+            Console.WriteLine(Write(new { error = "usage", command = "knowledge-checks (publish-legacy|publish-character-series) OWNER_SUB [--dry-run]" }));
             return 2;
         }
 
@@ -31,7 +32,10 @@ internal static class LegacyKnowledgeCheckPublisher
         try
         {
             await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(connectionString).Options);
-            var result = await RunAsync(db, owner, dryRun: args.Length == 4);
+            var dryRun = args.Length == 4;
+            var result = args[1] == "publish-character-series"
+                ? await RunCharacterSeriesAsync(db, owner, dryRun)
+                : await RunLegacyAsync(db, owner, dryRun);
             Console.WriteLine(Write(result));
             return result.Issues.Length == 0 ? 0 : 1;
         }
@@ -47,14 +51,25 @@ internal static class LegacyKnowledgeCheckPublisher
         }
     }
 
-    internal static async Task<BatchResult> RunAsync(AppDbContext db, Guid owner, bool dryRun,
-        CancellationToken ct = default)
+    internal static Task<BatchResult> RunLegacyAsync(AppDbContext db, Guid owner, bool dryRun,
+        CancellationToken ct = default) =>
+        RunAsync(db, owner, LegacyKnowledgeCheckCatalog.ForOwner(owner)
+            .ToDictionary(item => item.Key, item => new SeriesDraft(item.Value.Key, item.Value.Draft)),
+            characterSeries: false, dryRun, ct);
+
+    internal static Task<BatchResult> RunCharacterSeriesAsync(AppDbContext db, Guid owner, bool dryRun,
+        CancellationToken ct = default) =>
+        RunAsync(db, owner, CharacterKnowledgeCheckCatalog.All
+            .ToDictionary(item => item.Key, item => new SeriesDraft(item.Value.Key, item.Value.Draft)),
+            characterSeries: true, dryRun, ct);
+
+    private static async Task<BatchResult> RunAsync(AppDbContext db, Guid owner,
+        IReadOnlyDictionary<Guid, SeriesDraft> templates, bool characterSeries, bool dryRun, CancellationToken ct)
     {
-        var templates = LegacyKnowledgeCheckCatalog.ForOwner(owner);
         if (owner == Guid.Empty || !await IsTeacherOwnerAsync(db, owner, ct))
             return new(dryRun, templates.Count, 0, 0, 0, 0, 0, 0, null, [new(null, "owner_not_verified_as_teacher")]);
 
-        if (dryRun) return await PrepareAsync(db, owner, templates, dryRun: true, ct);
+        if (dryRun) return await PrepareAsync(db, owner, templates, characterSeries, dryRun: true, ct);
 
         // The endpoint that publishes a single draft also takes a row lock on that draft.
         // Lock the entire set before checking its publications, so simultaneous executions can reuse them.
@@ -67,7 +82,7 @@ internal static class LegacyKnowledgeCheckPublisher
                 await db.KnowledgeCheckQuizzes.Where(quiz => quiz.OwnerSub == owner && ids.Contains(quiz.Id))
                     .ExecuteUpdateAsync(setters => setters.SetProperty(quiz => quiz.Revision, quiz => quiz.Revision), ct);
 
-                var batch = await PrepareAsync(db, owner, templates, dryRun: false, ct);
+                var batch = await PrepareAsync(db, owner, templates, characterSeries, dryRun: false, ct);
                 if (batch.Issues.Length == 0) await transaction.CommitAsync(ct);
                 return batch;
             }
@@ -96,18 +111,26 @@ internal static class LegacyKnowledgeCheckPublisher
     }
 
     private static async Task<BatchResult> PrepareAsync(AppDbContext db, Guid owner,
-        IReadOnlyDictionary<Guid, LegacyKnowledgeCheckCatalog.Template> templates, bool dryRun, CancellationToken ct)
+        IReadOnlyDictionary<Guid, SeriesDraft> templates, bool characterSeries, bool dryRun, CancellationToken ct)
     {
         var ids = templates.Keys.ToArray();
         var drafts = await db.KnowledgeCheckQuizzes.AsNoTracking()
-            .Where(quiz => quiz.OwnerSub == owner && ids.Contains(quiz.Id)).ToDictionaryAsync(quiz => quiz.Id, ct);
+            .Where(quiz => ids.Contains(quiz.Id) && (characterSeries || quiz.OwnerSub == owner)).ToDictionaryAsync(quiz => quiz.Id, ct);
+        var conflictingOwners = drafts.Values.Where(quiz => quiz.OwnerSub != owner)
+            .Select(quiz => new BatchIssue(templates[quiz.Id].Key, "draft_owned_by_another_teacher")).ToArray();
+        if (conflictingOwners.Length > 0)
+            return new(dryRun, templates.Count, 0, 0, 0, 0, 0, 0, null, conflictingOwners);
+
         var knownIds = drafts.Keys.ToArray();
-        var activeByDraft = await db.KnowledgeCheckPublications.AsNoTracking()
-            .Where(row => row.IsActive && row.HoldId == null && row.MaxAttempts == null && row.FeedbackMode == AfterSubmit
+        var existing = await db.KnowledgeCheckPublications.AsNoTracking()
+            .Where(row => (row.IsActive || characterSeries) && row.HoldId == null && row.MaxAttempts == null && row.FeedbackMode == AfterSubmit
                 && knownIds.Contains(row.Version.QuizId))
-            .Select(row => new { DraftId = row.Version.QuizId, row.Id, row.CreatedAtUtc })
+            .Select(row => new { DraftId = row.Version.QuizId, row.Id, row.CreatedAtUtc, row.IsActive })
             .OrderBy(row => row.CreatedAtUtc).ThenBy(row => row.Id).ToListAsync(ct);
+        var activeByDraft = existing.Where(row => row.IsActive).ToArray();
         var active = activeByDraft.DistinctBy(row => row.DraftId).ToDictionary(row => row.DraftId, row => row.Id);
+        var closed = existing.Where(row => !row.IsActive && !active.ContainsKey(row.DraftId))
+            .Select(row => row.DraftId).ToHashSet();
         var snapshots = await db.KnowledgeCheckVersions.AsNoTracking()
             .Where(version => knownIds.Contains(version.QuizId) && version.DraftRevision == version.Quiz.Revision)
             .ToDictionaryAsync(version => version.QuizId, ct);
@@ -119,7 +142,7 @@ internal static class LegacyKnowledgeCheckPublisher
         var now = DateTime.UtcNow;
         foreach (var (id, template) in templates.OrderBy(item => item.Key))
         {
-            if (active.ContainsKey(id)) continue;
+            if (active.ContainsKey(id) || closed.Contains(id)) continue;
             if (!drafts.TryGetValue(id, out var draft))
             {
                 draft = new KnowledgeCheckQuiz
@@ -173,7 +196,7 @@ internal static class LegacyKnowledgeCheckPublisher
         var published = apply ? publicationsToAdd.Count : 0;
         var sample = activeByDraft.FirstOrDefault()?.Id ?? (apply ? publicationsToAdd.FirstOrDefault()?.Id : null);
         return new(dryRun, templates.Count, apply ? draftsToAdd.Count : 0, published, active.Count, active.Count + published,
-            draftsToAdd.Count, publicationsToAdd.Count, sample, issues.ToArray());
+            draftsToAdd.Count, publicationsToAdd.Count, sample, issues.ToArray(), characterSeries ? closed.Count : null);
     }
 
     private static bool IsFreeExerciseReady(string title, string description, string topic,
@@ -195,6 +218,8 @@ internal static class LegacyKnowledgeCheckPublisher
             { SqlState: PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.DeadlockDetected };
 
     internal sealed record BatchResult(bool DryRun, int Total, int AddedDrafts, int Published, int AlreadyActive, int FinalActive,
-        int DraftsToAdd, int PublicationsToAdd, Guid? SamplePublicationId, BatchIssue[] Issues);
+        int DraftsToAdd, int PublicationsToAdd, Guid? SamplePublicationId, BatchIssue[] Issues,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? PreviouslyClosed = null);
     internal sealed record BatchIssue(string? Source, string Code);
+    private sealed record SeriesDraft(string Key, KnowledgeCheckDraft Draft);
 }

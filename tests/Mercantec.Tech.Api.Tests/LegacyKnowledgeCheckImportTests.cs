@@ -72,7 +72,7 @@ public sealed class LegacyKnowledgeCheckImportTests
         var edit = new KnowledgeCheckDraft(editedTitle, original.Description, original.Topic,
             original.EstimatedMinutes, original.Questions, original.Revision);
         var edited = Read<KnowledgeCheckDraftView>(await teacher.Update(legacyId, edit, default));
-        var batch = await LegacyKnowledgeCheckPublisher.RunAsync(db, owner, dryRun: false);
+        var batch = await KnowledgeCheckSeriesPublisher.RunLegacyAsync(db, owner, dryRun: false);
         Assert.Empty(batch.Issues);
         Assert.Equal(26, batch.Published);
 

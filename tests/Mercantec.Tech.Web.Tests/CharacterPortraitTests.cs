@@ -40,7 +40,7 @@ public sealed class CharacterPortraitTests
     [InlineData("whale")]
     public async Task Profiles_use_the_same_transparent_default_portrait_as_the_catalogue(string slug)
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var profile = CharacterCatalog.Find(slug)!;
         var page = context.Render<CharacterDetail>(p => p.Add(x => x.Slug, slug));
@@ -50,11 +50,5 @@ public sealed class CharacterPortraitTests
         Assert.Equal(profile.Appearances[1].Image, page.Find(".character-main-art img").GetAttribute("src"));
         page.FindAll(".character-appearance-picker button")[0].Click();
         Assert.Equal(profile.DisplayPortrait.Image, page.Find(".character-main-art img").GetAttribute("src"));
-    }
-
-    private sealed class NoNetwork : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            => throw new InvalidOperationException("Public character portraits must not load private account data.");
     }
 }

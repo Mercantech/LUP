@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import { KnowledgeCheckRunner } from './knowledge-check-runner';
+import type { CharacterHostPresentation } from './knowledge-check-runner';
 
 type Context = {
   distributionId: string;
@@ -14,7 +15,7 @@ type Callbacks = {
 
 const roots = new WeakMap<HTMLElement, Root>();
 
-export function mount(element: HTMLElement, context: Context, callbacks: Callbacks) {
+export function mount(element: HTMLElement, context: Context, callbacks: Callbacks, characterHosts?: CharacterHostPresentation[]) {
   let root = roots.get(element);
   if (!root) {
     root = createRoot(element);
@@ -22,7 +23,7 @@ export function mount(element: HTMLElement, context: Context, callbacks: Callbac
   }
   const { distributionId, attemptId, account, apiBase } = context;
   root.render(<KnowledgeCheckRunner key={`${distributionId}:${attemptId ?? ''}:${account}`}
-    distributionId={distributionId} attemptId={attemptId} apiBase={apiBase}
+    distributionId={distributionId} attemptId={attemptId} apiBase={apiBase} characterHosts={characterHosts}
     getToken={rejectedAccess => callbacks.invokeMethodAsync('GetKnowledgeCheckToken', account, rejectedAccess ?? null)} />);
 }
 

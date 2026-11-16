@@ -10,6 +10,7 @@ using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Drawings;
 using Mercantec.Tech.Api.Emojis;
+using Mercantec.Tech.Api.KnowledgeChecks;
 using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Api.Notebooks;
 using Mercantec.Tech.Api.Storage;
@@ -104,6 +105,14 @@ using (var scope = app.Services.CreateScope())
         ContentType = "image/png", SizeBytes = customBytes.Length, AltText = "Raket som QA-klistermærke", Category = "custom", KeywordsJson = "[\"QA\",\"sticker\",\"raket\"]",
         CreatedBySub = QaIdentities.All["teacher"].Sub, CreatedAtUtc = now, UpdatedAtUtc = now });
     await db.SaveChangesAsync();
+    if (Environment.GetEnvironmentVariable("NOTEBOOK_BROWSER_QA_CHARACTER_SERIES") == "1")
+    {
+        var teacher = QaIdentities.All["teacher"].Sub;
+        var legacy = await KnowledgeCheckSeriesPublisher.RunLegacyAsync(db, teacher, dryRun: false);
+        var series = await KnowledgeCheckSeriesPublisher.RunCharacterSeriesAsync(db, teacher, dryRun: false);
+        if (legacy.Issues.Length != 0 || series.Issues.Length != 0)
+            throw new InvalidOperationException("Could not publish the test quiz catalogs.");
+    }
 }
 await app.RunAsync();
 

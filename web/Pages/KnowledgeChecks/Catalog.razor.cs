@@ -1,6 +1,7 @@
 using System.Globalization;
 using Mercantec.Tech.Contracts;
 using Mercantec.Tech.Web.Auth;
+using Mercantec.Tech.Web.Characters;
 using Mercantec.Tech.Web.KnowledgeChecks;
 using Microsoft.AspNetCore.Components;
 
@@ -17,6 +18,7 @@ public partial class Catalog
     [SupplyParameterFromQuery(Name = "q")] public string? RequestedSearch { get; set; }
     [SupplyParameterFromQuery(Name = "emne")] public string? RequestedTopic { get; set; }
     [SupplyParameterFromQuery(Name = "niveau")] public string? RequestedDifficulty { get; set; }
+    [SupplyParameterFromQuery(Name = "karakter")] public string? RequestedCharacter { get; set; }
 
     private const int SearchLimit = 160;
     private static readonly CultureInfo DanishCulture = CultureInfo.GetCultureInfo("da-DK");
@@ -50,16 +52,27 @@ public partial class Catalog
     private string Search => RequestedSearch is { Length: > SearchLimit } text ? text[..SearchLimit] : RequestedSearch ?? "";
     private string Topic => RequestedTopic ?? "";
     private string Difficulty => Difficulties.FirstOrDefault(item => Danish.Equals(item, RequestedDifficulty)) ?? "";
-    private bool HasFilters => Search.Length > 0 || Topic.Length > 0 || Difficulty.Length > 0;
+    private string Character => CharacterCatalog.Find(RequestedCharacter)?.Slug ?? "";
+    private bool HasFilters => Search.Length > 0 || Topic.Length > 0 || Difficulty.Length > 0 || Character.Length > 0;
 
     private IEnumerable<KnowledgeCheckPublicationView> Assignments =>
         _index?.Publications.Where(item => item.IsActive && item.HoldId is not null && !item.CanManage) ?? [];
     private int AssignmentCount => Assignments.Count();
     private IEnumerable<KnowledgeCheckPublicationView> Practice =>
-        _index?.Publications.Where(item => item.IsActive && item.HoldId is null) ?? [];
+        _index?.Publications.Where(item => item.IsActive && item.HoldId is null && item.IsCurrentPractice) ?? [];
     private IEnumerable<KnowledgeCheckPublicationView> Managed =>
         _index?.Publications.Where(item => item.CanManage) ?? [];
     private IEnumerable<string> Topics => DefaultTopics.Concat(Practice.SelectMany(TopicsOf).Order(Danish)).Distinct(Danish);
+    private IEnumerable<CharacterProfile> Hosts
+    {
+        get
+        {
+            var slugs = Practice.Select(item => item.CharacterHost?.Slug).OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var selected = Character;
+            return CharacterCatalog.All.Where(character => slugs.Contains(character.Slug) || character.Slug == selected)
+                .OrderBy(character => character.Name, Danish);
+        }
+    }
 
     private IEnumerable<KnowledgeCheckPublicationView> FilteredPractice
     {
@@ -67,10 +80,12 @@ public partial class Catalog
         {
             var topic = Topic;
             var difficulty = Difficulty;
+            var character = Character;
             var search = Search.Trim();
             return Practice.Where(item =>
                 (topic.Length == 0 || TopicsOf(item).Contains(topic, Danish))
-                && (difficulty.Length == 0 || Danish.Equals(difficulty, item.LegacyDiscovery?.Difficulty))
+                && (difficulty.Length == 0 || Danish.Equals(difficulty, DifficultyOf(item)))
+                && (character.Length == 0 || string.Equals(character, item.CharacterHost?.Slug, StringComparison.OrdinalIgnoreCase))
                 && (search.Length == 0 || MatchesSearch(item, search)))
                 .OrderBy(item => item.Title, Danish)
                 .ThenBy(item => item.Id);
@@ -81,43 +96,53 @@ public partial class Catalog
         item.LegacyDiscovery?.Categories is { Length: > 0 } categories ? categories
         : string.IsNullOrWhiteSpace(item.Topic) ? [] : [item.Topic];
 
+    private static string? DifficultyOf(KnowledgeCheckPublicationView item) =>
+        item.CharacterHost?.Difficulty ?? item.LegacyDiscovery?.Difficulty;
+
+    private static CharacterProfile? HostOf(KnowledgeCheckPublicationView item) =>
+        CharacterCatalog.Find(item.CharacterHost?.Slug);
+
     private static bool MatchesSearch(KnowledgeCheckPublicationView item, string search)
     {
-        var corpus = $"{item.Title} {item.Description} {string.Join(" ", TopicsOf(item))}";
+        var corpus = $"{item.Title} {item.Description} {string.Join(" ", TopicsOf(item))} {HostOf(item)?.Name}";
         return DanishCulture.CompareInfo.IndexOf(corpus, search, CompareOptions.IgnoreCase) >= 0;
     }
 
-    private string ViewUrl(string view) => CatalogUrl(view, Search, Topic, Difficulty);
-    private string TopicUrl(string topic) => CatalogUrl("oev", Search, topic, Difficulty);
+    private string ViewUrl(string view) => CatalogUrl(view, Search, Topic, Difficulty, Character);
+    private string TopicUrl(string topic) => CatalogUrl("oev", Search, topic, Difficulty, Character);
 
-    private string CatalogUrl(string view, string search, string topic, string difficulty) =>
-        FilterableUrl("/videnstjek", view, null, search, topic, difficulty);
+    private string CatalogUrl(string view, string search, string topic, string difficulty, string character) =>
+        FilterableUrl("/videnstjek", view, null, search, topic, difficulty, character);
 
-    private string PracticeRunnerUrl(Guid publicationId, Guid attemptId) =>
-        FilterableUrl($"/videnstjek/{publicationId}", null, attemptId, Search, Topic, Difficulty);
+    private string AttemptUrl(Guid publicationId, Guid attemptId) =>
+        FilterableUrl($"/videnstjek/{publicationId}", null, attemptId, Search, Topic, Difficulty, Character);
 
-    private string FilterableUrl(string path, string? view, Guid? attempt, string search, string topic, string difficulty) =>
+    private string FilterableUrl(string path, string? view, Guid? attempt, string search, string topic, string difficulty, string character) =>
         Nav.GetUriWithQueryParameters(Nav.ToAbsoluteUri(path).AbsoluteUri, new Dictionary<string, object?>
         {
             ["vis"] = view,
             ["forsog"] = attempt?.ToString(),
             ["q"] = NullIfEmpty(search),
             ["emne"] = NullIfEmpty(topic),
-            ["niveau"] = NullIfEmpty(difficulty)
+            ["niveau"] = NullIfEmpty(difficulty),
+            ["karakter"] = NullIfEmpty(character)
         });
 
     private static string? NullIfEmpty(string value) => value.Length > 0 ? value : null;
 
     private void ChangeSearch(ChangeEventArgs change) =>
-        Nav.NavigateTo(CatalogUrl("oev", change.Value as string ?? "", Topic, Difficulty), replace: true);
+        Nav.NavigateTo(CatalogUrl("oev", change.Value as string ?? "", Topic, Difficulty, Character), replace: true);
 
     private void ChangeDifficulty(ChangeEventArgs change) =>
-        Nav.NavigateTo(CatalogUrl("oev", Search, Topic, change.Value as string ?? ""));
+        Nav.NavigateTo(CatalogUrl("oev", Search, Topic, change.Value as string ?? "", Character));
+
+    private void ChangeCharacter(ChangeEventArgs change) =>
+        Nav.NavigateTo(CatalogUrl("oev", Search, Topic, Difficulty, change.Value as string ?? ""));
 
     private void ClearFilters()
     {
         _focusSearch = true;
-        Nav.NavigateTo(CatalogUrl("oev", "", "", ""));
+        Nav.NavigateTo(CatalogUrl("oev", "", "", "", ""));
     }
 
     protected override Task OnInitializedAsync() => LoadAsync();
@@ -174,7 +199,7 @@ public partial class Catalog
             }
 
             if (View == "oev")
-                Nav.NavigateTo(PracticeRunnerUrl(publication.Id, attempt.Id));
+                Nav.NavigateTo(AttemptUrl(publication.Id, attempt.Id));
         }
         catch (KnowledgeCheckException ex) { _startErrors[publication.Id] = ex.Message; }
         catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)

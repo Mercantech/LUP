@@ -166,7 +166,7 @@
                                 </div>
                                 @if (attempt.CanOpen)
                                 {
-                                    <a class="secondary" href="@($"/videnstjek/{attempt.PublicationId}?forsog={attempt.AttemptId}")">@(attempt.Status == "started" ? "Fortsæt" : "Se forsøg")<span class="visually-hidden"> for @attempt.Title</span></a>
+                                    <a class="secondary" href="@AttemptUrl(attempt.PublicationId, attempt.AttemptId)">@(attempt.Status == "started" ? "Fortsæt" : "Se forsøg")<span class="visually-hidden"> for @attempt.Title</span></a>
                                 }
                             </article>
                         }
@@ -213,6 +213,7 @@
         else
         {
             var items = FilteredPractice.ToArray();
+            var hosts = Hosts.ToArray();
             <section class="knowledge-section knowledge-practice" aria-labelledby="knowledge-available">
                 <div class="knowledge-discovery">
                     <h2 id="knowledge-available">Frie øvelser</h2>
@@ -223,7 +224,7 @@
                             <a href="@TopicUrl(topic)" aria-current="@(Danish.Equals(Topic, topic) ? "true" : null)">@topic</a>
                         }
                     </nav>
-                    <div class="knowledge-filters">
+                    <div class="knowledge-filters @(hosts.Length > 0 ? "has-hosts" : null)">
                         <label class="field">
                             Søg i øvelser
                             <span class="knowledge-search">
@@ -242,6 +243,19 @@
                                 }
                             </select>
                         </label>
+                        @if (hosts.Length > 0)
+                        {
+                            <label class="field">
+                                Vært
+                                <select value="@Character" @onchange="ChangeCharacter">
+                                    <option value="">Alle værter</option>
+                                    @foreach (var host in hosts)
+                                    {
+                                        <option value="@host.Slug">@host.Name</option>
+                                    }
+                                </select>
+                            </label>
+                        }
                     </div>
                 </div>
                 <div class="knowledge-result-bar">
@@ -270,9 +284,9 @@
                                     }
                                     <p class="knowledge-row-meta">
                                         <span>@string.Join(", ", TopicsOf(publication))</span>
-                                        @if (publication.LegacyDiscovery is { } discovery)
+                                    @if (DifficultyOf(publication) is { Length: > 0 } difficulty)
                                         {
-                                            <span>@discovery.Difficulty</span>
+                                        <span>@difficulty</span>
                                         }
                                         <span>@QuestionLabel(publication.QuestionCount)</span>
                                         @if (publication.EstimatedMinutes is > 0)
@@ -280,6 +294,16 @@
                                             <span>@publication.EstimatedMinutes min.</span>
                                         }
                                     </p>
+                                    @if (HostOf(publication) is { } host)
+                                    {
+                                        <a class="knowledge-host" href="@host.Path">
+                                            @if (host.DisplayPortrait is { } portrait)
+                                            {
+                                                <img src="@portrait.Image" alt="" width="28" height="28" loading="lazy" />
+                                            }
+                                            <span>Med @host.Name</span>
+                                        </a>
+                                    }
                                 </div>
                                 <div class="knowledge-card-footer">
                                     @if (_startErrors.TryGetValue(publication.Id, out var error))
@@ -289,7 +313,7 @@
                                     <div class="knowledge-card-actions">
                                         @if (publication.ActiveAttemptId is Guid active)
                                         {
-                                            <a class="action" href="@PracticeRunnerUrl(publication.Id, active)">Fortsæt<span class="visually-hidden"> @publication.Title</span></a>
+                                            <a class="action" href="@AttemptUrl(publication.Id, active)">Fortsæt<span class="visually-hidden"> @publication.Title</span></a>
                                         }
                                         else
                                         {
@@ -298,7 +322,7 @@
                                             </button>
                                             @if (publication.LatestAttemptId is Guid previous)
                                             {
-                                                <a class="knowledge-history-link" href="@PracticeRunnerUrl(publication.Id, previous)">Se seneste forsøg<span class="visually-hidden"> for @publication.Title</span></a>
+                                                <a class="knowledge-history-link" href="@AttemptUrl(publication.Id, previous)">Se seneste forsøg<span class="visually-hidden"> for @publication.Title</span></a>
                                             }
                                         }
                                     </div>

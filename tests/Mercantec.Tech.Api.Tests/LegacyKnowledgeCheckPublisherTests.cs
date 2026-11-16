@@ -24,7 +24,7 @@ public sealed class LegacyKnowledgeCheckPublisherTests
         var owner = Guid.NewGuid();
         await AddTeacherAsync(db, owner);
 
-        var initial = await LegacyKnowledgeCheckPublisher.RunAsync(db, owner, dryRun: true);
+        var initial = await KnowledgeCheckSeriesPublisher.RunLegacyAsync(db, owner, dryRun: true);
         Assert.Empty(initial.Issues);
         Assert.Equal(initial.Total, initial.DraftsToAdd);
         Assert.Equal(initial.Total, initial.PublicationsToAdd);
@@ -50,13 +50,13 @@ public sealed class LegacyKnowledgeCheckPublisherTests
             new("Bevar den lokale titel", original.Description, original.Topic, original.EstimatedMinutes, original.Questions, original.Revision),
             default));
 
-        var dryRun = await LegacyKnowledgeCheckPublisher.RunAsync(db, owner, dryRun: true);
+        var dryRun = await KnowledgeCheckSeriesPublisher.RunLegacyAsync(db, owner, dryRun: true);
         Assert.Empty(dryRun.Issues);
         Assert.Equal(initial.Total - 1, dryRun.PublicationsToAdd);
         Assert.Equal(1, dryRun.FinalActive);
         Assert.Equal(1, await db.KnowledgeCheckPublications.CountAsync());
 
-        var published = await LegacyKnowledgeCheckPublisher.RunAsync(db, owner, dryRun: false);
+        var published = await KnowledgeCheckSeriesPublisher.RunLegacyAsync(db, owner, dryRun: false);
         Assert.Empty(published.Issues);
         Assert.Equal(0, published.AddedDrafts);
         Assert.Equal(initial.Total - 1, published.Published);
@@ -70,7 +70,7 @@ public sealed class LegacyKnowledgeCheckPublisherTests
         Assert.Equal(edited.Revision, local.Version.DraftRevision);
 
         db.ChangeTracker.Clear();
-        var repeated = await LegacyKnowledgeCheckPublisher.RunAsync(db, owner, dryRun: false);
+        var repeated = await KnowledgeCheckSeriesPublisher.RunLegacyAsync(db, owner, dryRun: false);
         Assert.Empty(repeated.Issues);
         Assert.Equal(0, repeated.Published);
         Assert.Equal(initial.Total, repeated.AlreadyActive);
@@ -94,7 +94,7 @@ public sealed class LegacyKnowledgeCheckPublisherTests
         await db.Database.EnsureCreatedAsync();
         var owner = Guid.NewGuid();
 
-        var blocked = await LegacyKnowledgeCheckPublisher.RunAsync(db, owner, dryRun: false);
+        var blocked = await KnowledgeCheckSeriesPublisher.RunLegacyAsync(db, owner, dryRun: false);
         Assert.Equal("owner_not_verified_as_teacher", Assert.Single(blocked.Issues).Code);
         Assert.Empty(db.KnowledgeCheckQuizzes);
         await AddTeacherAsync(db, owner);
@@ -109,7 +109,7 @@ public sealed class LegacyKnowledgeCheckPublisherTests
 
         foreach (var dryRun in new[] { true, false })
         {
-            blocked = await LegacyKnowledgeCheckPublisher.RunAsync(db, owner, dryRun);
+            blocked = await KnowledgeCheckSeriesPublisher.RunLegacyAsync(db, owner, dryRun);
             var issue = Assert.Single(blocked.Issues);
             Assert.Equal(imported.Value.Key, issue.Source);
             Assert.Equal("draft_not_ready_for_free_exercise", issue.Code);
@@ -122,7 +122,7 @@ public sealed class LegacyKnowledgeCheckPublisherTests
 
         await db.NotebookProfiles.Where(profile => profile.Sub == owner)
             .ExecuteUpdateAsync(setters => setters.SetProperty(profile => profile.IsTeacher, false));
-        blocked = await LegacyKnowledgeCheckPublisher.RunAsync(db, owner, dryRun: false);
+        blocked = await KnowledgeCheckSeriesPublisher.RunLegacyAsync(db, owner, dryRun: false);
         Assert.Equal("owner_not_verified_as_teacher", Assert.Single(blocked.Issues).Code);
         Assert.Empty(db.KnowledgeCheckPublications);
     }
@@ -143,8 +143,8 @@ public sealed class LegacyKnowledgeCheckPublisherTests
             await using var first = new AppDbContext(options);
             await using var second = new AppDbContext(options);
             var results = await Task.WhenAll(
-                Task.Run(() => LegacyKnowledgeCheckPublisher.RunAsync(first, owner, dryRun: false)),
-                Task.Run(() => LegacyKnowledgeCheckPublisher.RunAsync(second, owner, dryRun: false)))
+                Task.Run(() => KnowledgeCheckSeriesPublisher.RunLegacyAsync(first, owner, dryRun: false)),
+                Task.Run(() => KnowledgeCheckSeriesPublisher.RunLegacyAsync(second, owner, dryRun: false)))
                 .WaitAsync(TimeSpan.FromSeconds(20));
 
             var total = LegacyKnowledgeCheckCatalog.ForOwner(owner).Count;

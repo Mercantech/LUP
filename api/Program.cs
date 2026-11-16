@@ -26,7 +26,7 @@ if (args is ["character-originals", "verify"] or ["character-originals", "import
 if (args.Length > 0 && args[0] == "knowledge-checks")
 {
     var commandConfiguration = new ConfigurationBuilder().AddEnvironmentVariables().Build();
-    Environment.ExitCode = await LegacyKnowledgeCheckPublisher.RunCommandAsync(args, commandConfiguration);
+    Environment.ExitCode = await KnowledgeCheckSeriesPublisher.RunCommandAsync(args, commandConfiguration);
     return;
 }
 

@@ -10,7 +10,7 @@ public sealed class ChameleonCharacterTests
     [Fact]
     public async Task MlExpertHasTheCompleteMaterialCollectionAndCraftsmanPersonality()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(p => p.Add(x => x.Slug, "chameleon"));
         var character = CharacterCatalog.Find("chameleon")!;
@@ -46,7 +46,7 @@ public sealed class ChameleonCharacterTests
     [Fact]
     public async Task SearchPlaybackAndProfileSwitchKeepUserChoicesWithinTheirProfile()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterDetail>(p => p.Add(x => x.Slug, "chameleon"));
         page.FindAll(".character-appearance-picker button")[2].Click();
@@ -81,10 +81,4 @@ public sealed class ChameleonCharacterTests
     [InlineData("Kamæleonen banjo")]
     public void LibrarySearchFindsTheExpertAndHisTeachingMaterials(string query) =>
         Assert.Contains(PublicCatalog.Search(query), hit => hit.Href == "/characters/chameleon");
-
-    private sealed class NoNetwork : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            => throw new InvalidOperationException("Public character materials must not request private account data.");
-    }
 }
