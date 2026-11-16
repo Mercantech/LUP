@@ -272,10 +272,13 @@ class DeployedRunnerTests(SDKAssertions, unittest.TestCase):
         for language, source in (("python", PYTHON_SOURCE), ("csharp", CSHARP_SOURCE), ("arduino", ARDUINO_SOURCE)):
             with self.subTest(language=language):
                 run, session_id, reply = self.start(language, source)
-                self.assertEqual(reply.get("sessionId"), session_id, reply)
-                batches = [self.activate(run, session_id, index * 2, index + 1, values)
-                           for index, values in enumerate(READINGS)]
-                self.verify_batches(batches, language != "arduino")
+                try:
+                    self.assertEqual(reply.get("sessionId"), session_id, reply)
+                    batches = [self.activate(run, session_id, index * 2, index + 1, values)
+                               for index, values in enumerate(READINGS)]
+                    self.verify_batches(batches, language != "arduino")
+                finally:
+                    self.request("DELETE", "/sessions/" + session_id)
 
     def test_missing_bearer(self):
         with self.assertRaises(urllib.error.HTTPError) as error:
