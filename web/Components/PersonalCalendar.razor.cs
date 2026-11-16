@@ -28,6 +28,7 @@ public partial class PersonalCalendar
     private CalendarQuestDeadline[] _deadlines = [];
     private CalendarQuestChoice[] _choices = [];
     private TeacherCalendarEvent[] _outlookEvents = [];
+    private PlanBlock? _selectedOutlookEvent;
     private string _holdFilter = "";
     private string? _loadError, _outlookError, _mutationError, _notice, _overlap;
     private bool _loading, _outlookLoading, _busy, _disposed, _focusEditor, _stale;
@@ -112,6 +113,7 @@ public partial class PersonalCalendar
     {
         _holdRequest?.Cancel();
         _outlookRequest?.Cancel();
+        _selectedOutlookEvent = null;
         _activities = [];
         _deadlines = [];
         _outlookEvents = [];
@@ -207,6 +209,7 @@ public partial class PersonalCalendar
         else
         {
             _outlookRequest?.Cancel();
+            _selectedOutlookEvent = null;
             _outlookEvents = [];
             _outlookError = null;
             _outlookLoading = false;
@@ -527,7 +530,7 @@ public partial class PersonalCalendar
         {
             var (from, to) = OutlookRange(item);
             return new PlanBlock("outlook", item.Id, item.IsPrivate ? "Privat aftale" : item.Subject, from, to,
-                item.IsAllDay, null, item.IsPrivate ? null : item.Location, null, item.IsPrivate ? null : SafeExternal(item.OnlineMeetingUrl) ?? SafeExternal(item.WebLink), null);
+                item.IsAllDay, null, item.IsPrivate ? null : item.Location, null, null, null, OpensOutlookDetails: !item.IsPrivate);
         }) : [];
         var blocks = activities.Concat(deadlines).Concat(outlook).OrderBy(item => item.StartUtc).ThenBy(item => item.EndUtc).ToArray();
 
@@ -598,8 +601,6 @@ public partial class PersonalCalendar
         : (item.Start, item.End);
     private static bool Overlaps(DateTimeOffset start, DateTimeOffset end, DateTimeOffset from, DateTimeOffset to) => start < to && end > from;
     private static string QuestHref(Guid id, HoldCalendarSource hold) => WorkspaceNavigation.Quest(id, hold.ForloebId, holdId: hold.HoldId);
-    private static string? SafeExternal(string? value) =>
-        Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps ? uri.AbsoluteUri : null;
     private static string DayInput(DateOnly day, TimeOnly time) => FormattableString.Invariant($"{day:yyyy-MM-dd}T{time:HH:mm}");
     private static DateTimeOffset LocalBoundary(DateOnly day) =>
         HoldTime.TryUtc(DayInput(day, TimeOnly.MinValue), out var utc) ? utc : throw new InvalidOperationException("Ugyldig dansk dagsgrænse.");
@@ -647,7 +648,8 @@ public partial class PersonalCalendar
 
     private sealed record PlanDay(DateOnly Date, IReadOnlyList<PlanBlock> Blocks);
     private sealed record PlanBlock(string Source, string Id, string Title, DateTimeOffset StartUtc, DateTimeOffset EndUtc,
-        bool AllDay, string? HoldName, string? Location, string? AttendanceMode, string? Href, HoldCalendarEventView? Activity)
+        bool AllDay, string? HoldName, string? Location, string? AttendanceMode, string? Href, HoldCalendarEventView? Activity,
+        bool OpensOutlookDetails = false)
     {
         public string Key => Source + ":" + Id;
     }

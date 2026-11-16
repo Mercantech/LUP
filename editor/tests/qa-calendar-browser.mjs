@@ -11,6 +11,8 @@ const pupilToken = identities.find(identity => identity.key === 'pupil').token;
 const activity = 'QA Kalender · Programmering';
 const secondActivity = 'QA Kalender · Netværk';
 const outlookTitle = 'QA Outlook · Fagteam';
+const outlookId = 'qa+AAMk/oktober=';
+const outlookDescription = 'Vi gennemgår semesterplanen. <b>Vises som tekst</b>';
 const quest = 'QA Quest om routere';
 const activityId = '66666666-aaaa-4666-8666-666666666666';
 const holder = '11111111-aaaa-4111-8111-111111111111';
@@ -55,16 +57,34 @@ try {
   const [start, end] = await clock.evaluate(day =>
     ['10:15', '11:15'].map(time => new Date(day + 'T' + time + ':00').toISOString()), today);
   await clock.close();
+  const outlookEvent = {
+    id: outlookId, subject: outlookTitle, start, end, isCancelled: false, isPrivate: false,
+    isAllDay: false, location: 'Mødelokale', isOnlineMeeting: true,
+    onlineMeetingUrl: 'https://teams.microsoft.com/qa-meeting',
+    webLink: 'https://outlook.office.com/qa-event'
+  };
   await teacherContext.route('**/api/calendar/mine?**', route => route.fulfill({ json: {
     configured: true, azureUpn: 'underviser@example.test', fromUtc: start, toUtc: end,
-    events: [{ id: 'qa-outlook', subject: outlookTitle, start, end, isCancelled: false,
-      isPrivate: false, isAllDay: false, location: 'Mødelokale' }]
+    events: [
+      outlookEvent,
+      { id: 'qa-private', subject: 'Privat', start, end, isPrivate: true, isAllDay: false },
+    ]
   } }));
+  let outlookDetailReads = 0;
+  await teacherContext.route('**/api/calendar/mine/event?**', route => {
+    assert.equal(new URL(route.request().url()).searchParams.get('id'), outlookId);
+    outlookDetailReads++;
+    return route.fulfill({ json: {
+      event: outlookEvent, description: outlookDescription, hideAttendees: false,
+      organizer: { name: 'QA Mødeleder', address: 'moedeleder@example.test' },
+      attendees: [{ name: 'QA Deltager', address: 'deltager@example.test', type: 'required', response: 'accepted' }]
+    } });
+  });
 
   const pupilContext = await createContext({ width: 390, height: 844 });
   let pupilOutlookReads = 0;
   pupilContext.on('request', request => {
-    if (new URL(request.url()).pathname === '/api/calendar/mine') pupilOutlookReads++;
+    if (new URL(request.url()).pathname.startsWith('/api/calendar/mine')) pupilOutlookReads++;
   });
   const pupil = await openCalendar(pupilContext, 'pupil');
   await pupil.getByRole('heading', { name: 'Min dag', exact: true }).waitFor();
@@ -87,8 +107,39 @@ try {
   assert.equal(await pupilTwin.evaluate(() => window.opener), null);
 
   const teacher = await openCalendar(teacherContext, 'teacher');
-  await calendarEntry(teacher, outlookTitle, 'outlook').waitFor();
+  const outlookCard = calendarEntry(teacher, outlookTitle, 'outlook');
+  await outlookCard.waitFor();
   await calendarEntry(teacher, activity).waitFor();
+  const privateCard = calendarEntry(teacher, 'Privat aftale', 'outlook');
+  await privateCard.waitFor();
+  assert.equal(await privateCard.getByRole('button').count(), 0);
+  assert.equal(outlookDetailReads, 0);
+
+  const eventTrigger = outlookCard.getByRole('button');
+  await eventTrigger.focus();
+  await teacher.keyboard.press('Enter');
+  const eventDialog = teacher.getByRole('dialog');
+  await eventDialog.getByRole('heading', { name: outlookTitle, exact: true }).waitFor();
+  await eventDialog.getByText(outlookDescription, { exact: true }).waitFor();
+  assert.equal(await eventDialog.locator('b').count(), 0);
+  await eventDialog.locator('dd').filter({ hasText: 'QA Mødeleder' }).waitFor();
+  await eventDialog.getByText('QA Deltager', { exact: true }).waitFor();
+  await eventDialog.getByText('Accepteret', { exact: true }).waitFor();
+  assert.equal(await eventDialog.getByRole('link', { name: /Outlook/i }).getAttribute('href'), outlookEvent.webLink);
+  assert.equal(await eventDialog.getByRole('link', { name: /Teams/i }).getAttribute('href'), outlookEvent.onlineMeetingUrl);
+  assert.equal(outlookDetailReads, 1);
+  await teacher.keyboard.press('Escape');
+  await eventDialog.waitFor({ state: 'hidden' });
+  await teacher.waitForFunction(() => document.activeElement?.getAttribute('aria-label')?.startsWith('Åbn Outlook-aftale:'));
+
+  await teacher.setViewportSize({ width: 390, height: 844 });
+  await eventTrigger.click();
+  await eventDialog.getByText('QA Deltager', { exact: true }).waitFor();
+  const dialogBounds = await eventDialog.boundingBox();
+  assert.ok(dialogBounds.width <= 390 && dialogBounds.x >= 0);
+  await teacher.keyboard.press('Escape');
+  await eventDialog.waitFor({ state: 'hidden' });
+  await teacher.setViewportSize({ width: 1440, height: 1050 });
   await teacher.getByRole('button', { name: 'Redigér ' + activity, exact: true }).click();
   const editor = teacher.locator('.pc-editor');
   await editor.getByLabel('Start (dansk tid)').fill(today + 'T10:30');
@@ -149,7 +200,7 @@ try {
   await pupil.getByRole('button', { name: 'Log ud', exact: true }).click();
   await pupilTwin.getByRole('heading', { name: 'Log ind', exact: true }).waitFor();
 
-  console.log('Kalender-QA bestået: holdfilter, Outlook-overlap, flytning, notifikation, aflysning, questfrister, arbejdsblokke, underviserforside og mobil.');
+  console.log('Kalender-QA bestået: holdfilter, Outlook-detaljer og overlap, flytning, notifikation, aflysning, questfrister, arbejdsblokke, underviserforside og mobil.');
 } finally {
   await browserInstance.close();
 }

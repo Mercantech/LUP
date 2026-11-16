@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AngleSharp.Html.Parser;
 using Mercantec.Tech.Contracts;
 using Microsoft.Extensions.Options;
 
@@ -11,6 +12,8 @@ public sealed class AzureGraphCalendarClient(
     IOptions<AzureGraphOptions> options,
     ILogger<AzureGraphCalendarClient> logger)
 {
+    private const string EventFields = "id,subject,start,end,isAllDay,location,sensitivity,isOnlineMeeting,onlineMeeting,webLink,isCancelled,showAs";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -42,7 +45,7 @@ public sealed class AzureGraphCalendarClient(
         {
             ["startDateTime"] = from.UtcDateTime.ToString("o"),
             ["endDateTime"] = to.UtcDateTime.ToString("o"),
-            ["$select"] = "id,subject,start,end,isAllDay,location,sensitivity,isOnlineMeeting,onlineMeeting,webLink,isCancelled,showAs",
+            ["$select"] = EventFields,
             ["$orderby"] = "start/dateTime",
             ["$top"] = "100"
         };
@@ -59,16 +62,14 @@ public sealed class AzureGraphCalendarClient(
             request.Headers.TryAddWithoutValidation("Prefer", "outlook.timezone=\"Romance Standard Time\"");
 
             using var response = await http.SendAsync(request, ct);
-            var body = await response.Content.ReadAsStringAsync(ct);
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning("Graph calendarView fejlede for {Upn}: {Status} {Body}",
-                    azureUpn, (int)response.StatusCode, Truncate(body, 400));
+                logger.LogWarning("Graph calendarView fejlede: {Status}", (int)response.StatusCode);
                 throw new HttpRequestException(
                     $"Graph calendarView fejlede ({(int)response.StatusCode})", null, response.StatusCode);
             }
 
-            var page = JsonSerializer.Deserialize<GraphEventPage>(body, JsonOptions)
+            var page = await response.Content.ReadFromJsonAsync<GraphEventPage>(JsonOptions, ct)
                 ?? new GraphEventPage();
             foreach (var item in page.Value ?? [])
                 events.Add(Map(item));
@@ -77,6 +78,76 @@ public sealed class AzureGraphCalendarClient(
         }
 
         return events;
+    }
+
+    public async Task<TeacherCalendarEventDetails> GetEventAsync(string azureUpn, string eventId, CancellationToken ct)
+    {
+        var token = await GetAccessTokenAsync(ct);
+        var fields = Uri.EscapeDataString($"{EventFields},body,bodyPreview,organizer,attendees,hideAttendees,isOrganizer");
+        using var request = new HttpRequestMessage(HttpMethod.Get,
+            $"https://graph.microsoft.com/v1.0/users/{Uri.EscapeDataString(azureUpn)}/events/{Uri.EscapeDataString(eventId)}?$select={fields}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Headers.TryAddWithoutValidation("Prefer", "outlook.timezone=\"Romance Standard Time\", outlook.body-content-type=\"text\"");
+
+        var http = httpClientFactory.CreateClient("azure-graph");
+        using var response = await http.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning("Graph aftaleopslag fejlede: {Status}", (int)response.StatusCode);
+            throw new HttpRequestException("Kunne ikke hente Outlook-aftalen.", null, response.StatusCode);
+        }
+
+        var item = await response.Content.ReadFromJsonAsync<GraphEvent>(JsonOptions, ct);
+        if (item is null || string.IsNullOrWhiteSpace(item.Id))
+            throw new HttpRequestException("Outlook svarede uden en aftale.");
+
+        var summary = Map(item);
+        if (summary.IsPrivate)
+            return new TeacherCalendarEventDetails(summary, null, null, [], true);
+
+        // Outlook skjuler deltagerlisten for modtagere, når arrangøren har valgt det.
+        var hideAttendees = item.HideAttendees == true && item.IsOrganizer != true;
+        var attendees = new List<TeacherCalendarAttendee>();
+        if (!hideAttendees && item.Attendees is not null)
+        {
+            foreach (var attendee in item.Attendees)
+            {
+                if (attendee is not null && MapPerson(attendee.EmailAddress) is { } person)
+                    attendees.Add(new(person.Name, person.Address, NullIfEmpty(attendee.Type), NullIfEmpty(attendee.Status?.Response)));
+            }
+        }
+
+        return new TeacherCalendarEventDetails(summary, DescriptionText(item.Body) ?? NullIfEmpty(item.BodyPreview),
+            MapPerson(item.Organizer?.EmailAddress), attendees, hideAttendees);
+    }
+
+    private static TeacherCalendarPerson? MapPerson(GraphEmailAddress? email)
+    {
+        var name = NullIfEmpty(email?.Name);
+        var address = NullIfEmpty(email?.Address);
+        return name is null && address is null ? null : new(name, address);
+    }
+
+    private static string? DescriptionText(GraphEventBody? body)
+    {
+        if (body?.Content is not { } content || string.IsNullOrWhiteSpace(content))
+            return null;
+        if (string.Equals(body.ContentType, "text", StringComparison.OrdinalIgnoreCase))
+            return content.Trim();
+        if (!string.Equals(body.ContentType, "html", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        // Parse without a network loader. Only text is extracted from Outlook's document.
+        using var document = new HtmlParser().ParseDocument(content);
+        if (document.Body is not { } documentBody)
+            return null;
+        foreach (var node in documentBody.QuerySelectorAll("script,style,template,noscript,iframe,object,svg,[hidden]"))
+            node.Remove();
+        foreach (var node in documentBody.QuerySelectorAll("p,div,li,br,hr,h1,h2,h3,h4,h5,h6,blockquote,tr"))
+            node.Parent?.InsertBefore(document.CreateTextNode("\n"), node.NextSibling);
+
+        return NullIfEmpty(string.Join('\n',
+            documentBody.TextContent.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)));
     }
 
     private async Task<string> GetAccessTokenAsync(CancellationToken ct)
@@ -96,15 +167,15 @@ public sealed class AzureGraphCalendarClient(
         var tokenUrl =
             $"https://login.microsoftonline.com/{Uri.EscapeDataString(_options.TenantId)}/oauth2/v2.0/token";
         using var response = await http.PostAsync(tokenUrl, content, ct);
-        var body = await response.Content.ReadAsStringAsync(ct);
         if (!response.IsSuccessStatusCode)
         {
-            logger.LogError("Azure token-fejl: {Status} {Body}", (int)response.StatusCode, Truncate(body, 400));
+            logger.LogError("Azure token-fejl: {Status}", (int)response.StatusCode);
             throw new HttpRequestException($"Kunne ikke hente Azure-token ({(int)response.StatusCode})");
         }
 
-        var token = JsonSerializer.Deserialize<TokenResponse>(body, JsonOptions)
-            ?? throw new InvalidOperationException("Tom Azure-token-svar");
+        var token = await response.Content.ReadFromJsonAsync<TokenResponse>(JsonOptions, ct);
+        if (token is null || string.IsNullOrWhiteSpace(token.AccessToken))
+            throw new HttpRequestException("Azure svarede uden access-token.");
         _cachedToken = token.AccessToken;
         _tokenExpiresAt = DateTimeOffset.UtcNow.AddSeconds(Math.Max(60, token.ExpiresIn - 60));
         return _cachedToken;
@@ -113,7 +184,7 @@ public sealed class AzureGraphCalendarClient(
     private static TeacherCalendarEvent Map(GraphEvent e)
     {
         var isAllDay = e.IsAllDay == true;
-        var isPrivate = e.Sensitivity is "private" or "personal" or "confidential";
+        var isPrivate = e.Sensitivity?.ToLowerInvariant() is "private" or "personal" or "confidential";
         var start = ParseGraphDate(e.Start, isAllDay);
         var end = ParseGraphDate(e.End, isAllDay);
         return new TeacherCalendarEvent(
@@ -163,9 +234,6 @@ public sealed class AzureGraphCalendarClient(
     private static string? NullIfEmpty(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static string Truncate(string value, int max) =>
-        value.Length <= max ? value : value[..max] + "…";
-
     private sealed class TokenResponse
     {
         [JsonPropertyName("access_token")]
@@ -198,6 +266,41 @@ public sealed class AzureGraphCalendarClient(
         public string? WebLink { get; set; }
         public bool? IsCancelled { get; set; }
         public string? ShowAs { get; set; }
+        public GraphEventBody? Body { get; set; }
+        public string? BodyPreview { get; set; }
+        public GraphRecipient? Organizer { get; set; }
+        public List<GraphAttendee?>? Attendees { get; set; }
+        public bool? HideAttendees { get; set; }
+        public bool? IsOrganizer { get; set; }
+    }
+
+    private sealed class GraphEventBody
+    {
+        public string? ContentType { get; set; }
+        public string? Content { get; set; }
+    }
+
+    private sealed class GraphRecipient
+    {
+        public GraphEmailAddress? EmailAddress { get; set; }
+    }
+
+    private sealed class GraphEmailAddress
+    {
+        public string? Name { get; set; }
+        public string? Address { get; set; }
+    }
+
+    private sealed class GraphAttendee
+    {
+        public GraphEmailAddress? EmailAddress { get; set; }
+        public string? Type { get; set; }
+        public GraphResponseStatus? Status { get; set; }
+    }
+
+    private sealed class GraphResponseStatus
+    {
+        public string? Response { get; set; }
     }
 
     private sealed class GraphDateTime

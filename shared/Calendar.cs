@@ -21,6 +21,17 @@ public sealed record TeacherCalendarEvent(
     bool IsCancelled,
     string? ShowAs);
 
+public sealed record TeacherCalendarEventDetails(
+    TeacherCalendarEvent Event,
+    string? Description,
+    TeacherCalendarPerson? Organizer,
+    IReadOnlyList<TeacherCalendarAttendee> Attendees,
+    bool HideAttendees);
+
+public sealed record TeacherCalendarPerson(string? Name, string? Address);
+
+public sealed record TeacherCalendarAttendee(string? Name, string? Address, string? Type, string? Response);
+
 /// <summary>
 /// Skjuler Lectio/Outlook-dublethold: når 4 eller 8 aftaler er ens på nær tidspunkt
 /// (samme titel/sted/varighed m.m. samme dag), fjernes de fra underviserkalenderen.

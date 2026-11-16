@@ -1,0 +1,231 @@
+@using System.Globalization
+@using Mercantec.Tech.Web.Calendar
+@using Mercantec.Tech.Web.Learning
+@inject TeacherCalendarClient Outlook
+@inject IJSRuntime Js
+@implements IDisposable
+
+<dialog id="@_dialogId" class="outlook-event-dialog" aria-labelledby="@TitleId" @onclose="DismissAsync">
+    <header class="outlook-event-header">
+        <h2 id="@TitleId">@Title</h2>
+        <button type="button" class="secondary" autofocus @onclick="CloseAsync">Luk</button>
+    </header>
+    @if (_loading)
+    {
+        <p role="status">Henter aftalen fra Outlook…</p>
+    }
+    else if (_error is { } error)
+    {
+        <p role="alert">@error</p>
+        <button type="button" class="secondary" @onclick="LoadAsync">Prøv igen</button>
+    }
+    else if (_details is { } details)
+    {
+        @if (details.Event.IsPrivate)
+        {
+            <p>Denne aftale er markeret som privat i Outlook.</p>
+        }
+        else
+        {
+            <dl class="outlook-event-facts">
+                <dt>Tidspunkt</dt>
+                <dd>@EventTime(details.Event)</dd>
+                @if (details.Event.Location is { Length: > 0 } location)
+                {
+                    <dt>Sted</dt>
+                    <dd>@location</dd>
+                }
+                @if (details.Organizer is { } organizer && PersonName(organizer.Name, organizer.Address) is { Length: > 0 } organizerName)
+                {
+                    <dt>Arrangør</dt>
+                    <dd>
+                        @organizerName
+                        @if (ShowAddress(organizerName, organizer.Address))
+                        {
+                            <span class="outlook-person-address">@organizer.Address</span>
+                        }
+                    </dd>
+                }
+            </dl>
+            <section class="outlook-event-section" aria-labelledby="@DescriptionId">
+                <h3 id="@DescriptionId">Beskrivelse</h3>
+                @if (details.Description is { Length: > 0 } description)
+                {
+                    <p class="outlook-event-description">@description</p>
+                }
+                else
+                {
+                    <p class="outlook-event-muted">Ingen beskrivelse.</p>
+                }
+            </section>
+            <section class="outlook-event-section" aria-labelledby="@AttendeesId">
+                <h3 id="@AttendeesId">Deltagere</h3>
+                @if (details.HideAttendees)
+                {
+                    <p class="outlook-event-muted">Deltagerlisten er skjult i Outlook.</p>
+                }
+                else if (details.Attendees.Count == 0)
+                {
+                    <p class="outlook-event-muted">Ingen deltagere er angivet.</p>
+                }
+                else
+                {
+                    <ul class="outlook-attendees">
+                        @foreach (var attendee in details.Attendees)
+                        {
+                            var name = PersonName(attendee.Name, attendee.Address) ?? "Ukendt deltager";
+                            var type = AttendeeType(attendee.Type);
+                            var response = AttendeeResponse(attendee.Response);
+                            <li>
+                                <div>
+                                    <strong>@name</strong>
+                                    @if (ShowAddress(name, attendee.Address))
+                                    {
+                                        <span class="outlook-person-address">@attendee.Address</span>
+                                    }
+                                </div>
+                                @if (type is not null || response is not null)
+                                {
+                                    <div class="outlook-attendee-status">
+                                        @if (type is not null) { <span>@type</span> }
+                                        @if (response is not null) { <span>@response</span> }
+                                    </div>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+            var outlookLink = SafeExternal(details.Event.WebLink);
+            var teamsLink = SafeExternal(details.Event.OnlineMeetingUrl);
+            @if (outlookLink is not null || teamsLink is not null)
+            {
+                <footer class="outlook-event-actions">
+                    @if (outlookLink is not null)
+                    {
+                        <a class="secondary" href="@outlookLink" target="_blank" rel="noopener noreferrer">Åbn i Outlook</a>
+                    }
+                    @if (teamsLink is not null)
+                    {
+                        <a class="action" href="@teamsLink" target="_blank" rel="noopener noreferrer">Deltag i Teams</a>
+                    }
+                </footer>
+            }
+        }
+    }
+</dialog>
+
+@code {
+    [Parameter, EditorRequired] public string EventId { get; set; } = "";
+    [Parameter, EditorRequired] public string InitialTitle { get; set; } = "";
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private static readonly CultureInfo Danish = CultureInfo.GetCultureInfo("da-DK");
+    private readonly CancellationTokenSource _lifetime = new();
+    private readonly string _dialogId = $"outlook-event-{Guid.NewGuid():N}";
+    private TeacherCalendarEventDetails? _details;
+    private string? _error;
+    private bool _loading = true;
+    private bool _disposed;
+    private string TitleId => _dialogId + "-title";
+    private string DescriptionId => _dialogId + "-description";
+    private string AttendeesId => _dialogId + "-attendees";
+    private string Title => _details?.Event.IsPrivate == true ? "Privat aftale" : _details?.Event.Subject ?? InitialTitle;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        await Js.InvokeVoidAsync("lupGiftUi.open", _dialogId);
+        if (!_disposed) await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        var token = _lifetime.Token;
+        try
+        {
+            var details = await Outlook.GetEventAsync(EventId, token);
+            if (!token.IsCancellationRequested) _details = details;
+        }
+        catch (Exception ex) when (ex is TeacherCalendarException or HttpRequestException or OperationCanceledException or System.Text.Json.JsonException)
+        {
+            if (!token.IsCancellationRequested)
+                _error = ex is TeacherCalendarException ? ex.Message : "Outlook-aftalen kunne ikke hentes. Prøv igen.";
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                _loading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private Task CloseAsync() => Js.InvokeVoidAsync("lupGiftUi.close", _dialogId).AsTask();
+
+    private Task DismissAsync()
+    {
+        if (_disposed) return Task.CompletedTask;
+
+        _lifetime.Cancel();
+        return OnClose.InvokeAsync();
+    }
+
+    private static string EventTime(TeacherCalendarEvent value)
+    {
+        if (value.IsAllDay)
+        {
+            var first = DateOnly.FromDateTime(value.Start.UtcDateTime);
+            var end = DateOnly.FromDateTime(value.End.UtcDateTime);
+            var last = end > first ? end.AddDays(-1) : first;
+            var firstDate = first.ToString("ddd d. MMMM yyyy", Danish);
+            return last == first ? $"Hele dagen, {firstDate}" : $"Hele dagen, {firstDate} – {last.ToString("ddd d. MMMM yyyy", Danish)}";
+        }
+
+        var startTime = HoldTime.Local(value.Start);
+        var endTime = HoldTime.Local(value.End);
+        var start = startTime.ToString("ddd d. MMMM yyyy HH:mm", Danish);
+        var endLabel = endTime.ToString(startTime.Date == endTime.Date ? "HH:mm" : "ddd d. MMMM yyyy HH:mm", Danish);
+        return $"{start} – {endLabel}";
+    }
+
+    private static string? PersonName(string? name, string? address) =>
+        !string.IsNullOrWhiteSpace(name) ? name : !string.IsNullOrWhiteSpace(address) ? address : null;
+
+    private static bool ShowAddress(string name, string? address) =>
+        !string.IsNullOrWhiteSpace(address) && !string.Equals(name, address, StringComparison.OrdinalIgnoreCase);
+
+    private static string? AttendeeType(string? type) => type?.ToLowerInvariant() switch
+    {
+        "required" => "Påkrævet",
+        "optional" => "Valgfri",
+        "resource" => "Ressource",
+        _ => null,
+    };
+
+    private static string? AttendeeResponse(string? response) => response?.ToLowerInvariant() switch
+    {
+        "accepted" => "Accepteret",
+        "declined" => "Afvist",
+        "tentativelyaccepted" => "Foreløbigt accepteret",
+        "notresponded" or "none" => "Afventer svar",
+        "organizer" => "Arrangør",
+        _ => null,
+    };
+
+    private static string? SafeExternal(string? value) =>
+        Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps && uri.UserInfo.Length == 0
+            ? uri.AbsoluteUri
+            : null;
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+    }
+}

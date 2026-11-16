@@ -319,6 +319,10 @@ else
                 }
             </section>
         }
+        @if (CanShowOutlook && _showOutlook && _selectedOutlookEvent is { } outlookEvent)
+        {
+            <OutlookEventDialog @key="outlookEvent.Id" EventId="@outlookEvent.Id" InitialTitle="@outlookEvent.Title" OnClose="() => _selectedOutlookEvent = null" />
+        }
     </section>
 }
 
@@ -326,7 +330,7 @@ else
     private RenderFragment BlockCard(PlanBlock block, BlockPlacement? placement)
     {
         var editable = block.Activity is { } activity && CanManage(activity.HoldId);
-        var standaloneFocus = placement is not null && !editable && block.Href is null;
+        var standaloneFocus = placement is not null && !editable && !block.OpensOutlookDetails && block.Href is null;
 
         return @<article @key="block.Key"
             class="pc-block @($"pc-{block.Source}") @(placement is null ? null : "pc-timed") @(placement is { Height: < 86 } ? "pc-tight" : null)"
@@ -338,10 +342,14 @@ else
                     <button type="button" class="pc-block-title" aria-label="@($"Redigér {block.Title}")" title="@block.Title"
                             disabled="@_busy" @onclick="() => EditActivity(item)">@block.Title</button>
                 }
+                else if (block.OpensOutlookDetails)
+                {
+                    <button type="button" class="pc-block-title" aria-haspopup="dialog" aria-label="@($"Åbn Outlook-aftale: {block.Title}")"
+                            title="@block.Title" @onclick="() => _selectedOutlookEvent = block">@block.Title</button>
+                }
                 else if (block.Href is not null)
                 {
-                    <a class="pc-block-title" href="@block.Href" title="@block.Title"
-                       target="@(block.Source == "outlook" ? "_blank" : null)" rel="@(block.Source == "outlook" ? "noopener" : null)">@block.Title</a>
+                    <a class="pc-block-title" href="@block.Href" title="@block.Title">@block.Title</a>
                 }
                 else
                 {

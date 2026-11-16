@@ -105,7 +105,7 @@ builder.Services.Configure<AzureGraphOptions>(builder.Configuration.GetSection(A
 builder.Services.AddHttpClient("azure-graph", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(45);
-});
+}).RemoveAllLoggers();
 builder.Services.AddSingleton<AzureGraphCalendarClient>();
 
 builder.Services.Configure<OpenAiOptions>(builder.Configuration.GetSection(OpenAiOptions.SectionName));
