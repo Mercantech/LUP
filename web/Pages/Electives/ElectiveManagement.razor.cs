@@ -11,6 +11,7 @@ public partial class ElectiveManagement
 {
     [Parameter, EditorRequired] public ElectiveView[] Items { get; set; } = [];
     [Parameter] public ElectiveView? InitialTemplate { get; set; }
+    [Parameter] public Guid? SearchItem { get; set; }
     [Parameter] public EventCallback<ElectiveView> OnSaved { get; set; }
     [Parameter] public EventCallback OnRefresh { get; set; }
 
@@ -28,7 +29,7 @@ public partial class ElectiveManagement
     private IEnumerable<ElectiveView> Templates => Items.Where(e => e.Status == "template").OrderBy(e => e.Title);
 
     private IEnumerable<ElectiveView> FilteredItems => Items
-        .Where(e => (_filter.Length == 0 || e.Status == _filter)
+        .Where(e => (SearchItem is null || e.Id == SearchItem) && (_filter.Length == 0 || e.Status == _filter)
             && e.Title.Contains(_search.Trim(), StringComparison.CurrentCultureIgnoreCase))
         .OrderBy(e => e.Status switch { "draft" => 0, "open" or "closed" => 1, "template" => 2, _ => 3 })
         .ThenByDescending(e => e.StartsOn).ThenBy(e => e.Title);

@@ -1,10 +1,8 @@
-@page "/search"
 @page "/explore/projects"
 @page "/badges"
 @page "/help"
 @page "/sources"
 @using Mercantec.Tech.Web.Demo
-@using Mercantec.Tech.Web.Public
 @inject NavigationManager Nav
 @inject AuthService Auth
 @implements IDisposable
@@ -18,25 +16,6 @@
 else if (!Auth.IsAuthenticated && PathKey == "explore/modules")
 {
     <p>Du skal være logget ind. <a href="@Auth.LoginPath()">Log ind</a></p>
-}
-else if (PathKey == "search")
-{
-    <header class="page-title"><div><h1>Søg</h1><p>Find forløb, fag, emner, projekter, badgekrav og karakterer.</p></div></header>
-    <label class="field">Søg<input @bind="_query" @bind:event="oninput" placeholder="H3, MQTT, Rune Run …" /></label>
-    <div class="panel">
-        @foreach (var hit in Hits)
-        {
-            <div class="row">
-                <span class="mark"><span class="mark-glyph">@hit.Kind[0]</span></span>
-                <div><h3><a href="@hit.Href">@hit.Title</a></h3><p>@hit.Kind · @hit.Description</p></div>
-                <a class="secondary" href="@hit.Href">Åbn</a>
-            </div>
-        }
-        @if (!Hits.Any())
-        {
-            <p>Ingen resultater. Prøv et andet søgeord.</p>
-        }
-    </div>
 }
 else if (PathKey == "explore/projects")
 {
@@ -70,8 +49,6 @@ else
 }
 
 @code {
-    private string _query = "";
-
     private string PathKey
     {
         get
@@ -86,27 +63,12 @@ else
 
     private string Title => PathKey switch
     {
-        "search" => "Søg",
         "explore/projects" => "Galleri",
         "explore/modules" => "Fag og emner",
         "badges" => "Badges",
         "help" => "Hjælp",
         _ => "Om LUP"
     };
-
-    [SupplyParameterFromQuery(Name = "q")] public string? Query { get; set; }
-    protected override void OnParametersSet() => _query = Query ?? "";
-    private IEnumerable<PublicSearchHit> Hits
-    {
-        get
-        {
-            var hits = PublicCatalog.Search(_query);
-            if (!Auth.IsAuthenticated) return hits;
-            var quests = DemoCatalog.Quests.Where(q => string.IsNullOrWhiteSpace(_query) || (q.Name + " " + q.Desc).Contains(_query, StringComparison.OrdinalIgnoreCase))
-                .Select(q => new PublicSearchHit("Quest", q.Name, q.Desc, "/quests/" + q.Id));
-            return hits.Concat(quests);
-        }
-    }
 
     protected override void OnInitialized() { Auth.AuthStateChanged += OnAuth; Nav.LocationChanged += OnLocation; }
     private void OnAuth() => InvokeAsync(StateHasChanged);

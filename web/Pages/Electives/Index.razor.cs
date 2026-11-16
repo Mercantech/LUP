@@ -8,6 +8,7 @@ public partial class Index
 {
     [SupplyParameterFromQuery(Name = "vis")] public string? View { get; set; }
     [SupplyParameterFromQuery(Name = "fag")] public string? Template { get; set; }
+    [SupplyParameterFromQuery(Name = "id")] public Guid? SearchItem { get; set; }
 
     private CancellationTokenSource _accountScope = new();
     private (string? Subject, bool Preview, bool Teacher)? _account;
@@ -44,7 +45,8 @@ public partial class Index
         get
         {
             var search = _search.Trim();
-            return VisibleItems.Where(e => e.Title.Contains(search, StringComparison.CurrentCultureIgnoreCase)
+            return VisibleItems.Where(e => SearchItem is null || e.Id == SearchItem)
+                .Where(e => e.Title.Contains(search, StringComparison.CurrentCultureIgnoreCase)
                 || e.Description.Contains(search, StringComparison.CurrentCultureIgnoreCase)
                 || e.Schedule.Contains(search, StringComparison.CurrentCultureIgnoreCase));
         }

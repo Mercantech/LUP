@@ -47,7 +47,7 @@
                     </nav>
                 </details>
                 <div class="lup-tools">
-                    <a class="lup-search-link" href="/search" aria-label="Søg"><UiIcon Name="search" /><span>Søg</span></a>
+                    <a class="lup-search-link" href="/search" aria-label="Søg i LUP" aria-current="@(CurrentPath == "/search" ? "page" : null)"><UiIcon Name="search" /><span>Søg</span></a>
                     <NotificationBell />
                     <details class="lup-account v3-navgroup">
                         <summary aria-label="Kontomenu"><span class="avatar lup-face">@if (World.Ready && !ViewAs.IsActive) { <AvatarIcon Size="32" Decorative="true" /> } else { @Initials }</span></summary>
@@ -88,6 +88,7 @@
                 </nav>
                 <details class="lup-mobile-nav"><summary>Menu</summary><nav class="lup-mobile-menu" aria-label="Hovednavigation"><a href="/library">Oversigt</a><a href="/explore/projects">Projekter</a><NavLink href="/games">Spil</NavLink><NavLink href="/characters">Karakterer</NavLink><a href="/sources">Om LUP</a></nav></details>
                 <div class="lup-tools">
+                    <a class="lup-search-link" href="/search" aria-label="Søg i LUP" aria-current="@(CurrentPath == "/search" ? "page" : null)"><UiIcon Name="search" /><span>Søg</span></a>
                     <ThemePicker Value="@_theme" ValueChanged="SetTheme" />
                     <button type="button" class="action" @onclick="StartLogin" disabled="@(_loginBusy || !Auth.IsInitialized)">@(_loginBusy ? "Sender…" : "Log ind")</button>
                 </div>

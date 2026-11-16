@@ -31,6 +31,7 @@ main { flex:1; }
 }
 
 .lup-header.member-header .lup-tools { margin-left:auto; }
+.lup-header .lup-search-link[aria-current="page"] { color:var(--blue); }
 .lup-header.member-header .member-nav ::deep a { white-space:nowrap; }
 .lup-header.member-header .lup-account .v3-menu { min-width:215px; }
 @media(max-width:900px) { .lup-header.member-header .member-nav { display:none; } .lup-header.member-header .lup-mobile-nav { display:block; } }
@@ -62,6 +63,13 @@ main { flex:1; }
     .lup-header .brand { gap:7px; }
     .brand-mark { width:22px; height:22px; }
     .lup-header .brand.is-current::after { bottom:-10px; }
+}
+@media(max-width:360px) {
+    .lup-header.public-header { gap:6px; padding-inline:10px; }
+    .lup-header.public-header .brand { gap:5px; }
+    .lup-header.public-header .lup-mobile-nav>summary { gap:4px; }
+    .lup-header.public-header .lup-tools { gap:4px; }
+    .lup-header.public-header .lup-tools>.action { padding-inline:9px; }
 }
 
 .lup-account-name {
