@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 umask 077
 
 if [[ "$(id -u)" != 0 ]] || ! systemd-detect-virt --vm --quiet; then
@@ -16,22 +16,46 @@ if [[ ! "$source_ref" =~ ^[0-9a-f]{40}$ || ! "$slots" =~ ^[1-4]$ ]] || ! test -r
 fi
 
 exec 3>&1
-exec >>/var/log/lup-home-runner-bootstrap.log 2>&1
+bootstrap_log=/var/log/lup-home-runner-bootstrap.log
+exec >>"$bootstrap_log" 2>&1
 signal() {
     printf '%s\n' "$*" >&3
     if [[ -c /dev/ttyS0 ]]; then printf '%s\n' "$*" >/dev/ttyS0 || true; fi
 }
-stage=packages
-trap 'signal "LUP_HOME_WORKER_FAILED $stage"' ERR
-signal "LUP_HOME_WORKER_STAGE $stage"
+bootstrap_failed() {
+    local code=$?
+    trap - ERR
+    signal "LUP_HOME_WORKER_FAILED $stage exit=$code"
+    case "$stage" in
+        package-*|gvisor-*)
+            while IFS= read -r line; do signal "LUP_HOME_WORKER_DIAG $line"; done \
+                < <(tail -24 "$bootstrap_log" | tr -d '\r')
+            ;;
+    esac
+    exit "$code"
+}
 
-export DEBIAN_FRONTEND=noninteractive
-apt-get -o DPkg::Lock::Timeout=180 update -q
-apt-get -o DPkg::Lock::Timeout=180 install -yq --no-install-recommends \
-    ca-certificates curl docker.io git gnupg nginx openssl python3
+stage=package-recovery
+trap bootstrap_failed ERR
+signal "LUP_HOME_WORKER_STAGE $stage"
+export DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l UCF_FORCE_CONFFOLD=1
+apt_options=(
+    -o DPkg::Lock::Timeout=45 -o Acquire::Retries=2
+    -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20
+    -o Dpkg::Use-Pty=0 -o Dpkg::Options::=--force-confold
+)
+timeout --kill-after=15s 240s dpkg --force-confold --configure -a </dev/null
+
+stage=package-update
+signal "LUP_HOME_WORKER_STAGE $stage"
+timeout --kill-after=15s 240s apt-get "${apt_options[@]}" update -q </dev/null
+stage=package-install
+signal "LUP_HOME_WORKER_STAGE $stage"
+timeout --kill-after=15s 360s apt-get "${apt_options[@]}" install -yq --no-install-recommends \
+    ca-certificates curl docker.io git gnupg nginx openssl python3 </dev/null
 openssl pkey -pubin -in "$handoff" -noout
 
-stage=gvisor
+stage=gvisor-source
 signal "LUP_HOME_WORKER_STAGE $stage"
 install -d -m 0755 /etc/apt/keyrings
 archive_key=$(mktemp)
@@ -42,11 +66,13 @@ chmod 0644 /etc/apt/keyrings/gvisor.gpg
 printf 'deb [arch=%s signed-by=/etc/apt/keyrings/gvisor.gpg] https://storage.googleapis.com/gvisor/releases release main\n' \
     "$(dpkg --print-architecture)" >/etc/apt/sources.list.d/gvisor.list
 chmod 0644 /etc/apt/sources.list.d/gvisor.list
-apt-get -o DPkg::Lock::Timeout=180 update -q
-apt-get -o DPkg::Lock::Timeout=180 install -yq --no-install-recommends runsc
+stage=gvisor-install
+signal "LUP_HOME_WORKER_STAGE $stage"
+timeout --kill-after=15s 240s apt-get "${apt_options[@]}" update -q </dev/null
+timeout --kill-after=15s 180s apt-get "${apt_options[@]}" install -yq --no-install-recommends runsc </dev/null
 runsc install
 systemctl enable docker
-systemctl restart docker
+timeout --kill-after=10s 75s systemctl restart docker
 docker info --format '{{json .Runtimes}}' | grep -q '"runsc"'
 
 stage=images

@@ -12,17 +12,29 @@ if ! flock -n 9; then
     exit 1
 fi
 
+new_disk=0
 if [ ! -s /vm/guest.qcow2 ]; then
-    : "${LUP_VM_USER_DATA_B64:?Cloud-init data is required for the first boot}"
+    new_disk=1
     rm -f /vm/guest.qcow2.new
     cp --sparse=always /opt/lup-vm/base.qcow2 /vm/guest.qcow2.new
     chmod 0600 /vm/guest.qcow2.new
     qemu-img resize /vm/guest.qcow2.new 32G
     cp /usr/share/OVMF/OVMF_VARS_4M.fd /vm/ovmf-vars.fd
+fi
+
+if [ ! -s /vm/seed.iso ] || [ -n "${LUP_VM_RESEED_ID:-}" ]; then
+    : "${LUP_VM_USER_DATA_B64:?Cloud-init data is required for provisioning}"
+    instance_id="${LUP_VM_RESEED_ID:-lup-home-worker-v1}"
+    case "$instance_id" in *[!a-z0-9-]*) echo 'Invalid guest instance id.' >&2; exit 1;; esac
     printf '%s' "$LUP_VM_USER_DATA_B64" | base64 -d > /vm/user-data
-    printf 'instance-id: lup-home-worker-v1\nlocal-hostname: lup-home-worker\n' > /vm/meta-data
-    cloud-localds /vm/seed.iso /vm/user-data /vm/meta-data
+    printf 'instance-id: %s\nlocal-hostname: lup-home-worker\n' "$instance_id" > /vm/meta-data
+    rm -f /vm/seed.iso.new
+    cloud-localds /vm/seed.iso.new /vm/user-data /vm/meta-data
+    mv /vm/seed.iso.new /vm/seed.iso
     rm -f /vm/user-data /vm/meta-data
+fi
+
+if [ "$new_disk" = 1 ]; then
     mv /vm/guest.qcow2.new /vm/guest.qcow2
 fi
 
