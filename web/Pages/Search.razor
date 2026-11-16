@@ -1,0 +1,82 @@
+@page "/search"
+@implements IDisposable
+
+<PageTitle>Søg i LUP</PageTitle>
+
+<div class="lup-search">
+    <header class="page-title"><h1>Søg i LUP</h1></header>
+
+    <form class="search-controls" role="search" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
+        <div class="search-field">
+            <label for="lup-search-query">Søgeord</label>
+            <input id="lup-search-query" type="search" name="q" maxlength="@MaxQueryLength"
+                   placeholder="Fx MQTT, et navn eller en opgave" autocomplete="off"
+                   @bind="_draftQuery" @bind:event="oninput" @bind:after="QueueSearchAsync" />
+        </div>
+        <div class="search-field">
+            <label for="lup-search-category">Kategori</label>
+            <select id="lup-search-category" name="category" @bind="_draftCategory" @bind:after="SubmitAsync">
+                @foreach (var (id, label) in Categories)
+                {
+                    <option value="@id">@label</option>
+                }
+            </select>
+        </div>
+        <button class="action search-submit" type="submit">Søg</button>
+    </form>
+
+    <section class="search-results" aria-labelledby="lup-search-results" aria-busy="@(_loading ? "true" : "false")">
+        <h2 id="lup-search-results">Resultater</h2>
+        <div class="search-status" role="status">
+            @if (_loading)
+            {
+                <span>Søger…</span>
+            }
+            else if (!_failed && _total > 0)
+            {
+                <span>@(_total == 1 ? "1 resultat" : $"{_total} resultater")</span>
+            }
+            else if (!_failed && string.IsNullOrWhiteSpace(Query))
+            {
+                <span>Skriv et søgeord for at finde indhold i den valgte kategori.</span>
+            }
+            else if (!_failed)
+            {
+                <span>Ingen resultater. Prøv et andet søgeord, eller skift kategori.</span>
+            }
+        </div>
+        @if (_failed)
+        {
+            <div class="search-error" role="alert">
+                <p>Søgningen kunne ikke gennemføres.</p>
+                <button type="button" class="secondary" @onclick="RetryAsync">Prøv igen</button>
+            </div>
+        }
+        @if (_items.Count > 0)
+        {
+            <ul class="search-list">
+                @foreach (var hit in _items)
+                {
+                    <li class="search-hit">
+                        <div class="search-hit-context">
+                            <span class="search-kind">@hit.Kind</span>
+                            @if (!string.IsNullOrWhiteSpace(hit.Context) && hit.Context != hit.Kind)
+                            {
+                                <span>@hit.Context</span>
+                            }
+                        </div>
+                        <h3><a href="@hit.Href">@hit.Title</a></h3>
+                        @if (!string.IsNullOrWhiteSpace(hit.Description) && hit.Description != hit.Context)
+                        {
+                            <p>@hit.Description</p>
+                        }
+                    </li>
+                }
+            </ul>
+            @if (_items.Count < _total && !_failed)
+            {
+                <button class="secondary search-more" type="button" disabled="@_loading" @onclick="LoadMoreAsync">Vis flere</button>
+            }
+        }
+    </section>
+</div>

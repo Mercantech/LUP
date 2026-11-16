@@ -145,14 +145,22 @@ public sealed partial class ReferenceService(AppDbContext db)
         catch (JsonException) { return false; }
     }
 
+    internal Task<List<ResolvedReference>> GlobalCatalogAsync(ClaimsPrincipal user, string query, bool publishedOnly,
+        IReadOnlySet<string> kinds, CancellationToken ct) => CatalogAsync(user, publishedOnly, ct, search: query, globalKinds: kinds);
+
     private async Task<List<ResolvedReference>> CatalogAsync(ClaimsPrincipal user, bool publishedOnly, CancellationToken ct,
-        HashSet<EntityReference>? wanted = null, string? search = null, bool contentOnly = false, bool pagesOnly = false)
+        HashSet<EntityReference>? wanted = null, string? search = null, bool contentOnly = false, bool pagesOnly = false,
+        IReadOnlySet<string>? globalKinds = null)
     {
         if (UserClaims.GetSub(user) is not Guid sub) return [];
         var result = new List<ResolvedReference>();
+        bool Includes(string kind) => globalKinds is null || globalKinds.Contains(kind);
+        var globalWords = globalKinds is not null && search is not null ? search.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(word => word.All(char.IsAscii)).ToArray() : [];
         Guid[] Ids(string kind) => wanted?.Where(r => r.Kind == kind && Guid.TryParse(r.Id, out _)).Select(r => Guid.Parse(r.Id)).ToArray() ?? [];
         IQueryable<T> Only<T>(IQueryable<T> query, string kind, Expression<Func<T, Guid>> selector, params Guid[] extra)
         {
+            if (!Includes(kind)) return query.Where(_ => false);
             if (wanted is null) return query;
             var ids = Ids(kind).Concat(extra).Distinct().ToArray();
             return query.Where(Expression.Lambda<Func<T, bool>>(Expression.Call(typeof(Enumerable), nameof(Enumerable.Contains), [typeof(Guid)],
@@ -165,8 +173,11 @@ public sealed partial class ReferenceService(AppDbContext db)
         var manageSet = manageable.ToHashSet();
         string HoldName(Guid? id) => id is Guid h ? holdNames.GetValueOrDefault(h, "Hold") : "Teori";
         void Add(string kind, Guid id, string title, string href, Guid? hold = null, Guid? collection = null,
-            bool rename = false, string? context = null) => result.Add(new(Ref(kind, id), title, href, context ?? HoldName(hold), hold, collection, rename));
-        if (!pagesOnly)
+            bool rename = false, string? context = null)
+        {
+            if (Includes(kind)) result.Add(new(Ref(kind, id), title, href, context ?? HoldName(hold), hold, collection, rename));
+        }
+        if (!pagesOnly && Includes("hold"))
         foreach (var h in holds.Where(h => wanted is null || wanted.Contains(Ref("hold", h.Id)))) Add("hold", h.Id, h.Name, $"/holds/{h.Id:D}?view=overview", h.Id);
 
         var extraPages = new List<Guid>(); var extraNotes = new List<Guid>();
@@ -188,9 +199,10 @@ public sealed partial class ReferenceService(AppDbContext db)
             var collectionIds = Ids("collection");
             pageQuery = pageQuery.Where(p => pageIds.Contains(p.Id) || p.CollectionId != null && collectionIds.Contains(p.CollectionId.Value));
         }
-        var pages = await pageQuery
+        var pages = Includes("notion-page") || Includes("collection") || Includes("notion-asset") || Includes("drawing")
+            ? await pageQuery
             .Select(p => new { p.Id, p.HoldId, p.CollectionId, p.ParentPageId, p.Title, p.PublishedTitle,
-                p.PublishedAssetIdsJson, p.PublishedDrawingsJson, p.DrawingIdsJson }).ToArrayAsync(ct);
+                p.PublishedAssetIdsJson, p.PublishedDrawingsJson, p.DrawingIdsJson }).ToArrayAsync(ct) : [];
         foreach (var p in pages)
         {
             var edit = !publishedOnly && (p.HoldId is Guid h ? manageSet.Contains(h) : UserClaims.IsTeacher(user));
@@ -200,7 +212,7 @@ public sealed partial class ReferenceService(AppDbContext db)
             if (!pagesOnly && p.CollectionId is null && p.ParentPageId is null)
                 Add("collection", p.Id, title, href, p.HoldId, p.Id, edit);
         }
-        if (!pagesOnly && (wanted is null || Ids("collection").Length > 0))
+        if (!pagesOnly && Includes("collection") && (wanted is null || Ids("collection").Length > 0))
         {
             var visibleCollections = pages.Where(p => p.CollectionId != null).Select(p => p.CollectionId!.Value).Distinct().ToArray();
             var requestedCollections = Ids("collection");
@@ -224,13 +236,22 @@ public sealed partial class ReferenceService(AppDbContext db)
         }
 
         var noteQuery = notebooks.ReadableDocuments(user).AsNoTracking().Where(d => d.NotebookId != null);
+        // Discovery uses the student's own or explicitly shared notes plus the teacher's managed rosters.
+        // The general direct notebook and reference permissions remain independent of this filter.
+        var managedStudents = db.Memberships.Where(m => manageable.Contains(m.HoldId) && m.UserSub != null)
+            .Select(m => m.UserSub!.Value);
+        if (globalKinds is not null)
+            noteQuery = noteQuery.Where(d => d.DeletedAtUtc == null && (d.Notebook!.OwnerSub == sub || managedStudents.Contains(d.Notebook.OwnerSub)
+                || db.NotebookShares.Any(s => s.NotebookId == d.NotebookId && s.RecipientSub == sub
+                    && (s.PageId == null || s.PageId == d.Id))));
         if (wanted is not null)
         {
             var noteIds = Ids("notebook-page").Concat(extraNotes).ToArray(); var notebookIds = Ids("notebook");
             noteQuery = noteQuery.Where(d => noteIds.Contains(d.Id) || notebookIds.Contains(d.NotebookId!.Value));
         }
-        var notes = await noteQuery
-            .Select(d => new { d.Id, d.Title, d.NotebookId, d.HoldId, d.Notebook!.OwnerSub, d.AssetIdsJson }).ToArrayAsync(ct);
+        var notes = Includes("notebook-page") || Includes("notebook-asset") || Includes("drawing")
+            ? await noteQuery.Select(d => new { d.Id, d.Title, d.NotebookId, d.HoldId, d.Notebook!.OwnerSub, d.AssetIdsJson })
+                .ToArrayAsync(ct) : [];
         foreach (var d in notes) Add("notebook-page", d.Id, d.Title, $"/notebook/{d.Id:D}", d.HoldId,
             d.NotebookId, d.OwnerSub == sub, "Personlige noter");
         if (pagesOnly) return result;
@@ -241,26 +262,32 @@ public sealed partial class ReferenceService(AppDbContext db)
         var readableNoteIds = notes.Select(d => d.Id).ToArray();
         var ownerIds = notes.Select(d => d.OwnerSub).Distinct().ToArray();
         var profileQuery = Only(db.NotebookProfiles.AsNoTracking(), "person", p => p.Sub, ownerIds);
-        if (contentOnly) profileQuery = profileQuery.Where(p => ownerIds.Contains(p.Sub));
-        var profiles = await profileQuery.ToArrayAsync(ct);
+        if (globalKinds is not null) profileQuery = db.NotebookProfiles.AsNoTracking().Where(p => ownerIds.Contains(p.Sub));
+        else if (contentOnly) profileQuery = profileQuery.Where(p => ownerIds.Contains(p.Sub));
+        var profiles = Includes("person") || Includes("notebook") ? await profileQuery.ToArrayAsync(ct) : [];
         var profileNames = profiles.ToDictionary(p => p.Sub, p => p.DisplayName);
         var readableNotebooks = Only(db.Notebooks.AsNoTracking().Where(n => n.OwnerSub == sub || UserClaims.IsTeacher(user)
             || db.NotebookShares.Any(s => s.NotebookId == n.Id && s.RecipientSub == sub && s.PageId == null)), "notebook", n => n.Id);
+        if (globalKinds is not null)
+            readableNotebooks = readableNotebooks.Where(n => n.OwnerSub == sub || managedStudents.Contains(n.OwnerSub)
+                || db.NotebookShares.Any(s => s.NotebookId == n.Id && s.RecipientSub == sub && s.PageId == null));
+        if (Includes("notebook"))
         foreach (var nb in await readableNotebooks.Select(n => new { n.Id, n.OwnerSub }).ToArrayAsync(ct))
         {
             var owner = nb.OwnerSub;
             Add("notebook", nb.Id, owner == sub ? "Min notesbog" : profileNames.GetValueOrDefault(owner, "LUP-bruger") + "s notesbog",
                 owner == sub ? "/notebook" : $"/notebook?owner={nb.Id:D}", collection: nb.Id, context: "Personlig notesbog");
         }
-        if (!contentOnly)
+        if (!contentOnly && Includes("person"))
         foreach (var p in profiles.Where(p => wanted is null || wanted.Contains(Ref("person", p.Sub)))) Add("person", p.Sub, p.DisplayName, $"/people/{p.Sub:D}",
             context: p.IsTeacher ? "Underviser · LUP-bruger" : "LUP-bruger");
 
-        if (!contentOnly)
+        if (!contentOnly && Includes("member"))
         foreach (var m in await Only(db.Memberships.AsNoTracking().Where(m => holdIds.Contains(m.HoldId)), "member", m => m.Id)
             .Select(m => new { m.Id, m.HoldId, m.DisplayName }).ToArrayAsync(ct))
             Add("member", m.Id, m.DisplayName ?? "Elev", $"/notion/holds/{m.HoldId:D}/students/{m.Id:D}", m.HoldId);
 
+        if (Includes("teaching-course"))
         foreach (var c in await Only(db.TeachingCourses.AsNoTracking().Where(c => holdIds.Contains(c.HoldId)
             && (manageable.Contains(c.HoldId) || c.Published && !c.Archived)), "teaching-course", c => c.Id)
             .Select(c => new { c.Id, c.HoldId, c.Title }).ToArrayAsync(ct))
@@ -273,21 +300,25 @@ public sealed partial class ReferenceService(AppDbContext db)
             var wantedQuests = Ids("quest"); var submissionIds = Ids("submission");
             questQuery = questQuery.Where(q => wantedQuests.Contains(q.Id) || db.QuestSubmissions.Any(s => submissionIds.Contains(s.Id) && s.QuestId == q.Id));
         }
-        var quests = await questQuery
-            .Select(q => new { q.Id, q.HoldId, q.Title }).ToArrayAsync(ct);
+        var quests = Includes("quest") || Includes("submission")
+            ? await questQuery.Select(q => new { q.Id, q.HoldId, q.Title }).ToArrayAsync(ct) : [];
         foreach (var q in quests) Add("quest", q.Id, q.Title, $"/quests/{q.Id:D}?hold={q.HoldId:D}", q.HoldId);
+        if (Includes("material"))
         foreach (var m in await Only(db.CourseMaterials.AsNoTracking().Where(m => holdIds.Contains(m.HoldId)
             && (manageable.Contains(m.HoldId) || m.Published)), "material", m => m.Id).Select(m => new { m.Id, m.HoldId, m.Title }).ToArrayAsync(ct))
             Add("material", m.Id, m.Title, $"/holds/{m.HoldId:D}?view=materials&material={m.Id:D}", m.HoldId);
-        if (!contentOnly)
+        if (!contentOnly && Includes("poll"))
         foreach (var p in await Only(db.PollRounds.AsNoTracking().Where(p => holdIds.Contains(p.HoldId)
             && (manageable.Contains(p.HoldId) || p.State != "draft")), "poll", p => p.Id)
-            .Select(p => new { p.Id, p.HoldId, p.Question }).ToArrayAsync(ct))
-            Add("poll", p.Id, p.Question, $"/polls/{p.Id:D}?hold={p.HoldId:D}", p.HoldId);
+            .Select(p => new { p.Id, p.HoldId, p.Question, p.Kind }).ToArrayAsync(ct))
+            Add("poll", p.Id, p.Question, $"/polls/{p.Id:D}?hold={p.HoldId:D}", p.HoldId,
+                context: globalKinds is not null && p.Kind == "mood" ? HoldName(p.HoldId) + " · Vibe tjek" : null);
+        if (Includes("group"))
         foreach (var g in await Only(db.LearningGroups.AsNoTracking().Where(g => holdIds.Contains(g.HoldId)
             && (manageable.Contains(g.HoldId) || g.Members.Any(m => m.Membership.UserSub == sub))), "group", g => g.Id)
             .Select(g => new { g.Id, g.HoldId, g.Name }).ToArrayAsync(ct))
             Add("group", g.Id, g.Name, $"/holds/{g.HoldId:D}?view=groups&group={g.Id:D}", g.HoldId);
+        if (Includes("event"))
         foreach (var e in await Only(db.HoldCalendarEvents.AsNoTracking().Where(e => holdIds.Contains(e.HoldId)), "event", e => e.Id)
             .Select(e => new { e.Id, e.HoldId, e.Title }).ToArrayAsync(ct))
             Add("event", e.Id, e.Title, $"/holds/{e.HoldId:D}?view=calendar&event={e.Id:D}", e.HoldId);
@@ -307,7 +338,8 @@ public sealed partial class ReferenceService(AppDbContext db)
                     || p.UserSub == null && db.Memberships.Any(m => m.Id == p.MembershipId && m.UserSub == sub)))));
         if (!string.IsNullOrWhiteSpace(search))
         {
-            foreach (var word in search.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            var words = globalKinds is null ? search.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries) : globalWords;
+            foreach (var word in words)
             {
                 var term = word.ToLowerInvariant();
                 var matchingHolds = holds.Where(h => h.Name.Contains(word, StringComparison.CurrentCultureIgnoreCase)).Select(h => h.Id).ToArray();
@@ -315,19 +347,37 @@ public sealed partial class ReferenceService(AppDbContext db)
                 fileQuery = fileQuery.Where(f => kindMatches || f.OriginalName.ToLower().Contains(term) || f.HoldId != null && matchingHolds.Contains(f.HoldId.Value));
             }
         }
+        if (Includes("file"))
         foreach (var file in await fileQuery.ToArrayAsync(ct))
             if (await files.CanReadAsync(file, user, ct)) Add("file", file.Id, file.OriginalName,
                 $"/references/file/file/{file.Id:D}", file.HoldId, context: "Fil · " + HoldName(file.HoldId));
-        foreach (var asset in await Only(db.NotionAssets.AsNoTracking().Where(a => readablePageIds.Contains(a.PageId)), "notion-asset", a => a.Id).Select(a => new { a.Id, a.PageId, a.OriginalName }).ToArrayAsync(ct))
+        var pageAssets = Only(db.NotionAssets.AsNoTracking().Where(a => readablePageIds.Contains(a.PageId)), "notion-asset", a => a.Id);
+        var noteAssets = Only(db.NotebookAssets.AsNoTracking().Where(a => readableNoteIds.Contains(a.DocumentId)), "notebook-asset", a => a.Id);
+        foreach (var word in globalWords)
+        {
+            var term = word.ToLowerInvariant();
+            if (!"Vedhæftning".Contains(word, StringComparison.CurrentCultureIgnoreCase))
+            {
+                var relevantPages = pages.Where(p => HoldName(p.HoldId).Contains(word, StringComparison.CurrentCultureIgnoreCase))
+                    .Select(p => p.Id).ToArray();
+                pageAssets = pageAssets.Where(a => a.OriginalName.ToLower().Contains(term) || relevantPages.Contains(a.PageId));
+                if (!"Personlige noter".Contains(word, StringComparison.CurrentCultureIgnoreCase))
+                    noteAssets = noteAssets.Where(a => a.OriginalName.ToLower().Contains(term));
+            }
+        }
+        if (Includes("notion-asset"))
+        foreach (var asset in await pageAssets.Select(a => new { a.Id, a.PageId, a.OriginalName }).ToArrayAsync(ct))
             if (pageAccess.TryGetValue(asset.PageId, out var p))
             {
                 var edit = !publishedOnly && (p.HoldId is Guid h ? manageSet.Contains(h) : UserClaims.IsTeacher(user));
                 if (edit || ContainsId(p.PublishedAssetIdsJson, asset.Id)) Add("notion-asset", asset.Id, asset.OriginalName,
                     $"/references/file/notion-asset/{asset.Id:D}", p.HoldId, p.CollectionId, context: "Vedhæftning · " + HoldName(p.HoldId));
             }
-        foreach (var asset in await Only(db.NotebookAssets.AsNoTracking().Where(a => readableNoteIds.Contains(a.DocumentId)), "notebook-asset", a => a.Id).Select(a => new { a.Id, a.DocumentId, a.OriginalName }).ToArrayAsync(ct))
+        if (Includes("notebook-asset"))
+        foreach (var asset in await noteAssets.Select(a => new { a.Id, a.DocumentId, a.OriginalName }).ToArrayAsync(ct))
             if (noteAccess.TryGetValue(asset.DocumentId, out var d) && (d.OwnerSub == sub || ContainsId(d.AssetIdsJson, asset.Id)))
                 Add("notebook-asset", asset.Id, asset.OriginalName, $"/references/file/notebook-asset/{asset.Id:D}", d.HoldId, d.NotebookId, context: "Vedhæftning · Personlige noter");
+        if (Includes("drawing"))
         foreach (var drawing in await Only(db.Drawings.AsNoTracking().Where(d => d.NotionPageId != null && readablePageIds.Contains(d.NotionPageId.Value)
             || d.NotebookDocumentId != null && readableNoteIds.Contains(d.NotebookDocumentId.Value)), "drawing", d => d.Id)
             .Select(d => new { d.Id, d.NotionPageId, d.NotebookDocumentId, d.BlockId }).ToArrayAsync(ct))
@@ -341,8 +391,9 @@ public sealed partial class ReferenceService(AppDbContext db)
             else if (drawing.NotebookDocumentId is Guid note && noteAccess.TryGetValue(note, out var d))
                 Add("drawing", drawing.Id, "Tegning · " + d.Title, $"/notebook/{note:D}?drawing={drawing.Id:D}", d.HoldId, d.NotebookId);
         }
-        await AddSubmissionsAsync(result, user, quests.Select(q => q.Id).ToArray(), manageable, wanted is null ? null : Ids("submission"), ct);
-        AddPublic(result);
+        if (Includes("submission"))
+            await AddSubmissionsAsync(result, user, quests.Select(q => q.Id).ToArray(), manageable, wanted is null ? null : Ids("submission"), ct, globalWords);
+        if (globalKinds is null) AddPublic(result);
         return result.Where(r => (!contentOnly || IsGraphContent(r.Reference.Kind)) && (wanted is null || wanted.Contains(r.Reference))).DistinctBy(r => r.Reference).ToList();
     }
 
@@ -352,28 +403,38 @@ public sealed partial class ReferenceService(AppDbContext db)
         catch (JsonException) { return false; }
     }
 
-    private async Task AddSubmissionsAsync(List<ResolvedReference> result, ClaimsPrincipal user, Guid[] questIds, Guid[] manageable, Guid[]? wanted, CancellationToken ct)
+    private async Task AddSubmissionsAsync(List<ResolvedReference> result, ClaimsPrincipal user, Guid[] questIds, Guid[] manageable, Guid[]? wanted,
+        CancellationToken ct, string[] globalWords)
     {
+        if (questIds.Length == 0) return;
         var sub = UserClaims.GetSub(user)!.Value;
         var memberIds = await db.Memberships.Where(m => m.UserSub == sub).Select(m => m.Id).ToArrayAsync(ct);
-        var candidates = await db.QuestSubmissions.AsNoTracking().Where(s => questIds.Contains(s.QuestId) && (wanted == null || wanted.Contains(s.Id)))
-            .Select(s => new { s.Id, s.QuestId, s.Quest.HoldId, s.Quest.Title, s.CreatedBySub, s.GroupId, s.State,
+        var query = db.QuestSubmissions.AsNoTracking().Where(s => questIds.Contains(s.QuestId) && (wanted == null || wanted.Contains(s.Id)));
+        foreach (var word in globalWords.Where(word => !"Aflevering".Contains(word, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            var term = word.ToLowerInvariant();
+            query = query.Where(s => s.Quest.Title.ToLower().Contains(term));
+        }
+        var candidates = await query.Select(s => new { s.Id, s.Quest, s.CreatedBySub, s.GroupId, s.State,
                 Participant = s.Revisions.Any(r => r.Participants.Any(p => p.UserSub == sub || p.UserSub == null && memberIds.Contains(p.MembershipId))),
                 HasRevisions = s.Revisions.Any(), LatestParticipant = s.Revisions.OrderByDescending(r => r.Number).Take(1)
                     .Any(r => r.Participants.Any(p => p.UserSub == sub || p.UserSub == null && memberIds.Contains(p.MembershipId))) }).ToArrayAsync(ct);
         var audience = new QuestAudienceAccess(db);
+        var student = !UserClaims.IsTeacher(user);
         foreach (var s in candidates)
         {
-            var manage = manageable.Contains(s.HoldId);
-            var quest = await db.LearningQuests.AsNoTracking().SingleAsync(q => q.Id == s.QuestId, ct);
-            var edit = !UserClaims.IsTeacher(user) && s.State is "draft" or "changes-requested" && quest.Published
-                && await audience.CanParticipateAsync(quest, sub, s.GroupId, ct)
-                && (s.GroupId is Guid group ? await db.LearningGroupMembers.AnyAsync(m => m.GroupId == group && m.Membership.UserSub == sub, ct)
-                    && (!s.HasRevisions || s.LatestParticipant)
-                    : s.CreatedBySub == sub);
-            if (!manage && !s.Participant && !edit) continue;
-            result.Add(new(Ref("submission", s.Id), "Aflevering · " + s.Title,
-                $"/quests/{s.QuestId:D}?hold={s.HoldId:D}&submission={s.Id:D}", "Aflevering", s.HoldId));
+            var quest = s.Quest;
+            if (!manageable.Contains(quest.HoldId) && !s.Participant)
+            {
+                if (!student || s.State is not ("draft" or "changes-requested") || !quest.Published) continue;
+                var ownsDraft = s.GroupId is Guid group
+                    ? (!s.HasRevisions || s.LatestParticipant) && await db.LearningGroupMembers.AnyAsync(m =>
+                        m.GroupId == group && m.Membership.UserSub == sub, ct)
+                    : s.CreatedBySub == sub;
+                if (!ownsDraft || !await audience.CanParticipateAsync(quest, sub, s.GroupId, ct)) continue;
+            }
+            result.Add(new(Ref("submission", s.Id), "Aflevering · " + quest.Title,
+                $"/quests/{quest.Id:D}?hold={quest.HoldId:D}&submission={s.Id:D}", "Aflevering", quest.HoldId));
         }
     }
 
