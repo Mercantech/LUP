@@ -1,5 +1,6 @@
 // Run against qa-notebook-harness.mjs. --seed-only prepares the catalog for Hallmark screenshots.
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
@@ -53,11 +54,16 @@ try {
   });
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   let failFirstStart = true;
+  let failFirstCheck = true;
   const requestIds = [];
   await context.route('**/*', async route => {
     const request = route.request();
     const url = new URL(request.url());
     if (url.origin !== origin) return route.abort('blockedbyclient');
+    if (failFirstCheck && request.method() === 'POST' && url.pathname.endsWith('/check')) {
+      failFirstCheck = false;
+      return route.fulfill({ status: 503, json: {} });
+    }
     if (request.method() !== 'POST' || url.pathname !== '/api/knowledge-checks/publications/' + controlFlow.id + '/attempts') {
       return route.continue();
     }
@@ -108,9 +114,22 @@ try {
   await page.locator('.lup-knowledge-prompt').focus();
   await page.keyboard.press('a');
   assert.equal(await page.getByRole('radio').first().isChecked(), true);
+  const firstSource = page.getByRole('link', { name: quiz.questions[0].learnMoreTitle, exact: true });
+  assert.equal(await firstSource.count(), 0);
+  const check = page.getByRole('button', { name: 'Tjek svar', exact: true });
+  await check.click();
+  await page.locator('.lup-knowledge-player').getByRole('alert').waitFor();
+  await check.click();
+  await page.getByRole('heading', { name: 'Forkert', exact: true }).waitFor();
+  await firstSource.waitFor();
+  assert.equal(await page.getByRole('radio').first().isDisabled(), true);
+  await page.reload();
+  await page.getByRole('heading', { name: 'Forkert', exact: true }).waitFor();
+  assert.equal(await page.getByRole('radio').first().isDisabled(), true);
+  await page.locator('.lup-knowledge-prompt').focus();
   await page.keyboard.press('Enter');
   await page.getByText('Spørgsmål 2 af ' + questionCount, { exact: true }).waitFor();
-  await page.getByRole('progressbar', { name: '1 af ' + questionCount + ' besvaret' }).waitFor();
+  await page.getByRole('progressbar', { name: '1 af ' + questionCount + ' tjekket' }).waitFor();
   await page.getByRole('status').filter({ hasText: /^Gemt$/ }).waitFor();
 
   await page.getByRole('link', { name: 'Alle videnstjek', exact: true }).click();
@@ -120,12 +139,14 @@ try {
   await card.getByRole('link', { name: /^Fortsæt/ }).click();
   await page.getByText('Spørgsmål 2 af ' + questionCount, { exact: true }).waitFor();
   const navigator = page.getByRole('navigation', { name: 'Spørgsmålsoversigt' });
-  await navigator.getByRole('button', { name: 'Spørgsmål 1, besvaret', exact: true }).click();
+  await navigator.getByRole('button', { name: 'Spørgsmål 1, forkert', exact: true }).click();
   assert.equal(await page.getByRole('radio').first().isChecked(), true);
   await navigator.getByRole('button', { name: 'Spørgsmål 2, ubesvaret', exact: true }).click();
   for (let i = 1; i < questionCount; i++) {
     await page.getByText('Spørgsmål ' + (i + 1) + ' af ' + questionCount, { exact: true }).waitFor();
     await page.getByRole('radio').nth(quiz.questions[i].correctOptions[0]).check();
+    await check.click();
+    await page.getByRole('heading', { name: 'Korrekt', exact: true }).waitFor();
     await page.getByRole('button', { name: /^(Næste|Gå til aflevering)$/ }).click();
   }
   await page.getByRole('button', { name: 'Aflever', exact: true }).click();
@@ -149,8 +170,27 @@ try {
   await page.getByRole('button', { name: 'Ryd filtre', exact: true }).click();
   await page.getByText('26 quizzer', { exact: true }).waitFor();
   assert.equal(await search.evaluate(element => element === document.activeElement), true);
+
+  const shortDraft = await api('', {
+    title: 'Kortsvar med feedback', topic: 'QA', description: 'Et eksempel på feedback til et kortsvar.',
+    questions: [{
+      id: randomUUID(), kind: 'short', prompt: 'Hvilket nøgleord forlader en løkke?', options: [],
+      correctOptions: [], acceptedAnswers: ['break'], explanation: 'break afslutter den aktuelle løkke.',
+    }],
+  });
+  const shortQuiz = await api('/' + shortDraft.id + '/publish', { feedbackMode: 'after-submit' });
+  await page.goto(origin + '/videnstjek/' + shortQuiz.id);
+  await page.getByRole('button', { name: 'Start videnstjek', exact: true }).click();
+  const shortAnswer = page.getByRole('textbox', { name: 'Dit svar' });
+  await shortAnswer.fill('break');
+  await shortAnswer.press('Enter');
+  assert.equal(await page.getByRole('heading', { name: 'Korrekt', exact: true }).count(), 0);
+  await check.click();
+  await page.getByRole('heading', { name: 'Korrekt', exact: true }).waitFor();
+  assert.equal(await shortAnswer.isDisabled(), true);
+
   assert.deepEqual(errors, []);
-  console.log('Katalogets 26 quizzer, emner, niveauer, start/genforsøg, gemning og facit bestod på mobil.');
+  console.log('Mobil: katalogets 26 quizzer, filtre, start, genforsøg og feedback med kilder efter hvert tjek bestod.');
 } finally {
   await browser.close();
 }

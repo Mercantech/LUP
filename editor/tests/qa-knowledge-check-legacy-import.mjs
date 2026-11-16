@@ -48,6 +48,8 @@ try {
     assert.equal(await learner.getByRole('link', { name: source.learnMoreTitle, exact: false }).count(), 0);
     const choices = learner.getByRole(question.kind === 'multiple' ? 'checkbox' : 'radio');
     for (const selected of question.correctOptions) await choices.nth(selected).check();
+    await learner.getByRole('button', { name: 'Tjek svar', exact: true }).click();
+    await learner.getByRole('heading', { name: 'Korrekt', exact: true }).waitFor();
     await learner.getByRole('button', { name: /^(Næste|Gå til aflevering)$/ }).click();
   }
   await learner.getByRole('button', { name: 'Aflever', exact: true }).click();

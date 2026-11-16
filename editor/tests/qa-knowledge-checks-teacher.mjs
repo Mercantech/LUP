@@ -63,6 +63,7 @@ try {
     .getByRole('link', { name: /^Start/ }).click();
   await mobile.getByRole('button', { name: 'Start videnstjek' }).click();
   await mobile.getByLabel('Dit svar').fill('Når udtrykket til venstre er sandt.');
+  assert.equal(await mobile.getByRole('button', { name: 'Tjek svar', exact: true }).count(), 0);
   await mobile.getByRole('button', { name: 'Gå til aflevering' }).click();
   await mobile.getByRole('button', { name: 'Aflever', exact: true }).click();
   await mobile.getByText('Venter på underviserens vurdering.').waitFor();
