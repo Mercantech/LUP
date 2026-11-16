@@ -1,6 +1,6 @@
 const EFFECT_ROOT = '/assets/arena/v3/effects/';
 const EFFECT_IDS = ['shield', 'magnet_field', 'dash_trail', 'repair_field', 'ultimate_charge', 'ultimate_release', 'impact', 'unlock'];
-const PROJECTILES = { bip01: ['pulse_cyan', 'pulse_amber'], raymond: ['pulse_blue', 'pulse_gold'], santa: ['pulse_blue', 'pulse_gold'], lupp: ['pulse_blue', 'pulse_gold'] };
+const PROJECTILES = { bip01: ['pulse_cyan', 'pulse_amber'], raymond: ['pulse_blue', 'pulse_gold'], santa: ['pulse_blue', 'pulse_gold'], lupp: ['pulse_blue', 'pulse_gold'], bilbo: ['pulse_blue', 'pulse_gold'] };
 const valid = image => Boolean(image?.complete && image.naturalWidth && !image.failed);
 const finite = (value, fallback = 0) => Number.isFinite(value) ? value : fallback;
 const resource = value => Math.max(0, Math.min(100, finite(value)));
@@ -13,7 +13,7 @@ export function projectileArtFor(projectile, fighters) {
     const palette = PROJECTILES[avatarId] || PROJECTILES.bip01;
     return {
         avatarId,
-        id: ['join', 'gift', 'prototype'].includes(projectile.kind) ? palette[1] : palette[0],
+        id: ['join', 'gift', 'prototype', 'order-jar'].includes(projectile.kind) ? palette[1] : palette[0],
         reflected: projectile.reflected === true || projectile.kind === 'reflected'
     };
 }
@@ -47,8 +47,9 @@ export function combatStatusFor(fighter, combat = combatPresentation(fighter)) {
     if (combat.activeAbility === 'join-charge') return 'Lader JOIN' + remaining;
     if (combat.activeAbility === 'gift-fest-charge') return 'Lader gavefest' + remaining;
     if (combat.activeAbility === 'game-jam-charge') return 'Lader Game Jam' + remaining;
+    if (combat.activeAbility === 'order-queue-charge') return 'Gør ordrekøen klar' + remaining;
     if (combat.activeAbility === 'repair' && combat.channelRemaining > 0) {
-        return (fighter.avatarId === 'lupp' ? 'Playtestpause ' : fighter.avatarId === 'santa' ? 'Julevarme ' : fighter.avatarId === 'bip01' ? 'Reparerer ' : 'Gendanner ') + combat.channelRemaining.toFixed(1) + 's';
+        return (fighter.avatarId === 'bilbo' ? 'Smagepause ' : fighter.avatarId === 'lupp' ? 'Playtestpause ' : fighter.avatarId === 'santa' ? 'Julevarme ' : fighter.avatarId === 'bip01' ? 'Reparerer ' : 'Gendanner ') + combat.channelRemaining.toFixed(1) + 's';
     }
     return combat.armored ? 'Panser' : combat.activeAbility === 'magnet' ? 'Magnet' : null;
 }
@@ -60,9 +61,10 @@ export function repairReadinessFor(fighter, combat = combatPresentation(fighter)
     if (!fighter.grounded) return 'land';
     const magic = fighter.avatarId === 'santa';
     const ideas = fighter.avatarId === 'lupp';
-    const energy = ideas || magic || fighter.avatarId === 'bip01';
-    const cost = ideas ? 30 : magic ? 45 : 40;
-    if ((energy ? combat.energy : resource(fighter.shield)) < cost) return ideas ? '30 IDÉ' : magic ? '45M' : energy ? '40E' : '40L';
+    const stock = fighter.avatarId === 'bilbo';
+    const energy = stock || ideas || magic || fighter.avatarId === 'bip01';
+    const cost = stock ? 37 : ideas ? 30 : magic ? 45 : 40;
+    if ((energy ? combat.energy : resource(fighter.shield)) < cost) return stock ? '37 LAG' : ideas ? '30 IDÉ' : magic ? '45M' : energy ? '40E' : '40L';
     return 'klar';
 }
 
@@ -110,7 +112,7 @@ export class ArenaEffectArt {
         const projectile = id.startsWith('pulse_');
         const color = id === 'pulse_gold' || id === 'pulse_amber' ? '255,205,105'
             : avatar === 'santa' ? '255,219,145'
-            : avatar === 'lupp' ? '194,158,255' : '121,220,255';
+            : avatar === 'lupp' ? '194,158,255' : avatar === 'bilbo' ? '236,138,170' : '121,220,255';
         const radius = size * (projectile ? .23 : .42);
         context.save();
         context.translate(x, y);
@@ -132,6 +134,7 @@ export class ArenaEffectArt {
 
 export function effectAvatarForEvent(event, fighters) {
     if (['join', 'join-pull', 'join-explode'].includes(event.type)) return 'raymond';
+    if (event.type === 'jar-bounce' || event.type === 'jar-splat') return 'bilbo';
     const defensive = ['shield', 'parry', 'break'].includes(event.type);
     const first = defensive ? event.targetId : event.actorId;
     const second = defensive ? event.actorId : event.targetId;

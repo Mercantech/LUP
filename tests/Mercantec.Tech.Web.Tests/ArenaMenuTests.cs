@@ -54,7 +54,7 @@ public sealed class ArenaMenuTests
         page.WaitForAssertion(() => Assert.False(page.FindAll(".arena-fighter").Single(x => x.TextContent.Contains("Din avatar")).HasAttribute("disabled")));
         var fighters = page.FindAll(".arena-fighter");
 
-        Assert.Equal(5, fighters.Count);
+        Assert.Equal(6, fighters.Count);
         Assert.False(fighters.Single(x => x.TextContent.Contains("Din avatar")).HasAttribute("disabled"));
         Assert.True(fighters.Single(x => x.TextContent.Contains("BIP-01")).HasAttribute("disabled"));
         Assert.True(fighters.Single(x => x.TextContent.Contains("Raymond")).HasAttribute("disabled"));
@@ -64,11 +64,15 @@ public sealed class ArenaMenuTests
         var lupp = fighters.Single(x => x.TextContent.Contains("LUPP"));
         Assert.True(lupp.HasAttribute("disabled"));
         Assert.Equal("/assets/avatars/lupp/face.png", lupp.QuerySelector("img")!.GetAttribute("src"));
+        var bilbo = fighters.Single(x => x.TextContent.Contains("Bilbo Backend"));
+        Assert.True(bilbo.HasAttribute("disabled"));
+        Assert.Equal("/assets/avatars/bilbo/face.png", bilbo.QuerySelector("img")!.GetAttribute("src"));
         Assert.Equal("true", fighters.Single(x => x.TextContent.Contains("Din avatar")).GetAttribute("aria-pressed"));
         Assert.Contains("3 forskellige brugere", santa.ParentElement!.QuerySelector(".arena-fighter-unlock p")!.TextContent);
         Assert.Contains("Upload dit eget spil", lupp.ParentElement!.QuerySelector(".arena-fighter-unlock p")!.TextContent);
         Assert.Equal(ArenaFighters.CollectionPath("santa"), santa.ParentElement!.QuerySelector("a")!.GetAttribute("href"));
         Assert.Equal(ArenaFighters.CollectionPath("lupp"), lupp.ParentElement!.QuerySelector("a")!.GetAttribute("href"));
+        Assert.Equal(ArenaFighters.CollectionPath("bilbo"), bilbo.ParentElement!.QuerySelector("a")!.GetAttribute("href"));
         Assert.Equal(ArenaFighters.RosterPath, page.Find(".arena-screen-header a").GetAttribute("href"));
         Assert.Empty(api.Requests);
     }
@@ -184,7 +188,7 @@ public sealed class ArenaMenuTests
         var page = context.Render<Arena>();
         page.WaitForAssertion(() => Assert.Equal(1, javascript.Module.MountCount));
 
-        Assert.Equal("./js/arena-client.js?v=20261112-2", javascript.ImportPath);
+        Assert.Equal("./js/arena-client.js?v=bilbo-1", javascript.ImportPath);
         Assert.Equal(new[] { "soundPreference", "soundVolume", "mount" }, javascript.Module.Calls.Take(3));
         Assert.True(javascript.Module.MountedSound);
         var sound = page.Find(".arena-topbar [data-arena-sound-toggle]");

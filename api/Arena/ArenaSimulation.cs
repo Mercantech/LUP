@@ -14,6 +14,18 @@ public sealed class ArenaSimulation
     private const double HalfWidth = 24;
     private const double BodyHeight = 70;
     private const int ActionBufferTicks = 6;
+    private const int BilboThrowTicks = 32;
+    private const int BilboOrderReleaseTicks = 48;
+    private const int BilboOrderIntervalTicks = 12;
+    private const double BilboDashSpeed = 660;
+    private const int BilboJarCost = 14;
+    private const int BilboGrabCost = 18;
+    private const int BilboDashCost = 22;
+    private const int BilboRecoveryCost = 20;
+    private const int BilboRepairCost = 37;
+    private const string JamJar = "jam-jar";
+    private const string OrderJar = "order-jar";
+    private const string JamPatch = "jam-patch";
     private const ArenaPress AllPresses = ArenaPress.Jump | ArenaPress.Attack | ArenaPress.Special |
         ArenaPress.Shield | ArenaPress.Grab | ArenaPress.Smash | ArenaPress.Dodge;
     private const ArenaPress BufferedPresses = ArenaPress.Attack | ArenaPress.Special | ArenaPress.Grab;
@@ -368,7 +380,7 @@ public sealed class ArenaSimulation
                  f.EscapeEdges, Round((f.CapturedBy?.CaptureTicks ?? 0) * Dt)))).ToArray(),
         projectiles.Select(p => new ArenaProjectileSnapshot(p.Id, p.Owner.Id, Round(p.X),
             Round(p.Y), Round(p.Vx), Round(p.Vy), p.Radius, p.Kind == "join" ? "#ffd56b" : p.Kind == "reflected" ? "#5ee8ff" :
-                p.SourceAvatarId == AvatarEconomy.Bip01Id ? "#5ee8ff" : p.SourceAvatarId == AvatarEconomy.RaymondId ? "#65a7ff" : p.SourceAvatarId == AvatarEconomy.SantaId ? "#f2d177" : p.SourceAvatarId == AvatarEconomy.LuppId ? "#c4a1ff" : p.Owner.Color,
+                p.SourceAvatarId == AvatarEconomy.Bip01Id ? "#5ee8ff" : p.SourceAvatarId == AvatarEconomy.RaymondId ? "#65a7ff" : p.SourceAvatarId == AvatarEconomy.SantaId ? "#f2d177" : p.SourceAvatarId == AvatarEconomy.LuppId ? "#c4a1ff" : p.SourceAvatarId == AvatarEconomy.BilboId ? "#ec8aaa" : p.Owner.Color,
             p.Kind, p.SourceAvatarId, p.Reflections > 0)).ToArray(),
         events.ToArray(), winnerId, suddenDeath, practice is not null);
 
@@ -378,7 +390,8 @@ public sealed class ArenaSimulation
     private static bool IsRay(Fighter f) => f.AvatarId == AvatarEconomy.RaymondId;
     private static bool IsSanta(Fighter f) => f.AvatarId == AvatarEconomy.SantaId;
     private static bool IsLupp(Fighter f) => f.AvatarId == AvatarEconomy.LuppId;
-    private static bool HasKit(Fighter f) => IsBip(f) || IsRay(f) || IsSanta(f) || IsLupp(f);
+    private static bool IsBilbo(Fighter f) => f.AvatarId == AvatarEconomy.BilboId;
+    private static bool HasKit(Fighter f) => IsBip(f) || IsRay(f) || IsSanta(f) || IsLupp(f) || IsBilbo(f);
     private static double Approach(double current, double target, double amount) =>
         current < target ? Math.Min(current + amount, target) : Math.Max(current - amount, target);
 
@@ -585,11 +598,12 @@ public sealed class ArenaSimulation
         else if (fighter.ChannelTicks > 0 || fighter.CapturedTarget is not null || fighter.FieldTicks > 0)
             fighter.Vx = Approach(fighter.Vx, 0, 3500 * Dt);
         else if (fighter.DashTicks > 0)
-            fighter.Vx = fighter.Facing * (IsLupp(fighter) ? 710 : IsSanta(fighter) ? 650 : IsRay(fighter) ? 465 : 860);
+            fighter.Vx = fighter.Facing * (IsBilbo(fighter) ? BilboDashSpeed : IsLupp(fighter) ? 710 : IsSanta(fighter) ? 650 : IsRay(fighter) ? 465 : 860);
         else if (fighter.ActionTicks == 0 || fighter.DodgeInvulnerability == 0)
         {
-            var speed = IsLupp(fighter) ? 340 : IsSanta(fighter) ? 320 : IsRay(fighter) ? 305 : IsBip(fighter) ? 350 : 330;
+            var speed = IsBilbo(fighter) ? 315 : IsLupp(fighter) ? 340 : IsSanta(fighter) ? 320 : IsRay(fighter) ? 305 : IsBip(fighter) ? 350 : 330;
             var target = fighter.Shielding ? 0 : fighter.Input.Horizontal * speed;
+            if (fighter.Grounded && InRivalJamPatch(fighter)) target *= .55;
             if (fighter.Attack is not null) target *= .35;
             if (fighter.ChargeTicks > 0) target = 0;
             fighter.Vx = Approach(fighter.Vx, target,
@@ -697,6 +711,8 @@ public sealed class ArenaSimulation
                 aerial ? 9 : 8, aerial ? 315 : 285, 98, vertical),
             AvatarEconomy.LuppId => MakeAttack(fighter, kind, 4, 4, 15,
                 aerial ? 8 : 7, aerial ? 305 : 260, aerial ? 92 : 85, vertical),
+            AvatarEconomy.BilboId => MakeAttack(fighter, kind, 5, 5, 17,
+                aerial ? 7 : 9, aerial ? 265 : 320, aerial ? 84 : 105, vertical),
             _ => MakeAttack(fighter, kind, aerial ? 5 : 4, aerial ? 6 : 4, aerial ? 16 : 14,
                 aerial ? 9 : 7, aerial ? 325 : 270, aerial ? 88 : 82, vertical)
         };
@@ -741,6 +757,17 @@ public sealed class ArenaSimulation
             return;
         }
         if (fighter.GrabCooldown > 0) return;
+        if (IsBilbo(fighter))
+        {
+            if (!fighter.Grounded || !SpendEnergy(fighter, BilboGrabCost)) return;
+            fighter.GrabCooldown = 92;
+            fighter.Attack = MakeAttack(fighter, "queue-grab", 5, 5, 23, 5, 225, 105, 0);
+            fighter.Ability = "queue-grab";
+            fighter.Invulnerability = 0;
+            SetAction(fighter, "ability_2_magnet", AttackDuration(fighter.Attack));
+            Emit("queue-grab", fighter.X + fighter.Facing * 53, fighter.Y - 35, fighter.Id);
+            return;
+        }
         if (IsLupp(fighter))
         {
             if (!SpendEnergy(fighter, 16)) return;
@@ -786,6 +813,7 @@ public sealed class ArenaSimulation
     private void Special(Fighter fighter, PressDirection direction)
     {
         if (!HasKit(fighter)) { LegacySpecial(fighter, direction); return; }
+        if (IsBilbo(fighter)) { BilboSpecial(fighter, direction); return; }
         if (IsLupp(fighter)) { LuppSpecial(fighter, direction); return; }
         if (IsSanta(fighter)) { SantaSpecial(fighter, direction); return; }
         if (direction.Vertical < -.5)
@@ -1004,6 +1032,88 @@ public sealed class ArenaSimulation
         Emit("projectile", fighter.X, fighter.Y - 43, fighter.Id);
     }
 
+    private void BilboSpecial(Fighter fighter, PressDirection direction)
+    {
+        if (direction.Vertical < -.5)
+        {
+            if (fighter.UsedRecovery || fighter.RecoveryCooldown > 0 || !SpendEnergy(fighter, BilboRecoveryCost)) return;
+            fighter.UsedRecovery = true;
+            fighter.RecoveryCooldown = 58;
+            fighter.Vy = -760;
+            fighter.Vx = direction.Horizontal * 280;
+            fighter.Grounded = false;
+            fighter.Attack = MakeAttack(fighter, "recovery", 4, 10, 22, 8, 300, 86, direction.Vertical);
+            fighter.Attack.OffsetY = -72;
+            fighter.Attack.DirectionY = -1;
+            fighter.Ability = "recovery";
+            SetAction(fighter, "ability_4_dash", AttackDuration(fighter.Attack));
+            Emit("recovery", fighter.X, fighter.Y, fighter.Id);
+        }
+        else if (direction.Vertical > .5)
+        {
+            if (fighter.RepairCooldown > 0 || !fighter.Grounded || fighter.Damage <= 0 || !SpendEnergy(fighter, BilboRepairCost)) return;
+            fighter.RepairCooldown = 435;
+            fighter.ChannelTicks = fighter.ChannelTotal = 48;
+            fighter.Channel = fighter.Ability = "repair";
+            fighter.ActionTicks = fighter.ChannelTicks;
+            fighter.Vx = 0;
+            SetAction(fighter, "ability_5_repair", fighter.ChannelTicks);
+            Emit("repair-start", fighter.X, fighter.Y - 35, fighter.Id);
+        }
+        else if (Math.Abs(direction.Horizontal) > .5)
+        {
+            if (fighter.DashCooldown > 0 || !fighter.Grounded && fighter.UsedAirSpecial || !SpendEnergy(fighter, BilboDashCost)) return;
+            fighter.UsedAirSpecial = true;
+            fighter.DashCooldown = 88;
+            fighter.DashTicks = 14;
+            fighter.Vx = fighter.Facing * BilboDashSpeed;
+            fighter.Attack = MakeAttack(fighter, "dash", 4, 10, 24, 11, 340, 99, direction.Vertical);
+            fighter.Ability = "stall-dash";
+            SetAction(fighter, "ability_4_dash", AttackDuration(fighter.Attack));
+            Emit("dash", fighter.X, fighter.Y - 35, fighter.Id);
+        }
+        else
+        {
+            if (fighter.PulseCooldown > 0 || !SpendEnergy(fighter, BilboJarCost)) return;
+            fighter.PulseCooldown = 56;
+            fighter.ActionTicks = BilboThrowTicks;
+            fighter.Ability = JamJar;
+            fighter.PendingJarTicks = BilboThrowTicks / 2;
+            fighter.JarFacing = fighter.Facing;
+            SetAction(fighter, "ability_1_pulse", BilboThrowTicks);
+        }
+        fighter.Invulnerability = 0;
+    }
+
+    private bool CanReleaseBilboJar(Fighter fighter) =>
+        IsBilbo(fighter) && fighter.Connected && fighter.Stocks > 0 && fighter.RespawnTicks == 0 && fighter.Hitstun == 0;
+
+    private void ReleaseBilboJar(Fighter fighter, int orderIndex = -1)
+    {
+        var ordered = orderIndex >= 0;
+        var index = ordered ? orderIndex : 0;
+        // Master anchors are measured at Syltetøjskast frame 4 and Ordrekøen frames 2, 4 and 6.
+        var (handX, handY) = orderIndex switch
+        {
+            0 => (419, 175),
+            1 => (423, 190),
+            2 => (391, 198),
+            _ => (428, 180)
+        };
+        const double scale = 118d / 512;
+        var x = fighter.X + fighter.JarFacing * (handX - 256) * scale;
+        var y = fighter.Y + (handY - 448) * scale;
+        projectiles.Add(new Projectile
+        {
+            Id = ++projectileId, Owner = fighter, SourceAvatarId = fighter.AvatarId, Kind = ordered ? OrderJar : JamJar,
+            X = x, Y = y, Vx = fighter.JarFacing * (ordered ? 360 + index * 78 : 440),
+            Vy = ordered ? -70 - index * 86 : -106, Gravity = 890,
+            Radius = ordered ? 17 : 14, Damage = ordered ? 9 + index : 8, Force = ordered ? 300 + index * 40 : 275,
+            Life = 105, BouncesRemaining = 1
+        });
+        Emit(orderIndex == 0 ? "order-queue" : "projectile", x, y, fighter.Id);
+    }
+
     private void LegacySpecial(Fighter fighter, PressDirection direction)
     {
         if (direction.Vertical < -.5)
@@ -1080,6 +1190,7 @@ public sealed class ArenaSimulation
 
     private static string? ActiveAbility(Fighter f) => f.CapturedBy is not null ? "captured" :
         f.Shielding && IsBip(f) ? "reflect-shield" : f.Shielding && IsRay(f) ? "brace-shield" : f.Shielding && IsSanta(f) ? "peace-shield" : f.Shielding && IsLupp(f) ? "prototype-shield" :
+        f.Shielding && IsBilbo(f) ? "glass-shield" :
         f.ChannelTicks > 0 || f.FieldTicks > 0 || f.CapturedTarget is not null || f.Attack is not null || f.ActionTicks > 0 ? f.Ability : null;
 
     private void StepKitTimers(Fighter fighter)
@@ -1087,6 +1198,19 @@ public sealed class ArenaSimulation
         if (fighter.PendingStarTicks > 0 && --fighter.PendingStarTicks == 0) ReleaseSantaStar(fighter);
         if (fighter.PendingIdeaTicks > 0 && --fighter.PendingIdeaTicks == 0) ReleaseLuppIdea(fighter);
         if (fighter.PendingJamTicks > 0 && --fighter.PendingJamTicks == 0) ReleaseLuppGameJam(fighter);
+        if (fighter.PendingJarTicks > 0 && --fighter.PendingJarTicks == 0 &&
+            CanReleaseBilboJar(fighter) && fighter.Ability == JamJar && fighter.Action == "ability_1_pulse")
+            ReleaseBilboJar(fighter);
+        if (fighter.OrderJarsRemaining > 0 && --fighter.NextOrderJarTicks == 0)
+        {
+            if (CanReleaseBilboJar(fighter) && fighter.Ability == "order-queue" && fighter.Action == "ultimate_release")
+            {
+                ReleaseBilboJar(fighter, 3 - fighter.OrderJarsRemaining);
+                fighter.OrderJarsRemaining--;
+                fighter.NextOrderJarTicks = BilboOrderIntervalTicks;
+            }
+            else fighter.OrderJarsRemaining = 0;
+        }
         fighter.PulseCooldown = Math.Max(0, fighter.PulseCooldown - 1);
         fighter.GrabCooldown = Math.Max(0, fighter.GrabCooldown - 1);
         fighter.DashCooldown = Math.Max(0, fighter.DashCooldown - 1);
@@ -1096,17 +1220,18 @@ public sealed class ArenaSimulation
         fighter.FieldTicks = Math.Max(0, fighter.FieldTicks - 1);
         fighter.DashTicks = Math.Max(0, fighter.DashTicks - 1);
         if (fighter.DashTicks == 0) fighter.ArmorHits = 0;
-        if ((IsBip(fighter) || IsSanta(fighter) || IsLupp(fighter)) && fighter.Channel != "repair")
-            fighter.Energy = Math.Min(100, fighter.Energy + (IsLupp(fighter) ? 7 : IsSanta(fighter) ? 6 : 9) * Dt);
+        if ((IsBilbo(fighter) || IsBip(fighter) || IsSanta(fighter) || IsLupp(fighter)) && fighter.Channel != "repair")
+            fighter.Energy = Math.Min(100, fighter.Energy + (IsBilbo(fighter) ? 8 : IsLupp(fighter) ? 7 : IsSanta(fighter) ? 6 : 9) * Dt);
     }
 
     private void BeginUltimate(Fighter fighter)
     {
         if (!HasKit(fighter) || fighter.Ultimate < 100 || fighter.UltimateCooldown > 0) return;
         fighter.Ultimate = 0;
-        fighter.UltimateCooldown = IsLupp(fighter) ? 690 : IsSanta(fighter) ? 660 : 600;
-        fighter.ChannelTicks = fighter.ChannelTotal = IsLupp(fighter) ? 54 : IsSanta(fighter) ? 48 : 36;
-        fighter.Channel = IsLupp(fighter) ? "game-jam" : IsSanta(fighter) ? "gift-fest" : IsBip(fighter) ? "overload" : "join";
+        fighter.UltimateCooldown = IsBilbo(fighter) ? 675 : IsLupp(fighter) ? 690 : IsSanta(fighter) ? 660 : 600;
+        fighter.ChannelTicks = fighter.ChannelTotal = IsLupp(fighter) ? 54 : IsSanta(fighter) || IsBilbo(fighter) ? 48 : 36;
+        fighter.Channel = IsBilbo(fighter) ? "order-queue" : IsLupp(fighter) ? "game-jam" : IsSanta(fighter) ? "gift-fest" : IsBip(fighter) ? "overload" : "join";
+        if (IsBilbo(fighter)) fighter.JarFacing = fighter.Facing;
         fighter.Ability = fighter.Channel + "-charge";
         fighter.ActionTicks = fighter.ChannelTicks;
         fighter.Vx = 0;
@@ -1127,7 +1252,8 @@ public sealed class ArenaSimulation
             return;
         }
         fighter.ChannelTicks--;
-        var earlyRelease = fighter.Channel != "repair" && fighter.ChannelTotal - fighter.ChannelTicks >= 12 && !fighter.Input.Smash;
+        var earlyRelease = fighter.Channel is not ("repair" or "order-queue") &&
+            fighter.ChannelTotal - fighter.ChannelTicks >= 12 && !fighter.Input.Smash;
         if (fighter.ChannelTicks > 0 && !earlyRelease) return;
         var channel = fighter.Channel;
         fighter.Channel = null;
@@ -1135,7 +1261,7 @@ public sealed class ArenaSimulation
         fighter.ActionTicks = 0;
         if (channel == "repair")
         {
-            var healed = Math.Min(fighter.Damage, IsLupp(fighter) ? 10 : IsSanta(fighter) ? 12 : IsBip(fighter) ? 8 : 14);
+            var healed = Math.Min(fighter.Damage, IsBilbo(fighter) ? 13 : IsLupp(fighter) ? 10 : IsSanta(fighter) ? 12 : IsBip(fighter) ? 8 : 14);
             fighter.Damage = Math.Max(0, fighter.Damage - healed);
             if (IsSanta(fighter)) fighter.Shield = Math.Min(100, fighter.Shield + 12);
             fighter.Ability = null;
@@ -1174,6 +1300,14 @@ public sealed class ArenaSimulation
             SetAction(fighter, "ultimate_release", 42);
             fighter.PendingJamTicks = 11; // authored activation frame2 of the42-tick release
         }
+        else if (channel == "order-queue")
+        {
+            fighter.Ability = "order-queue";
+            fighter.ActionTicks = BilboOrderReleaseTicks;
+            SetAction(fighter, "ultimate_release", BilboOrderReleaseTicks);
+            fighter.OrderJarsRemaining = 3;
+            fighter.NextOrderJarTicks = BilboOrderIntervalTicks;
+        }
         else if (channel == "join")
         {
             fighter.Ability = "join";
@@ -1211,6 +1345,7 @@ public sealed class ArenaSimulation
         fighter.PendingStarTicks = 0;
         fighter.PendingIdeaTicks = 0;
         fighter.PendingJamTicks = 0;
+        fighter.PendingJarTicks = fighter.OrderJarsRemaining = fighter.NextOrderJarTicks = 0;
         fighter.ChannelTicks = fighter.ChannelTotal = 0;
         fighter.FieldTicks = fighter.DashTicks = fighter.ArmorHits = 0;
         fighter.Ability = null;
@@ -1332,7 +1467,7 @@ public sealed class ArenaSimulation
             }
             foreach (var projectile in projectiles.ToArray())
             {
-                if (projectile.Owner == owner) continue;
+                if (projectile.Owner == owner || projectile.Kind == JamPatch) continue;
                 var dx = projectile.X - x; var dy = projectile.Y - y;
                 if ((projectile.X - owner.X) * owner.Facing < 0 || dx * dx + dy * dy > 150 * 150) continue;
                 projectiles.Remove(projectile);
@@ -1363,7 +1498,8 @@ public sealed class ArenaSimulation
                 var dy = target.Y - BodyHeight * .5 - (attacker.Y + attack.OffsetY);
                 if (attack.RadialRadius > 0 ? dx * dx + dy * dy > attack.RadialRadius * attack.RadialRadius :
                     Math.Abs(dx) > attack.Reach * .58 + HalfWidth || Math.Abs(dy) > attack.Reach * .46 + BodyHeight * .4) continue;
-                if (attack.Kind == "capture" && (target.CapturedBy is not null || (target.X - attacker.X) * attacker.Facing < 15)) continue;
+                if ((attack.Kind is "capture" or "queue-grab") &&
+                    (target.CapturedBy is not null || (target.X - attacker.X) * attacker.Facing < 15)) continue;
                 attack.HitIds.Add(target.Id);
                 attacker.Invulnerability = 0;
                 if (attack.Kind == "capture")
@@ -1376,6 +1512,10 @@ public sealed class ArenaSimulation
                     Strike(attacker, target, attack.Damage, attack.Force, attacker.Facing, -.45, true);
                     target.Facing = -attacker.Facing;
                     Emit("throw", target.X, target.Y - 35, attacker.Id, target.Id);
+                }
+                else if (attack.Kind == "queue-grab")
+                {
+                    Strike(attacker, target, attack.Damage, attack.Force, -attacker.Facing, -.15, false);
                 }
                 else if (attack.Kind is "grab" or "gift-grab")
                 {
@@ -1426,7 +1566,7 @@ public sealed class ArenaSimulation
         target.Shielding = false;
         target.Damage = Math.Min(999, target.Damage + damage);
         AwardCombatDamage(attacker, target, damage);
-        var weight = IsLupp(target) ? .98 : IsSanta(target) ? 1.03 : IsRay(target) ? 1.10 : IsBip(target) ? .95 : 1;
+        var weight = IsBilbo(target) ? 1.06 : IsLupp(target) ? .98 : IsSanta(target) ? 1.03 : IsRay(target) ? 1.10 : IsBip(target) ? .95 : 1;
         var launch = (force + target.Damage * (force / 145)) / weight;
         var length = Math.Sqrt(directionX * directionX + directionY * directionY);
         if (length < .001) { directionX = attacker.Facing; directionY = -.45; length = Math.Sqrt(1.2025); }
@@ -1474,21 +1614,38 @@ public sealed class ArenaSimulation
         foreach (var projectile in projectiles.ToArray())
         {
             if (!projectiles.Contains(projectile)) continue;
+            if (projectile.Kind == JamPatch)
+            {
+                if (--projectile.Life <= 0) projectiles.Remove(projectile);
+                continue;
+            }
+            var isJar = projectile.Kind is JamJar or OrderJar;
             var previousBottom = projectile.Y + projectile.Radius;
             projectile.Vy += projectile.Gravity * Dt;
             projectile.X += projectile.Vx * Dt;
             projectile.Y += projectile.Vy * Dt;
-            if (projectile.BouncesRemaining > 0 && projectile.Vy > 0)
+            if ((isJar || projectile.BouncesRemaining > 0) && projectile.Vy > 0)
                 foreach (var platform in stage.Platforms.OrderBy(platform => platform.Y))
                     if (previousBottom <= platform.Y && projectile.Y + projectile.Radius >= platform.Y &&
                         projectile.X >= platform.X && projectile.X <= platform.X + platform.Width)
                     {
+                        if (isJar && projectile.BouncesRemaining == 0)
+                        {
+                            projectile.Kind = JamPatch;
+                            projectile.Y = platform.Y;
+                            projectile.Radius = 56;
+                            projectile.Vx = projectile.Vy = 0;
+                            projectile.Life = 108;
+                            Emit("jar-splat", projectile.X, projectile.Y, projectile.Owner.Id);
+                            break;
+                        }
                         projectile.Y = platform.Y - projectile.Radius;
                         projectile.Vy = -Math.Max(160, projectile.Vy * .75);
                         projectile.BouncesRemaining--;
-                        Emit("prototype-bounce", projectile.X, projectile.Y, projectile.Owner.Id);
+                        Emit(isJar ? "jar-bounce" : "prototype-bounce", projectile.X, projectile.Y, projectile.Owner.Id);
                         break;
                     }
+            if (projectile.Kind == JamPatch) continue;
             if (--projectile.Life <= 0 || projectile.X < stage.Left || projectile.X > stage.Right)
             {
                 if (projectile.Kind == "join") ExplodeJoin(projectile);
@@ -1521,7 +1678,7 @@ public sealed class ArenaSimulation
                     projectile.Vx = -projectile.Vx;
                     projectile.Vy = -projectile.Vy;
                     projectile.X = target.X + Math.Sign(projectile.Vx) * (HalfWidth + projectile.Radius + 4);
-                    if (projectile.Kind is not ("join" or "gift" or "prototype")) projectile.Kind = "reflected";
+                    if (projectile.Kind is not ("join" or "gift" or "prototype" or JamJar or OrderJar)) projectile.Kind = "reflected";
                     Emit("reflect", projectile.X, projectile.Y, target.Id);
                     if (target.Shield <= 0) BreakShield(target);
                     break;
@@ -1570,6 +1727,15 @@ public sealed class ArenaSimulation
                     if (target.Shield <= 0) BreakShield(target);
                     break;
                 }
+                if (target.Shielding && IsBilbo(target) && projectile.Kind != "join")
+                {
+                    target.Shield = Math.Max(0, target.Shield - projectile.Damage * 1.75);
+                    target.Hitstop = 2;
+                    Emit("glass-block", projectile.X, projectile.Y, target.Id, projectile.Owner.Id);
+                    projectiles.Remove(projectile);
+                    if (target.Shield <= 0) BreakShield(target);
+                    break;
+                }
                 if (projectile.Kind == "join")
                 {
                     ExplodeJoin(projectile);
@@ -1581,6 +1747,10 @@ public sealed class ArenaSimulation
             }
         }
     }
+
+    private bool InRivalJamPatch(Fighter fighter) => projectiles.Any(p =>
+        p.Kind == JamPatch && p.Owner != fighter && Math.Abs(p.Y - fighter.Y) < 8 &&
+        Math.Abs(p.X - fighter.X) < p.Radius);
 
     private void ExplodeJoin(Projectile projectile)
     {
@@ -1701,6 +1871,7 @@ public sealed class ArenaSimulation
     {
         fighter.Energy = 100;
         fighter.PendingIdeaTicks = fighter.PendingStarTicks = fighter.PendingJamTicks = 0;
+        fighter.PendingJarTicks = fighter.OrderJarsRemaining = fighter.NextOrderJarTicks = 0;
         fighter.Ultimate = 0;
         fighter.PulseCooldown = fighter.GrabCooldown = fighter.DashCooldown = 0;
         fighter.RecoveryCooldown = fighter.RepairCooldown = fighter.UltimateCooldown = 0;
@@ -1817,7 +1988,7 @@ public sealed class ArenaSimulation
         var jump = recovering && bot.JumpsUsed < 2 && bot.Vy > 20 && frame % 12 == 0 ||
             dy < -75 && bot.JumpsUsed < 2 && frame % 38 == 0;
         if (recovering && bot.JumpsUsed >= 2 && bot.Vy > 20 && !bot.UsedRecovery && bot.RecoveryCooldown == 0 &&
-            (IsLupp(bot) ? bot.Energy >= 18 : IsSanta(bot) ? bot.Energy >= 16 : !IsBip(bot) || bot.Energy >= 15))
+            (IsBilbo(bot) ? bot.Energy >= BilboRecoveryCost : IsLupp(bot) ? bot.Energy >= 18 : IsSanta(bot) ? bot.Energy >= 16 : !IsBip(bot) || bot.Energy >= 15))
             return new(sequence, horizontal, -1, jump, Special: frame % 7 == 0);
         var nearby = Math.Abs(dx) < (IsRay(bot) ? 132 : 100) && Math.Abs(dy) < 90;
         var incoming = projectiles.Any(p => p.Owner != bot && Math.Abs(p.X - bot.X) < 90 &&
@@ -1825,10 +1996,10 @@ public sealed class ArenaSimulation
         var danger = BotReactsTo(bot, incoming || nearby && target.Attack is not null && frame % 70 < 25, difficulty);
         if (bot.Grounded && danger)
             return new(sequence, Shield: true);
-        if (bot.Ultimate >= 100 && bot.UltimateCooldown == 0 && Math.Abs(dy) < 110 && Math.Abs(dx) < (IsSanta(bot) ? 420 : IsBip(bot) ? 195 : 520))
+        if (bot.Ultimate >= 100 && bot.UltimateCooldown == 0 && Math.Abs(dy) < 110 && Math.Abs(dx) < (IsBilbo(bot) ? 400 : IsSanta(bot) ? 420 : IsBip(bot) ? 195 : 520))
             return new(sequence, Smash: true);
         var safeRepair = bot.Grounded && Math.Abs(dx) > 300 && bot.Damage >= (IsLupp(bot) ? 10 : IsSanta(bot) ? 12 : IsBip(bot) ? 10 : 16) &&
-            bot.RepairCooldown == 0 && (IsLupp(bot) ? bot.Energy >= 45 : IsSanta(bot) ? bot.Energy >= 60 : IsBip(bot) ? bot.Energy >= 55 : bot.Shield >= 70);
+            bot.RepairCooldown == 0 && (IsBilbo(bot) ? bot.Energy >= BilboRepairCost + 10 : IsLupp(bot) ? bot.Energy >= 45 : IsSanta(bot) ? bot.Energy >= 60 : IsBip(bot) ? bot.Energy >= 55 : bot.Shield >= 70);
         if (safeRepair && frame % 20 == 0) return new(sequence, Vertical: 1, Special: true);
         if (IsBip(bot) && bot.Energy >= 30 && bot.GrabCooldown == 0 && Math.Abs(dx) is > 105 and < 205 && Math.Abs(dy) < 90 && frame % BotPeriod(32, difficulty) == 0)
             return new(sequence, horizontal, Grab: true);
@@ -1836,13 +2007,15 @@ public sealed class ArenaSimulation
             return new(sequence, horizontal, Grab: true);
         if (IsLupp(bot) && nearby && bot.Energy >= 16 && bot.GrabCooldown == 0 && frame % BotPeriod(41, difficulty) == 0)
             return new(sequence, horizontal, Grab: true);
+        if (IsBilbo(bot) && bot.Grounded && nearby && bot.Energy >= BilboGrabCost && bot.GrabCooldown == 0 && frame % BotPeriod(48, difficulty) == 0)
+            return new(sequence, horizontal, Grab: true);
         if (IsRay(bot) && nearby && bot.GrabCooldown == 0 && frame % BotPeriod(58, difficulty) == 0)
             return new(sequence, horizontal, Grab: true);
         if (bot.DashCooldown == 0 && Math.Abs(dx) is > 155 and < 330 && Math.Abs(dy) < 65 &&
-            (IsLupp(bot) ? bot.Energy >= 32 : IsSanta(bot) ? bot.Energy >= 35 : !IsBip(bot) || bot.Energy >= 40) && frame % BotPeriod(79, difficulty) == 0)
+            (IsBilbo(bot) ? bot.Energy >= BilboDashCost + 8 : IsLupp(bot) ? bot.Energy >= 32 : IsSanta(bot) ? bot.Energy >= 35 : !IsBip(bot) || bot.Energy >= 40) && frame % BotPeriod(79, difficulty) == 0)
             return new(sequence, Math.Sign(dx), Special: true);
         if (!nearby && Math.Abs(dx) < 650 && Math.Abs(dy) < 85 && bot.PulseCooldown == 0 &&
-            (!(IsBip(bot) || IsSanta(bot) || IsLupp(bot)) || bot.Energy >= 25) && frame % BotPeriod(37, difficulty) == 0)
+            (!(IsBilbo(bot) || IsBip(bot) || IsSanta(bot) || IsLupp(bot)) || bot.Energy >= 25) && frame % BotPeriod(37, difficulty) == 0)
             return new(sequence, Special: true);
         return new(sequence, horizontal, nearby && dy < -35 ? -1 : 0, jump,
             Attack: nearby && frame % BotPeriod(IsLupp(bot) ? 23 : IsSanta(bot) ? 28 : IsBip(bot) ? 20 : 35, difficulty) == 0);
@@ -1905,6 +2078,7 @@ public sealed class ArenaSimulation
         public int PendingStarTicks;
         public int PendingIdeaTicks;
         public int PendingJamTicks;
+        public int PendingJarTicks, OrderJarsRemaining, NextOrderJarTicks, JarFacing;
         public int FieldTicks, DashTicks, ArmorHits, ChannelTicks, ChannelTotal;
         public string? Channel, Ability;
         public Fighter? CapturedBy, CapturedTarget;

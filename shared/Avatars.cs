@@ -21,6 +21,7 @@ public static class AvatarRequirementKinds
 {
     public const string SentGiftsDistinctRecipients = "sent_gifts_distinct_recipients";
     public const string UploadedGames = "uploaded_games";
+    public const string SubmittedKnowledgeChecks = "submitted_knowledge_checks";
 }
 
 public sealed record AvatarUnlockRequirementDefinition(
@@ -46,6 +47,7 @@ public static class AvatarEconomy
     public const string RaymondId = "raymond";
     public const string SantaId = "santa";
     public const string LuppId = "lupp";
+    public const string BilboId = "bilbo";
     public const int InitialGold = 320;
     public const int InitialLevel = 7;
 
@@ -63,6 +65,11 @@ public static class AvatarEconomy
             new(LuppId, "LUPP", 1, 0, Requirements:
             [
                 new("uploaded-game", AvatarRequirementKinds.UploadedGames, "site", 1, "Upload dit eget spil til LUP")
+            ]),
+            new(BilboId, "Bilbo Backend", 1, 0, Requirements:
+            [
+                new("backend-knowledge-checks", AvatarRequirementKinds.SubmittedKnowledgeChecks,
+                    "backend", 3, "Gennemfør tre forskellige videnstjek i Backend")
             ])
         ]);
 

@@ -4,6 +4,8 @@ using Mercantec.Tech.Api.Avatars;
 using Mercantec.Tech.Api.Controllers;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
+using Mercantec.Tech.Api.KnowledgeChecks;
+using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +41,9 @@ public sealed class AvatarRequirementTests : IAsyncLifetime
     private static AvatarsController As(AppDbContext db, Guid subject) => new(db) { ControllerContext = Context(subject) };
     private static AvatarProfileDto Ok(ActionResult<AvatarProfileDto> result) => Assert.IsType<AvatarProfileDto>(Assert.IsType<OkObjectResult>(result.Result).Value);
     private static AvatarUnlockProgressDto Progress(AvatarProfileDto profile) => Assert.Single(profile.UnlockProgress!, p => p.AvatarId == "santa" && p.RequirementId == "christmas-gift-recipients");
+    private static AvatarUnlockProgressDto BilboProgress(AvatarProfileDto profile) =>
+        Assert.Single(profile.UnlockProgress!, progress => progress.AvatarId == AvatarEconomy.BilboId);
+    private static T Read<T>(IActionResult result) => Assert.IsType<T>(Assert.IsType<OkObjectResult>(result).Value);
     private static void Missing(ActionResult<AvatarProfileDto> result)
     {
         var response = Assert.IsType<ObjectResult>(result.Result);
@@ -138,6 +143,79 @@ public sealed class AvatarRequirementTests : IAsyncLifetime
         var restored = Ok(await controller.Select(new("santa"), default));
         Assert.Equal("santa", restored.SelectedAvatarId); Assert.Equal(170, restored.Gold);
         var retry = Ok(await controller.Unlock("santa", default)); Assert.Equal(restored.Revision, retry.Revision);
+    }
+
+    [Fact]
+    public async Task BilboRequiresThreeDistinctSubmittedBackendChecksAndUnlocksWithoutSpendingGold()
+    {
+        await using var db = Open();
+        var teacher = new KnowledgeChecksController(db, new CourseAccess(db)) { ControllerContext = Context(Eve, teacher: true) };
+        var alice = new KnowledgeChecksController(db, new CourseAccess(db)) { ControllerContext = Context(Alice) };
+        var bob = new KnowledgeChecksController(db, new CourseAccess(db)) { ControllerContext = Context(Bob) };
+        var avatars = As(db, Alice);
+        var question = new KnowledgeCheckQuestion(Guid.NewGuid(), "single", "Vælg en svarmulighed",
+            ["Første", "Anden"], [0], [], false, "En forklaring", null);
+
+        async Task<KnowledgeCheckPublicationView> Publish(string title, string topic)
+        {
+            var draft = Read<KnowledgeCheckDraftView>(await teacher.Create(new(title, "", topic, null, [question]), default));
+            return Read<KnowledgeCheckPublicationView>(await teacher.Publish(draft.Id, new(null, null, "after-submit"), default));
+        }
+
+        async Task<KnowledgeCheckAttemptView> Submit(KnowledgeChecksController learner, Guid publicationId, int answer = 0)
+        {
+            var attempt = Read<KnowledgeCheckAttemptView>(await learner.StartAttempt(publicationId, new(), null, null, default));
+            var saved = Read<KnowledgeCheckAttemptView>(await learner.SaveAttempt(publicationId, attempt.Id,
+                new(attempt.Revision, 0, [new(question.Id, [answer], null)]), null, null, default));
+            return Read<KnowledgeCheckAttemptView>(await learner.SubmitAttempt(publicationId, saved.Id, new(saved.Revision), null, null, default));
+        }
+
+        var initial = Ok(await avatars.Get(default));
+        Assert.Equal(0, BilboProgress(initial).Current);
+        Missing(await avatars.Unlock(AvatarEconomy.BilboId, default));
+        var first = await Publish("API og HTTP", "Backend");
+        var duplicatePublication = Read<KnowledgeCheckPublicationView>(
+            await teacher.Publish(first.QuizId, new(null, null, "after-submit"), default));
+        Assert.NotEqual(first.Id, duplicatePublication.Id);
+        Assert.Equal(0, (await Submit(alice, first.Id, answer: 1)).Score);
+        await Submit(alice, duplicatePublication.Id);
+        await teacher.ClosePublication(first.Id, default);
+        await Submit(alice, (await Publish("DTO'er", "backend")).Id);
+        await Submit(alice, (await Publish("Frontend", "Frontend")).Id);
+        await teacher.ImportLegacy(default);
+        var legacyId = LegacyKnowledgeCheckCatalog.ForOwner(Eve).Single(entry => entry.Value.Key == "blazor-signalr").Key;
+        var legacy = Read<KnowledgeCheckDraftView>(await teacher.GetDraft(legacyId, default));
+        await teacher.Update(legacyId, new(legacy.Title, legacy.Description, legacy.Topic, null, [question], legacy.Revision), default);
+        var third = Read<KnowledgeCheckPublicationView>(await teacher.Publish(legacyId, new(null, null, "after-submit"), default));
+        Assert.Equal("Frontend", third.Topic);
+        var practice = Read<KnowledgeCheckIndex>(await alice.List(default)).Publications.Single(item => item.Id == third.Id);
+        Assert.Contains("Backend", Assert.IsType<KnowledgeCheckLegacyDiscovery>(practice.LegacyDiscovery).Categories);
+        await Submit(bob, third.Id);
+        var started = Read<KnowledgeCheckAttemptView>(await alice.StartAttempt(third.Id, new(), null, null, default));
+        Assert.IsType<ConflictObjectResult>(await alice.SubmitAttempt(third.Id, started.Id, new(started.Revision), null, null, default));
+        var beforeClaim = Ok(await avatars.Get(default));
+        Assert.Equal(2, BilboProgress(beforeClaim).Current);
+        Missing(await avatars.Unlock(AvatarEconomy.BilboId, default));
+        var unchanged = Ok(await avatars.Get(default));
+        Assert.Equal(initial.Gold, unchanged.Gold);
+        Assert.Equal(initial.Revision, unchanged.Revision);
+        Assert.Equal(initial.SelectedAvatarId, unchanged.SelectedAvatarId);
+
+        await Submit(alice, third.Id);
+        var qualified = BilboProgress(Ok(await avatars.Get(default)));
+        Assert.Equal(3, qualified.Current);
+        Assert.True(qualified.IsMet);
+        var claimed = Ok(await avatars.Unlock(AvatarEconomy.BilboId, default));
+        Assert.Equal(initial.Gold, claimed.Gold);
+        Assert.Equal(AvatarEconomy.BilboId, claimed.SelectedAvatarId);
+
+        await using var secondDevice = Open();
+        var persisted = Ok(await As(secondDevice, Alice).Get(default));
+        Assert.Equal(AvatarEconomy.BilboId, persisted.SelectedAvatarId);
+        Assert.Contains(AvatarEconomy.BilboId, persisted.OwnedAvatarIds);
+        Assert.Equal(persisted.Revision, Ok(await As(secondDevice, Alice).Unlock(AvatarEconomy.BilboId, default)).Revision);
+        Assert.Equal(1, BilboProgress(Ok(await As(secondDevice, Bob).Get(default))).Current);
+        Missing(await As(secondDevice, Bob).Unlock(AvatarEconomy.BilboId, default));
     }
 
     [Fact]

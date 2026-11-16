@@ -15,6 +15,7 @@ namespace Mercantec.Tech.Web.Tests;
 public sealed class AvatarRequirementTests
 {
     private const string Requirement = "christmas-gift-recipients";
+    private const string BilboRequirement = "backend-knowledge-checks";
 
     [Theory]
     [InlineData(0, false)]
@@ -160,6 +161,36 @@ public sealed class AvatarRequirementTests
     }
 
     [Fact]
+    public async Task Returning_to_the_collection_refreshes_bilbos_progress_and_enables_a_free_claim()
+    {
+        using var api = new RequirementApi { Subject = LearningUiTestContext.AccountId.ToString() };
+        var profile = Profile(0) with { UnlockProgress = [new(AvatarEconomy.BilboId, BilboRequirement, 2, 3, false)] };
+        api.Profiles[api.Subject] = profile;
+        await using var context = await LearningUiTestContext.CreateAsync(api, configure: services =>
+        {
+            services.AddSingleton<IAvatarClient>(api);
+            services.AddSingleton<DemoWorld>();
+            services.AddSingleton<GiftMailboxClient>();
+        });
+        context.ComponentFactories.AddStub<AvatarLayerPreview>();
+        var first = context.Render<AvatarEditor>(parameters => parameters.Add(editor => editor.RequestedAvatarId, AvatarEconomy.BilboId));
+        first.WaitForAssertion(() =>
+            Assert.Matches(@"2\s*/\s*3 videnstjek", first.Find($"[data-testid=requirement-progress-bilbo-{BilboRequirement}]").TextContent));
+        Assert.True(first.Find("[data-testid=unlock-bilbo]").HasAttribute("disabled"));
+        Assert.Contains(first.FindAll("a"), link => link.GetAttribute("href") == "/videnstjek?vis=oev&emne=Backend");
+        Assert.Equal("/characters/bilbo", first.Find(".avatar-character-link").GetAttribute("href"));
+
+        api.Profiles[api.Subject] = profile with { UnlockProgress = [new(AvatarEconomy.BilboId, BilboRequirement, 3, 3, true)] };
+        var reopened = context.Render<AvatarEditor>();
+        reopened.WaitForAssertion(() =>
+            Assert.Equal("Lås op gratis", reopened.Find("[data-testid=unlock-bilbo]").TextContent.Trim()));
+        reopened.Find("[data-testid=unlock-bilbo]").Click();
+        reopened.WaitForAssertion(() => Assert.Equal("Bilbo Backend", reopened.Find("[data-testid=selected-avatar-name]").TextContent.Trim()));
+        Assert.Equal(320, context.Services.GetRequiredService<DemoWorld>().Gold);
+        Assert.Equal(1, api.UnlockCalls);
+    }
+
+    [Fact]
     public async Task Collection_shows_live_server_progress_and_a_confirmed_third_gift_refreshes_the_gate_without_reload()
     {
         using var api = new RequirementApi { Subject = LearningUiTestContext.AccountId.ToString() };
@@ -294,7 +325,7 @@ public sealed class AvatarRequirementTests
         {
             UnlockCalls++;
             var p = Get(expectedSubject);
-            var updated = PendingUnlock is not null ? await PendingUnlock.Task : p with { SelectedAvatarId = avatarId, OwnedAvatarIds = p.OwnedAvatarIds.Append(avatarId).ToArray(), Gold = p.Gold - 150, Revision = p.Revision + 1 };
+            var updated = PendingUnlock is not null ? await PendingUnlock.Task : p with { SelectedAvatarId = avatarId, OwnedAvatarIds = p.OwnedAvatarIds.Append(avatarId).ToArray(), Gold = p.Gold - AvatarEconomy.FindAvatar(avatarId)!.Cost, Revision = p.Revision + 1 };
             // A purchase response may be stale, but a later GET derives current
             // gift progress independently from the committed gift history.
             Profiles[expectedSubject ?? Subject] = updated with { UnlockProgress = Get(expectedSubject).UnlockProgress };

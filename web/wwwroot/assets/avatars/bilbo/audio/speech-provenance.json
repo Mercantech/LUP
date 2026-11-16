@@ -1,0 +1,73 @@
+{
+  "provider": "Røst",
+  "model": "CoRal-project/roest-v3-chatterbox-500m",
+  "modelRevision": "7ce205cea6b3b36d9f60f18abb88ff21fa04ea0d",
+  "voice": "Bilbo Backend · varm og underspillet købmand",
+  "voiceId": "dabacaf7a3fc187dce2343a3c6a26d46eda77793677e4410bee32db56302fbe7",
+  "style": "synthetic-character",
+  "generation": {
+    "language_id": "da",
+    "temperature": 0.62,
+    "cfg_weight": 0.5,
+    "exaggeration": 0.5,
+    "repetition_penalty": 2.0,
+    "top_p": 0.95
+  },
+  "chatterboxVersion": "0.1.7",
+  "reference": {
+    "file": "bilbo-reference.wav",
+    "source": "Original Danish speech synthesized by Røst",
+    "texts": [
+      "Godmorgen. Jeg har sat de tomme glas frem og tjekket alle bestillingerne.",
+      "Kom bare nærmere. Vi tager én ting ad gangen, og så bliver det godt."
+    ],
+    "seeds": [
+      51628,
+      51629
+    ],
+    "sha256": "6a75fa02a896d1666591b30b4cf2285c59549d228e0bfd9256b3dffcfa56eb87",
+    "durationSeconds": 8.8116,
+    "filters": "aresample=44100,asetrate=45423,aresample=44100,atempo=0.95,highpass=f=75,equalizer=f=380:t=q:w=1.2:g=1.8,treble=f=4100:g=-1.5,alimiter=limit=0.75:level=false:latency=1"
+  },
+  "finishFilters": "aresample=44100,highpass=f=70,equalizer=f=420:t=q:w=1.25:g=1.5,equalizer=f=2300:t=q:w=1.3:g=1.0,acompressor=threshold=0.15:ratio=2:attack=9:release=140:makeup=1.22,alimiter=limit=0.75:level=false:latency=1,afade=t=in:d=0.006,areverse,afade=t=in:d=0.010,areverse",
+  "schemaVersion": 1,
+  "avatarId": "bilbo",
+  "language": "da",
+  "phrases": [
+    {
+      "id": "phrase_1_welcome",
+      "file": "phrase_1_welcome.wav",
+      "text": "Velkommen til boden. Vil du smage brombær?",
+      "sha256": "41503b2e63ee14511bffe79a4062ae10c55b44e624da24dbbaefb01d2dec0dbc",
+      "seed": 42107
+    },
+    {
+      "id": "phrase_2_start",
+      "file": "phrase_2_start.wav",
+      "text": "Først en bestilling, så åbner vi låget.",
+      "sha256": "4f570e95f63ac2fa0f7dd9a55cc02054519310a5edec45f7643158844180d908",
+      "seed": 42108
+    },
+    {
+      "id": "phrase_3_success",
+      "file": "phrase_3_success.wav",
+      "text": "Sådan! Præcis ét glas til hver bestilling.",
+      "sha256": "92410cf80b48c923353295f712cbccc250c142359a497e0046e0f5675ca54314",
+      "seed": 42109
+    },
+    {
+      "id": "phrase_4_retry",
+      "file": "phrase_4_retry.wav",
+      "text": "Et øjeblik, jeg tjekker lige ordren.",
+      "sha256": "93b884351883122ea4ae3806c7846c1c2fa3b8d26412d6ef256606f40706dbac",
+      "seed": 42110
+    },
+    {
+      "id": "phrase_5_milestone",
+      "file": "phrase_5_milestone.wav",
+      "text": "Hele køen er ekspederet. Smukt arbejde!",
+      "sha256": "12f8577d2c7832e6d99c4ad16f682f13ea32430ae287bd11383112528cb765c1",
+      "seed": 42111
+    }
+  ]
+}

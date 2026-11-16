@@ -1,0 +1,72 @@
+[
+  {
+    "id": "phrase_1_welcome",
+    "event": "welcome",
+    "text": "Velkommen til boden. Vil du smage brombær?",
+    "language": "da-DK",
+    "file": "phrase_1_welcome.wav",
+    "path": "audio/phrase_1_welcome.wav",
+    "available": true,
+    "duration": 3.4,
+    "durationSeconds": 3.4,
+    "source": "local-roest-chatterbox-bilbo-merchant",
+    "sha256": "41503b2e63ee14511bffe79a4062ae10c55b44e624da24dbbaefb01d2dec0dbc",
+    "seed": 42107
+  },
+  {
+    "id": "phrase_2_start",
+    "event": "start",
+    "text": "Først en bestilling, så åbner vi låget.",
+    "language": "da-DK",
+    "file": "phrase_2_start.wav",
+    "path": "audio/phrase_2_start.wav",
+    "available": true,
+    "duration": 3.0,
+    "durationSeconds": 3.0,
+    "source": "local-roest-chatterbox-bilbo-merchant",
+    "sha256": "4f570e95f63ac2fa0f7dd9a55cc02054519310a5edec45f7643158844180d908",
+    "seed": 42108
+  },
+  {
+    "id": "phrase_3_success",
+    "event": "success",
+    "text": "Sådan! Præcis ét glas til hver bestilling.",
+    "language": "da-DK",
+    "file": "phrase_3_success.wav",
+    "path": "audio/phrase_3_success.wav",
+    "available": true,
+    "duration": 3.72,
+    "durationSeconds": 3.72,
+    "source": "local-roest-chatterbox-bilbo-merchant",
+    "sha256": "92410cf80b48c923353295f712cbccc250c142359a497e0046e0f5675ca54314",
+    "seed": 42109
+  },
+  {
+    "id": "phrase_4_retry",
+    "event": "retry",
+    "text": "Et øjeblik, jeg tjekker lige ordren.",
+    "language": "da-DK",
+    "file": "phrase_4_retry.wav",
+    "path": "audio/phrase_4_retry.wav",
+    "available": true,
+    "duration": 3.2,
+    "durationSeconds": 3.2,
+    "source": "local-roest-chatterbox-bilbo-merchant",
+    "sha256": "93b884351883122ea4ae3806c7846c1c2fa3b8d26412d6ef256606f40706dbac",
+    "seed": 42110
+  },
+  {
+    "id": "phrase_5_milestone",
+    "event": "milestone",
+    "text": "Hele køen er ekspederet. Smukt arbejde!",
+    "language": "da-DK",
+    "file": "phrase_5_milestone.wav",
+    "path": "audio/phrase_5_milestone.wav",
+    "available": true,
+    "duration": 3.88,
+    "durationSeconds": 3.88,
+    "source": "local-roest-chatterbox-bilbo-merchant",
+    "sha256": "12f8577d2c7832e6d99c4ad16f682f13ea32430ae287bd11383112528cb765c1",
+    "seed": 42111
+  }
+]

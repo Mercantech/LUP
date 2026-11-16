@@ -9,6 +9,7 @@ public static class AvatarCatalog
     public const string RaymondId = "raymond";
     public const string SantaId = "santa";
     public const string LuppId = "lupp";
+    public const string BilboId = AvatarEconomy.BilboId;
 
     private static readonly AvatarAction[] CommonActions =
     [
@@ -74,6 +75,18 @@ public static class AvatarCatalog
         "ability_5_repair" => action with { Label = "Playtestpause", Description = "LUPP holder en sårbar pause, samler feedback og kommer stærkere tilbage." },
         "ultimate_charge" => action with { Label = "Game Jam · opladning", Description = "LUPP samler alle sine idéer i en stor fælles prototype.", Fps = 5 },
         "ultimate_release" => action with { Label = "Game Jam · udløsning", Description = "En vifte af selvstændige prototypekuber springer ud i verden.", Fps = 5 },
+        _ => action
+    }).ToArray());
+    private static readonly IReadOnlyList<AvatarAction> BilboActions = Array.AsReadOnly(CommonActions.Select(action => action.Id switch
+    {
+        "ability_1_pulse" => action with { Label = "Syltetøjskast", Description = "Bilbo sender et syltetøjsglas af sted, så det hopper hen over banen." },
+        "ability_2_magnet" => action with { Label = "Køgreb", Description = "Bilbo trækker en modstander nærmere med en bestemt håndbevægelse." },
+        "ability_3_shield" => action with { Label = "Glasværn", Description = "Bilbo tager fast fodfæste og holder sit værn oppe." },
+        "ability_4_dash" => action with { Label = "Bodryk", Description = "Et kort, hurtigt ryk, som giver Bilbo plads til at manøvrere." },
+        "ability_5_repair" => action with { Label = "Smagepause", Description = "Bilbo tager en pause og får kræfterne tilbage, hvis han får lov at stå i fred." },
+        "ultimate_charge" => action with { Label = "Ordrekøen · opladning", Description = "Bilbo gør tre bestillinger klar til afsendelse." },
+        "ultimate_release" => action with { Label = "Ordrekøen · udløsning", Description = "Bilbo sender tre glas af sted med et øjeblik mellem hvert kast." },
+        _ when action.Loop => action with { EndState = "self" },
         _ => action
     }).ToArray());
     private static readonly IReadOnlyList<string> AnimationIds = Array.AsReadOnly(CommonActions.Select(action => action.Id).ToArray());
@@ -185,6 +198,30 @@ public static class AvatarCatalog
                 new("laugh", "Griner", "/assets/avatars/lupp/emoji-laugh.png"),
                 new("think", "Tænksom", "/assets/avatars/lupp/emoji-think.png"),
                 new("celebrate", "Jubel", "/assets/avatars/lupp/emoji-celebrate.png")])
+        },
+        new(BilboId, "Bilbo Backend", "Bilbo driver en syltetøjsbod. Han holder styr på hver ordre og ved, hvordan man får et glas sikkert fra boden til kunden.", 1, 0,
+            Array.AsReadOnly<AvatarCatchphrase>(
+            [
+                new("bilbo-greeting", "greeting", "Velkommen til boden. Vil du smage brombær?"),
+                new("bilbo-start", "start", "Først en bestilling, så åbner vi låget."),
+                new("bilbo-success", "success", "Sådan! Præcis ét glas til hver bestilling."),
+                new("bilbo-retry", "retry", "Et øjeblik, jeg tjekker lige ordren."),
+                new("bilbo-unlock", "unlock", "Hele køen er ekspederet. Smukt arbejde!")
+            ]))
+        {
+            Edition = "Syltetøjsboden",
+            SpriteAssetRoot = "/assets/avatars/bilbo",
+            SupportsWorldSprites = true,
+            FaceImage = "/assets/avatars/bilbo/face.png",
+            Animations = AnimationIds,
+            Actions = BilboActions,
+            AudioFiles = PhraseFiles,
+            CharacterProfilePath = "/characters/bilbo",
+            Emojis = Array.AsReadOnly<AvatarEmoji>([
+                new("happy", "Glad", "/assets/avatars/bilbo/emoji-happy.png"),
+                new("laugh", "Griner", "/assets/avatars/bilbo/emoji-laugh.png"),
+                new("think", "Tænksom", "/assets/avatars/bilbo/emoji-think.png"),
+                new("celebrate", "Jubel", "/assets/avatars/bilbo/emoji-celebrate.png")])
         }
     ]);
 

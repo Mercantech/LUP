@@ -80,7 +80,11 @@ else
             @if (AvatarCatalog.All.Any(avatar => !World.OwnsAvatar(avatar.Id) && avatar.UnlockRequirements.Count > 0))
             {
                 <div class="avatar-requirements-help">
-                    <div>@if (HasChristmasGiftRequirement) { <p>Julemanden kræver gaver til tre forskellige brugere. Vælg temaet <strong>Jul</strong>, og send via gaveikonet.</p> } @if (HasGameUploadRequirement) { <p>LUPP er gratis, når du har <a href="@Mercantec.Tech.Web.Games.GamesCatalog.UploadGameProjectPath">uploadet dit eget spil</a>. Dit spil behøver ikke være offentligt.</p> }</div>
+                    <div>
+                        @if (HasChristmasGiftRequirement) { <p>Julemanden kræver gaver til tre forskellige brugere. Vælg temaet <strong>Jul</strong>, og send via gaveikonet.</p> }
+                        @if (HasGameUploadRequirement) { <p>LUPP er gratis, når du har <a href="@Mercantec.Tech.Web.Games.GamesCatalog.UploadGameProjectPath">uploadet dit eget spil</a>. Dit spil behøver ikke være offentligt.</p> }
+                        @if (HasBackendRequirement) { <p>Bilbo Backend er gratis, når du har afleveret tre forskellige <a href="/videnstjek?vis=oev&amp;emne=Backend">videnstjek i Backend</a>.</p> }
+                    </div>
                     <button type="button" class="secondary" disabled="@World.AvatarBusy" @onclick="RefreshRequirements">@(World.AvatarBusy ? "Henter krav…" : "Opdatér krav")</button>
                 </div>
             }
@@ -190,10 +194,12 @@ else
     private AvatarDefinition PreviewDefinition => AvatarCatalog.Find(_previewId) ?? AvatarCatalog.All[0];
     private bool HasGameUploadRequirement => AvatarCatalog.All.Any(avatar => !World.OwnsAvatar(avatar.Id)
         && avatar.UnlockRequirements.Any(requirement => requirement.Kind == AvatarRequirementKinds.UploadedGames));
+    private bool HasBackendRequirement => !World.OwnsAvatar(AvatarCatalog.BilboId);
     private static string RequirementUnit(string kind) => kind switch
     {
         AvatarRequirementKinds.SentGiftsDistinctRecipients => "forskellige brugere",
         AvatarRequirementKinds.UploadedGames => "uploadet spil",
+        AvatarRequirementKinds.SubmittedKnowledgeChecks => "videnstjek",
         _ => ""
     };
     private bool HasChristmasGiftRequirement => AvatarCatalog.All.Any(avatar => !World.OwnsAvatar(avatar.Id)
@@ -250,7 +256,10 @@ else
         World.Changed += OnChanged;
         Mailbox.GiftSent += OnGiftSent;
         await World.EnsureAsync();
+        // Returning from a videnstjek in the same tab can reuse the cached account profile.
+        var refreshActivity = Auth.IsAuthenticated && World.AvatarProfileReady && HasBackendRequirement;
         await World.BindAvatarProfileAsync(Auth.Subject);
+        if (refreshActivity && !_disposed && HasBackendRequirement) await World.ReloadAvatarProfileAsync();
     }
     protected override async Task OnParametersSetAsync()
     {

@@ -13,7 +13,7 @@
         stop,
         async play(file) {
             if (typeof file !== "string") return false;
-            const match = /^\/assets\/avatars\/(bip-01|raymond|santa|lupp)\/audio\/([a-z0-9_]+)\.wav$/.exec(file);
+            const match = /^\/assets\/avatars\/(bip-01|raymond|santa|lupp|bilbo)\/audio\/([a-z0-9_]+)\.wav$/.exec(file);
             if (!match || match[0] !== file || (!actions.has(match[2]) && !phrases.has(match[2]))) return false;
             stop();
             const source = phrases.has(match[2]) ? file + "?v=" + phraseVersion : file;

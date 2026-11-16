@@ -8,17 +8,18 @@ test('effects load original per-character layers and four-frame projectiles with
     const calls = [];
     const art = new ArenaEffectArt((key, url) => { calls.push({ key, url }); return Promise.resolve(); }, new Map());
     await art.preload();
-    assert.equal(calls.length, 40);
-    assert.equal(new Set(calls.map(call => call.url)).size, 40);
+    assert.equal(calls.length, 50);
+    assert.equal(new Set(calls.map(call => call.url)).size, 50);
     assert.ok(calls.every(call => call.url.startsWith('/assets/arena/v3/effects/')));
     assert.ok(calls.some(call => call.url.endsWith('bip01-pulse_cyan.webp')));
     assert.ok(calls.some(call => call.url.endsWith('raymond-pulse_blue.webp')));
     assert.ok(calls.some(call => call.url.endsWith('santa-pulse_blue.webp')));
     assert.ok(calls.some(call => call.url.endsWith('lupp-pulse_blue.webp')));
+    assert.ok(calls.some(call => call.url.endsWith('bilbo-pulse_blue.webp')));
     assert.ok(calls.every(call => !call.url.includes('effects-atlas')));
 });
 
-test('the two avatars select their own neutral and charged projectile artwork', () => {
+test('avatars select their own neutral and charged projectile artwork', () => {
     const art = new ArenaEffectArt(() => {}, new Map());
     assert.equal(art.projectileId('bip01'), 'pulse_cyan');
     assert.equal(art.projectileId('bip01', true), 'pulse_amber');
@@ -28,6 +29,8 @@ test('the two avatars select their own neutral and charged projectile artwork', 
     assert.equal(art.projectileId('santa', true), 'pulse_gold');
     assert.equal(art.projectileId('lupp'), 'pulse_blue');
     assert.equal(art.projectileId('lupp', true), 'pulse_gold');
+    assert.equal(art.projectileId('bilbo'), 'pulse_blue');
+    assert.equal(art.projectileId('bilbo', true), 'pulse_gold');
 });
 
 test('effects warm only the selected participant palettes', async () => {
@@ -36,6 +39,16 @@ test('effects warm only the selected participant palettes', async () => {
     await art.preload(['raymond', 'raymond', 'lupp']);
     assert.equal(calls.length, 20);
     assert.ok(calls.every(url => /effects\/(raymond|lupp)-/.test(url)));
+});
+
+test('a reflected order jar keeps Bilbo art while the repair meter uses his stock', () => {
+    const fighters = new Map([['robot', { avatarId: 'bip01' }]]);
+    const jar = { ownerId: 'robot', sourceAvatarId: 'bilbo', kind: 'order-jar', reflected: true };
+    assert.deepEqual(projectileArtFor(jar, fighters), { avatarId: 'bilbo', id: 'pulse_gold', reflected: true });
+    assert.equal(effectAvatarForEvent({ type: 'jar-splat', actorId: 'robot' }, fighters), 'bilbo');
+    const bilbo = { avatarId: 'bilbo', grounded: true, damage: 15, combat: { energy: 36 } };
+    assert.equal(repairReadinessFor(bilbo), '37 LAG');
+    assert.equal(repairReadinessFor({ ...bilbo, combat: { energy: 37 } }), 'klar');
 });
 
 test('projectile drawing preserves the full guarded source tile and restores canvas state', () => {

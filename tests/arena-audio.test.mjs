@@ -228,13 +228,13 @@ test('preloaded recorded clips retain the selected avatar and load once per file
     const h = harness();
     t.after(() => h.audio.dispose());
     await h.audio.unlock();
-    await h.audio.preload(['bip01', 'raymond', 'santa', 'lupp']);
+    await h.audio.preload(['bip01', 'raymond', 'santa', 'lupp', 'bilbo']);
     const fetched = h.requests.length;
     assert.ok(fetched > 0);
-    await h.audio.preload(['bip01', 'raymond', 'santa', 'lupp']);
+    await h.audio.preload(['bip01', 'raymond', 'santa', 'lupp', 'bilbo']);
     assert.equal(h.requests.length, fetched, 'repeated state/round preloads must reuse cached files');
     assert.equal(new Set(h.requests).size, h.requests.length);
-    for (const [avatar, path] of [['bip01', 'bip-01'], ['raymond', 'raymond'], ['santa', 'santa'], ['lupp', 'lupp']]) {
+    for (const [avatar, path] of [['bip01', 'bip-01'], ['raymond', 'raymond'], ['santa', 'santa'], ['lupp', 'lupp'], ['bilbo', 'bilbo']]) {
         h.context.advance();
         const count = h.context.sources.length;
         assert.equal(h.audio.cue('projectile', 1, avatar), true);

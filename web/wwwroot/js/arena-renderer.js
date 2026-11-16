@@ -1,5 +1,5 @@
-import { ArenaEffectArt, combatPresentation, combatStatusFor, effectAvatarForEvent, projectileArtFor, repairReadinessFor } from './arena-effect-art.js?v=20261112-2';
-import { isOriginalAvatar, originalAvatarAction, originalAvatarAssets, originalAvatarFace, originalAvatarFrame, originalAvatarKey, originalAvatarSource } from './arena-avatar-art.js?v=20261112-2';
+import { ArenaEffectArt, combatPresentation, combatStatusFor, effectAvatarForEvent, projectileArtFor, repairReadinessFor } from './arena-effect-art.js?v=bilbo-1';
+import { isOriginalAvatar, originalAvatarAction, originalAvatarAssets, originalAvatarFace, originalAvatarFrame, originalAvatarKey, originalAvatarSource } from './arena-avatar-art.js?v=bilbo-1';
 import { ArenaMotion } from './arena-motion.js?v=20261112-2';
 
 const WIDTH = 1280;
@@ -56,7 +56,8 @@ const RESOURCE_HUD = {
     bip01: { name: 'Energi', short: 'E', color: '#76e5f2', grabCost: 18 },
     raymond: { name: 'Skjold', short: 'L', color: '#b6c9e2', grabCost: 0 },
     santa: { name: 'Magi', short: 'M', color: '#f2d177', grabCost: 20 },
-    lupp: { name: 'Idé', short: 'IDÉ', color: '#c4a1ff', grabCost: 16 }
+    lupp: { name: 'Idé', short: 'IDÉ', color: '#c4a1ff', grabCost: 16 },
+    bilbo: { name: 'Lager', short: 'LAG', color: '#ec8aaa', grabCost: 18 }
 };
 
 function clockText(state) {
@@ -270,16 +271,17 @@ export class ArenaRenderer {
                 case 'jump': case 'land':
                     this.effects.push({ ...effect, frames: [12], duration: .35, size: 70, grow: 1.5, floor: true });
                     break;
-                case 'dodge': case 'recovery':
+                case 'dodge': case 'recovery': case 'dash':
                     this.effects.push({ ...effect, frames: [13], duration: .27, size: 100, grow: 1.6 });
                     break;
-                case 'feedback': case 'gift-grab': case 'magnet': case 'capture': case 'escape': case 'release':
+                case 'feedback': case 'gift-grab': case 'queue-grab': case 'magnet': case 'capture': case 'escape': case 'release':
                     this.effects.push({ ...effect, frames: [0], effectId: 'magnet_field', duration: .35, size: event.type === 'magnet' ? 170 : 105, grow: 1.3 });
                     break;
                 case 'prototype': case 'absorb': case 'reflect':
                     this.effects.push({ ...effect, frames: [0], effectId: event.type === 'reflect' ? 'shield' : 'unlock', duration: .24, size: 110, grow: 1.25 });
                     break;
                 case 'armor':
+                case 'glass-block':
                     this.effects.push({ ...effect, frames: [0], effectId: 'shield', duration: .25, size: 110, grow: 1.15 });
                     break;
                 case 'repair-start': case 'repair': case 'repair-cancel':
@@ -288,12 +290,15 @@ export class ArenaRenderer {
                 case 'ultimate-charge':
                     this.effects.push({ ...effect, frames: [0], effectId: 'ultimate_charge', duration: .4, size: 140, grow: 1.1 });
                     break;
-                case 'game-jam': case 'gift-fest': case 'overload': case 'join-explode':
+                case 'game-jam': case 'gift-fest': case 'order-queue': case 'overload': case 'join-explode':
                     this.effects.push({ ...effect, frames: [0], effectId: 'ultimate_release', duration: .58, size: event.type === 'overload' ? 340 : 300, grow: 1.35 });
                     this.shake = Math.max(this.shake, this.reducedMotion ? 0 : 6);
                     break;
                 case 'join':
                     this.effects.push({ ...effect, frames: [0], effectId: 'ultimate_release', duration: .26, size: 145, grow: 1.2 });
+                    break;
+                case 'jar-bounce': case 'jar-splat':
+                    this.effects.push({ ...effect, frames: [0], effectId: 'impact', duration: .26, size: 75, grow: 1.2, floor: true });
                     break;
                 // Pulls are continuous simulation events. The persistent field and
                 // tether show them without accumulating flashes on every tick.
@@ -573,7 +578,7 @@ export class ArenaRenderer {
             this.effectTexture(context, frame, fighter.x, fighter.y - 41, size * 1.25, 0, .7, 'screen', 1, fighter.avatarId, 'shield');
         }
         const combat = combatPresentation(fighter);
-        if (fighter.charge > 0 && !['overload-charge', 'join-charge', 'gift-fest-charge', 'game-jam-charge'].includes(combat?.activeAbility)) {
+        if (fighter.charge > 0 && !['overload-charge', 'join-charge', 'gift-fest-charge', 'game-jam-charge', 'order-queue-charge'].includes(combat?.activeAbility)) {
             this.effectTexture(context, 14, fighter.x, fighter.y - 43, 110 + fighter.charge * 65, 0, .25 + fighter.charge * .5, 'screen', 1, fighter.avatarId, 'ultimate_charge');
         }
         this.combatEffects(context, fighter, combat, now);
@@ -635,7 +640,7 @@ export class ArenaRenderer {
         if (combat.armored) {
             this.effectArt.draw(context, fighter.avatarId, 'shield', 0, x, y, 130, 0, .42 * pulse, 'screen');
         }
-        if (['overload-charge', 'join-charge', 'gift-fest-charge', 'game-jam-charge'].includes(combat.activeAbility)) {
+        if (['overload-charge', 'join-charge', 'gift-fest-charge', 'game-jam-charge', 'order-queue-charge'].includes(combat.activeAbility)) {
             this.effectArt.draw(context, fighter.avatarId, 'ultimate_charge', 0, x, y, 165, 0, .8 * pulse, 'screen');
         }
         if (combat.capturedBy) {
@@ -657,17 +662,33 @@ export class ArenaRenderer {
     }
 
     projectile(context, projectile, now) {
+        if (projectile.kind === 'jam-patch') {
+            const radius = projectile.radius;
+            context.beginPath();
+            context.ellipse(projectile.x, projectile.y - 3, radius, 7, 0, 0, Math.PI * 2);
+            context.fillStyle = '#76274cc7';
+            context.fill();
+            context.strokeStyle = '#ec8aaa';
+            context.stroke();
+            this.effectArt.draw(context, projectile.sourceAvatarId, 'repair_field', 0,
+                projectile.x, projectile.y - 4, radius * 2.2, 0, .7, 'source-over', .18);
+            return;
+        }
         const art = projectileArtFor(projectile, this.frameFighters);
         const speed = Math.hypot(projectile.vx, projectile.vy);
         const angle = Math.atan2(projectile.vy, projectile.vx);
         const frame = Math.floor(now * 12 / 1000) % 4;
-        const size = Math.max(45, (projectile.radius || 9) * 5);
+        const jar = projectile.kind === 'jam-jar' || projectile.kind === 'order-jar';
+        const radius = projectile.radius || 9;
+        const size = jar ? radius * 3 : Math.max(45, radius * 5);
         if (projectile.kind === 'join') {
             this.effectArt.draw(context, 'raymond', 'magnet_field', 0, projectile.x, projectile.y, size * 2.4, 0, .3, 'screen');
         }
-        this.effectArt.draw(context, art.avatarId, art.id, frame, projectile.x - projectile.vx * .018,
-            projectile.y - projectile.vy * .018, size * 1.3, angle, .3, 'screen');
-        this.effectArt.draw(context, art.avatarId, art.id, frame, projectile.x, projectile.y, size, speed ? angle : 0, 1, 'screen');
+        if (!jar)
+            this.effectArt.draw(context, art.avatarId, art.id, frame, projectile.x - projectile.vx * .018,
+                projectile.y - projectile.vy * .018, size * 1.3, angle, .3, 'screen');
+        this.effectArt.draw(context, art.avatarId, art.id, frame, projectile.x, projectile.y, size,
+            jar ? 0 : speed ? angle : 0, 1, jar ? 'source-over' : 'screen');
         if (art.reflected) {
             const owner = this.frameFighters.get(projectile.ownerId);
             this.effectArt.draw(context, owner?.avatarId || 'bip01', 'shield', 0,

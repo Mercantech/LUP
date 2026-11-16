@@ -12,6 +12,7 @@ public static class ArenaMoveSets
         "raymond" => Raymond,
         "santa" => Santa,
         "lupp" => Lupp,
+        AvatarEconomy.BilboId => Bilbo,
         _ => null
     };
 
@@ -49,6 +50,19 @@ public static class ArenaMoveSets
         new("repair", "S + K", "Playtestpause", "30 idékraft: heler 10 skade efter en sårbar pause. Kan afbrydes."),
         new("ultimate", "Hold I", "Game Jam", "Fuld måler: fem prototypekuber i en vifte, der springer på banen. Kan afbrydes.")
     ]);
+    public static ArenaMoveSet Bilbo { get; } = new(AvatarEconomy.BilboId, "Banekontrol",
+        "Bilbo bruger sit lager til evner. Lageret fyldes langsomt op, og træffere lader Ordrekøen.",
+    [
+        new("attack", "J", "Bodslag", "Et fast slag med længst rækkevidde fra jorden."),
+        new("pulse", "K", "Syltetøjskast", "Koster 14 lager. Glasset hopper én gang og kan efterlade en klistret plet, som sænker modstanderne."),
+        new("grab", "U", "Køgreb", "Trækker en nær modstander ind mod boden fra jorden. Koster 18 lager."),
+        new("shield", "L", "Glasværn", "Bruger mindre skjold på at stoppe projektiler."),
+        new("dash", "A/D + K", "Bodryk", "Ryk frem og skub en modstander væk. Koster 22 lager."),
+        new("recovery", "W + K", "Bodspring", "Spring op mod banen. Koster 20 lager."),
+        new("repair", "S + K", "Smagepause", "Koster 37 lager. Heler op til 13 skade efter en kort pause, der kan afbrydes."),
+        new("ultimate", "Hold I", "Ordrekøen", "Fuld måler. Tre glas slynges afsted ét ad gangen i forskellige buer. Træffere kan afbryde de resterende kast.")
+    ]);
+
     public static ArenaMoveSet Santa { get; } = new("santa", "Julemagi", "Julemagi driver evnerne. Julefred omsætter projektiler til magi. Træffere lader gavefesten.",
     [
         new("attack", "J", "Juleslag", "Et roligt slag med mellemstor rækkevidde."),

@@ -5,11 +5,13 @@ function dependency(name){try{return require(name);}catch{return require(path.jo
 const {chromium}=dependency('playwright');
 const base=process.env.LUP_QA_URL||'http://localhost:3000';
 // One isolated harness verifies any complete character pack without copying tests.
-globalThis.__qaAvatar=process.env.LUP_QA_AVATAR==='lupp'
-  ? {id:'lupp',name:'LUPP',profilePath:'/characters/lupp'}
-  : process.env.LUP_QA_AVATAR==='santa'
-  ? {id:'santa',name:'Julemanden',profilePath:null}
-  : {id:'raymond',name:'Raymond',profilePath:'/characters/raymond'};
+const qaAvatars={
+  lupp:{id:'lupp',name:'LUPP',profilePath:'/characters/lupp'},
+  santa:{id:'santa',name:'Julemanden',profilePath:null},
+  raymond:{id:'raymond',name:'Raymond',profilePath:'/characters/raymond'},
+  bilbo:{id:'bilbo',name:'Bilbo Backend',profilePath:'/characters/bilbo'}
+};
+globalThis.__qaAvatar=qaAvatars[process.env.LUP_QA_AVATAR]||qaAvatars.raymond;
 const output=process.env.LUP_QA_OUTPUT?path.resolve(process.env.LUP_QA_OUTPUT):path.resolve(__dirname,'../../design/robot-avatar-platform');
 const results=[];results.push=(...values)=>{console.log(...values);return Array.prototype.push.apply(results,values);};const errors=[],failedAssets=[];let browser,page;
 (async()=>{
@@ -23,12 +25,13 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
   const second='22222222-2222-2222-2222-222222222222';
   const legacy='33333333-3333-3333-3333-333333333333';
   const fullAvatarAccount='44444444-4444-4444-4444-444444444444';
-  const avatarCatalog={starter:{level:1,cost:0},bip01:{level:2,cost:150},raymond:{level:3,cost:150},santa:{level:4,cost:150},lupp:{level:1,cost:0}};
+  const avatarCatalog={starter:{level:1,cost:0},bip01:{level:2,cost:150},raymond:{level:3,cost:150},santa:{level:4,cost:150},lupp:{level:1,cost:0},bilbo:{level:1,cost:0}};
+  const bilboRequirement='backend-knowledge-checks';
   const clone=value=>JSON.parse(JSON.stringify(value));
   const profileFor=subject=>{
     // Full-pack playback QA uses a qualified Santa account. Separate focused
     // requirement QA exercises real blocked/progress/third-recipient UI flows.
-    if(!profiles.has(subject))profiles.set(subject,{selectedAvatarId:'starter',ownedAvatarIds:['starter'],gold:320,level:7,ownedItemIds:['desk','bed','chair','plant','board'],canImportLegacy:true,revision:0,unlockProgress:[{avatarId:'santa',requirementId:'christmas-gift-recipients',current:subject===fullAvatarAccount?3:0,required:3,isMet:subject===fullAvatarAccount},{avatarId:'lupp',requirementId:'uploaded-game',current:0,required:1,isMet:false}]});
+    if(!profiles.has(subject))profiles.set(subject,{selectedAvatarId:'starter',ownedAvatarIds:['starter'],gold:320,level:7,ownedItemIds:['desk','bed','chair','plant','board'],canImportLegacy:true,revision:0,unlockProgress:[{avatarId:'santa',requirementId:'christmas-gift-recipients',current:subject===fullAvatarAccount?3:0,required:3,isMet:subject===fullAvatarAccount},{avatarId:'lupp',requirementId:'uploaded-game',current:0,required:1,isMet:false},{avatarId:'bilbo',requirementId:bilboRequirement,current:subject===fullAvatarAccount?2:0,required:3,isMet:false}]});
     return profiles.get(subject);
   };
   async function device(subject,oldProfile=null){
@@ -41,6 +44,13 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
         const reply=(status,value)=>route.fulfill({status,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(value)});
         if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,PUT,OPTIONS','access-control-allow-headers':'*'}});
         if(!account)return reply(401,{detail:'Log ind'});
+        if(url.pathname.endsWith('/knowledge-checks')&&req.method()==='GET'){
+          const publication=(id,title,topic)=>({id,quizId:id,title,topic,description:'En lokal testøvelse',estimatedMinutes:2,questionCount:1,isActive:true,feedbackMode:'after-submit',createdAtUtc:new Date().toISOString()});
+          return reply(200,{owned:[],history:[],holds:[],publications:[
+            publication('aaaa111a-aaaa-4aaa-8aaa-aaaaaaaaaaaa','Læs et HTTP-svar','Backend'),
+            publication('bbbb222b-bbbb-4bbb-8bbb-bbbbbbbbbbbb','Farv en knap','Frontend')
+          ]});
+        }
         if(url.pathname.endsWith('/me/games')){
           if(req.method()==='GET')return reply(200,games.get(account)||[]);
           assert.equal(req.headers()['x-lup-game-subject'],account);
@@ -69,6 +79,7 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
             if(state.level<avatar.level)return reply(409,{code:'level_required',detail:'Levelkravet er ikke opfyldt'});
             if(id==='santa'&&!state.unlockProgress.some(p=>p.avatarId==='santa'&&p.requirementId==='christmas-gift-recipients'&&p.current>=3&&p.required===3&&p.isMet))return reply(409,{code:'avatar_requirement_not_met',detail:'Send julegaver til mindst tre forskellige brugere'});
             if(id==='lupp'&&!state.unlockProgress.some(p=>p.avatarId==='lupp'&&p.requirementId==='uploaded-game'&&p.current>=1&&p.required===1&&p.isMet))return reply(409,{code:'avatar_requirement_not_met',detail:'Upload dit eget spil'});
+            if(id==='bilbo'&&!state.unlockProgress.some(p=>p.avatarId==='bilbo'&&p.requirementId===bilboRequirement&&p.current>=3&&p.required===3&&p.isMet))return reply(409,{code:'avatar_requirement_not_met',detail:'Gennemfør tre forskellige videnstjek i Backend'});
             if(state.gold<avatar.cost)return reply(409,{code:'insufficient_gold',detail:'Ikke nok guld'});
             state.gold-=avatar.cost;state.ownedAvatarIds.push(id);state.selectedAvatarId=id;changed=true;
           }
@@ -128,13 +139,13 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
   const ready=()=>page.getByTestId('selected-avatar-name').waitFor({state:'visible',timeout:90000});
   await visit('/profile/character');await ready();
   assert.equal(await page.locator('.avatar-mystery').count(),12);
-  assert.equal(await page.locator('.avatar-collectible').count(),5);
+  assert.equal(await page.locator('.avatar-collectible').count(),Object.keys(avatarCatalog).length);
   assert.equal(await page.locator('.v2-swatch,.v4-wardrobe').count(),0);
   assert.equal(await page.getByTestId('selected-avatar-name').textContent(),'Din første avatar');
   assert.equal(await page.getByTestId('avatar-gold').textContent(),'320');
   assert.equal(await page.getByTestId('unlock-robot').isEnabled(),true);
   assert.equal(await page.evaluate(()=>window.__avatarAudio.length),0);
-  results.push('Collection replaces customization with five figures and 12 noninteractive coming-soon slots.');
+  results.push('Collection contains every catalog figure and 12 noninteractive coming-soon slots.');
   await page.getByTestId('unlock-robot').click();
   await page.waitForFunction(()=>document.querySelector('[data-testid="selected-avatar-name"]').textContent==='BIP-01');
   assert.equal(await page.getByTestId('avatar-gold').textContent(),'170');
@@ -180,7 +191,7 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
   assert.equal(await page.locator('input[type=file]').count(),0);
   assert.equal(await page.getByText('Rune Run Mini',{exact:true}).count(),0);
   await visit('/apartment');await page.locator('.v2-home-sprite [data-avatar="bip01"]').waitFor();
-  await visit('/profile');await page.locator('.panel [data-avatar-icon="bip01"]').waitFor();
+  await visit('/profile');await page.locator('.profile-identity [data-avatar-icon="bip01"]').waitFor();
   results.push('The old Rune Run address opens the public games catalog. The selected body follows the player in the apartment and the profile uses the matching face icon.');
   const secondDevice=await device(first),otherPage=observePage(await secondDevice.newPage());otherPage.setDefaultTimeout(90000);
   await otherPage.goto(base+'/profile/character');await otherPage.getByTestId('selected-avatar-name').waitFor();
@@ -258,6 +269,21 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
     assert.equal(await fullAvatarPage.getByTestId('unlock-lupp').isEnabled(),true);
     assert.equal((games.get(fullAvatarAccount)||[]).length,1);
     results.push('Mine projekter → Spil posts owner-bound multipart HTML. Failed upload preserves selections and request id. Successful upload is listed as a private project and enables the uploader’s free LUPP claim.');
+  }
+  if(globalThis.__qaAvatar.id==='bilbo'){
+    const gate=fullAvatarPage.getByTestId('unlock-bilbo');
+    assert.equal(await gate.isDisabled(),true);
+    assert.match(await fullAvatarPage.getByTestId('requirement-progress-bilbo-'+bilboRequirement).textContent(),/2\s*\/\s*3 videnstjek/);
+    await fullAvatarPage.getByRole('link',{name:'videnstjek i Backend',exact:true}).click();
+    await fullAvatarPage.getByRole('heading',{name:'Læs et HTTP-svar',exact:true}).waitFor();
+    assert.equal(await fullAvatarPage.getByLabel('Emne').inputValue(),'Backend');
+    assert.equal(await fullAvatarPage.getByRole('heading',{name:'Farv en knap',exact:true}).count(),0);
+    Object.assign(profileFor(fullAvatarAccount).unlockProgress.find(progress=>progress.avatarId==='bilbo'),{current:3,isMet:true});
+    await fullAvatarPage.goBack();await gate.waitFor();
+    await fullAvatarPage.waitForFunction(()=>!document.querySelector('[data-testid=unlock-bilbo]')?.disabled);
+    assert.equal(await gate.textContent(),'Lås op gratis');
+    assert.equal(profileFor(second).unlockProgress.find(progress=>progress.avatarId==='bilbo').current,0);
+    results.push('Bilbo links to filtered Backend exercises and reopens the collection with fresh account progress. Three checks enable a free claim.');
   }
   await fullAvatarPage.getByRole('button',{name:`Se ${globalThis.__qaAvatar.name}`,exact:true}).click();
   await fullAvatarPage.locator(`.avatar-preview .avatar-sheet[data-avatar="${globalThis.__qaAvatar.id}"]`).waitFor();
@@ -385,19 +411,46 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
   assert.deepEqual(stillCoin,{x:heldCoin.x,y:heldCoin.y},'Pause must freeze attached world entities');
   await fullAvatarPage.getByRole('button',{name:'Fortsæt animation',exact:true}).click();
   await fullAvatarPage.waitForFunction(()=>Number(document.querySelector('.avatar-layer-stage')?.dataset.layerFrame)>=7);
-  const raisedCoinY=await layerStage.locator('[data-layer="item"]').evaluate(el=>Number(el.dataset.worldY));
-  assert.ok(raisedCoinY<heldCoin.y-1,'The independent item must rise with the hand after attachment');
+  const pickupAnchor=await fullAvatarPage.evaluate(async avatar=>{
+    const root=`/assets/avatars/${avatar}`;
+    const [contract,assets]=await Promise.all([
+      fetch(root+'/attachment-events.json').then(response=>response.json()),
+      fetch(root+'/external-assets.json').then(response=>response.json())
+    ]);
+    const samples=contract.actions.pickup.anchors.right_hand.samples;
+    const offset=assets.items.find(item=>item.id==='coin').gripOffset;
+    return {contact:samples.find(sample=>sample.frame===4),final:samples.find(sample=>sample.frame===7),offset};
+  },globalThis.__qaAvatar.id);
+  const settledCoin=await layerStage.locator('[data-layer="item"]').evaluate(el=>({x:Number(el.dataset.worldX),y:Number(el.dataset.worldY)}));
+  assert.ok(pickupAnchor.final.y<pickupAnchor.contact.y-1,'The final hand pose must lift the item from its contact point');
+  assert.ok(Math.abs(settledCoin.x-pickupAnchor.final.x-pickupAnchor.offset.x)<.1
+    &&Math.abs(settledCoin.y-pickupAnchor.final.y-pickupAnchor.offset.y)<.1,'The independent item must rest at the final measured hand anchor');
   assert.equal(await fullAvatarPreview.evaluate(el=>getComputedStyle(el).backgroundImage),pickupSheet);
   results.push('Book and coin share the same pickup actor sheet, attach to the same hand, follow its motion and freeze together when paused.');
 
   console.log('Layer QA: independent projectile motion');
   await fullAvatarPage.getByRole('combobox',{name:/^Projektil/}).selectOption('pulse_blue');
+  const projectileTimeline=fullAvatarPage.evaluate(()=>new Promise((resolve,reject)=>{
+    let frameBeforeRelease=null;
+    const deadline=performance.now()+12000;
+    function record(){
+      const stage=document.querySelector('.avatar-layer-stage');
+      const actor=stage?.querySelector('.avatar-sheet');
+      if(actor?.dataset.animation==='ability_1_pulse'){
+        const frame=Number(stage.dataset.layerFrame);
+        const image=stage.querySelector('[data-layer="projectile"] img');
+        if(image){resolve({frameBeforeRelease,frame,src:image.getAttribute('src')});return;}
+        if(frame>=0&&frame<4)frameBeforeRelease=frame;
+      }
+      if(performance.now()>=deadline){reject(new Error('No projectile appeared: '+JSON.stringify(stage?.dataset)));return;}
+      requestAnimationFrame(record);
+    }
+    requestAnimationFrame(record);
+  }));
   await fullAvatarPage.locator('[data-action-id="ability_1_pulse"]').click();
   const pulseSheet=await fullAvatarPreview.evaluate(el=>getComputedStyle(el).backgroundImage);
-  await fullAvatarPage.waitForFunction(()=>document.querySelector('.avatar-layer-stage')?.dataset.layerFrame==='2');
-  assert.equal(await layerStage.locator('[data-layer="projectile"]').count(),0,'The projectile must not exist before the release pose');
-  await fullAvatarPage.waitForFunction(()=>document.querySelectorAll('.avatar-layer-stage [data-layer="projectile"]').length===1);
-  const projectileBirth=await layerStage.evaluate(stage=>({frame:Number(stage.dataset.layerFrame),src:stage.querySelector('[data-layer="projectile"] img').getAttribute('src')}));
+  const projectileBirth=await projectileTimeline;
+  assert.ok(Number.isInteger(projectileBirth.frameBeforeRelease),'The projectile must not exist before the release pose');
   assert.equal(projectileBirth.frame,4,'The projectile must be created at release frame4');
   assert.ok(projectileBirth.src.endsWith('/projectiles/pulse_blue.png'));
   await fullAvatarPage.waitForFunction(()=>document.querySelector(`.avatar-preview .avatar-sheet[data-avatar="${globalThis.__qaAvatar.id}"]`)?.getAnimations()[0]?.playState==='finished');
@@ -453,8 +506,8 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
   await fullAvatarPage.waitForFunction(()=>document.querySelector('.avatar-layer-stage [data-layer="projectile"]'));
   await layerStage.evaluate(stage=>window.__previousAvatarLayerStage=stage);
   const audioBeforeNavigation=await fullAvatarPage.evaluate(()=>window.__avatarAudio.length);
-  await fullAvatarPage.locator('.avatar-game-link').click();
-  await fullAvatarPage.locator(`.v2-gamegrid .avatar-sheet[data-avatar="${globalThis.__qaAvatar.id}"]`).waitFor();
+  await fullAvatarPage.getByRole('link',{name:'Se kæmpere i LUP Arena',exact:true}).click();
+  await fullAvatarPage.locator('.arena-roster').getByRole('button',{name:new RegExp(globalThis.__qaAvatar.name)}).waitFor();
   await fullAvatarPage.waitForFunction(()=>window.__avatarLayerRafPending.size===0,{},{timeout:2000});
   assert.equal(await fullAvatarPage.evaluate(()=>window.__previousAvatarLayerStage.isConnected),false,'SPA navigation must dispose the layer stage');
   assert.equal(await fullAvatarPage.evaluate(()=>window.__avatarAudio.length),audioBeforeNavigation,'Layer changes and navigation must not autoplay audio');
@@ -491,7 +544,7 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
   assert.ok(await fullAvatarPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${globalThis.__qaAvatar.name} collection has horizontal mobile overflow`);
   await fullAvatarPage.screenshot({path:path.join(output,`${globalThis.__qaAvatar.id}-mobile.png`),fullPage:true});
   await fullAvatarPage.setViewportSize({width:1440,height:1000});
-  for(const [route,selector] of [['/profile',`.panel [data-avatar-icon="${globalThis.__qaAvatar.id}"]`],['/apartment',`.v2-home-sprite [data-avatar="${globalThis.__qaAvatar.id}"]`]]){
+  for(const [route,selector] of [['/profile',`.profile-identity [data-avatar-icon="${globalThis.__qaAvatar.id}"]`],['/apartment',`.v2-home-sprite [data-avatar="${globalThis.__qaAvatar.id}"]`]]){
     await fullAvatarPage.goto(base+route,{waitUntil:'domcontentloaded'});await fullAvatarPage.locator(selector).waitFor();
   }
   results.push(`${globalThis.__qaAvatar.name} selection follows two isolated devices and appears in the header, profile and apartment. Mobile and reduced motion pass.`);
