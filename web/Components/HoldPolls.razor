@@ -19,7 +19,7 @@
     {
         @if (ViewAs.IsActive) { <p class="hold-polls-note">Elevvisning. Svar på afstemninger afgives fra elevens egen konto.</p> }
         <div class="filters" aria-label="Filtrer holdets afstemninger">@foreach (var filter in Filters) { <button type="button" class="filter" aria-pressed="@DemoWorld.Pressed(_filter == filter)" @onclick="() => _filter = filter">@(filter == "all" ? "Alle" : PollDesign.StateLabel(filter))</button> }</div>
-        @if (!Visible.Any()) { <div class="hold-polls-empty"><UiIcon Name="chart" /><div><h3>@(_filter == "open" ? "Ingen åbne afstemninger" : "Ingen afstemninger i denne visning")</h3><p>@(MayManage ? "Opret et spørgsmål eller et stemningstjek til holdet." : "Holdets afstemninger vises her, når underviseren åbner dem.")</p></div></div> }
+        @if (!Visible.Any()) { <div class="hold-polls-empty"><UiIcon Name="chart" /><div><h3>@(_filter == "open" ? "Ingen åbne afstemninger" : "Ingen afstemninger i denne visning")</h3><p>@(MayManage ? $"Opret et {PollDesign.MoodLabel} eller stil et spørgsmål til holdet." : "Holdets afstemninger vises her, når underviseren åbner dem.")</p></div></div> }
         <div class="hold-poll-list">
             @foreach (var poll in Visible)
             {

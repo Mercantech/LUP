@@ -60,9 +60,10 @@ public sealed class PollException(string message) : Exception(message);
 
 public static class PollDesign
 {
+    public const string MoodLabel = "Vibe tjek";
     public static readonly string[] Kinds = ["mood", "choice", "scale", "text"];
     public static readonly string[] MoodNames = ["Glad", "Klar", "Midt imellem", "Træt", "Presset"];
-    public static string Label(string kind) => kind switch { "mood" => "Stemningstjek", "scale" => "Skala 1–5", "text" => "Kort svar", _ => "Fælles valg" };
+    public static string Label(string kind) => kind switch { "mood" => MoodLabel, "scale" => "Skala 1–5", "text" => "Kort svar", _ => "Fælles valg" };
     public static string Icon(string kind) => kind switch { "mood" => "heart", "text" => "message", "scale" => "sliders", _ => "chart" };
     public static string StateLabel(string state) => state switch { "open" => "Åben", "closed" => "Afsluttet", _ => "Kladde" };
     public static string Question(string kind) => kind switch { "mood" => "Hvordan er du landet i dag?", "scale" => "Hvor godt er du med lige nu?", "text" => "Hvad vil du gerne forstå bedre?", _ => "Hvad skal vi bruge mere tid på?" };

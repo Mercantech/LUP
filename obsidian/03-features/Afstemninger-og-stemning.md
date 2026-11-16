@@ -4,7 +4,7 @@ status: implemented
 tags: [feature, afstemning, stemning, blazor]
 ---
 
-# Afstemninger og stemning
+# Afstemninger og Vibe tjek
 
 ## Leveret 5. november 2026
 
@@ -12,7 +12,7 @@ Afstemninger bruger nu den fælles API og Postgres. Den tidligere lokale afstemn
 
 ## Oprettelse og design
 
-Underviseren vælger mellem stemningstjek, fælles valg, skala 1–5 og korte svar. Oprettelsen har redigering i venstre side og en interaktiv forhåndsvisning i højre; på mobil står de under hinanden. Stemning har fem tegnede ansigter og faste, navngivne følelser. LUPs DM Sans/Space Grotesk, eksisterende temaer og statusfarver bevares.
+Underviseren vælger mellem Vibe tjek, fælles valg, skala 1–5 og korte svar. Redigering står til venstre, og den interaktive forhåndsvisning står til højre. På mobil står de under hinanden. Vibe tjek har fem tegnede ansigter og faste, navngivne følelser. LUPs DM Sans/Space Grotesk, eksisterende temaer og statusfarver bevares.
 
 Spørgsmål er højst 200 tegn. Valg har 2–6 forskellige svarmuligheder på højst 100 tegn. Skalaen går fra Slet ikke til Helt med. Korte svar er højst 280 tegn og vises kun hos underviseren, som kan gennemgå dem før visning på tavlen.
 
