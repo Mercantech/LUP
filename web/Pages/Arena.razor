@@ -209,7 +209,7 @@
                 @if (_practice && _sandbox)
                 {
                     <button @onclick="ResetPractice" class="arena-back" title="Nulstil med R">Nulstil</button>
-                    <button @onclick="RefillPractice" class="arena-back">Fyld op</button>
+                    <button @onclick="RefillPractice" class="arena-back" data-arena-restore-focus>Fyld op</button>
                 }
                 @if (RemovablePlayers.Any())
                 {

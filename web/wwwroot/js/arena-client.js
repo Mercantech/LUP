@@ -1,4 +1,4 @@
-import { ArenaRenderer } from './arena-renderer.js?v=20261112-2';
+import { ArenaRenderer } from './arena-renderer.js?v=20261116-stability';
 import { createArenaAudio, audioAvatarForEvent } from './arena-audio.js?v=20261112-2';
 import { ArenaInputBuffer, arenaNeutralInput } from './arena-input.js?v=20261112-2';
 
@@ -10,6 +10,7 @@ const supported = new Set(['KeyA','KeyD','KeyW','KeyS','ArrowLeft','ArrowRight',
     'Space','KeyJ','KeyK','KeyL','KeyU','KeyI','ShiftLeft','ShiftRight']);
 let canvas, bridge, renderer, audio, socket, animation, inputTimer, resizeObserver;
 let heartbeat, openTimeout, reconnectTimer, reconnectAttempt = 0, lastMessage = 0;
+let lastMatchStateAt = null;
 let practice = false, disposed = true, phase = '', playerId = '', sequence = 0;
 let latest, previous, receivedAt = 0, previousAt = 0, lastSent = -Infinity;
 let inputPending = false, inputGeneration = 0;
@@ -38,6 +39,8 @@ export async function mount(element, reference, options) {
     on(document, 'keydown', () => void audio?.unlock(), { capture: true });
     on(document, 'click', event => {
         const toggle = event.target.closest?.('[data-arena-sound-toggle]');
+        if (event.detail > 0 && acceptsInput() &&
+            (toggle || event.target.closest?.('[data-arena-restore-focus]'))) focusCanvas();
         if (!toggle) return;
         const enabled = toggle.getAttribute('aria-pressed') !== 'true';
         saveSoundPreference(enabled);
@@ -82,6 +85,7 @@ export async function mount(element, reference, options) {
             audio?.suspend();
         } else {
             lastMessage = performance.now();
+            if (lastMatchStateAt !== null) lastMatchStateAt = lastMessage;
             void audio?.unlock();
         }
     });
@@ -120,9 +124,10 @@ export async function mount(element, reference, options) {
 }
 
 function canvasVisible() { return Boolean(canvas?.offsetWidth && canvas?.offsetHeight); }
+function isMatchPhase(value) { return value === 'countdown' || value === 'playing'; }
 function acceptsInput() {
     return !disposed && phase !== 'finished' &&
-        (practice || socket?.readyState === WebSocket.OPEN && ['countdown', 'playing'].includes(phase));
+        (practice || socket?.readyState === WebSocket.OPEN && isMatchPhase(phase));
 }
 function focusCanvas() { if (canvasVisible()) canvas.focus({ preventScroll: true }); }
 function focusAfterRender() { requestAnimationFrame(() => requestAnimationFrame(focusCanvas)); }
@@ -237,10 +242,10 @@ export function pushState(state) {
     phase = state.phase;
     if (oldPhase !== phase && !practice) {
         void call('PhaseChanged', state).then(() => {
-            if (['countdown', 'playing'].includes(phase)) focusAfterRender();
+            if (isMatchPhase(phase)) focusAfterRender();
         });
     }
-    if (oldPhase !== phase && ['countdown', 'playing'].includes(phase))
+    if (oldPhase !== phase && isMatchPhase(phase))
         void prepareBattle(state.stageId, state.fighters);
     void audio?.preload(state.fighters.map(fighter => fighter.avatarId));
     soundActions(state, previous);
@@ -253,6 +258,7 @@ export function pushState(state) {
 function stopSocketTimers() {
     clearTimeout(openTimeout);
     clearInterval(heartbeat);
+    lastMatchStateAt = null;
 }
 
 function removed(message) {
@@ -298,7 +304,10 @@ export function connect(url, id) {
         void call('ConnectionChanged', false);
         heartbeat = setInterval(() => {
             if (socket !== current) return;
-            if (!document.hidden && performance.now() - lastMessage > 9000) {
+            const now = performance.now();
+            // A pong confirms the socket can respond, even if game state has stalled.
+            if (!document.hidden && (now - lastMessage > 9000 ||
+                (lastMatchStateAt !== null && now - lastMatchStateAt > 9000))) {
                 current.close(4000, 'timeout');
                 return;
             }
@@ -311,9 +320,17 @@ export function connect(url, id) {
         let message;
         try { message = JSON.parse(event.data); } catch { return; }
         switch (message.type) {
-            case 'state': pushState(message.state); break;
+            case 'state': {
+                const state = message.state;
+                if (!isMatchPhase(state.phase)) lastMatchStateAt = null;
+                else if (lastMatchStateAt === null || !latest || state.tick > latest.tick)
+                    lastMatchStateAt = lastMessage;
+                pushState(state);
+                break;
+            }
             case 'room': {
                 const room = message.room;
+                lastMatchStateAt = isMatchPhase(room.phase) ? (lastMatchStateAt ?? lastMessage) : null;
                 if (room.phase === 'lobby') {
                     if (phase !== 'lobby') resetPresentation();
                     phase = 'lobby';

@@ -1,5 +1,7 @@
 const TICK_RATE = 60;
-const MAX_LEAD_TICKS = 1.5;
+const MAX_REMOTE_LEAD_TICKS = 1.5;
+// The server publishes at 20 Hz, every three simulation ticks.
+const MAX_LOCAL_LEAD_TICKS = 3;
 const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
 const number = value => Number.isFinite(value) ? value : 0;
 
@@ -11,8 +13,8 @@ function canBlend(before, after) {
         && Math.abs(before.x - after.x) <= 180 && Math.abs(before.y - after.y) <= 200;
 }
 
-function predict(item, ticks) {
-    const time = clamp(ticks, 0, MAX_LEAD_TICKS) / TICK_RATE;
+function predict(item, ticks, maxLeadTicks) {
+    const time = clamp(ticks, 0, maxLeadTicks) / TICK_RATE;
     if (!time || item.out || item.combat?.capturedBy) return item;
     return { ...item, x: item.x + number(item.vx) * time, y: item.y + (item.grounded ? 0 : number(item.vy) * time) };
 }
@@ -63,12 +65,12 @@ export class ArenaMotion {
 
         const age = Math.max(0, number(now) - number(receivedAt)) * TICK_RATE / 1000;
         const delay = clamp(2 + this.jitter * TICK_RATE / 1000, 2, 4);
-        const target = Math.min(newest.tick + MAX_LEAD_TICKS, newest.tick + age - delay);
+        const target = Math.min(newest.tick + MAX_REMOTE_LEAD_TICKS, newest.tick + age - delay);
         const step = clamp(number(elapsed), 0, .05) * TICK_RATE;
         if (this.clock === null) this.clock = target;
         else {
             const correction = (target - (this.clock + step)) * .24;
-            this.clock = Math.min(newest.tick + MAX_LEAD_TICKS,
+            this.clock = Math.min(newest.tick + MAX_REMOTE_LEAD_TICKS,
                 this.clock + clamp(step + correction, 0, step * 1.35));
         }
 
@@ -83,7 +85,7 @@ export class ArenaMotion {
             const before = lower[group].get(item.id);
             const after = upper[group].get(item.id);
             if (!canBlend(before, after) || !canBlend(after, item)) return item;
-            if (this.clock > newest.tick) return predict(item, this.clock - newest.tick);
+            if (this.clock > newest.tick) return predict(item, this.clock - newest.tick, MAX_REMOTE_LEAD_TICKS);
             return {
                 ...item, x: before.x + (after.x - before.x) * blend,
                 y: before.y + (after.y - before.y) * blend
@@ -91,7 +93,8 @@ export class ArenaMotion {
         };
         return {
             fighters: fighters.map(fighter => fighter.id === ownId
-                ? (!last || canBlend(last.fighters.get(fighter.id), fighter) ? predict(fighter, age) : fighter)
+                ? (!last || canBlend(last.fighters.get(fighter.id), fighter)
+                    ? predict(fighter, age, MAX_LOCAL_LEAD_TICKS) : fighter)
                 : sampleItem(fighter, 'fighters')),
             projectiles: projectiles.map(projectile => sampleItem(projectile, 'projectiles'))
         };

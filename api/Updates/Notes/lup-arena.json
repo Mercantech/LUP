@@ -1,7 +1,7 @@
 {
-  "date": "2026-11-12",
+  "date": "2026-11-16",
   "title": "Øv dine evner i LUP Arena",
-  "description": "Kom hurtigere ind i kampen, og få korte tastetryk med. På øvebanen kan du vælge en modstander, gentage et træk og nulstille med R. Figurerne siger deres egne replikker, og kampen slutter med en vinder- eller taberscene. Lydstyrken huskes, og værten kan fjerne inaktive spillere.",
+  "description": "Kom hurtigere ind i kampen, og få korte tastetryk med. På øvebanen kan du vælge en modstander, gentage et træk og nulstille med R. Figurerne siger deres egne replikker, og kampen slutter med en vinder- eller taberscene. Lydstyrken huskes, og værten kan fjerne inaktive spillere. Bevægelsen er mere jævn mellem netværksopdateringer, og Arena forsøger at genoprette forbindelsen, hvis kampdata stopper.",
   "authors": [
     "Kasper"
   ],
