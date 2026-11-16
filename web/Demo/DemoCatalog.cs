@@ -86,7 +86,7 @@ public static class DemoCatalog
     public static readonly Poll[] Polls =
     [
         new("H3 · 2026", "Hvad skal vi bruge mere tid på?", "Valg", ["API og requests", "Database og målinger", "Realtime med SignalR"], [4, 7, 3]),
-        new("Game Design", "Hvordan er du landet i dag?", "Stemning", ["Glad", "Klar", "Midt imellem", "Træt", "Presset"], [3, 6, 4, 2, 1])
+        new("Game Design", "Hvordan er du landet i dag?", "Vibe tjek", ["Glad", "Klar", "Midt imellem", "Træt", "Presset"], [3, 6, 4, 2, 1])
     ];
 
     public static readonly Score[] Highscores =

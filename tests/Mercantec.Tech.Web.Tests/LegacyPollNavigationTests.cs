@@ -24,6 +24,8 @@ public sealed class LegacyPollNavigationTests
 
         page.WaitForAssertion(() => Assert.Equal(api.SelectedHold, page.FindComponent<PollStudio>().Instance.FixedHoldId));
         Assert.Equal(api.SelectedHold, Assert.Single(page.FindComponent<PollStudio>().Instance.Holds).Id);
+        Assert.Contains(page.FindAll(".poll-format-picker button"), button => button.TextContent.Trim() == "Vibe tjek");
+        Assert.Equal("Vibe tjek", page.Find(".poll-format").TextContent.Trim());
         Assert.DoesNotContain("Et andet hold", page.Find(".poll-editor").TextContent);
         Assert.Contains(api.Requests, r => r == $"GET polls?holdId={api.SelectedHold}");
         Assert.DoesNotContain("GET polls", api.Requests);
@@ -33,6 +35,7 @@ public sealed class LegacyPollNavigationTests
 
         page.FindAll("button").Single(b => b.TextContent.Trim() == "Start afstemning").Click();
         page.WaitForAssertion(() => Assert.Equal(api.SelectedHold, api.Created?.HoldId));
+        Assert.Equal("mood", api.Created?.Kind);
         page.WaitForAssertion(() => Assert.EndsWith(expected, navigation.Uri));
     }
 
