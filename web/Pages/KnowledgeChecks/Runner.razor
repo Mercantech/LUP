@@ -7,30 +7,32 @@
 @implements IAsyncDisposable
 
 <PageTitle>Videnstjek · LUP</PageTitle>
-<header class="page-title">
-    <div>
-        <nav class="breadcrumbs" aria-label="Brødkrummer"><a href="@CatalogUrl">Alle videnstjek</a></nav>
-        <h1>Videnstjek</h1>
-    </div>
-</header>
-@if (ViewAs.IsActive)
-{
-    <p>Åbn Videnstjek fra elevens egen konto for at besvare spørgsmål eller se forsøg.</p>
-}
-else if (!Auth.IsAuthenticated)
-{
-    <p><a href="@Auth.LoginPath()">Log ind</a> for at åbne videnstjekket.</p>
-}
-else if (_failedScope is not null && _failedScope == Scope)
-{
-    <p role="alert">Videnstjek kunne ikke indlæses.</p>
-    <button class="secondary" type="button" @onclick="Retry">Prøv igen</button>
-}
-else if (_mountedScope != Scope)
-{
-    <p role="status">Henter videnstjek…</p>
-}
-<div @ref="_host" hidden="@(Scope is null || _mountedScope != Scope || _failedScope == Scope)"></div>
+<div class="lup-knowledge-route">
+    <header class="page-title lup-knowledge-route-header">
+        <div>
+            <nav class="breadcrumbs" aria-label="Brødkrummer"><a href="@CatalogUrl">Alle videnstjek</a></nav>
+            <h1>Videnstjek</h1>
+        </div>
+    </header>
+    @if (ViewAs.IsActive)
+    {
+        <p>Åbn Videnstjek fra elevens egen konto for at besvare spørgsmål eller se forsøg.</p>
+    }
+    else if (!Auth.IsAuthenticated)
+    {
+        <p><a href="@Auth.LoginPath()">Log ind</a> for at åbne videnstjekket.</p>
+    }
+    else if (_failedScope is not null && _failedScope == Scope)
+    {
+        <p role="alert">Videnstjek kunne ikke indlæses.</p>
+        <button class="secondary" type="button" @onclick="Retry">Prøv igen</button>
+    }
+    else if (_mountedScope != Scope)
+    {
+        <p role="status">Henter videnstjek…</p>
+    }
+    <div @ref="_host" hidden="@(Scope is null || _mountedScope != Scope || _failedScope == Scope)"></div>
+</div>
 
 @code {
     [Parameter] public Guid DistributionId { get; set; }

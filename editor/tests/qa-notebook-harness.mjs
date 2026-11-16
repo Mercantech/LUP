@@ -71,7 +71,10 @@ try {
     if (url.pathname === '/_qa/login') {
       const identity = identities.find(item => item.key === url.searchParams.get('user'));
       if (!identity) { response.writeHead(400).end('Choose pupil, peer, outsider or teacher.'); return; }
-      const target = url.searchParams.get('screen') === 'videnstjek' ? '/videnstjek?vis=oev' : identity.home;
+      const screen = url.searchParams.get('screen');
+      const publication = url.searchParams.get('publication');
+      const isQuiz = screen === 'quiz' && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(publication ?? '');
+      const target = isQuiz ? '/videnstjek/' + publication : screen === 'videnstjek' ? '/videnstjek?vis=oev' : identity.home;
       const requestedTheme = url.searchParams.get('theme');
       const theme = ['dark', 'light'].includes(requestedTheme) ? requestedTheme : null;
       response.setHeader('Content-Type', 'text/html;charset=utf-8');

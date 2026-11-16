@@ -103,20 +103,29 @@ internal static class KnowledgeCheckRules
         foreach (var answer in request.Answers)
         {
             if (answer is null || !lookup.TryGetValue(answer.QuestionId, out var question) || !seen.Add(answer.QuestionId)) return null;
-            var choices = answer.SelectedOptions ?? [];
-            var text = Trim(answer.Text);
-            if (question.Kind == Short)
-            {
-                if (text.Length > 1000 || choices.Length != 0) return null;
-                if (text.Length > 0) result.Add(new(answer.QuestionId, [], text));
-                continue;
-            }
-            if (text.Length != 0 || choices.Length > question.Options.Length || choices.Length != choices.Distinct().Count()
-                || choices.Any(index => index < 0 || index >= question.Options.Length)
-                || question.Kind != Multiple && choices.Length > 1) return null;
-            if (choices.Length > 0) result.Add(new(answer.QuestionId, choices.Order().ToArray(), null));
+            if (!TryNormalizeAnswer(question, answer, out var normalized)) return null;
+            if (normalized is not null) result.Add(normalized);
         }
         return result.ToArray();
+    }
+
+    public static bool TryNormalizeAnswer(KnowledgeCheckQuestion question, KnowledgeCheckAnswer answer,
+        out KnowledgeCheckAnswer? normalized)
+    {
+        normalized = null;
+        var choices = answer.SelectedOptions ?? [];
+        var text = Trim(answer.Text);
+        if (question.Kind == Short)
+        {
+            if (text.Length > 1000 || choices.Length != 0) return false;
+            if (text.Length > 0) normalized = new(answer.QuestionId, [], text);
+            return true;
+        }
+        if (text.Length != 0 || choices.Length > question.Options.Length || choices.Length != choices.Distinct().Count()
+            || choices.Any(index => index < 0 || index >= question.Options.Length)
+            || question.Kind != Multiple && choices.Length > 1) return false;
+        if (choices.Length > 0) normalized = new(answer.QuestionId, choices.Order().ToArray(), null);
+        return true;
     }
 
     public static StoredGrade Grade(KnowledgeCheckQuestion question, KnowledgeCheckAnswer answer)

@@ -41,6 +41,8 @@ public sealed record KnowledgeCheckAnswer(Guid QuestionId, int[] SelectedOptions
 
 public sealed record KnowledgeCheckSave(long Revision, int QuestionIndex, KnowledgeCheckAnswer[] Answers);
 
+public sealed record KnowledgeCheckCheck(long Revision, KnowledgeCheckAnswer Answer);
+
 public sealed record KnowledgeCheckSubmit(long Revision);
 
 public sealed record KnowledgeCheckLearnerQuestion(Guid Id, string Prompt, string Kind, string[] Options);
@@ -53,7 +55,8 @@ public sealed record KnowledgeCheckResult(Guid QuestionId, bool Correct, int[] C
 
 public sealed record KnowledgeCheckAttemptView(Guid Id, Guid PublicationId, string Status, long Revision, int QuestionIndex,
     KnowledgeCheckLearnerQuestion[] Questions, KnowledgeCheckAnswer[] Answers, int? Score, KnowledgeCheckResult[]? Results,
-    DateTime StartedAtUtc, DateTime? SubmittedAtUtc);
+    DateTime StartedAtUtc, DateTime? SubmittedAtUtc,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] KnowledgeCheckResult[]? CheckedResults = null);
 
 public sealed record KnowledgeCheckGrade(bool Correct, string? Comment);
 

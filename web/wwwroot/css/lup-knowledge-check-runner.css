@@ -1,12 +1,12 @@
 /* Hallmark · shape: app screen · genre: modern-minimal · theme: brand · redesign: full
- * signature: question progress linked to navigation · states: ready, saving, checking, submitted */
-/* Hallmark · pre-emit critique: the question and its choices lead, with progress available alongside on wide screens. */
+ * signature: scored answers open directly into feedback · states: ready, checking, correct, incorrect, submitted */
+/* Hallmark · pre-emit critique: the question stays first, with feedback beside its answer and the same action location after checking. */
 
 .lup-knowledge-player {
     max-width: 48rem;
     color: var(--ink, inherit);
     background: var(--paper, transparent);
-    border: 1px solid var(--rule, #bbc9da);
+    border: 1px solid var(--rule, var(--knowledge-fallback-rule));
     border-radius: 12px;
     padding: clamp(1rem, 4vw, 1.75rem);
     overflow-wrap: anywhere;
@@ -37,7 +37,7 @@
     width: 100%;
     height: .625rem;
     margin: .625rem 0 1.25rem;
-    accent-color: var(--blue, #3259bd);
+    accent-color: var(--blue, var(--knowledge-fallback-accent));
 }
 .lup-knowledge-prompt { margin: 0 0 1rem; font-size: 1.08rem; font-weight: 600; line-height: 1.65; }
 .lup-knowledge-prompt:focus-visible { outline: 2px solid var(--blue, currentColor); outline-offset: .25rem; }
@@ -50,7 +50,7 @@
     font-size: .875rem;
     padding: .65rem .8rem;
     margin-block: .5rem;
-    border: 1px solid var(--rule, #bbc9da);
+    border: 1px solid var(--rule, var(--knowledge-fallback-rule));
     border-radius: 8px;
     background-color: var(--bg, transparent);
 }
@@ -62,12 +62,12 @@
     gap: .75rem;
     align-items: start;
     padding: .75rem;
-    border: 1px solid var(--rule, #bbc9da);
+    border: 1px solid var(--rule, var(--knowledge-fallback-rule));
     border-radius: 8px;
     cursor: pointer;
 }
-.lup-knowledge-options label.is-selected { border-color: var(--blue, #3259bd); background: var(--tint, transparent); }
-.lup-knowledge-options input { width: 1rem; height: 1rem; margin: .25rem 0 0; accent-color: var(--blue, #3259bd); }
+.lup-knowledge-options label.is-selected { border-color: var(--blue, var(--knowledge-fallback-accent)); background: var(--tint, transparent); }
+.lup-knowledge-options input { width: 1rem; height: 1rem; margin: .25rem 0 0; accent-color: var(--blue, var(--knowledge-fallback-accent)); }
 .lup-knowledge-short { display: grid; gap: .35rem; }
 .lup-knowledge-short textarea {
     display: block;
@@ -75,93 +75,473 @@
     padding: .65rem;
     color: inherit;
     background: var(--paper, transparent);
-    border: 1px solid var(--rule, #bbc9da);
+    border: 1px solid var(--rule, var(--knowledge-fallback-rule));
     border-radius: 8px;
     resize: vertical;
     font: inherit;
 }
 .lup-knowledge-actions { margin: 1rem 0 .625rem; }
 .lup-knowledge-error {
-    border: 1px solid var(--rule, #bbc9da);
-    border-inline-start: 3px solid var(--danger, #b84949);
+    border: 1px solid var(--rule, var(--knowledge-fallback-rule));
+    border-inline-start: 3px solid var(--danger, var(--knowledge-fallback-danger));
     padding: .75rem;
     margin-block: .75rem;
 }
 .lup-knowledge-error button { margin-top: .2rem; }
 .lup-knowledge-review { margin: .75rem 0 0; padding-inline-start: 1.65rem; }
-.lup-knowledge-review > li { padding: .875rem 0; border-top: 1px solid var(--rule, #bbc9da); }
+.lup-knowledge-review > li { padding: .875rem 0; border-top: 1px solid var(--rule, var(--knowledge-fallback-rule)); }
 .lup-knowledge-review > li > p { margin: 0 0 .45rem; }
 .lup-knowledge-review > li .lup-knowledge-prompt { margin-bottom: .45rem; font-size: 1rem; }
 .lup-knowledge-option-explanations { list-style: none; padding: 0; margin: .65rem 0; display: grid; gap: .6rem; }
-.lup-knowledge-option-explanations li { padding-inline-start: .7rem; border-inline-start: 2px solid var(--rule, #bbc9da); }
+.lup-knowledge-option-explanations li { padding-inline-start: .7rem; border-inline-start: 2px solid var(--rule, var(--knowledge-fallback-rule)); }
 .lup-knowledge-option-explanations li p, .lup-knowledge-source p { margin: .18rem 0 0; }
 .lup-knowledge-correct, .lup-knowledge-incorrect { font-weight: 700; }
 .lup-knowledge-feedback { margin-top: .75rem; }
 
+.lup-knowledge-route:has(.is-practice) {
+    width: min(100%, 72rem);
+    margin-inline: auto;
+}
+
+.lup-knowledge-route:has(.is-practice) .lup-knowledge-route-header {
+    margin-block-end: .75rem;
+}
+
+.lup-knowledge-route:has(.is-practice) .lup-knowledge-route-header h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.lup-knowledge-route:has(.is-practice) .breadcrumbs {
+    margin: 0;
+}
+
+.lup-knowledge-route:has(.is-practice) .breadcrumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--blue);
+    font-size: .875rem;
+    text-underline-offset: .18em;
+}
+
+.lup-knowledge-route:has(.is-practice) a:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 3px;
+}
+
 .lup-knowledge-player.is-practice {
     --practice-ink: var(--ink);
     --practice-muted: var(--muted);
-    --practice-rule: var(--rule);
+    --practice-border: var(--rule);
+    --practice-strong-border: color-mix(in srgb, var(--muted) 78%, var(--rule));
     --practice-accent: var(--blue);
     --practice-tint: var(--tint);
-    --practice-answer: var(--green);
-    --practice-answer-tint: var(--green-tint);
     --practice-paper: var(--paper);
-    --practice-code: var(--bg);
-    max-width: 62rem;
+    --practice-surface: var(--bg);
+    --practice-pass: var(--lup-ready, var(--green));
+    --practice-pass-bg: var(--lup-ready-bg, var(--green-tint));
+    --practice-miss: var(--lup-danger, var(--orange));
+    --practice-miss-bg: var(--lup-danger-bg, var(--peach));
+    --practice-radius: .875rem;
+    --practice-padding: clamp(1rem, 3vw, 2rem);
+    --practice-speed: 150ms;
     container-type: inline-size;
+    max-width: none;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.is-practice .lup-knowledge-header,
+.is-practice .lup-knowledge-question,
+.is-practice .lup-knowledge-result,
+.is-practice .lup-knowledge-intro {
+    border: 1px solid var(--practice-border);
+    border-radius: var(--practice-radius);
+    background: var(--practice-paper);
+}
+
+.is-practice .lup-knowledge-header {
+    position: relative;
+    margin: 0 0 1rem;
+    padding: 1.25rem var(--practice-padding);
+    border-block-start: 3px solid var(--practice-accent);
+}
+
+.is-practice .lup-knowledge-header h2 {
+    min-width: 0;
+    color: var(--practice-ink);
+    font-size: clamp(1.4rem, 2.5vw, 1.875rem);
+    line-height: 1.2;
+    text-wrap: balance;
+}
+
+.is-practice .lup-knowledge-header .lup-knowledge-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem 0;
+    margin-top: .55rem;
+    color: var(--practice-muted);
+    font-size: .875rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.is-practice .lup-knowledge-header .lup-knowledge-meta span + span {
+    margin-inline-start: .55rem;
+    padding-inline-start: .55rem;
+    border-inline-start: 1px solid var(--practice-border);
+}
+
+.is-practice .lup-knowledge-intro,
+.is-practice .lup-knowledge-result {
+    padding: var(--practice-padding);
+}
+
+.is-practice .lup-knowledge-intro {
+    max-width: 44rem;
+}
+
+.is-practice .lup-knowledge-intro .lup-knowledge-description {
+    max-width: 62ch;
+}
+
+.lup-knowledge-intro-note {
+    max-width: 62ch;
+    color: var(--practice-muted);
+    font-size: .9375rem;
+}
+
+.is-practice .lup-knowledge-intro > .action {
+    min-height: 2.75rem;
+    margin-block-start: .35rem;
+    font-size: .9rem;
+}
+
+.is-practice .lup-knowledge-attempt-progress {
+    margin-block-end: 1rem;
+    padding: .85rem 1rem 1rem;
+    border-block-end: 1px solid var(--practice-border);
+}
+
+.is-practice .lup-knowledge-topline {
+    gap: .35rem .85rem;
+    margin: 0;
+    color: var(--practice-muted);
+    font-size: .875rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.is-practice .lup-knowledge-topline > :first-child {
+    color: var(--practice-ink);
+    font-weight: 700;
+}
+
+.is-practice .lup-knowledge-progress {
+    height: .45rem;
+    margin: .45rem 0 0;
+    appearance: none;
+    border: 0;
+    border-radius: 1rem;
+    overflow: clip;
+    background: var(--practice-tint);
+    accent-color: var(--practice-accent);
+}
+
+.is-practice .lup-knowledge-progress::-webkit-progress-bar {
+    border-radius: 1rem;
+    background: var(--practice-tint);
+}
+
+.is-practice .lup-knowledge-progress::-webkit-progress-value {
+    border-radius: 1rem;
+    background: var(--practice-accent);
+}
+
+.is-practice .lup-knowledge-progress::-moz-progress-bar {
+    border-radius: 1rem;
+    background: var(--practice-accent);
 }
 
 .lup-knowledge-workspace {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
-.lup-knowledge-question { min-width: 0; }
-.is-practice .lup-knowledge-topline > :first-child { color: var(--practice-ink); font-weight: 700; }
-.is-practice .lup-knowledge-topline label { font-variant-numeric: tabular-nums; }
-.is-practice fieldset label { grid-template-columns: auto auto minmax(0, 1fr); }
-.is-practice fieldset label:has(input:focus-visible) { outline: 2px solid var(--practice-accent); outline-offset: 2px; }
-.is-practice :is(button, a):focus-visible { outline: 2px solid var(--practice-accent); outline-offset: 3px; }
-.is-practice .lup-knowledge-short textarea { border-color: var(--practice-muted); }
+.is-practice .lup-knowledge-question {
+    min-width: 0;
+    padding: var(--practice-padding);
+}
+
+.is-practice .lup-knowledge-prompt {
+    max-width: 73ch;
+    margin-block-end: 1.3rem;
+    color: var(--practice-ink);
+    font-size: clamp(1.15rem, 2.1vw, 1.55rem);
+    line-height: 1.45;
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+    scroll-margin-block-start: 6rem;
+}
+
+.is-practice .lup-knowledge-text code {
+    color: var(--practice-ink);
+}
+
+.is-practice .lup-knowledge-options {
+    gap: .65rem;
+}
+
+.is-practice .lup-knowledge-options legend {
+    margin-block-end: .55rem;
+    color: var(--practice-muted);
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+.is-practice .lup-knowledge-options label {
+    grid-template-columns: 1.15rem 1.75rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .65rem;
+    min-height: 3.5rem;
+    padding: .7rem .85rem;
+    border-color: var(--practice-strong-border);
+    border-radius: .65rem;
+    color: var(--practice-ink);
+    line-height: 1.45;
+    background: var(--practice-paper);
+    transition: background-color var(--practice-speed), border-color var(--practice-speed);
+}
+
+.is-practice .lup-knowledge-options input {
+    margin: 0;
+}
+
+.is-practice .lup-knowledge-options:not([disabled]) label:hover,
+.is-practice .lup-knowledge-options label.is-selected {
+    border-color: var(--practice-accent);
+    background: var(--practice-tint);
+}
+
+.is-practice .lup-knowledge-options[disabled] label {
+    cursor: default;
+}
+
+.is-practice .lup-knowledge-options label.is-correct,
+.is-practice .lup-knowledge-options label.is-incorrect {
+    border-color: var(--practice-state-ink);
+    background: var(--practice-state-bg);
+}
+
+.is-practice :is(label, button, .lup-knowledge-answer-feedback).is-correct {
+    --practice-state-ink: var(--practice-pass);
+    --practice-state-bg: var(--practice-pass-bg);
+}
+
+.is-practice :is(label, button, .lup-knowledge-answer-feedback).is-incorrect {
+    --practice-state-ink: var(--practice-miss);
+    --practice-state-bg: var(--practice-miss-bg);
+}
+
+.is-practice .lup-knowledge-option-feedback {
+    color: var(--practice-state-ink, var(--practice-ink));
+    font-weight: 700;
+}
+
+.is-practice :is(button, a):focus-visible,
+.is-practice .lup-knowledge-options label:has(input:focus-visible),
+.is-practice .lup-knowledge-feedback-header h3:focus-visible,
+.is-practice .lup-knowledge-extra-explanations summary:focus-visible {
+    outline: 2px solid var(--practice-accent);
+    outline-offset: 3px;
+}
+
+.is-practice .lup-knowledge-short textarea {
+    border-color: var(--practice-muted);
+    font-size: 1rem;
+}
+
+.is-practice .lup-knowledge-short textarea:disabled {
+    color: var(--practice-ink);
+    background: var(--practice-surface);
+}
+
 .is-practice .lup-knowledge-actions button,
 .is-practice .lup-knowledge-review-filters button,
-.is-practice .lup-knowledge-code-block button { min-height: 2.75rem; }
+.is-practice .lup-knowledge-code-block button {
+    min-height: 2.75rem;
+}
+
+.is-practice .lup-knowledge-actions {
+    gap: .55rem;
+    margin-block-start: 1.35rem;
+}
+
+.is-practice .lup-knowledge-actions .action {
+    margin-inline-start: auto;
+    min-width: 7.5rem;
+    padding-inline: 1.1rem;
+    font-size: .9rem;
+}
+
+.is-practice .lup-knowledge-actions .action:disabled {
+    color: var(--practice-muted);
+    background: var(--practice-surface);
+    box-shadow: inset 0 0 0 1px var(--practice-border);
+    cursor: not-allowed;
+}
+
+.is-practice .lup-knowledge-actions .secondary:disabled {
+    color: var(--practice-muted);
+    background: var(--practice-surface);
+    cursor: not-allowed;
+}
+
+.is-practice :is(.action, .secondary):active:not(:disabled) {
+    box-shadow: inset 0 0 0 2px var(--practice-strong-border);
+}
 
 .is-practice kbd {
-    display: inline-block;
-    min-width: 1.35em;
+    display: inline-grid;
+    min-width: 1.4em;
     padding: .05em .25em;
-    text-align: center;
-    border: 1px solid var(--practice-rule);
-    border-radius: .25rem;
+    place-content: center;
+    border: 1px solid var(--practice-border);
+    border-radius: .3rem;
     color: var(--practice-ink);
-    background: var(--practice-code);
+    background: var(--practice-surface);
     font-size: .82em;
 }
 
-.lup-knowledge-key-hint, .lup-knowledge-copy-status {
+.is-practice .lup-knowledge-option-letter {
+    min-height: 1.75rem;
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+.is-practice .lup-knowledge-key-hint,
+.is-practice .lup-knowledge-copy-status {
     color: var(--practice-muted);
     font-size: .875rem;
     font-weight: 400;
+    font-variant-numeric: tabular-nums;
 }
 
-.lup-knowledge-code-block { display: block; margin-block: .5rem; }
-.lup-knowledge-code-block .lup-knowledge-code { margin-block-start: 0; white-space: pre-wrap; }
-.lup-knowledge-copy-status { margin-inline-start: .65rem; }
-
-.lup-knowledge-question-nav {
-    padding-block-start: 1rem;
-    border-block-start: 1px solid var(--practice-rule);
+.lup-knowledge-code-block {
+    display: block;
+    margin-block: .65rem .35rem;
 }
 
-.lup-knowledge-question-nav h3 { margin: 0 0 .75rem; font-size: .95rem; }
+.lup-knowledge-code-block .lup-knowledge-code {
+    margin-block-start: 0;
+    padding: .9rem 1rem;
+    white-space: pre-wrap;
+}
+
+.lup-knowledge-copy-status {
+    margin-inline-start: .65rem;
+}
+
+.lup-knowledge-answer-feedback {
+    margin-block-start: 1.1rem;
+    padding: .9rem 1rem;
+    border: 1px solid var(--practice-state-ink, var(--practice-border));
+    border-radius: .65rem;
+    color: var(--practice-ink);
+    background: var(--practice-state-bg, var(--practice-surface));
+    scroll-margin-block-start: 6rem;
+    animation: lup-knowledge-feedback-in 170ms ease-out;
+}
+
+@keyframes lup-knowledge-feedback-in {
+    from { opacity: .65; transform: translateY(.22rem); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.lup-knowledge-feedback-header {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin-block-end: .55rem;
+    color: var(--practice-state-ink, var(--practice-ink));
+}
+
+.lup-knowledge-feedback-header h3 {
+    margin: 0;
+    color: inherit;
+    font-size: 1.2rem;
+    scroll-margin-block-start: 6rem;
+}
+
+.lup-knowledge-feedback-mark {
+    display: inline-grid;
+    flex: 0 0 1.65rem;
+    width: 1.65rem;
+    height: 1.65rem;
+    place-content: center;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-weight: 700;
+}
+
+.lup-knowledge-feedback-body {
+    max-width: 69ch;
+    overflow-wrap: anywhere;
+}
+
+.lup-knowledge-answer-feedback p:last-child {
+    margin-block-end: 0;
+}
+
+.lup-knowledge-answer-feedback .lup-knowledge-source {
+    margin-block-start: .75rem;
+}
+
+.lup-knowledge-answer-feedback .lup-knowledge-source a {
+    text-underline-offset: .18em;
+}
+
+.lup-knowledge-extra-explanations {
+    margin-block: .45rem;
+}
+
+.lup-knowledge-extra-explanations summary {
+    min-height: 2.75rem;
+    padding-block: .65rem;
+    color: var(--practice-accent);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.lup-knowledge-extra-explanations .lup-knowledge-option-explanations {
+    margin-block-start: 0;
+}
+
+.is-practice .lup-knowledge-question-nav {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--practice-border);
+    border-radius: var(--practice-radius);
+    background: color-mix(in srgb, var(--practice-paper) 65%, var(--practice-surface));
+}
+
+.lup-knowledge-question-nav h3 {
+    margin: 0 0 .7rem;
+    color: var(--practice-ink);
+    font-size: 1rem;
+}
+
 .lup-knowledge-question-nav ol {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
-    gap: .4rem;
+    gap: .45rem;
     max-width: 24rem;
     margin: 0;
     padding: 0;
@@ -177,10 +557,10 @@
     min-width: 2.75rem;
     min-height: 2.75rem;
     padding: .125rem;
-    border: 1px solid var(--practice-rule);
+    border: 1px solid var(--practice-strong-border);
     border-radius: .5rem;
     color: var(--practice-ink);
-    background: var(--practice-paper);
+    background: var(--practice-surface);
     font: inherit;
     font-size: .875rem;
     font-weight: 650;
@@ -188,26 +568,144 @@
     cursor: pointer;
 }
 
-.lup-knowledge-question-nav button:disabled { cursor: default; }
-.lup-knowledge-question-nav button.is-answered { color: var(--practice-answer); background: var(--practice-answer-tint); }
-.lup-knowledge-question-nav button[aria-current="step"],
-.lup-knowledge-question-nav button:hover:not(:disabled) { border-color: var(--practice-accent); }
-.lup-knowledge-question-nav button[aria-current="step"] { box-shadow: inset 0 0 0 1px var(--practice-accent); }
-.lup-knowledge-question-nav button span { font-size: .78em; }
+.lup-knowledge-question-nav button:disabled {
+    cursor: default;
+}
 
-.lup-knowledge-review-filters { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .75rem; }
+.lup-knowledge-question-nav button.is-answered {
+    color: var(--practice-state-ink, var(--practice-ink));
+    background: var(--practice-state-bg, var(--practice-tint));
+}
+
+.lup-knowledge-question-nav button.is-in-progress {
+    border-style: dashed;
+}
+
+.lup-knowledge-question-nav button[aria-current="step"],
+.lup-knowledge-question-nav button:hover:not(:disabled) {
+    border-color: var(--practice-accent);
+}
+
+.lup-knowledge-question-nav button[aria-current="step"] {
+    box-shadow: inset 0 0 0 1px var(--practice-accent);
+}
+
+.lup-knowledge-question-nav button span {
+    font-size: .78em;
+}
+
+.lup-knowledge-result-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: .75rem 1.5rem;
+    margin-block-end: 1.2rem;
+    padding-block-end: 1.2rem;
+    border-block-end: 1px solid var(--practice-border);
+}
+
+.is-practice .lup-knowledge-result > h3,
+.lup-knowledge-result-heading h3 {
+    margin: 0;
+    color: var(--practice-ink);
+    font-size: clamp(1.45rem, 3.25vw, 2rem);
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+.lup-knowledge-result-totals {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem 1rem;
+    margin: 0;
+    color: var(--practice-muted);
+    font-size: .875rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.lup-knowledge-result-totals > div {
+    display: flex;
+    align-items: baseline;
+    gap: .45rem;
+    padding: .35rem .55rem;
+    border-radius: .35rem;
+}
+
+.lup-knowledge-result-totals > .is-correct {
+    color: var(--practice-pass);
+    background: var(--practice-pass-bg);
+}
+
+.lup-knowledge-result-totals > .is-incorrect {
+    color: var(--practice-miss);
+    background: var(--practice-miss-bg);
+}
+
+.lup-knowledge-result-totals dd {
+    margin: 0;
+    font-weight: 700;
+}
+
+.lup-knowledge-review-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-block: .75rem;
+}
+
 .lup-knowledge-review-filters button[aria-pressed="true"] {
     border-color: var(--practice-accent);
     color: var(--practice-accent);
     background: var(--practice-tint);
 }
 
-@container (min-width: 44rem) {
-    .lup-knowledge-workspace { grid-template-columns: minmax(0, 1fr) 11.5rem; }
-    .lup-knowledge-question-nav {
-        padding-block-start: 0;
-        padding-inline-start: 1rem;
-        border-block-start: 0;
-        border-inline-start: 1px solid var(--practice-rule);
+.is-practice .lup-knowledge-result .lup-knowledge-review > li {
+    padding-block: 1rem;
+}
+
+.is-practice .lup-knowledge-result .lup-knowledge-review .lup-knowledge-correct {
+    color: var(--practice-pass);
+}
+
+.is-practice .lup-knowledge-result .lup-knowledge-review .lup-knowledge-incorrect {
+    color: var(--practice-miss);
+}
+
+@container (min-width: 47rem) {
+    .lup-knowledge-workspace {
+        grid-template-columns: minmax(0, 1fr) 15rem;
+    }
+}
+
+@media (max-width: 460px) {
+    .is-practice .lup-knowledge-options label {
+        gap: .45rem;
+        padding-inline: .6rem;
+    }
+
+    .is-practice .lup-knowledge-actions {
+        display: grid;
+        grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    }
+
+    .is-practice .lup-knowledge-actions .action {
+        min-width: 0;
+        margin-inline-start: 0;
+    }
+
+    .is-practice .lup-knowledge-actions .action:only-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .is-practice .lup-knowledge-options label {
+        transition: none;
+    }
+
+    .lup-knowledge-answer-feedback {
+        animation: none;
     }
 }

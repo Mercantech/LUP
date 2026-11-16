@@ -68,13 +68,23 @@ public sealed partial class KnowledgeChecksController
         var answers = NormalizeAnswers(questions, request);
         if (answers is null) return BadRequest(new { error = "invalid_answer" });
         var order = questions.Select((question, index) => (question.Id, index)).ToDictionary(row => row.Id, row => row.index);
-        var json = Write(answers.OrderBy(answer => order[answer.QuestionId]).ToArray());
 
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         if (!await LockPublication(id, activeOnly: true, ct)) return Closed();
         var attempt = await OwnedAttempt(id, attemptId, sub).SingleOrDefaultAsync(ct);
         if (attempt is null) return NotFound();
         if (attempt.Status != Started) return AttemptChanged();
+        if (HasImmediateFeedback(publication))
+        {
+            var checkedIds = Read<StoredGrade>(attempt.GradesJson).Select(grade => grade.QuestionId).ToHashSet();
+            if (checkedIds.Count > 0)
+            {
+                // All clients of this attempt share the checked answers, including an older embedded runner.
+                var locked = Read<KnowledgeCheckAnswer>(attempt.AnswersJson).Where(answer => checkedIds.Contains(answer.QuestionId));
+                answers = answers.Where(answer => !checkedIds.Contains(answer.QuestionId)).Concat(locked).ToArray();
+            }
+        }
+        var json = Write(answers.OrderBy(answer => order[answer.QuestionId]).ToArray());
         if (attempt.AnswersJson != json || request.QuestionIndex != attempt.QuestionIndex)
         {
             if (attempt.Revision != request.Revision) return AttemptChanged();
@@ -83,6 +93,53 @@ public sealed partial class KnowledgeChecksController
             attempt.Revision++;
             await db.SaveChangesAsync(ct);
         }
+        await transaction.CommitAsync(ct);
+        return Ok(AttemptView(publication, attempt));
+    }
+
+    [HttpPost("publications/{id:guid}/attempts/{attemptId:guid}/check")]
+    [RequestSizeLimit(16 * 1024)]
+    public async Task<IActionResult> CheckAnswer(Guid id, Guid attemptId, KnowledgeCheckCheck request, [FromQuery] Guid? pageId,
+        [FromQuery] string? blockId, CancellationToken ct)
+    {
+        if (UserClaims.GetSub(User) is not Guid sub) return Unauthorized();
+        var publication = await GetVisiblePublication(id, pageId, blockId, ct);
+        if (publication is null) return NotFound();
+        if (!HasImmediateFeedback(publication)) return Forbid();
+
+        var questions = Read<KnowledgeCheckQuestion>(publication.Version.QuestionsJson);
+        var questionIndex = Array.FindIndex(questions, question => question.Id == request.Answer?.QuestionId);
+        if (questionIndex < 0 || request.Answer is null || questions[questionIndex].ManualGrading
+            || !TryNormalizeAnswer(questions[questionIndex], request.Answer, out var answer) || answer is null)
+            return BadRequest(new { error = "invalid_answer" });
+
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        if (!await LockPublication(id, activeOnly: true, ct)) return Closed();
+        var attempt = await OwnedAttempt(id, attemptId, sub).SingleOrDefaultAsync(ct);
+        if (attempt is null) return NotFound();
+        if (attempt.Status != Started) return AttemptChanged();
+
+        // During a free attempt, GradesJson holds only the questions already checked.
+        var checkedGrades = Read<StoredGrade>(attempt.GradesJson);
+        var answers = Read<KnowledgeCheckAnswer>(attempt.AnswersJson).ToDictionary(item => item.QuestionId);
+        if (checkedGrades.Any(grade => grade.QuestionId == answer.QuestionId))
+        {
+            var locked = answers[answer.QuestionId];
+            if (locked.Text != answer.Text || !locked.SelectedOptions.SequenceEqual(answer.SelectedOptions))
+                return AttemptChanged();
+        }
+        else
+        {
+            if (attempt.Revision != request.Revision) return AttemptChanged();
+            answers[answer.QuestionId] = answer;
+            attempt.AnswersJson = Write(questions.Where(question => answers.ContainsKey(question.Id))
+                .Select(question => answers[question.Id]).ToArray());
+            attempt.GradesJson = Write(checkedGrades.Append(Grade(questions[questionIndex], answer)).ToArray());
+            attempt.QuestionIndex = questionIndex;
+            attempt.Revision++;
+            await db.SaveChangesAsync(ct);
+        }
+
         await transaction.CommitAsync(ct);
         return Ok(AttemptView(publication, attempt));
     }
@@ -131,16 +188,27 @@ public sealed partial class KnowledgeChecksController
     {
         var questions = Read<KnowledgeCheckQuestion>(publication.Version.QuestionsJson);
         var showResults = attempt.Status == Graded && CanSeeFeedback(publication);
-        var grades = showResults ? Read<StoredGrade>(attempt.GradesJson).ToDictionary(grade => grade.QuestionId) : null;
+        var showChecks = attempt.Status == Started && HasImmediateFeedback(publication);
+        var grades = showResults || showChecks
+            ? Read<StoredGrade>(attempt.GradesJson).ToDictionary(grade => grade.QuestionId)
+            : null;
         return new(attempt.Id, publication.Id, attempt.Status, attempt.Revision, attempt.QuestionIndex,
             questions.Select(question => new KnowledgeCheckLearnerQuestion(question.Id, question.Prompt, question.Kind, question.Options)).ToArray(),
             Read<KnowledgeCheckAnswer>(attempt.AnswersJson), showResults ? attempt.Score : null,
-            grades is null ? null : questions.Select(question => new KnowledgeCheckResult(question.Id,
-                grades[question.Id].Correct == true, question.CorrectOptions, question.AcceptedAnswers,
-                question.Explanation, question.LearnMoreUrl, grades[question.Id].Comment,
-                question.OptionExplanations, question.LearnMoreTitle, question.LearnMoreDescription)).ToArray(),
-            attempt.StartedAtUtc, attempt.SubmittedAtUtc);
+            showResults ? questions.Select(question => Result(question, grades![question.Id])).ToArray() : null,
+            attempt.StartedAtUtc, attempt.SubmittedAtUtc,
+            showChecks && grades is { Count: > 0 }
+                ? questions.Where(question => grades.ContainsKey(question.Id)).Select(question => Result(question, grades[question.Id])).ToArray()
+                : null);
     }
+
+    private static bool HasImmediateFeedback(KnowledgeCheckPublication publication) =>
+        publication.HoldId is null && publication.FeedbackMode == AfterSubmit;
+
+    private static KnowledgeCheckResult Result(KnowledgeCheckQuestion question, StoredGrade grade) =>
+        new(question.Id, grade.Correct == true, question.CorrectOptions, question.AcceptedAnswers,
+            question.Explanation, question.LearnMoreUrl, grade.Comment, question.OptionExplanations,
+            question.LearnMoreTitle, question.LearnMoreDescription);
 
     private ConflictObjectResult Closed() => Conflict(new { error = "publication_closed" });
     private ConflictObjectResult AttemptChanged() => Conflict(new { error = "attempt_changed" });

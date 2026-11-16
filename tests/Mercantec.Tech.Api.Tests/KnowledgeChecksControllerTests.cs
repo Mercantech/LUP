@@ -140,6 +140,100 @@ public sealed class KnowledgeChecksControllerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task CheckedFreeAnswersArePrivatePersistentAndCannotBeChangedByAutosave()
+    {
+        var first = Choice() with
+        {
+            Kind = "multiple", Options = ["A", "B", "C"], CorrectOptions = [1, 2],
+            Explanation = "Forklarer det kontrollerede svar",
+            OptionExplanations = ["Kun A", "Kun B", "Kun C"],
+            LearnMoreUrl = "https://example.com/forklaring",
+            LearnMoreTitle = "Læs om spørgsmålet"
+        };
+        var second = Question("short", accepted: ["æble og pære", "UNIKT_ANDENT_FACIT"]) with { Explanation = "HEMMELIG_FORKLARING" };
+        var teacher = As(_teacher, true);
+        var draft = Read<KnowledgeCheckDraftView>(await teacher.Create(Draft(first, second), default));
+        var publication = Read<KnowledgeCheckPublicationView>(await teacher.Publish(draft.Id, new(null, null, "after-submit"), default));
+        var student = As(_student);
+        var attempt = Read<KnowledgeCheckAttemptView>(await student.StartAttempt(publication.Id, new(), null, null, default));
+        Assert.Null(attempt.CheckedResults);
+        var selected = new KnowledgeCheckAnswer(first.Id, [2, 0], null);
+        var request = new KnowledgeCheckCheck(attempt.Revision, selected);
+        Assert.IsType<NotFoundResult>(await As(_peer).CheckAnswer(publication.Id, attempt.Id, request, null, null, default));
+        Assert.IsType<NotFoundResult>(await student.CheckAnswer(publication.Id, attempt.Id, request,
+            Guid.NewGuid(), "unbound-block", default));
+        Assert.IsType<BadRequestObjectResult>(await student.CheckAnswer(publication.Id, attempt.Id,
+            request with { Answer = selected with { SelectedOptions = [] } }, null, null, default));
+
+        var checkedAttempt = Read<KnowledgeCheckAttemptView>(await student.CheckAnswer(publication.Id, attempt.Id, request, null, null, default));
+        Assert.Equal("started", checkedAttempt.Status);
+        Assert.Equal(attempt.Revision + 1, checkedAttempt.Revision);
+        Assert.Null(checkedAttempt.Score);
+        Assert.Null(checkedAttempt.Results);
+        var result = Assert.Single(checkedAttempt.CheckedResults!);
+        Assert.Equal(first.Id, result.QuestionId);
+        Assert.False(result.Correct);
+        Assert.Equal(first.CorrectOptions, result.CorrectOptions);
+        Assert.Equal(first.OptionExplanations, result.OptionExplanations);
+        Assert.Equal(first.LearnMoreTitle, result.LearnMoreTitle);
+        var response = JsonSerializer.Serialize(checkedAttempt);
+        Assert.DoesNotContain(second.Explanation, response, StringComparison.Ordinal);
+        Assert.DoesNotContain("UNIKT_ANDENT_FACIT", response, StringComparison.Ordinal);
+
+        var replay = Read<KnowledgeCheckAttemptView>(await student.CheckAnswer(publication.Id, attempt.Id,
+            request with { Answer = selected with { SelectedOptions = [0, 2] } }, null, null, default));
+        Assert.Equal(checkedAttempt.Revision, replay.Revision);
+        Assert.IsType<ConflictObjectResult>(await student.CheckAnswer(publication.Id, attempt.Id,
+            request with { Revision = replay.Revision, Answer = selected with { SelectedOptions = [1, 2] } }, null, null, default));
+        var oldClientRetry = Read<KnowledgeCheckAttemptView>(await student.SaveAttempt(publication.Id, attempt.Id,
+            new(attempt.Revision, 0, []), null, null, default));
+        Assert.Equal(replay.Revision, oldClientRetry.Revision);
+        Assert.Equal(new[] { 0, 2 }, Assert.Single(oldClientRetry.Answers).SelectedOptions);
+
+        var otherAnswer = new KnowledgeCheckAnswer(second.Id, [], "  ÆBLE  OG  PÆRE  ");
+        Assert.IsType<ConflictObjectResult>(await student.CheckAnswer(publication.Id, attempt.Id,
+            new(attempt.Revision, otherAnswer), null, null, default));
+        var changed = new KnowledgeCheckSave(replay.Revision, 1, [selected with { SelectedOptions = [1, 2] }, otherAnswer]);
+        var saved = Read<KnowledgeCheckAttemptView>(await student.SaveAttempt(publication.Id, attempt.Id, changed, null, null, default));
+        Assert.Equal(new[] { 0, 2 }, saved.Answers[0].SelectedOptions);
+        Assert.False(Assert.Single(saved.CheckedResults!).Correct);
+        Assert.Equal(1, saved.QuestionIndex);
+
+        var resumed = Read<KnowledgeCheckAttemptView>(await student.GetAttempt(publication.Id, attempt.Id, null, null, default));
+        Assert.Equal(first.Id, Assert.Single(resumed.CheckedResults!).QuestionId);
+        var secondChecked = Read<KnowledgeCheckAttemptView>(await student.CheckAnswer(publication.Id, attempt.Id,
+            new(resumed.Revision, otherAnswer), null, null, default));
+        Assert.Equal(2, secondChecked.CheckedResults!.Length);
+        Assert.True(secondChecked.CheckedResults[1].Correct);
+        var submitted = Read<KnowledgeCheckAttemptView>(await student.SubmitAttempt(publication.Id, attempt.Id,
+            new(secondChecked.Revision), null, null, default));
+        Assert.Equal(1, submitted.Score);
+        Assert.Null(submitted.CheckedResults);
+        Assert.Equal(2, submitted.Results!.Length);
+        Assert.False(submitted.Results[0].Correct);
+    }
+
+    [Theory]
+    [InlineData("after-submit")]
+    [InlineData("manual")]
+    public async Task HoldAttemptsCannotCheckIndividualAnswers(string feedbackMode)
+    {
+        var question = Choice();
+        var teacher = As(_teacher, true);
+        var draft = Read<KnowledgeCheckDraftView>(await teacher.Create(Draft(question), default));
+        var hold = Read<KnowledgeCheckPublicationView>(await teacher.Publish(draft.Id, new(_hold, 1, feedbackMode), default));
+        var student = As(_student);
+        var attempt = Read<KnowledgeCheckAttemptView>(await student.StartAttempt(hold.Id, new(), null, null, default));
+        Assert.IsType<ForbidResult>(await student.CheckAnswer(hold.Id, attempt.Id,
+            new(attempt.Revision, new(question.Id, [0], null)), null, null, default));
+        var resumed = Read<KnowledgeCheckAttemptView>(await student.GetAttempt(hold.Id, attempt.Id, null, null, default));
+        Assert.Equal(attempt.Revision, resumed.Revision);
+        Assert.Empty(resumed.Answers);
+        Assert.Null(resumed.CheckedResults);
+        Assert.Null(resumed.Results);
+    }
+
+    [Fact]
     public async Task VersionAndAttemptsRemainStableAcrossRepublishRetrialAndClose()
     {
         var question = Choice() with
