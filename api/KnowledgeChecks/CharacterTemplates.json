@@ -1418,6 +1418,864 @@
           }
         ]
       }
+    },
+    {
+      "key": "raymond-forbind-tabeller",
+      "characterSlug": "raymond",
+      "intro": "Jeg har caféens kundeliste i den ene hånd og ordresedlerne i den anden. Følg nøglerne med mig, så finder vi ud af, hvem der har bestilt hvad.",
+      "difficulty": "Mellem",
+      "draft": {
+        "title": "Forbind caféens tabeller",
+        "topic": "SQL",
+        "description": "Følg primær- og fremmednøgler, vælg mellem INNER JOIN og LEFT JOIN, og undersøg hvem der endnu ikke har bestilt.",
+        "estimatedMinutes": 10,
+        "questions": [
+          {
+            "id": "476843d5-7cce-441d-9a70-affc770def2a",
+            "kind": "single",
+            "prompt": "I caféens database har `customers` og `orders` hver en kolonne `id` som primærnøgle. Hvilken forbindelse passer, når én kunde kan have flere ordrer?",
+            "options": [
+              "`orders.id` henviser til `customers.id`",
+              "`orders.customer_id` henviser til `customers.id`",
+              "`customers.order_id` henviser til `orders.id`",
+              "`orders.customer_id` henviser til `customers.name`"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "`customers.id` identificerer én kunde. `orders.customer_id` er fremmednøglen på mange-siden, så flere ordrer kan pege på den samme kunde.",
+            "optionExplanations": [
+              "Ordrenummeret identificerer ordren. Det ville kun kunne pege på kunden én gang pr. kunde, fordi ordrenummeret er unikt.",
+              "Hver ordre gemmer ID’et på sin kunde. Flere rækker i `orders` kan have samme `customer_id`.",
+              "En enkelt `order_id` hos kunden kan kun pege på én ordre. Vi vil kunne gemme flere.",
+              "Navne kan gentages og ændres. Caféen bruger det entydige kunde-ID."
+            ],
+            "learnMoreUrl": "/characters/raymond#character-gallery-title",
+            "learnMoreTitle": "Nøgler og relationer",
+            "learnMoreDescription": "Find kortet om primærnøgler, fremmednøgler og én-til-mange i Raymonds galleri."
+          },
+          {
+            "id": "3b0621d5-3961-4e0d-825b-fd28c4fff65d",
+            "kind": "single",
+            "prompt": "Raymond vil vise kundens navn sammen med ordrenummeret. Hvilken betingelse afslutter `FROM customers c INNER JOIN orders o` i caféens model?",
+            "options": [
+              "`ON c.id = o.id`",
+              "`ON o.customer_id = o.id`",
+              "`ON c.id = o.customer_id`",
+              "`ON c.id <> o.customer_id`"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg følger fremmednøglen på sedlen tilbage til kunden. `c.id = o.customer_id` sætter kun ordren sammen med den kunde, sedlen peger på.",
+            "optionExplanations": [
+              "Det sammenligner kundens nummer med ordrenummeret. Ens tal kan opstå tilfældigt.",
+              "Begge kolonner kommer fra `orders`, så betingelsen fortæller intet om, hvilken kunde der passer.",
+              "Den kobler kundens ID med den henvisning, der står på ordren.",
+              "Ulighed ville forbinde ordren med de øvrige kunder i stedet for dens egen kunde."
+            ],
+            "learnMoreUrl": "/characters/raymond#animation-join-tables",
+            "learnMoreTitle": "Forbind tabeller med JOIN",
+            "learnMoreDescription": "Se, hvordan nøgleværdier forbinder rækker fra to tabeller."
+          },
+          {
+            "id": "fafcf094-d395-43e9-a1af-7fb2680842f8",
+            "kind": "single",
+            "prompt": "I et lille udsnit har Anna kunde-ID `1`, Clara `2` og Freja `3`. Ordrerne `41` og `42` peger på `1`, og ordre `43` peger på `3`. Hvilke par af kundenavn og ordrenummer giver en `INNER JOIN` på kunde-ID?",
+            "options": [
+              "Anna–41, Clara–42, Freja–43",
+              "Anna–41, Freja–43",
+              "Anna–41, Anna–42, Clara–NULL, Freja–43",
+              "Anna–41, Anna–42, Freja–43"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En `INNER JOIN` giver én række for hvert par, der opfylder betingelsen. Anna får to rækker, Freja én, og Clara har endnu ingen matchende ordre.",
+            "optionExplanations": [
+              "Ordre 42 peger på Anna. Rækkernes placering på listen indgår ikke i koblingen.",
+              "Anna har også ordre 42. Begge hendes ordrer opfylder betingelsen.",
+              "Rækken Clara–NULL hører til en `LEFT JOIN` med kunder til venstre.",
+              "Begge Annas ordrer kommer med, og Frejas ordre danner det tredje par."
+            ],
+            "learnMoreUrl": "/characters/raymond#animation-join-tables",
+            "learnMoreTitle": "Forbind tabeller med JOIN",
+            "learnMoreDescription": "Se, hvordan nøgleværdier forbinder rækker fra to tabeller."
+          },
+          {
+            "id": "23694094-18a5-4ad8-a309-db3545dbb47a",
+            "kind": "multiple",
+            "prompt": "Du skifter til `FROM customers c LEFT JOIN orders o ON c.id = o.customer_id`. Kunderne Anna og Clara er med i `customers`. Anna har to ordrer, Clara har ingen. Hvilke to udsagn om resultatet er rigtige?",
+            "options": [
+              "Anna ses i to rækker, én for hver ordre",
+              "Clara kommer kun med, hvis fremmednøglen må være `NULL`",
+              "Clara ses i én række, hvor `o.id` er `NULL`",
+              "Clara får værdien `0` i `o.id`"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En `LEFT JOIN` bevarer alle kunder til venstre. Anna får én række pr. match. Clara får én bevaret række med `NULL` i felterne fra `orders`.",
+            "optionExplanations": [
+              "Et match med én kunde kan gentages for hver ordre på mange-siden.",
+              "Det er kundens placering til venstre i `LEFT JOIN`, der bevarer hende. Null-reglen i selve ordretabellen ændrer ikke det.",
+              "Resultatrækken findes, selv om der mangler en ordreseddel til højre.",
+              "`NULL` markerer et manglende match. Tallet 0 er en konkret værdi."
+            ],
+            "learnMoreUrl": "/characters/raymond#character-gallery-title",
+            "learnMoreTitle": "JOIN og subqueries",
+            "learnMoreDescription": "Find JOIN-kortet i Raymonds undervisningsgalleri, og prøv de forskellige join-typer i cafédataene."
+          },
+          {
+            "id": "baf71041-2dd6-4028-82c1-c58031d5b021",
+            "kind": "single",
+            "prompt": "Du vil tælle ordrer pr. kunde, også når en kunde har nul ordrer. Du bruger `LEFT JOIN` og `GROUP BY c.id, c.name`. Hvilket udtryk i `SELECT` giver det rigtige antal?",
+            "options": [
+              "`COUNT(*)`",
+              "`COUNT(o.id)`",
+              "`COUNT(c.id)`",
+              "`COUNT(DISTINCT c.id)`"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Se på Claras resultatrække. Der står et kunde-ID, mens ordrenummeret er `NULL`. `COUNT(o.id)` tæller kun de udfyldte ordrenumre og giver derfor 0 hos Clara.",
+            "optionExplanations": [
+              "Det tæller også den bevarede række for en kunde uden en ordre, så Clara ville få 1.",
+              "Det tæller kun ordrenumre, der har en værdi. En kunde uden ordrer får derfor 0.",
+              "Kunde-ID’et er udfyldt også på rækken for Clara uden ordre, så den tælles med.",
+              "Der er ét entydigt kunde-ID i hver gruppe, uanset antallet af ordrer."
+            ],
+            "learnMoreUrl": "/characters/raymond#character-gallery-title",
+            "learnMoreTitle": "JOIN og subqueries",
+            "learnMoreDescription": "Find JOIN-kortet i Raymonds undervisningsgalleri, og prøv de forskellige join-typer i cafédataene."
+          },
+          {
+            "id": "13b0263c-c2c9-4bc6-aa40-b9d4b2625d70",
+            "kind": "single",
+            "prompt": "Rapporten skal vise alle kunder og kun matche deres åbne ordrer. Både en kunde uden ordrer og en kunde med kun lukkede ordrer skal med. Hvor placerer du `o.status = 'open'`?",
+            "options": [
+              "I `WHERE`, sammen med `OR o.id IS NULL`",
+              "I `WHERE`, som eneste betingelse",
+              "I `ON` sammen med `c.id = o.customer_id` på en `LEFT JOIN`",
+              "I `ON` sammen med `c.id = o.customer_id` på en `INNER JOIN`"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Når statuskravet står i `ON`, kan kun åbne ordrer matche. `LEFT JOIN` bevarer stadig kunder uden et åbent match. Et statuskrav i `WHERE` virker på rækkerne efter sammenkoblingen.",
+            "optionExplanations": [
+              "Det redder kunden uden nogen ordrer, men kunden med kun lukkede ordrer har allerede matchet rækker, hvor `o.id` er udfyldt. De bliver filtreret væk.",
+              "Det fjerner rækker, hvor status er lukket eller `NULL`. Så forsvinder også kunder uden et match.",
+              "Betingelsen vælger de relevante ordrer før den ikke-matchende kunderække bevares.",
+              "En `INNER JOIN` viser kun de kunder, der har mindst én åben ordre."
+            ],
+            "learnMoreUrl": "/characters/raymond#character-gallery-title",
+            "learnMoreTitle": "JOIN og subqueries",
+            "learnMoreDescription": "Find JOIN-kortet i Raymonds undervisningsgalleri, og prøv de forskellige join-typer i cafédataene."
+          }
+        ]
+      }
+    },
+    {
+      "key": "bilbo-en-ordre-pr-noegle",
+      "characterSlug": "bilbo",
+      "intro": "Nettet snublede, lige da jeg sendte kvitteringen. Hjælp mig med at genkende bestillingssedlen, så kunden får sin ordre, og hylden kun mister ét glas.",
+      "difficulty": "Mellem",
+      "draft": {
+        "title": "Én bestilling, selv når nettet driller",
+        "topic": "Backend",
+        "description": "Afprøv, hvordan en ASP.NET Core-handler bruger bestillingsnøgler, et unikt indeks og en transaktion til at håndtere gentagne POST-kald.",
+        "estimatedMinutes": 10,
+        "questions": [
+          {
+            "id": "1b932c46-cea9-407e-b371-2d396b41a4f4",
+            "kind": "single",
+            "prompt": "Kassen sender `POST /orders` for ét glas med `RequestId = X`. Forbindelsen ryger, før kassen får et svar. Bilbos endpoint genkender gentagelser via `RequestId`. Hvad sender kassen, hvis den vil prøve samme ordre igen?",
+            "options": [
+              "Samme vare og antal med et nyt `RequestId`",
+              "Samme `RequestId`, men med antal 0",
+              "Samme vare og antal med samme `RequestId`",
+              "Et automatisk opslag efter dagens nyeste ordre"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg bruger samme mærke på den samme bestillingsseddel. Den første ordre kan allerede være gemt, selv om kvitteringen forsvandt på vej til kassen.",
+            "optionExplanations": [
+              "En ny nøgle kan få serveren til at behandle kaldet som en ny bestilling.",
+              "Indholdet skal også være det samme. Antal 0 er ugyldigt i bodens API.",
+              "Bilbo kan genkende bestillingen og returnere resultatet for den oprindelige ordre, hvis den findes.",
+              "Dagens nyeste ordre kan tilhøre et andet køb. En specifik bestillingsnøgle identificerer netop det oprindelige forsøg."
+            ],
+            "learnMoreUrl": "/characters/bilbo#animation-samme-noegle-samme-ordre",
+            "learnMoreTitle": "Samme nøgle, samme ordre",
+            "learnMoreDescription": "Se, hvordan Bilbo finder den første kvittering, når klienten sender den samme bestilling igen."
+          },
+          {
+            "id": "03dcc18f-0de9-4d6c-9214-cbb1908018f4",
+            "kind": "single",
+            "prompt": "Ordren med `RequestId = X` er gemt for ét glas. Samme kunde sender nøglen igen med to glas. Bilbos kontrakt bruger `409 Conflict`, hvis en nøgle allerede tilhører andet indhold. Hvad gør handleren?",
+            "options": [
+              "Svarer `409 Conflict` og lader den eksisterende ordre stå",
+              "Ændrer ordren til to glas og svarer `200 OK`",
+              "Opretter en ny ordre for to glas og svarer `201 Created`",
+              "Svarer med den oprindelige kvittering, selv om antallet har ændret sig"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Bilbo sammenligner både varen og antallet med den gemte ordre. Samme nøgle med ændret indhold er en konflikt. Vil kunden lægge en ny bestilling, får den sin egen nøgle.",
+            "optionExplanations": [
+              "Klienten får besked om konflikten, og den gemte bestilling bevares.",
+              "Det ville gøre en gentagelse af et oprettelseskald til en uventet ordreændring.",
+              "Nøglen er optaget for denne kunde og kan ikke bruges til en ny ordre.",
+              "En uændret kvittering ville skjule, at det nye indhold aldrig blev accepteret."
+            ],
+            "learnMoreUrl": "/characters/bilbo#character-gallery-title",
+            "learnMoreTitle": "Samme nøgle, samme ordre",
+            "learnMoreDescription": "Find kortet om genbrug af RequestId, entydighed og samtidige anmodninger i undervisningsgalleriet."
+          },
+          {
+            "id": "3cffe001-9fd2-49d5-9a19-ddabdea3518d",
+            "kind": "multiple",
+            "prompt": "To kunder må godt have samme `RequestId`. For hver kunde må en nøgle kun høre til én ordre, også når to serverinstanser håndterer samtidige kald. Hvilke to valg opfylder reglerne sammen?",
+            "options": [
+              "Lav et unikt indeks på `RequestId` alene",
+              "Slå op på kunden fra login sammen med `RequestId`",
+              "Brug kun et opslag før indsættelse til at håndhæve unikhed",
+              "Lav et unikt sammensat indeks på (`CustomerId`, `RequestId`)"
+            ],
+            "correctOptions": [
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Opslag og unikhed skal bruge samme afgrænsning. Begge serverinstanser kan nå at læse, før en af dem gemmer. Databasens unikke indeks sørger for, at kombinationen kun kan gemmes én gang.",
+            "optionExplanations": [
+              "En nøgle ville blive optaget på tværs af alle kunder, selv om kontrakten giver hver kunde sit eget nøgleområde.",
+              "Kombinationen identificerer den bestilling, der tilhører den aktuelle kunde.",
+              "To samtidige kald kan begge læse, før et af dem når at skrive.",
+              "Kombinationen må kun forekomme én gang, mens forskellige kunder stadig kan bruge samme `RequestId`."
+            ],
+            "learnMoreUrl": "/characters/bilbo#character-gallery-title",
+            "learnMoreTitle": "Samme nøgle, samme ordre",
+            "learnMoreDescription": "Find kortet om genbrug af RequestId, entydighed og samtidige anmodninger i undervisningsgalleriet."
+          },
+          {
+            "id": "ffeb13a8-f14d-4c0f-a9a6-913b8e491c6f",
+            "kind": "single",
+            "prompt": "Bilbo har allerede gemt ordre `42` for kundens sidste glas. Lageret står nu på nul. Samme kunde gentager samme vare, antal og nøgle. Hvad skal handleren gøre, før den eventuelt prøver at reservere lager?",
+            "options": [
+              "Validere lageret og straks returnere `409 Conflict`",
+              "Tildele en ny nøgle og lægge ordren tilbage i køen",
+              "Returnere `404 Not Found`, fordi varen nu er udsolgt",
+              "Finde den gemte ordre og returnere dens oprindelige kvittering"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg kigger først efter den eksisterende seddel. Lageret står på nul, netop fordi ordren blev gennemført. En gentagelse skal returnere ordre 42 uden endnu et lagertræk.",
+            "optionExplanations": [
+              "Det ville få et gennemført køb til at se afvist ud. Lagerkontrollen gælder en ny bestilling.",
+              "Det ville miste forbindelsen til den ordre, serveren allerede har gemt.",
+              "Udsolgt og ukendt varenummer er forskellige situationer. Ordre 42 findes stadig.",
+              "Serveren genbruger den oprindelige ordres `201`-svar og `Location` i Bilbos kontrakt."
+            ],
+            "learnMoreUrl": "/characters/bilbo#animation-samme-noegle-samme-ordre",
+            "learnMoreTitle": "Samme nøgle, samme ordre",
+            "learnMoreDescription": "Se, hvordan Bilbo finder den første kvittering, når klienten sender den samme bestilling igen."
+          },
+          {
+            "id": "d232d1f1-0ea8-4ca4-8063-40fe73d1fde5",
+            "kind": "single",
+            "prompt": "To ens kald var i gang samtidig. Den første ordre blev gemt. EF Core gemmer den anden ordres indsættelse og lagertræk i én transaktion, men det unikke indeks afviser indsættelsen. Hvad skal der ske med den tabende transaktion?",
+            "options": [
+              "Behold lagertrækket, og genbrug derefter kvitteringen",
+              "Rul både ordreindsættelse og lagertræk tilbage, og slå den gemte ordre op",
+              "Rul både den første og den anden transaktion tilbage",
+              "Opret en ny ordre med en tilfældig nøgle efter rollback"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Ordre og lager skal følges ad. Det tabende forsøg rulles tilbage som helhed. Derefter kan handleren læse vinderens ordre og give dens kvittering ved samme indhold.",
+            "optionExplanations": [
+              "Det ville trække et ekstra glas for en ordre, der kun findes én gang.",
+              "Rollback fjerner hele effekten af det tabende forsøg. Den gennemførte ordre kan derefter læses igen.",
+              "Den første transaktion er allerede gemt. Fejlen hører til det andet forsøg.",
+              "En ny nøgle repræsenterer en ny ordre, som kunden ikke bad om."
+            ],
+            "learnMoreUrl": "/characters/bilbo#animation-rul-ordren-tilbage",
+            "learnMoreTitle": "Rul ordren tilbage",
+            "learnMoreDescription": "Se, hvordan transaktionen holder ordre og lager i samme tilstand."
+          },
+          {
+            "id": "945de493-9d16-4a10-975b-54f58be33bda",
+            "kind": "multiple",
+            "prompt": "En integrationstest starter med fem glas og sender samtidig to ens kald med samme kunde, nøgle og bestilling på ét glas. Hvilke to observationer viser sammen det forventede resultat i Bilbos API?",
+            "options": [
+              "Begge svar henviser til samme ordre-id",
+              "Begge svar har status `201` og forskellige `Location`",
+              "Det ene kald får `409`, fordi ens anmodninger altid er en konflikt",
+              "Databasen har én ordre for nøglen, og lageret er faldet fra fem til fire"
+            ],
+            "correctOptions": [
+              0,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Test både kvitteringen og det gemte resultat. Samme ordrereference viser, at kassen får den samme ordre. Én række og ét lagertræk viser, at den kun er gennemført én gang.",
+            "optionExplanations": [
+              "Kassen får den samme ordrereference, også når kald sendes samtidig.",
+              "To forskellige adresser tyder på, at to ordrer er blevet oprettet.",
+              "I Bilbos kontrakt må samme nøgle bruges igen med samme indhold. Konflikt bruges, når indholdet ændres.",
+              "Bestillingsrækken og lageret bekræfter hver deres del af den gennemførte ordre."
+            ],
+            "learnMoreUrl": "/characters/bilbo#character-gallery-title",
+            "learnMoreTitle": "Test hele ordren gennem API’et",
+            "learnMoreDescription": "Find kortet om integrationstest i Bilbos galleri, og prøv at sende den samme ordre to gange."
+          }
+        ]
+      }
+    },
+    {
+      "key": "whale-compose-fejlfinding",
+      "characterSlug": "whale",
+      "intro": "Kajstatus er gået i stå. Tag logbogen med, så finder vi ud af, hvor forbindelsen knækker.",
+      "difficulty": "Mellem",
+      "draft": {
+        "title": "Find fejlen i Docker Compose",
+        "topic": "DevNet",
+        "description": "Følg sporene fra kajstatus’ Compose-logs gennem netværket og ud til den rute, brugeren åbner.",
+        "estimatedMinutes": 9,
+        "questions": [
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000001",
+            "kind": "single",
+            "prompt": "Kajstatus’ webside returnerer en fejl straks efter opstart. Du vil først se, om `api` er stoppet, selv om `web` stadig kører. Hvilken kommando giver dig det overblik?",
+            "options": [
+              "`docker compose config --quiet`",
+              "`docker compose logs --tail 20 web`",
+              "`docker compose ps --all`",
+              "`docker compose ps --status running`"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg starter med mandskabslisten. `docker compose ps --all` viser status for både kørende og stoppede containere i projektet.",
+            "optionExplanations": [
+              "Kommandoen validerer konfigurationen. Den viser ingen aktuelle containerstatusser.",
+              "Webloggen kan vise et symptom. Den oplister ingen status for `api`.",
+              "`--all` medtager også containere, der er stoppet efter opstart.",
+              "Statusfilteret viser kun kørende containere og kan derfor skjule problemet."
+            ],
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Følg sporene i loggen",
+            "learnMoreDescription": "Se eksemplet på at finde en stoppet service."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000002",
+            "kind": "multiple",
+            "prompt": "I Compose viser `web` fejlen “upstream timeout”. Du har tidspunktet for den seneste fejl og mistænker kæden `web` → `api` → `db`. Hvilke to handlinger hjælper dig med at finde det første relevante spor?",
+            "options": [
+              "Læs de seneste loglinjer med tidsstempler fra `web`, `api` og `db`",
+              "Læs kun den seneste linje fra `web`",
+              "Sortér linjer efter længde for at finde den mest detaljerede fejl",
+              "Sammenhold fejl omkring det samme kald og se, hvilken service der fejlede først"
+            ],
+            "correctOptions": [
+              0,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Webserverens timeout kan være et symptom længere ude i kæden. Brug f.eks. `docker compose logs --since 10m --timestamps web api db`, og sammenhold tidsstempler og eventuelle korrelations-id’er for det mislykkede kald.",
+            "optionExplanations": [
+              "Her får du et tidsvindue med spor fra alle tre services.",
+              "Den seneste linje kan ligge efter hændelsen og vise et symptom.",
+              "Linjens længde siger intet om rækkefølgen i et kald.",
+              "Ved at følge det samme kald kan du indsnævre, hvor fejlen opstår."
+            ],
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Følg sporene i loggen",
+            "learnMoreDescription": "Se, hvordan tid og servicenavn kan indsnævre en hændelse."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000003",
+            "kind": "single",
+            "prompt": "PostgreSQL lytter på `5432` i servicen `db`. Værten har til lokal udvikling portmappingen `127.0.0.1:15432:5432`. Hvilken adresse bruger `api`, når den deler Compose-netværk med `db`?",
+            "options": [
+              "`localhost:15432`",
+              "`db:5432`",
+              "`db:15432`",
+              "`localhost:5432`"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Servicenavnet `db` findes via DNS på det fælles Compose-netværk. Mellem containere bruger du den port, PostgreSQL lytter på inde i `db`, her `5432`.",
+            "optionExplanations": [
+              "`localhost` inde i `api` peger tilbage på `api`-containeren.",
+              "Servicenavnet og den interne port passer til ruten mellem de to containere.",
+              "`15432` findes på værten. `db` lytter på `5432`.",
+              "`localhost` inde i `api` når ikke en anden container."
+            ],
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Hvem kan nå hvad?",
+            "learnMoreDescription": "Følg forskellen på databaseforbindelsen fra API’et og en port på værten."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000004",
+            "kind": "multiple",
+            "prompt": "Webservicen har `ports: [\"127.0.0.1:8090:8080\"]` og lytter på alle interfaces inde i containeren. Hvilke to adresser passer henholdsvis til en browser på selve værten og en anden service på samme Compose-netværk?",
+            "options": [
+              "På værten: `http://localhost:8080`",
+              "På værten: `http://127.0.0.1:8090`",
+              "I en anden service: `http://web:8090`",
+              "I en anden service: `http://web:8080`"
+            ],
+            "correctOptions": [
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Portmappingen modtager forbindelsen på værtens `127.0.0.1:8090` og sender den til port `8080` i containeren. På Compose-netværket går trafik via servicenavnet `web` direkte til `8080`.",
+            "optionExplanations": [
+              "Det er `8090`, der er publiceret på værten.",
+              "Loopback-adressen og den publicerede værtsport passer til værtsbrowseren.",
+              "Servicenavnet passer. Port `8090` er dog værtens port.",
+              "Compose-netværket giver direkte adgang til serviceporten `8080`."
+            ],
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Hvem kan nå hvad?",
+            "learnMoreDescription": "Se, hvordan en publiceret port og det interne netværk giver hver sin adgangsvej."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000005",
+            "kind": "single",
+            "prompt": "På en kold start kommer `db` i tilstanden `running`, inden den er klar til at tage imod forbindelser. `api` afslutter ved første forbindelsesfejl. Hvilken Compose-ændring kan få `api` til at vente ved opstart?",
+            "options": [
+              "Giv `db` et nyt `container_name` og behold den eksisterende rækkefølge",
+              "Tilføj `depends_on` med `condition: service_started` for `db`",
+              "Publicér `db`’s port på værten, før `api` starter",
+              "Giv `db` et healthcheck for forbindelser, og lad `api` afhænge af `db` med `condition: service_healthy`"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg venter, til kajen er klar. Med en egnet database-healthcheck og `service_healthy` starter Compose først `api`, når checket er grønt. Hvis databasen bliver utilgængelig senere, skal appen selv håndtere det.",
+            "optionExplanations": [
+              "Containerens navn ændrer ikke, hvornår databasen er klar.",
+              "`service_started` venter på, at containeren er startet. Databasen kan stadig være ved at gøre sig klar.",
+              "En portmapping opretter en adgangsvej. Den venter ikke på databaseprocessen.",
+              "Healthchecket afgør, hvornår afhængigheden er klar ved opstart."
+            ],
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Afgør om appen er klar",
+            "learnMoreDescription": "Se forskellen på running, healthy og styring af opstartsrækkefølgen."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000006",
+            "kind": "single",
+            "prompt": "Efter en udrulning er `api` healthy. Healthchecket kalder `localhost:8080/health` inde i containeren, men testbrugeren får en 502 via den normale webadresse. Hvad vil bedst afgrænse problemet som næste skridt?",
+            "options": [
+              "Gentag kaldet via den normale webadresse fra en browser, og sammenhold svaret med proxyens log for det samme tidspunkt",
+              "Stol på healthchecket og led efter en fejl i browserens cache",
+              "Øg API’ets healthcheck-interval og se, om 502 forsvinder",
+              "Test endnu en lokal API-rute inde i samme container og luk fejlsagen, hvis den svarer"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En grøn intern check viser, at den lokale rute svarede i containeren. Et kald ad brugerens vej og proxyens log hjælper dig med at skelne den interne måling fra den 502, der rammer brugeren.",
+            "optionExplanations": [
+              "Her tester du den rute, hvor fejlen faktisk opstår, og får proxyens forklaring på svaret.",
+              "Healthchecket siger intet om proxyens rute til API’et.",
+              "Intervallet ændrer, hvor ofte du måler. Det undersøger ingen årsag til 502.",
+              "Endnu et lokalt kald prøver stadig ingen af de led, som brugeren går gennem."
+            ],
+            "learnMoreUrl": "/characters/whale#character-gallery-title",
+            "learnMoreTitle": "Sæt flåden i søen",
+            "learnMoreDescription": "Se eksemplet på at kontrollere appens normale indgang fra et andet sted."
+          }
+        ]
+      }
+    },
+    {
+      "key": "lupp-playtest-naeste-aendring",
+      "characterSlug": "lupp",
+      "intro": "Blyanten er klar. Vi ser nogen spille Rune Run, skriver det ned, og vælger én ændring at prøve bagefter.",
+      "difficulty": "Mellem",
+      "draft": {
+        "title": "Playtest og vælg næste ændring",
+        "topic": "Game Design",
+        "description": "Planlæg en playtest af Rune Run, gør observationer brugbare og mål, om næste version hjælper.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000101",
+            "kind": "single",
+            "prompt": "I Rune Run vil I undersøge, om nye spillere selv opdager, hvordan portalen åbnes. Hvilken opgave skal I give spilleren ved start?",
+            "options": [
+              "“Brug runetælleren til at afgøre, hvornår portalen åbner.”",
+              "“Saml tre runer, så du kan åbne portalen.”",
+              "“Spil lidt og sig, om spildesignet virker.”",
+              "“Prøv at komme gennem portalen.”"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg giver spilleren et mål og lader spilleren finde vejen. Så kan vi observere, om spillets egne signaler viser, hvad der skal til for at åbne portalen.",
+            "optionExplanations": [
+              "Opgaven røber, hvor spilleren skal finde forklaringen.",
+              "Antallet af runer er en del af det, vi vil se, om spilleren selv opdager.",
+              "Opgaven mangler et konkret mål, så det bliver svært at sammenligne forsøgene.",
+              "Portalen giver spilleren et mål uden at fortælle trin eller betingelser."
+            ],
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Præsentation og feedback",
+            "learnMoreDescription": "Se LUPPs illustration om at vise et design og lytte, før du retter det."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000102",
+            "kind": "multiple",
+            "prompt": "To spillere står længe foran den lukkede portal. Hvilke to notater beskriver direkte observationer, som holdet kan sammenligne mellem afprøvninger?",
+            "options": [
+              "Spiller A stod ved portalen med to af tre runer og trykkede fire gange på interaktion",
+              "Spiller A syntes sikkert, at opgaven var for nem",
+              "Spiller B spurgte “Hvorfor virker den ikke?” efter første tryk med én rune",
+              "Spiller B havde brug for en pop-up med instruktioner"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Handlinger, tilstande og ordrette spørgsmål kan skrives ned under spillet. Forklaringer og designidéer tager vi op bagefter og afprøver som hypoteser.",
+            "optionExplanations": [
+              "Her kan et andet hold se både handlingen og spillets tilstand.",
+              "“Sikkert” fortæller, at notatet gætter på spillerens oplevelse.",
+              "Notatet gengiver, hvad spilleren faktisk gjorde og sagde.",
+              "Pop-up’en er et muligt forslag. Det beskriver ingen observeret handling."
+            ],
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Præsentation og feedback",
+            "learnMoreDescription": "Se, hvordan feedback fra afprøvning kan bruges som grundlag for næste forsøg."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000103",
+            "kind": "single",
+            "prompt": "En spiller tager hånden fra styringen foran den lukkede portal. Du har brug for at forstå, hvad spilleren forventede. Hvilket spørgsmål kan du stille uden at røbe løsningen?",
+            "options": [
+              "“Hvor mange flere runer tror du, der mangler?”",
+              "“Hvad forventede du ville ske, da du trykkede der?”",
+              "“Ville en større runetæller gøre portalen nemmere at forstå?”",
+              "“Var det lysglimtet, der fik dig til at stoppe?”"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Spørgsmålet samler spillerens egen forklaring på øjeblikket. Det giver hverken en ledetråd om reglen eller vores eget bud på, hvad spilleren lagde mærke til.",
+            "optionExplanations": [
+              "Spørgsmålet afslører, at runerne kan være en del af løsningen.",
+              "Spilleren kan selv beskrive forventningen med sine egne ord.",
+              "Spørgsmålet indfører teamets forslag og flytter fokus fra hændelsen.",
+              "Det udpeger en årsag, før spilleren selv har forklaret, hvad der skete."
+            ],
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Præsentation og feedback",
+            "learnMoreDescription": "Se afsnittet om at lytte til spørgsmål og forslag, før du vælger en forbedring."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000104",
+            "kind": "single",
+            "prompt": "Fire nye spillere finder hver to runer uden hjælp. Tre går alligevel i stå ved portalen med to runer og opdager ikke kravet om tre. Hvilken ændring undersøger mest direkte, om et tydeligere signal hjælper?",
+            "options": [
+              "Gør de første runer lettere at nå",
+              "Tilføj en bonus, når en spiller har alle tre runer",
+              "Vis `2/3 runer` ved portalen, når spilleren forsøger at åbne den med to runer",
+              "Skift portalkravet til to runer i næste version"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Behold antallet af runer og gør betingelsen synlig i det øjeblik, hvor spilleren rammer den. Så kan næste playtest vise, om signalet hjælper spilleren videre.",
+            "optionExplanations": [
+              "Dataene peger på portalen. Spillerne har kunnet finde runerne.",
+              "En bonus kommer først efter det sted, hvor tre spillere gik i stå.",
+              "Tælleren ved portalen knytter betingelsen til spillerens aktuelle handling.",
+              "Kravet på to fjerner den barriere, holdet vil undersøge et signal for."
+            ],
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Mulighed, signal og feedback",
+            "learnMoreDescription": "Se forskellen på, hvad spillet tillader, og hvordan det fortæller spilleren om det."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000105",
+            "kind": "multiple",
+            "prompt": "I laver en ny version med runetælleren ved portalen og vil sammenligne med første runde. Hvilke to valg gør resultatet lettere at tolke?",
+            "options": [
+              "Giv samme opgave fra samme startpunkt og mål igen, hvor mange der åbner portalen uden hjælp",
+              "Indfør samtidig nye baner og lettere styring",
+              "Vælg nye deltagere fra samme målgruppe, som ikke allerede kender reglen",
+              "Vis løsningen til den nye gruppe, så alle kommer forbi portalen"
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Vi gentager opgaven i samme situation og måler samme resultat. Nye deltagere fra samme målgruppe er vigtige her, fordi det er første møde med portalen, vi undersøger.",
+            "optionExplanations": [
+              "Opgave, startpunkt og mål er de samme, så tallene dækker den samme situation.",
+              "Flere ændringer gør det sværere at forstå, hvad der påvirkede resultatet.",
+              "Erfaringen fra første forsøg kan i sig selv hjælpe spillerne videre anden gang.",
+              "Introduktionen fjerner den usikkerhed, som testen skal måle."
+            ],
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Præsentation og feedback",
+            "learnMoreDescription": "Brug LUPPs forslag om at vælge en forbedring og prøve igen."
+          },
+          {
+            "id": "bb6ff4d0-5c71-4b73-9dac-000000000106",
+            "kind": "single",
+            "prompt": "I de to små afprøvninger åbnede én af fire nye spillere portalen uden hjælp før ændringen. Bagefter lykkedes det for tre af fire. Hvad er den mest rimelige konklusion til holdets næste plan?",
+            "options": [
+              "Signalet ser lovende ud i den lille test. Notér resultaterne og afprøv igen med flere nye spillere",
+              "Signalet er bevist effektivt for hele målgruppen. Luk opgaven uden flere forsøg",
+              "Afskriv signalet, fordi én spiller stadig ikke kom igennem",
+              "Sammenlign kun de tre spillere, der kom igennem efter ændringen"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg gemmer både tallene og det, den sidste spiller gjorde. Tre af fire mod én af fire er et lovende spor. Med så få deltagere kan forskelle mellem de to grupper også påvirke resultatet.",
+            "optionExplanations": [
+              "Her bruger holdet målingen til at vælge, hvad der er værd at undersøge videre.",
+              "To små grupper giver et fingerpeg. De kan ikke afgøre, hvordan hele målgruppen klarer sig.",
+              "Den sidste spillers forløb kan give gode spor, selv om flere lykkedes.",
+              "Hvis du udelader spilleren, der gik i stå, mister du det resultat, testen skulle måle."
+            ],
+            "learnMoreUrl": "/characters/lupp#character-gallery-title",
+            "learnMoreTitle": "Præsentation og feedback",
+            "learnMoreDescription": "Se, hvordan et resultat kan omsættes til det næste spørgsmål eller forsøg."
+          }
+        ]
+      }
+    },
+    {
+      "key": "bat-millis-uden-pause",
+      "characterSlug": "bat",
+      "intro": "Jeg lytter efter ekkoet, men jeg vil også høre, når du trykker på knappen. Lad os få din Arduino til at passe begge dele.",
+      "difficulty": "Mellem",
+      "draft": {
+        "title": "Mål afstand, mens resten kører",
+        "topic": "IoT",
+        "description": "Brug millis() til at planlægge målinger, så din Arduino kan aflæse en knap, mens den venter på ekko.",
+        "estimatedMinutes": 9,
+        "questions": [
+          {
+            "id": "5e849493-2f32-4a09-8c35-10a5f23b27e1",
+            "kind": "single",
+            "prompt": "Næsebladets Arduino starter en afstandsmåling hver 200 ms. Eleven har sat `delay(200)` mellem målingerne, og nogle korte tryk på nulstil-knappen går tabt. Hvad er den sandsynlige forklaring, når knappen kun aflæses i `loop()`?",
+            "options": [
+              "Sensoren bruger knappen som input, så trykket ændrer afstanden.",
+              "Koden aflæser først knappen igen, når `delay(200)` er færdig.",
+              "Et tryk forkorter tiden i `delay(200)`, så koden springer over aflæsningen.",
+              "`loop()` kaldes kun én gang, når der står `delay()` i funktionen."
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Min sensor må godt vente på tur, men knappen skal høres imens. `delay(200)` holder udførelsen af `loop()` tilbage, så et tryk, der starter og slutter under pausen, kan forsvinde mellem to aflæsninger.",
+            "optionExplanations": [
+              "En aflæsning af knappen og en afstandsmåling kan godt bruge hver sin indgang.",
+              "Ja. Koden kommer først frem til næste aflæsning efter pausen.",
+              "Et almindeligt knaptryk får ikke `delay()` til at returnere tidligt.",
+              "`loop()` starter forfra, når den er kørt til ende."
+            ],
+            "learnMoreUrl": "https://docs.arduino.cc/built-in-examples/digital/BlinkWithoutDelay/",
+            "learnMoreTitle": "Arduino · Blink Without Delay",
+            "learnMoreDescription": "Se, hvordan et interval og en knap kan håndteres i den samme løkke."
+          },
+          {
+            "id": "5e849493-2f32-4a09-8c35-10a5f23b27e2",
+            "kind": "single",
+            "prompt": "`nu` er aflæst med `millis()`, og `sidsteStart` er tiden for seneste måling. Begge er `unsigned long`. Hvilken betingelse bliver sand, når der er gået mindst 200 ms?",
+            "options": [
+              "`nu - sidsteStart == 200UL`",
+              "`nu % 200UL == 0UL`",
+              "`nu >= 200UL`",
+              "`nu - sidsteStart >= 200UL`"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Differencen giver antal millisekunder siden målingens start. `>=` virker også, hvis løkken først når frem til at tjekke efter 201 ms.",
+            "optionExplanations": [
+              "Løkken kan springe direkte fra 199 til 201 ms og dermed misse betingelsen.",
+              "Dette regner fra programmets opstart og forudsætter, at løkken rammer et bestemt tidspunkt præcist.",
+              "Dette måler programmets køretid. Tiden for sidste måling bliver aldrig brugt.",
+              "Ja. Træk starttiden fra, og sammenlign den forløbne tid med intervallet."
+            ],
+            "learnMoreUrl": "https://docs.arduino.cc/built-in-examples/digital/BlinkWithoutDelay/",
+            "learnMoreTitle": "Arduino · Planlæg med millis()",
+            "learnMoreDescription": "Se det samme mønster i Arduinos eksempel med et blinkende lys."
+          },
+          {
+            "id": "5e849493-2f32-4a09-8c35-10a5f23b27e3",
+            "kind": "single",
+            "prompt": "Løkken bruger betingelsen `nu - sidsteStart >= 200UL`. Den starter målingen ved 220 ms og igen ved 221 ms, selv om sensoren er klar igen. Hvilken ændring får koden til at vente 200 ms fra starten ved 220 ms?",
+            "options": [
+              "Sæt `sidsteStart = nu`, når en ny måling starter.",
+              "Sæt `sidsteStart = nu` ved starten af hver tur gennem `loop()`.",
+              "Sæt `sidsteStart = 0UL`, hver gang en måling starter.",
+              "Brug fortsat den gamle starttid, men skift `>=` til `>`."
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Gem tidspunktet, hvor målingen faktisk starter. Med `sidsteStart = 220` er differencen kun 1 ms ved næste tjek, og en ny måling kan tidligst starte ved 420 ms.",
+            "optionExplanations": [
+              "Ja. Hver ny start nulstiller den forløbne tid for det næste interval.",
+              "Differencen bliver nul ved hvert tjek, så målingen kommer ikke i gang.",
+              "Efter de første 200 ms vil betingelsen fortsat være sand ved hver gennemløbning.",
+              "Der flyttes én millisekund på grænsen. Den gamle starttid bliver stadig brugt."
+            ],
+            "learnMoreUrl": "https://docs.arduino.cc/built-in-examples/digital/BlinkWithoutDelay/",
+            "learnMoreTitle": "Arduino · Gem tidspunktet for den seneste handling",
+            "learnMoreDescription": "Følg, hvor eksemplet opdaterer starttiden for næste interval."
+          },
+          {
+            "id": "5e849493-2f32-4a09-8c35-10a5f23b27e4",
+            "kind": "multiple",
+            "prompt": "Pulsen er sendt, og intet ekko er kommet tilbage endnu. Hvilke to handlinger gør, at Arduinoen stadig kan reagere på knappen og håndtere et manglende ekko?",
+            "options": [
+              "Vent i en `while`-løkke på ekko, og læs først knappen efter den løkke.",
+              "Gem tidspunktet for pulsen, og afprøv ekko og tidsgrænse ved hver tur gennem `loop()`.",
+              "Start en ny puls ved hver tur gennem `loop()`, indtil sensoren svarer.",
+              "Meld afstanden ukendt ved timeout, og planlæg næste forsøg efter sensorens minimumsinterval."
+            ],
+            "correctOptions": [
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Gem målingens tilstand, så du kan vende tilbage fra hver tur gennem løkken og læse knappen. Hvis tidsgrænsen nås uden et gyldigt ekko, afsluttes målingen med status ukendt. Korte ekkopulser kræver hurtig nok aflæsning eller en timer, der registrerer signalflankerne. Sensorens datablad bestemmer pausen før næste udsendelse.",
+            "optionExplanations": [
+              "Knappen kan stadig overses, hvis al tid i ventetilstanden bruges i den indre løkke.",
+              "Ja. Måling og respons kan tjekkes i korte trin mellem de øvrige opgaver.",
+              "Tætte pulser kan forstyrre målingen, og gamle ekkoer kan blive blandet sammen med nye.",
+              "Ja. En timeout er en status for en måling uden brugbart resultat."
+            ],
+            "learnMoreUrl": "/characters/bat#character-gallery-title",
+            "learnMoreTitle": "Næsebladet · Vent på ekko uden at blokere",
+            "learnMoreDescription": "Åbn infografikkens forklaring om tilstande og timeout i undervisningsgalleriet."
+          },
+          {
+            "id": "5e849493-2f32-4a09-8c35-10a5f23b27e5",
+            "kind": "single",
+            "prompt": "Målingerne starter med 200 ms mellemrum. Selve ekkopulsens bredde kan være under 1 ms og er den tid, vi bruger til at beregne afstanden. Hvordan holder du styr på de to tidsmål?",
+            "options": [
+              "Brug `millis()` til begge dele, og gang den målte pulsbredde med 1000 for at få mikrosekunder.",
+              "Træk et `millis()`-tidsstempel fra et `micros()`-tidsstempel, så du får højere opløsning.",
+              "Brug `millis()` til startintervallet og `micros()` til tidsforskellen mellem ekkopulsens flanker.",
+              "Brug `micros()` ved begge opgaver, og sammenlign startintervallet med 200."
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg holder styr på, hvornår vi sender, og hvor længe pulsen varer. Millisekunder passer til startintervallet. Mikrosekunder eller en passende hardwaretimer giver den finere opløsning, en kort puls kræver.",
+            "optionExplanations": [
+              "Omregning af en grov måling giver ikke de informationer tilbage, som er gået tabt ved afrunding.",
+              "Tidsstemplerne er i forskellige enheder. Mål flanker med den samme tæller.",
+              "Ja. Begge flanker aflæses med samme finere tidsenhed, mens planlægningen kan bruge millisekunder.",
+              "En grænse på 200 mikrosekunder er tusind gange kortere end 200 millisekunder."
+            ],
+            "learnMoreUrl": "/characters/bat#character-gallery-title",
+            "learnMoreTitle": "Næsebladet · Vent på ekko uden at blokere",
+            "learnMoreDescription": "Se øvelsen med tidsstempler og pulser i mikrosekunder."
+          },
+          {
+            "id": "5e849493-2f32-4a09-8c35-10a5f23b27e6",
+            "kind": "single",
+            "prompt": "På en Arduino Uno R3 lagres start og slut som 32-bit unsigned værdier. Ved sidste måling var tælleren 4.294.967.200 ms. Efter den er rundet til nul, læser du 104 ms. Hvad giver `nu - sidsteStart`, og er næste måling ved 200 ms klar til at starte?",
+            "options": [
+              "104 ms, så næste måling må vente.",
+              "200 ms, så næste måling kan starte.",
+              "199 ms, så næste måling må vente én millisekund.",
+              "304 ms, så næste måling starter 104 ms for sent."
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Der er 96 ms fra startværdien til tælleren runder til nul. Derefter er der gået 104 ms. Trækker du de to 32-bit unsigned værdier fra hinanden, bliver resultatet 200 ms, også når tælleren har rundet én gang.",
+            "optionExplanations": [
+              "104 ms er kun tiden efter, at tælleren rundede til nul.",
+              "Ja. 96 ms frem til nul og 104 ms efter nul giver 200 ms.",
+              "Tælleren skal også tage skridtet fra maksimum til nul. Det trin varer én millisekund.",
+              "Det er selve forskellen på 200 ms, der skal sammenlignes med intervallet."
+            ],
+            "learnMoreUrl": "/characters/bat#character-gallery-title",
+            "learnMoreTitle": "Næsebladet · Test tællerens rundtælling",
+            "learnMoreDescription": "Følg kodeøvelsen om unsigned tidsdifferencer og grænsetest rundt om nul."
+          }
+        ]
+      }
     }
   ]
 }
