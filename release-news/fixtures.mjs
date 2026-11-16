@@ -164,9 +164,16 @@ export function fixtureResponse(urlLike, method = 'GET') {
     holds: [{ id: 'qa-h3', lectioHoldKey: 'H3-2026', name: workspace.name, year: '2026', yearLabel: '2026/2027', memberCount: 6,
       startDate: '2026-11-02', endDate: '2026-12-11', dateSource: 'Lectio', isTracked: true }] });
   if (p === 'lectio/hold' || p === 'lectio/holds') return json({ holds: [] });
+  if (p === 'calendar/holds') return json({
+    holds: [{ holdId: H, forloebId: W, name: workspace.name, canManage: !url.searchParams.has('asUser') }],
+    events: calendar.map(entry => ({ ...entry, attendanceMode: 'physical' })),
+    deadlines: quests.filter(quest => quest.deadlineUtc).map(quest => ({
+      questId: quest.id, holdId: H, title: quest.title, deadlineUtc: quest.deadlineUtc })),
+    questChoices: url.searchParams.has('asUser') ? [] : quests.map(quest => ({ questId: quest.id, holdId: H, title: quest.title }))
+  });
   if (p === 'calendar/mine') return json({ azureUpn: 'underviser@example.test', fromUtc: url.searchParams.get('from'), toUtc: url.searchParams.get('to'), configured: true,
-    events: calendar.map((entry, index) => ({ id: `fixture-outlook-${index}`, subject: entry.title, start: entry.startUtc, end: entry.endUtc,
-      isAllDay: false, location: entry.location, isOnlineMeeting: false, isPrivate: false, isCancelled: false, showAs: 'busy' })) });
+    events: [{ id: 'fixture-outlook-meeting', subject: 'Møde med fagteamet', start: '2026-11-09T08:30:00Z', end: '2026-11-09T09:15:00Z',
+      isAllDay: false, location: 'Mødelokale 2', isOnlineMeeting: false, isPrivate: false, isCancelled: false, showAs: 'busy' }] });
   if (p === 'emojis') return json([{ id: fixtureId(500), name: 'vatson', contentType: 'image/webp', sizeBytes: 1000, updatedAtUtc: stamp,
     contentUrl: '/images/characters/vatson/vatson.webp', category: 'people', keywords: ['lup'], altText: 'Vatson – testemoji' }]);
   if (p === 'platform-updates') return json([{ id: 'fixture-update', date: '2026-11-09', title: 'Eksempel på en visuel opdatering',

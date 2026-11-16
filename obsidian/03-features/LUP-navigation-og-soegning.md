@@ -8,7 +8,7 @@ tags: [feature, navigation, search, design]
 
 ## Retning
 
-**LUP – Lokal UndervisningsPlatform** har én kompakt header. Logoet åbner forsiden før login og det personlige overblik efter login. De fælles indgange er **Mine hold** og **Oversigt**; undervisere har desuden **Min kalender** på tværs af hold. Søgning, én notifikationsindgang og profil ligger til højre. Mobilnavigationen foldes ind i Menu.
+**LUP – Lokal UndervisningsPlatform** har én kompakt header. Logoet åbner forsiden før login og det personlige overblik efter login. De fælles indgange er **Mine hold** og **Oversigt**; elever og undervisere har **Min kalender** på tværs af hold i avatarmenuen. Søgning, én notifikationsindgang og profil ligger til højre. Mobilnavigationen foldes ind i Menu.
 
 Profilmenuen åbner **Min profil** og giver adgang til Log ud. Underviserværktøjer vises kun til undervisere. På `/profile` ligger konto, temavalg og **Mit univers** på samme side. Mit univers samler genveje til progression, badges, egne projekter, avatar, lejlighed, butik og spil. De gamle indgange `/universe` og `/settings` fører til de relevante afsnit på profilsiden. Oversigten samler undervisningsplaner, fag, offentlige DEMO-projekter og badgekrav. Eksempelforløb er en særskilt foldet sektion for brugere, der er logget ind.
 

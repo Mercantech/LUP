@@ -1,0 +1,35 @@
+.teacher-home-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.teacher-home-shortcuts ::deep .navigation-card {
+    padding: 11px 13px;
+    gap: 10px;
+    align-items: center;
+}
+
+.teacher-home-shortcuts ::deep .navigation-card-icon {
+    width: 33px;
+    height: 33px;
+}
+
+.teacher-home-shortcuts ::deep .navigation-card-icon .ui-icon {
+    width: 19px;
+    height: 19px;
+}
+
+.teacher-home-shortcuts ::deep .navigation-card h2 {
+    font-size: 1rem;
+}
+
+.teacher-home-shortcuts ::deep .navigation-card-description {
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+@media (min-width: 1000px) {
+    .teacher-home-shortcuts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

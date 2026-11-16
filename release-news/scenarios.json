@@ -29,7 +29,7 @@
   {"id":"materials","title":"Undervisningsmaterialer","route":"/courses/00000011-0000-4000-8000-000000000001?view=materials","selector":".hold-materials","ready":".material-row"},
   {"id":"hold-calendar","title":"Holdkalenderen","route":"/courses/00000011-0000-4000-8000-000000000001?view=calendar","selector":".hold-calendar","ready":".hold-calendar"},
   {"id":"groups","title":"Holdets grupper","route":"/courses/00000011-0000-4000-8000-000000000001?view=groups","selector":".hold-groups","ready":".hold-group-set-bar"},
-  {"id":"outlook","title":"Underviserens ugekalender","route":"/teacher/planner","selector":".v2-planning","ready":".v2-calendar-teacher"},
+  {"id":"outlook","title":"Underviserens ugekalender","route":"/teacher/planner","selector":".personal-calendar","ready":"[data-calendar-source=outlook]"},
   {"id":"assignment-feedback","title":"Aflevering og privat feedback","route":"/quests/00000044-0000-4000-8000-000000000001?submission=00000055-0000-4000-8000-000000000001&hold=00000022-0000-4000-8000-000000000001","selector":".assignment-work","ready":".assignment-revision"},
   {"id":"editor","title":"Udgivne undervisningssider","route":"/notion/00000077-0000-4000-8000-000000000001?hold=00000022-0000-4000-8000-000000000001&published=true","selector":".notion-document","ready":".notion-editor-root .bn-editor"},
   {"id":"page-graph","title":"Holdets sidegraf","route":"/notion/holds/00000022-0000-4000-8000-000000000001/graph","selector":".reference-graph","ready":".reference-canvas canvas"},

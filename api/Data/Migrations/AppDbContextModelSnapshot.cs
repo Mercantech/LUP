@@ -1217,11 +1217,55 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("hold", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.HoldCalendarChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ChangedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("EventVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("HoldId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid?>("QuestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId", "EventVersion");
+
+                    b.HasIndex("HoldId", "ChangedAtUtc");
+
+                    b.ToTable("hold_calendar_changes", (string)null);
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.HoldCalendarEvent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("AttendanceMode")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1244,6 +1288,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<Guid?>("QuestId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("StartUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -1257,6 +1304,8 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("QuestId");
 
                     b.HasIndex("HoldId", "StartUtc");
 
@@ -3178,6 +3227,15 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.Navigation("Forloeb");
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.HoldCalendarChange", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.Hold", null)
+                        .WithMany()
+                        .HasForeignKey("HoldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.HoldCalendarEvent", b =>
                 {
                     b.HasOne("Mercantec.Tech.Api.Data.Entities.Hold", null)
@@ -3185,6 +3243,11 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .HasForeignKey("HoldId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.LearningQuest", null)
+                        .WithMany()
+                        .HasForeignKey("QuestId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.HoldFavorite", b =>

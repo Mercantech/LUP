@@ -12,9 +12,16 @@ public sealed class LearningClient(HttpClient http, ActionCenterChanges? actionC
 
     public Task<LearningHold[]> Holds(CancellationToken ct) => Get<LearningHold[]>("quests/holds", ct);
     public Task<LearningMember[]> Members(Guid holdId, CancellationToken ct) => Get<LearningMember[]>($"quests/members?holdId={holdId}", ct);
-    public Task<QuestView[]> Quests(Guid holdId, CancellationToken ct) => Get<QuestView[]>($"quests?holdId={holdId}", ct);
+    public Task<QuestView[]> Quests(Guid holdId, CancellationToken ct, Guid? asUser = null) => Get<QuestView[]>($"quests?holdId={holdId}" + (asUser is Guid user ? $"&asUser={user:D}" : ""), ct);
     public Task<QuestView> Quest(Guid id, CancellationToken ct) => Get<QuestView>($"quests/{id}", ct);
-    public Task<HoldCalendarEventView[]> Calendar(Guid holdId, CancellationToken ct) => Get<HoldCalendarEventView[]>($"holds/{holdId}/calendar", ct);
+    public Task<HoldCalendarOverview> CalendarOverview(DateTimeOffset from, DateTimeOffset to, Guid? asUser, CancellationToken ct)
+    {
+        var url = $"calendar/holds?from={Uri.EscapeDataString(from.ToString("O"))}&to={Uri.EscapeDataString(to.ToString("O"))}";
+        if (asUser is Guid user)
+            url += $"&asUser={user:D}";
+        return Get<HoldCalendarOverview>(url, ct);
+    }
+    public Task<HoldCalendarEventView[]> Calendar(Guid holdId, CancellationToken ct, Guid? asUser = null) => Get<HoldCalendarEventView[]>($"holds/{holdId}/calendar" + (asUser is Guid user ? $"?asUser={user:D}" : ""), ct);
     public Task<HoldCalendarEventView> CreateEvent(SaveHoldCalendarEvent body, CancellationToken ct) => Send<HoldCalendarEventView>(HttpMethod.Post, $"holds/{body.HoldId}/calendar", body, ct);
     public Task<HoldCalendarEventView> UpdateEvent(Guid id, SaveHoldCalendarEvent body, CancellationToken ct) => Send<HoldCalendarEventView>(HttpMethod.Put, $"holds/{body.HoldId}/calendar/{id}", body, ct);
     public Task<System.Text.Json.JsonElement> DeleteEvent(Guid holdId, Guid id, int version, CancellationToken ct) => Send<System.Text.Json.JsonElement>(HttpMethod.Delete, $"holds/{holdId}/calendar/{id}?version={version}", new { }, ct);
@@ -89,6 +96,8 @@ public sealed class LearningClient(HttpClient http, ActionCenterChanges? actionC
             };
             message = error?.Error switch
             {
+                "calendar_event_changed" => "Aktiviteten er ændret. Hent den seneste version, før du fortsætter.",
+                "invalid_calendar_event" => "Kontrollér dato, varighed og eventuel tilknyttet quest, og prøv igen.",
                 "empty_submission" => "Skriv en tekst, eller tilføj mindst én fil, før du afleverer.",
                 "invalid_submission_mode" => "Vælg den afleveringsform, som opgaven tillader.",
                 "invalid_group_set" => "Gruppen kan ikke bruges til denne opgave. Se dine grupper, eller bed underviseren om hjælp.",
@@ -103,7 +112,7 @@ public sealed class LearningClient(HttpClient http, ActionCenterChanges? actionC
                 "web_preview_disabled" or "web_preview_not_configured" => "Spilvisning kræver, at serverens særskilte spildomæne er konfigureret.",
                 _ => message
             };
-            throw new LearningException(message);
+            throw new LearningException(message, error?.Error);
         }
         try
         {
@@ -119,4 +128,7 @@ public sealed class LearningClient(HttpClient http, ActionCenterChanges? actionC
     private sealed record ApiError(string? Error);
 }
 
-public sealed class LearningException(string message) : Exception(message);
+public sealed class LearningException(string message, string? code = null) : Exception(message)
+{
+    public string? Code { get; } = code;
+}

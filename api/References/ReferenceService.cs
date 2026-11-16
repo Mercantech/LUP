@@ -319,7 +319,8 @@ public sealed partial class ReferenceService(AppDbContext db)
             .Select(g => new { g.Id, g.HoldId, g.Name }).ToArrayAsync(ct))
             Add("group", g.Id, g.Name, $"/holds/{g.HoldId:D}?view=groups&group={g.Id:D}", g.HoldId);
         if (Includes("event"))
-        foreach (var e in await Only(db.HoldCalendarEvents.AsNoTracking().Where(e => holdIds.Contains(e.HoldId)), "event", e => e.Id)
+        foreach (var e in await Only(new HoldCalendarAccess(db).Visible(db.HoldCalendarEvents.AsNoTracking()
+            .Where(e => holdIds.Contains(e.HoldId)), sub, manageable), "event", e => e.Id)
             .Select(e => new { e.Id, e.HoldId, e.Title }).ToArrayAsync(ct))
             Add("event", e.Id, e.Title, $"/holds/{e.HoldId:D}?view=calendar&event={e.Id:D}", e.HoldId);
 

@@ -19,6 +19,7 @@ public sealed class TeacherCalendarClient(HttpClient http)
             throw new TeacherCalendarException(error?.Error switch
             {
                 "missing_email" => "Din konto mangler e-mail til kalenderkobling.",
+                "missing_mailbox_mapping" => "Din konto er ikke koblet til en Outlook-postkasse.",
                 "mailbox_not_found" => "Outlook-postkassen blev ikke fundet for din konto.",
                 "graph_unavailable" => "Azure-kalenderen kunne ikke hentes lige nu.",
                 "invalid_range" or "range_too_large" => "Ugyldigt datointerval for kalenderen.",

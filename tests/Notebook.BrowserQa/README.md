@@ -51,6 +51,14 @@ sletning og gendannelse med samme ID i personlige notesbøger og teorinotesbøge
 af Videnstjek fra desktop. En elev på mobil starter i notesbogen, genindlæser, fortsætter
 samme forsøg på den selvstændige side og ser derefter resultatet i notesbogen.
 
+## Kalender: automatiseret browseraccept
+
+Installér Playwright fra `release-news` med `npm --prefix release-news ci`. Start en
+frisk launcher med `NOTEBOOK_BROWSER_QA_CALENDAR=1` i miljøet og kør
+`node editor/tests/qa-calendar-browser.mjs`. Testen bruger den rigtige LUP-plan
+og notifikationer gennem de lokale API-controllere. Outlook-aftalen er en fiktiv
+respons i underviserens browserkontekst.
+
 ## Tegninger: automatiseret browseraccept
 
 Fixture registrerer de rigtige `DrawingAccess`/`DrawingService`-tjenester, alle40 indlejrede

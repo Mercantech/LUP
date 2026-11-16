@@ -21,7 +21,8 @@ public sealed class AuthDelegatingHandlerTests
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("{\"detail\":\"expired\"}", await response.Content.ReadAsStringAsync());
-        Assert.Equal(2, storage.TokenReads); // Initial token, then failed refresh lookup.
+        Assert.Equal(1, storage.TokenReads);
+        Assert.Equal(1, storage.RefreshAttempts);
         Assert.Equal(1, transport.Requests);
     }
 
@@ -38,7 +39,8 @@ public sealed class AuthDelegatingHandlerTests
         Assert.Equal(HttpStatusCode.Unauthorized, second.StatusCode);
         Assert.Equal("{\"detail\":\"expired\"}", await first.Content.ReadAsStringAsync());
         Assert.Equal("{\"detail\":\"expired\"}", await second.Content.ReadAsStringAsync());
-        Assert.Equal(4, storage.TokenReads);
+        Assert.Equal(2, storage.TokenReads);
+        Assert.Equal(2, storage.RefreshAttempts);
         Assert.Equal(2, transport.Requests);
     }
 
@@ -94,6 +96,7 @@ public sealed class AuthDelegatingHandlerTests
     {
         public const string Subject = "00000000-0000-0000-0000-000000000201";
         public int TokenReads { get; private set; }
+        public int RefreshAttempts { get; private set; }
         public string AccessToken { get; } = Token();
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) =>
@@ -102,6 +105,12 @@ public sealed class AuthDelegatingHandlerTests
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (identifier == "mercantecAuth.refreshTokens")
+            {
+                RefreshAttempts++;
+                Assert.Equal(AccessToken, args![2]);
+                return ValueTask.FromResult(JsonSerializer.Deserialize<TValue>("{\"access\":null}")!);
+            }
             if (identifier != "mercantecAuth.getTokens") throw new InvalidOperationException(identifier);
             TokenReads++;
             // No refresh token means refresh fails locally; no real auth or

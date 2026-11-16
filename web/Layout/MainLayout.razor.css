@@ -75,3 +75,21 @@ main { flex:1; }
 .lup-account-name {
     overflow-wrap: anywhere;
 }
+
+.lup-account-section {
+    display: grid;
+    gap: 2px;
+    padding-block: 7px;
+    border-top: 1px solid var(--rule);
+}
+
+.lup-account-section h2 {
+    margin: 2px 8px 3px;
+    font-size: .75rem;
+    color: var(--muted);
+    font-weight: 650;
+}
+
+.lup-account-section:last-child {
+    padding-bottom: 0;
+}

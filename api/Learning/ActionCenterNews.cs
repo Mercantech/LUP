@@ -9,7 +9,7 @@ namespace Mercantec.Tech.Api.Learning;
 /// <summary>Personal unread events with source access rechecked on every read and acknowledgment.</summary>
 public sealed class ActionCenterNews(AppDbContext db)
 {
-    public static bool CanAcknowledge(string? kind) => kind is "feedback" or "notebook-comment" or "notebook-share";
+    public static bool CanAcknowledge(string? kind) => kind is "feedback" or "notebook-comment" or "notebook-share" or "calendar-change";
     public async Task<ActionCenterItem[]> BuildAsync(Guid target, ActionCenterHold[] scope, bool teacher, CancellationToken ct)
     {
         var items = new List<ActionCenterItem>();
@@ -29,6 +29,21 @@ public sealed class ActionCenterNews(AppDbContext db)
                 var hold = holds[row.HoldId];
                 items.Add(new("feedback", "optional", hold.Id, hold.WorkspaceId, null, row.Id, row.SubmissionId,
                     row.Title, hold.Name, null, State: "unread", TargetId: row.QuestId));
+            }
+            if (!teacher)
+            {
+                var assigned = new HoldCalendarAccess(db).AssignedQuestIds(target);
+                var visibleChanges = db.HoldCalendarChanges.AsNoTracking().Where(c => holdIds.Contains(c.HoldId)
+                    && (c.QuestId == null || assigned.Contains(c.QuestId.Value)));
+                var latest = await visibleChanges.Where(c => !visibleChanges.Any(l => l.EventId == c.EventId && l.EventVersion > c.EventVersion)
+                    && !db.ActionReadReceipts.Any(r => r.UserSub == target && r.Kind == "calendar-change" && r.ResourceId == c.Id))
+                    .ToArrayAsync(ct);
+                foreach (var change in latest)
+                {
+                    var hold = holds[change.HoldId];
+                    items.Add(new("calendar-change", "important", hold.Id, hold.WorkspaceId, null, change.Id, null,
+                        change.Title, hold.Name, null, State: change.Kind, TargetId: change.EventId));
+                }
             }
         }
         // Global teacher read/comment privileges are deliberately not an inbox subscription.

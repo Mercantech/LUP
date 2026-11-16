@@ -1,19 +1,19 @@
-using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 
 namespace Mercantec.Tech.Web.Auth;
 
 public sealed class AuthService(
     IOptions<AuthOptions> options,
     TokenStore tokens,
-    NavigationManager navigation)
+    NavigationManager navigation) : IDisposable
 {
     private readonly AuthOptions _options = options.Value;
-    private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private DotNetObjectReference<AuthService>? _sessionUpdates;
     private static readonly HttpClient TokenHttp = new();
 
     public bool IsInitialized { get; private set; }
@@ -30,7 +30,8 @@ public sealed class AuthService(
 
     public async Task InitializeAsync()
     {
-        var (access, refresh, expiresAt) = await tokens.GetTokensAsync();
+        _sessionUpdates ??= DotNetObjectReference.Create(this);
+        var (access, refresh, expiresAt) = await tokens.GetTokensAsync(_sessionUpdates);
         if (CanUseAccessToken(access, expiresAt) && (!IsExpiring(expiresAt) || string.IsNullOrEmpty(refresh)))
         {
             ApplyAccessToken(access!);
@@ -96,7 +97,7 @@ public sealed class AuthService(
         if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
             return false;
 
-        var (verifier, expectedState) = await tokens.GetPkceAsync();
+        var (verifier, expectedState, loginEpoch) = await tokens.GetPkceAsync();
         await tokens.ClearPkceAsync();
 
         if (string.IsNullOrEmpty(verifier) || string.IsNullOrEmpty(expectedState) || expectedState != state)
@@ -111,10 +112,12 @@ public sealed class AuthService(
             ["code_verifier"] = verifier
         };
 
-        var (payload, _) = await RequestTokensAsync(body);
-        if (payload is null) return false;
+        var payload = await RequestTokensAsync(body);
+        if (payload?.AccessToken is not { } access) return false;
 
-        await StoreTokensAsync(payload, existingRefresh: null);
+        var expiresAt = DateTimeOffset.UtcNow.AddSeconds(payload.ExpiresIn > 0 ? payload.ExpiresIn : 900);
+        if (!await tokens.SetTokensAsync(access, payload.RefreshToken ?? string.Empty, expiresAt, loginEpoch)) return false;
+        UpdateAccessToken(access);
         return true;
     }
 
@@ -123,11 +126,13 @@ public sealed class AuthService(
         var (access, refresh, expiresAt) = await tokens.GetTokensAsync();
         if (CanUseAccessToken(access, expiresAt) && (!IsExpiring(expiresAt) || string.IsNullOrEmpty(refresh)))
         {
-            if (!IsAuthenticated) ApplyAccessToken(access!);
+            UpdateAccessToken(access!);
             return access;
         }
 
-        return string.IsNullOrEmpty(refresh) ? null : (await RefreshAsync()).Access;
+        if (!string.IsNullOrEmpty(refresh)) return (await RefreshAsync()).Access;
+        if (string.IsNullOrEmpty(access)) ResetSession();
+        return null;
     }
 
     public async Task<string?> RefreshAfterUnauthorizedAsync(string rejectedAccess) =>
@@ -138,105 +143,64 @@ public sealed class AuthService(
         // Kun lokal logout — ryd tokens/PKCE. Kald ikke auth-host /signout (SSO-session
         // kan leve videre). Undgå at starte /oauth/authorize automatisk efter logud;
         // ellers logger SSO brugeren stille ind igen.
-        await _refreshLock.WaitAsync();
-        try
-        {
-            await tokens.ClearTokensAsync();
-            await tokens.ClearPkceAsync();
-            await tokens.ClearLoginReturnPathAsync();
-            ClearLocalState();
-            IsInitialized = true;
-            Notify();
-        }
-        finally
-        {
-            _refreshLock.Release();
-        }
+        await tokens.ClearTokensAsync(appLogout: true);
+        await tokens.ClearPkceAsync();
+        await tokens.ClearLoginReturnPathAsync();
+        ClearLocalState();
+        IsInitialized = true;
+        Notify();
     }
 
-    private async Task<(string? Access, bool TemporaryFailure)> RefreshAsync(
+    [JSInvokable]
+    public async Task OnSharedSessionChanged()
+    {
+        var (access, _, expiresAt) = await tokens.GetTokensAsync();
+        if (CanUseAccessToken(access, expiresAt))
+            UpdateAccessToken(access!);
+        else if (string.IsNullOrEmpty(access))
+            ResetSession();
+    }
+
+    public void Dispose() => _sessionUpdates?.Dispose();
+
+    private async Task<TokenStore.RefreshResult> RefreshAsync(
         string? rejectedAccess = null, bool retryOnFailure = false)
     {
-        await _refreshLock.WaitAsync();
-        try
-        {
-            // Read inside the lock so queued requests use the latest rotated credentials.
-            var (access, refresh, expiresAt) = await tokens.GetTokensAsync();
-            if (access != rejectedAccess && CanUseAccessToken(access, expiresAt)
-                && (rejectedAccess is not null || !IsExpiring(expiresAt)))
-                return (access, false);
-
-            if (string.IsNullOrEmpty(refresh)) return (null, false);
-
-            var body = new Dictionary<string, string>
-            {
-                ["grant_type"] = "refresh_token",
-                ["refresh_token"] = refresh,
-                ["client_id"] = _options.ClientId
-            };
-            var (payload, invalidGrant) = await RequestTokensAsync(body);
-            if (payload is null && !invalidGrant && retryOnFailure && !CanUseAccessToken(access, expiresAt))
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1));
-                (payload, invalidGrant) = await RequestTokensAsync(body);
-            }
-
-            if (payload is not null)
-            {
-                await StoreTokensAsync(payload, refresh);
-                return (payload.AccessToken, false);
-            }
-
-            if (invalidGrant)
-            {
-                await tokens.ClearTokensAsync();
-                ClearLocalState();
-                if (IsInitialized) Notify();
-                return (null, false);
-            }
-
-            // A temporary outage can leave the previous access token usable until its expiry.
-            if (rejectedAccess is null && CanUseAccessToken(access, expiresAt))
-            {
-                if (!IsAuthenticated) ApplyAccessToken(access!);
-                return (access, true);
-            }
-
-            return (null, true);
-        }
-        finally
-        {
-            _refreshLock.Release();
-        }
+        var result = await tokens.RefreshTokensAsync(_options.TokenUrl, _options.ClientId, rejectedAccess, retryOnFailure);
+        if (result.Access is not null)
+            UpdateAccessToken(result.Access);
+        else if (result.SessionEnded)
+            ResetSession();
+        return result;
     }
 
-    private async Task<(TokenResponse? Payload, bool InvalidGrant)> RequestTokensAsync(Dictionary<string, string> body)
+    private async Task<TokenResponse?> RequestTokensAsync(Dictionary<string, string> body)
     {
         try
         {
             using var content = new FormUrlEncodedContent(body);
             using var response = await TokenHttp.PostAsync(_options.TokenUrl, content);
-            if (response.StatusCode == HttpStatusCode.BadRequest)
-            {
-                var failure = await response.Content.ReadFromJsonAsync<TokenResponse>();
-                return (null, failure?.Error == "invalid_grant");
-            }
-            if (!response.IsSuccessStatusCode) return (null, false);
-
+            if (!response.IsSuccessStatusCode) return null;
             var payload = await response.Content.ReadFromJsonAsync<TokenResponse>();
-            return string.IsNullOrWhiteSpace(payload?.AccessToken) ? (null, false) : (payload, false);
+            return string.IsNullOrWhiteSpace(payload?.AccessToken) ? null : payload;
         }
         catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or JsonException)
         {
-            return (null, false);
+            return null;
         }
     }
 
-    private async Task StoreTokensAsync(TokenResponse payload, string? existingRefresh)
+    private void UpdateAccessToken(string access)
     {
-        var expiresAt = DateTimeOffset.UtcNow.AddSeconds(payload.ExpiresIn > 0 ? payload.ExpiresIn : 900);
-        await tokens.SetTokensAsync(payload.AccessToken!, payload.RefreshToken ?? existingRefresh ?? string.Empty, expiresAt);
-        ApplyAccessToken(payload.AccessToken!);
+        if (AccessToken == access) return;
+        ApplyAccessToken(access);
+        if (IsInitialized) Notify();
+    }
+
+    private void ResetSession()
+    {
+        if (!IsAuthenticated && !SessionRecoveryPending) return;
+        ClearLocalState();
         if (IsInitialized) Notify();
     }
 
@@ -348,8 +312,5 @@ public sealed class AuthService(
 
         [JsonPropertyName("expires_in")]
         public int ExpiresIn { get; set; }
-
-        [JsonPropertyName("error")]
-        public string? Error { get; set; }
     }
 }

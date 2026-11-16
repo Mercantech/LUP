@@ -1,0 +1,339 @@
+@using System.Globalization
+@using Mercantec.Tech.Web.Calendar
+@using Mercantec.Tech.Web.Learning
+@inject AuthService Auth
+@inject AuthRedirect Redirect
+@inject ViewAsStudentContext ViewAs
+@inject LearningClient Learning
+@inject TeacherCalendarClient Outlook
+@inject IJSRuntime Js
+@implements IDisposable
+
+@if (!Auth.IsInitialized)
+{
+    <p role="status">Indlæser…</p>
+}
+else if (!Auth.IsAuthenticated)
+{
+    <p>Du skal være logget ind for at åbne kalenderen. <a href="@Auth.LoginPath()">Log ind</a></p>
+}
+else if (!CanRead)
+{
+    <p><a href="@Redirect.PostLoginPath()">Gå til dit overblik</a></p>
+}
+else if (ViewAs.IsActive && ViewAs.AuthSub is null)
+{
+    <p>Denne elevprofil har endnu ingen tilknyttet LUP-konto.</p>
+}
+else
+{
+    var days = BuildDays();
+    var (firstHour, lastHour) = HourRange(days);
+    var hasItems = days.Any(day => day.Blocks.Count > 0);
+    <NavigationLock ConfirmExternalNavigation="IsDirty" OnBeforeInternalNavigation="BeforeNavigate" />
+
+    <section class="personal-calendar" aria-label="@(Teacher ? "Ugeplan" : "Dagsplan")">
+        <div class="pc-controls">
+            <div class="pc-period">
+                <button type="button" class="secondary" aria-label="@(Teacher ? "Forrige uge" : "Forrige dag")" @onclick="() => Move(-1)">‹</button>
+                <h2>@PeriodLabel</h2>
+                <button type="button" class="secondary" aria-label="@(Teacher ? "Næste uge" : "Næste dag")" @onclick="() => Move(1)">›</button>
+                <button type="button" class="secondary" @onclick="() => ChangeAnchor(Today)">I dag</button>
+            </div>
+            <div class="pc-options">
+                @if (_holds.Length > 0)
+                {
+                    <label class="pc-filter">Vis hold
+                        <select @bind="_holdFilter">
+                            <option value="">Alle hold</option>
+                            @foreach (var hold in _holds)
+                            {
+                                <option value="@hold.HoldId">@hold.Name</option>
+                            }
+                        </select>
+                    </label>
+                }
+                @if (CanShowOutlook)
+                {
+                    <label class="pc-toggle"><input type="checkbox" checked="@_showOutlook" @onchange="ToggleOutlook" /> Vis Outlook</label>
+                }
+                @if (CanCreate)
+                {
+                    <button type="button" class="action" disabled="@_busy" @onclick="() => NewActivity(_anchor)"><UiIcon Name="plus" /> Planlæg aktivitet</button>
+                }
+            </div>
+        </div>
+
+        @if (Teacher && _showOutlook && _outlookLoading)
+        {
+            <p class="pc-status" role="status">Henter din Outlook-kalender…</p>
+        }
+        else if (Teacher && _showOutlook && _outlookError is not null)
+        {
+            <div class="pc-status pc-warning" role="status">
+                <span>@_outlookError</span>
+                <button type="button" class="secondary" @onclick="RetryOutlook">Hent Outlook igen</button>
+            </div>
+        }
+
+        @if (_notice is not null)
+        {
+            <p class="pc-status" role="status">@_notice</p>
+        }
+        @if (_loadError is not null)
+        {
+            <div class="pc-status pc-error" role="alert">
+                <span>@_loadError</span>
+                <button type="button" class="secondary" @onclick="RetryHoldPlan">Hent planen igen</button>
+            </div>
+        }
+        else if (_loading)
+        {
+            <p class="pc-status" role="status">Henter undervisning og quests…</p>
+        }
+        else if (_holds.Length == 0 && !Teacher)
+        {
+            <p class="pc-status">Når du er tilmeldt et hold, vises dets planlagte undervisning og dine questfrister her.</p>
+        }
+
+        @if (_draft is { } draft && CanEdit && _deleting is null)
+        {
+            <form class="pc-editor" @onsubmit="SaveActivity" @onsubmit:preventDefault aria-labelledby="pc-editor-title">
+                <h3 id="pc-editor-title">@(draft.Id is null ? "Planlæg aktivitet" : "Redigér aktivitet")</h3>
+                <fieldset disabled="@_busy">
+                    @if (_mutationError is not null)
+                    {
+                        <p class="pc-error" role="alert">@_mutationError</p>
+                        @if (_stale && draft.Id is Guid staleId)
+                        {
+                            <button type="button" class="secondary" @onclick="() => OpenLatest(staleId)">Hent seneste aktivitet</button>
+                        }
+                    }
+                    <div class="pc-fields">
+                        <label class="field">Hold
+                            <select value="@draft.HoldId" @onchange="SelectDraftHold" disabled="@(draft.Id is not null)" required>
+                                @foreach (var hold in ManageableHolds)
+                                {
+                                    <option value="@hold.HoldId">@hold.Name</option>
+                                }
+                            </select>
+                        </label>
+                        <label class="field">Type
+                            <select value="@draft.Kind" @onchange="SelectDraftKind">
+                                <option value="teaching">Undervisning</option>
+                                <option value="workshop">Workshop</option>
+                                <option value="exam">Prøve / eksamen</option>
+                                <option value="other">Begivenhed</option>
+                                <option value="quest">Quest i kalenderen</option>
+                            </select>
+                        </label>
+                        @if (draft.Kind == "quest")
+                        {
+                            <label class="field">Quest
+                                <select value="@draft.QuestId" @onchange="SelectDraftQuest" required>
+                                    <option value="">Vælg en quest</option>
+                                    @foreach (var quest in Choices(draft))
+                                    {
+                                        <option value="@quest.QuestId">@quest.Title</option>
+                                    }
+                                </select>
+                            </label>
+                        }
+                        <label class="field">Titel
+                            <input @ref="_titleInput" @bind="draft.Title" @bind:event="oninput" maxlength="200" required />
+                        </label>
+                        <label class="field">Start (dansk tid)
+                            <input type="datetime-local" value="@draft.Start" @oninput="e => draft.Start = e.Value?.ToString() ?? string.Empty" required />
+                        </label>
+                        <label class="field">Varighed (minutter)
+                            <input type="number" @bind="draft.Duration" min="1" max="@MaxDuration" required />
+                        </label>
+                        <label class="field">Fremmødeform
+                            <select @bind="draft.AttendanceMode">
+                                <option value="">Vælg fremmødeform</option>
+                                <option value="physical">Fuldt fremmøde</option>
+                                <option value="online">Online fremmøde</option>
+                                <option value="home">Arbejde hjemme</option>
+                            </select>
+                        </label>
+                        <label class="field">Sted
+                            <input @bind="draft.Location" @bind:event="oninput" maxlength="200" />
+                        </label>
+                    </div>
+                    <label class="field">Beskrivelse
+                        <textarea @bind="draft.Description" @bind:event="oninput" maxlength="4000" rows="3"></textarea>
+                    </label>
+                    @if (ConfirmOverlap)
+                    {
+                        <p class="pc-warning" role="alert">@_overlap Kontrollér tidspunktet, eller gem alligevel.</p>
+                    }
+                    <div class="pc-actions">
+                        <button type="submit" class="action" disabled="@_stale">@(_busy ? "Gemmer…" : ConfirmOverlap ? "Gem alligevel" : "Gem aktivitet")</button>
+                        <button type="button" class="secondary" @onclick="ClearEditor">Annullér</button>
+                        @if (draft.Id is not null && !_stale)
+                        {
+                            <button type="button" class="secondary pc-danger" @onclick="AskDelete">Slet aktivitet</button>
+                        }
+                    </div>
+                </fieldset>
+            </form>
+        }
+
+        @if (_deleting is { } deleting && CanEdit)
+        {
+            <div class="pc-editor" role="group" aria-label="Bekræft sletning">
+                <p>Slet <strong>@deleting.Title</strong> fra holdets kalender?</p>
+                @if (_mutationError is not null)
+                {
+                    <p class="pc-error" role="alert">@_mutationError</p>
+                }
+                <div class="pc-actions">
+                    <button type="button" class="action" disabled="@_busy" @onclick="DeleteActivity">Bekræft sletning</button>
+                    <button type="button" class="secondary" disabled="@_busy" @onclick="CancelDelete">Behold aktivitet</button>
+                </div>
+            </div>
+        }
+
+        @if (Teacher || _holds.Length > 0)
+        {
+            <div class="pc-calendar @(Teacher ? "pc-week" : "pc-day-view")" style="@($"--pc-hours:{lastHour - firstHour}")">
+                @if (Teacher)
+                {
+                    <div class="pc-time-rail" aria-hidden="true">
+                        <span class="pc-rail-heading">Dansk tid</span>
+                        <span></span>
+                        <div class="pc-time-labels">
+                            @for (var hour = firstHour; hour < lastHour; hour++)
+                            {
+                                <span>@hour.ToString("00"):00</span>
+                            }
+                        </div>
+                    </div>
+                }
+                @foreach (var day in days)
+                {
+                    <section @key="day.Date" class="pc-day" data-calendar-date="@day.Date.ToString("yyyy-MM-dd")">
+                        <header class="pc-day-heading @(day.Date == Today ? "pc-today" : null)"
+                                @ondragover:preventDefault="CanCreate" @ondrop="() => Drop(day.Date, null)">
+                            <h3><time datetime="@day.Date.ToString("yyyy-MM-dd")">@day.Date.ToString("ddd d. MMM", Danish)</time></h3>
+                            @if (CanCreate)
+                            {
+                                <button class="pc-add" type="button" aria-label="@($"Planlæg aktivitet {day.Date.ToString("dddd d. MMMM", Danish)}")"
+                                        disabled="@_busy" @onclick="() => NewActivity(day.Date)">+</button>
+                            }
+                        </header>
+                        <div class="pc-all-day">
+                            @foreach (var block in day.Blocks.Where(block => block.AllDay))
+                            {
+                                @BlockCard(block, null)
+                            }
+                        </div>
+                        <div class="pc-time-grid @(_dragged is not null ? "pc-dragging" : null)">
+                            @if (CanCreate && _dragged is not null)
+                            {
+                                <div class="pc-drop-slots" aria-hidden="true">
+                                    @foreach (var hour in Enumerable.Range(firstHour, lastHour - firstHour))
+                                    {
+                                        <div data-calendar-hour="@hour" @ondragover:preventDefault @ondrop="() => Drop(day.Date, hour)"></div>
+                                    }
+                                </div>
+                            }
+                            @if (day.Blocks.Count == 0 && !_loading)
+                            {
+                                <p class="pc-empty">Ingen aktiviteter</p>
+                            }
+                            @foreach (var placement in PlaceBlocks(day, firstHour))
+                            {
+                                @BlockCard(placement.Block, placement)
+                            }
+                        </div>
+                    </section>
+                }
+            </div>
+            @if (hasItems)
+            {
+                <p class="pc-caption">Alle klokkeslæt vises i dansk tid.</p>
+            }
+        }
+        @if (!Teacher && !_loading && _loadError is null && _holds.Length > 0)
+        {
+            <section class="pc-upcoming" aria-labelledby="pc-upcoming-title">
+                <h2 id="pc-upcoming-title">Kommende questfrister</h2>
+                @if (UpcomingDeadlines().ToArray() is { Length: > 0 } upcoming)
+                {
+                    <ul>
+                        @foreach (var (deadline, hold) in upcoming)
+                        {
+                            <li @key="deadline.QuestId">
+                                <a href="@QuestHref(deadline.QuestId, hold)">@deadline.Title</a>
+                                <span>@HoldTime.Local(deadline.DeadlineUtc).ToString("ddd d. MMM HH:mm", Danish) · @hold.Name</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>Ingen questfrister de næste syv dage efter den valgte dato.</p>
+                }
+            </section>
+        }
+    </section>
+}
+
+@code {
+    private RenderFragment BlockCard(PlanBlock block, BlockPlacement? placement) => @<article @key="block.Key"
+        class="pc-block @($"pc-{block.Source}") @(placement is null ? null : "pc-timed")"
+        data-calendar-source="@block.Source" style="@placement?.Css"
+        draggable="@(block.Activity is { } activity && CanManage(activity.HoldId) ? "true" : null)"
+        @ondragstart="() => BeginDrag(block.Activity)" @ondragend="EndDrag">
+        <div class="pc-block-meta">
+            <span>@TimeLabel(block)</span>
+            @if (block.AttendanceMode is { } mode)
+            {
+                <span class="pc-attendance-dot" data-attendance="@mode" title="@AttendanceLabel(mode)" aria-hidden="true"></span>
+            }
+            @if (block.Source == "deadline")
+            {
+                <span>Questfrist</span>
+            }
+            else if (block.Source == "outlook")
+            {
+                <span>Outlook · kun dig</span>
+            }
+            else if (block.Activity?.Kind == "quest")
+            {
+                <span>Planlagt quest</span>
+            }
+        </div>
+        @if (block.Activity is { } editable && CanManage(editable.HoldId))
+        {
+            <button type="button" class="pc-block-title" aria-label="@($"Redigér {block.Title}")" title="@block.Title"
+                    disabled="@_busy" @onclick="() => EditActivity(editable)">@block.Title</button>
+        }
+        else if (block.Href is not null)
+        {
+            <a class="pc-block-title" href="@block.Href" title="@block.Title"
+               target="@(block.Source == "outlook" ? "_blank" : null)" rel="@(block.Source == "outlook" ? "noopener" : null)">@block.Title</a>
+        }
+        else
+        {
+            <strong class="pc-block-title" title="@block.Title">@block.Title</strong>
+        }
+        @if (block.HoldName is not null)
+        {
+            <span class="pc-block-detail" title="@block.HoldName">@block.HoldName</span>
+        }
+        @if (!string.IsNullOrWhiteSpace(block.Location))
+        {
+            <span class="pc-block-detail" title="@block.Location">@block.Location</span>
+        }
+        @if (block.AttendanceMode is { } attendance)
+        {
+            <span class="pc-attendance">@AttendanceLabel(attendance)</span>
+        }
+        @if (!string.IsNullOrWhiteSpace(block.Activity?.Description) && block.Activity is { } item && !CanManage(item.HoldId))
+        {
+            <details><summary>Beskrivelse</summary><p class="pc-description">@item.Description</p></details>
+        }
+    </article>;
+}

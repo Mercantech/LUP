@@ -5,7 +5,7 @@ import { createContext, runInContext } from 'node:vm';
 
 const source = await readFile(new URL('../../web/wwwroot/service-worker.published.js', import.meta.url), 'utf8');
 const origin = 'https://lup.example';
-const current = origin + '/js/auth-storage.js?v=login-return-v1';
+const current = origin + '/js/auth-storage.js?v=tab-session-v1';
 const previous = origin + '/js/auth-storage.js?v=older-login';
 const unversioned = origin + '/js/auth-storage.js';
 
@@ -30,7 +30,7 @@ function fixture({ offline = false, status = 200, assets = [] } = {}) {
             location: new URL('/service-worker.js', origin),
             assetsManifest: { version: 'login-cache-test', assets: [
                 { url: 'js/auth-storage.js' },
-                { url: 'js/auth-storage.js?v=login-return-v1' },
+                { url: 'js/auth-storage.js?v=tab-session-v1' },
                 { url: 'js/other-feature.js' },
                 ...assets.map(url => ({ url })),
             ] },
