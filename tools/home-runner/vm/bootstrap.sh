@@ -50,7 +50,7 @@ sync_source() {
 }
 
 verify_runner() {
-    local token fingerprint envelope
+    local token fingerprint envelope results test_status diagnostic
     stage=deployed-tests
     signal "LUP_HOME_WORKER_STAGE $stage"
     token=$(sed -n 's/^HOME_RUNNER_TOKEN=//p' "$runner_env")
@@ -58,8 +58,16 @@ verify_runner() {
     if ! grep -qE '^127[.]0[.]0[.]1[[:space:]]+lup-home-worker$' /etc/hosts; then
         printf '127.0.0.1 lup-home-worker\n' >>/etc/hosts
     fi
+    results=$(mktemp)
     HOME_RUNNER_URL=https://lup-home-worker:8443 HOME_RUNNER_TOKEN="$token" SSL_CERT_FILE="$tls/cert.pem" \
-        python3 "$src/verify.py" DeployedRunnerTests
+        python3 "$src/verify.py" DeployedRunnerTests >"$results" 2>&1 && test_status=0 || test_status=$?
+    cat "$results"
+    while IFS= read -r diagnostic; do signal "LUP_HOME_WORKER_TEST $diagnostic"; done < <(
+        sed -nE 's/^((ERROR|FAIL): test_[a-z_]+).*/\1/p; s/^Ran ([0-9]+) tests? in .*/Ran \1 tests/p' "$results"
+        grep -oE 'HTTP Error [0-9]{3}|CERTIFICATE_VERIFY_FAILED|Connection refused|Connection reset by peer|Name or service not known|Temporary failure in name resolution|TimeoutError|KeyError|JSONDecodeError|COMPILE_ERROR|RUN_TIMEOUT|RUN_EXPIRED|RUN_CANCELLED|RUN_INVALID|WORKER_BUSY|WORKER_UNAVAILABLE|CONTAINER_EXITED' "$results" | sort -u
+    )
+    rm -f "$results"
+    if ((test_status != 0)); then return "$test_status"; fi
 
     fingerprint=$(openssl x509 -in "$tls/cert.pem" -noout -fingerprint -sha256 | cut -d= -f2 | tr -d ':')
     [[ "$fingerprint" =~ ^[0-9A-F]{64}$ ]]
