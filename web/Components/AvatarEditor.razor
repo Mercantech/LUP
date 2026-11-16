@@ -19,6 +19,7 @@ else if (!World.Ready || !World.AvatarProfileReady)
 }
 else
 {
+    var canUnlockForFree = World.CanUnlockAvatarsForFree;
     <section class="avatar-current" aria-label="Din valgte avatar">
         <AvatarIcon Size="48" Decorative="true" />
         <div><span>Du bruger</span><strong data-testid="selected-avatar-name">@World.SelectedAvatar.Name</strong></div>
@@ -76,8 +77,8 @@ else
             <a class="avatar-game-link" href="/games/arena">Prøv din valgte avatar i LUP Arena <span aria-hidden="true">↗</span></a>
         </section>
         <section class="avatar-library" aria-labelledby="avatar-library-title">
-            <div class="avatar-section-heading"><div><h2 id="avatar-library-title">Vælg din figur</h2><p>Opfyld figurens krav, og lås den op én gang.</p></div><span>@World.OwnedAvatarIds.Count / @AvatarCatalog.All.Count</span></div>
-            @if (AvatarCatalog.All.Any(avatar => !World.OwnsAvatar(avatar.Id) && avatar.UnlockRequirements.Count > 0))
+            <div class="avatar-section-heading"><div><h2 id="avatar-library-title">Vælg din figur</h2><p>@(canUnlockForFree ? "Som underviser kan du låse figurer op gratis." : "Opfyld figurens krav, og lås den op én gang.")</p></div><span>@World.OwnedAvatarIds.Count / @AvatarCatalog.All.Count</span></div>
+            @if (!canUnlockForFree && AvatarCatalog.All.Any(avatar => !World.OwnsAvatar(avatar.Id) && avatar.UnlockRequirements.Count > 0))
             {
                 <div class="avatar-requirements-help">
                     <div>
@@ -93,10 +94,11 @@ else
                 {
                     var owned = World.OwnsAvatar(avatar.Id);
                     var selected = World.SelectedAvatarId == avatar.Id;
+                    var canUnlock = World.CanUnlockAvatar(avatar.Id);
                     <article class="avatar-collectible @(selected ? "is-selected" : null) @(!owned ? "is-locked" : null)" data-avatar-id="@avatar.Id">
                         <button type="button" class="avatar-inspect" aria-label="@($"Se {avatar.Name}")" aria-pressed="@DemoWorld.Pressed(_previewId == avatar.Id)" @onclick="() => Preview(avatar.Id)">
                             <AvatarIcon AvatarId="@avatar.Id" Size="76" Decorative="true" />
-                            <strong>@avatar.Name</strong><span>@(selected ? "Din valgte figur" : owned ? "I din samling" : World.CanUnlockAvatar(avatar.Id) ? "Klar til at blive låst op" : "Se krav for oplåsning")</span>
+                            <strong>@avatar.Name</strong><span>@(selected ? "Din valgte figur" : owned ? "I din samling" : canUnlockForFree || canUnlock ? "Klar til at blive låst op" : "Se krav for oplåsning")</span>
                         </button>
                         <div class="avatar-card-action">
                             @if (selected)
@@ -109,28 +111,35 @@ else
                             }
                             else
                             {
-                                <span class="avatar-requirement"><UiIcon Name="lock" /> @(avatar.Cost == 0 ? "Gratis" : $"Level {avatar.Level} · {avatar.Cost} guld")</span>
-                                @if (avatar.UnlockRequirements.Count > 0)
+                                var unlockLabel = World.AvatarBusy ? "Gemmer…"
+                                    : canUnlockForFree || (canUnlock && avatar.Cost == 0) ? "Lås op gratis"
+                                    : canUnlock ? $"Lås op · {avatar.Cost} guld"
+                                    : World.AvatarRequirementText(avatar.Id);
+                                @if (!canUnlockForFree)
                                 {
-                                    <ul class="avatar-unlock-requirements" aria-label="@($"Oplåsningskrav for {avatar.Name}")">
-                                        @foreach (var requirement in avatar.UnlockRequirements)
-                                        {
-                                            var progress = World.GetAvatarUnlockProgress(avatar.Id).First(value => value.RequirementId == requirement.Id);
-                                            <li class="@(progress.IsMet ? "is-met" : null)" data-requirement-id="@requirement.Id">
-                                                <span>@requirement.Description</span>
-                                                <strong role="status" data-testid="@($"requirement-progress-{avatar.Id}-{requirement.Id}")">@Math.Min(progress.Current, progress.Required) / @progress.Required @(RequirementUnit(requirement.Kind)) @(progress.IsMet ? "· Opfyldt" : "")</strong>
-                                                <progress max="@progress.Required" value="@Math.Min(progress.Current, progress.Required)" aria-label="@requirement.Description"></progress>
-                                            </li>
-                                        }
-                                    </ul>
+                                    <span class="avatar-requirement"><UiIcon Name="lock" /> @(avatar.Cost == 0 ? "Gratis" : $"Level {avatar.Level} · {avatar.Cost} guld")</span>
+                                    @if (avatar.UnlockRequirements.Count > 0)
+                                    {
+                                        <ul class="avatar-unlock-requirements" aria-label="@($"Oplåsningskrav for {avatar.Name}")">
+                                            @foreach (var requirement in avatar.UnlockRequirements)
+                                            {
+                                                var progress = World.GetAvatarUnlockProgress(avatar.Id).First(value => value.RequirementId == requirement.Id);
+                                                <li class="@(progress.IsMet ? "is-met" : null)" data-requirement-id="@requirement.Id">
+                                                    <span>@requirement.Description</span>
+                                                    <strong role="status" data-testid="@($"requirement-progress-{avatar.Id}-{requirement.Id}")">@Math.Min(progress.Current, progress.Required) / @progress.Required @(RequirementUnit(requirement.Kind)) @(progress.IsMet ? "· Opfyldt" : "")</strong>
+                                                    <progress max="@progress.Required" value="@Math.Min(progress.Current, progress.Required)" aria-label="@requirement.Description"></progress>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
                                 }
-                                <button type="button" class="action" disabled="@(World.AvatarBusy || !World.CanUnlockAvatar(avatar.Id))" data-testid="@(avatar.Id == AvatarCatalog.Bip01Id ? "unlock-robot" : $"unlock-{avatar.Id}")" @onclick="() => Unlock(avatar.Id)">@(World.AvatarBusy ? "Gemmer…" : World.CanUnlockAvatar(avatar.Id) ? avatar.Cost == 0 ? "Lås op gratis" : $"Lås op · {avatar.Cost} guld" : World.AvatarRequirementText(avatar.Id))</button>
+                                <button type="button" class="action" disabled="@(!canUnlock)" data-testid="@(avatar.Id == AvatarCatalog.Bip01Id ? "unlock-robot" : $"unlock-{avatar.Id}")" @onclick="() => Unlock(avatar.Id)">@unlockLabel</button>
                             }
                         </div>
                     </article>
                 }
             </div>
-            @if (HasChristmasGiftRequirement)
+            @if (!canUnlockForFree && HasChristmasGiftRequirement)
             {
                 <p class="avatar-requirements-history">Gavens tema gemmes ved afsendelse. Ældre gaver uden gemt tema tæller ikke med i kravet.</p>
             }

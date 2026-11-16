@@ -8,7 +8,8 @@ public sealed record AvatarProfileDto(
     IReadOnlyList<string> OwnedItemIds,
     bool CanImportLegacy,
     long Revision,
-    IReadOnlyList<AvatarUnlockProgressDto>? UnlockProgress = null);
+    IReadOnlyList<AvatarUnlockProgressDto>? UnlockProgress = null,
+    bool CanUnlockAvatarsForFree = false);
 
 public sealed record AvatarUnlockProgressDto(
     string AvatarId,

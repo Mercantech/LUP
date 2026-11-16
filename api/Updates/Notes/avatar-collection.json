@@ -1,7 +1,7 @@
 {
   "date": "2026-11-16",
   "title": "Lås figurer op med guld og opgaver",
-  "description": "Bilbo Backend kan låses gratis op, når du har gennemført tre forskellige videnstjek i Backend. Bilbo har egne animationer og danske Chatterbox-replikker, og i Arena bruger han blandt andet Syltetøjskast og Ordrekøen. BIP-01, Raymond, Julemanden og LUPP har også hver sin danske Chatterbox-stemme. LUPP låses gratis op, når du har uploadet dit eget browserspil. Julemanden kræver level 4, 150 guld og julegaver til tre forskellige brugere. Din avatarsamling og dit fremskridt følger kontoen.",
+  "description": "Undervisere kan låse alle figurer gratis op med ét klik i avatarsamlingen og i Arena. Bilbo Backend låses gratis op efter tre forskellige Backend-videnstjek og kæmper med Syltetøjskast og Ordrekøen. LUPP kræver ét uploadet browserspil. Julemanden kræver level 4, 150 guld og julegaver til tre forskellige brugere. Bilbo, BIP-01, Raymond, Julemanden og LUPP har hver sin danske Chatterbox-stemme. Avatarsamlingen og dit fremskridt følger kontoen.",
   "authors": ["Kasper"],
   "after": { "id": "avatar-unlock-requirements", "alt": "Avatarsamlingen viser Julemandens krav med julegaver sendt til to ud af tre forskellige brugere." },
   "before": { "id": "avatar", "alt": "Den tidligere avatar-editor med udseendevalg og garderobe." }

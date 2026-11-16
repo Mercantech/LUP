@@ -46,6 +46,7 @@ public sealed class DemoWorld
     public string SelectedAvatarId { get; private set; } = AvatarCatalog.StarterId;
     public AvatarDefinition SelectedAvatar => AvatarCatalog.Find(SelectedAvatarId) ?? AvatarCatalog.All[0];
     public IReadOnlySet<string> OwnedAvatarIds => _ownedAvatarIds;
+    public bool CanUnlockAvatarsForFree { get; private set; }
     public bool AvatarProfileReady { get; private set; }
     public bool AvatarBusy { get; private set; }
     public string? AvatarProfileError { get; private set; }
@@ -204,13 +205,12 @@ public sealed class DemoWorld
 
     public bool OwnsAvatar(string? id) => id is not null && _ownedAvatarIds.Contains(id);
 
-    public bool CanUnlockAvatar(string? id) => Ready && AvatarProfileReady && !AvatarBusy
-        && AvatarProfileError is null && _avatarSubject is not null
+    public bool CanUnlockAvatar(string? id) => CanMutateAvatarProfile()
         && AvatarCatalog.Find(id) is { } avatar
         && !OwnsAvatar(id)
-        && CurrentLevel >= avatar.Level
-        && Gold >= avatar.Cost
-        && GetAvatarUnlockProgress(id).All(progress => progress.IsMet);
+        && (CanUnlockAvatarsForFree
+            || (CurrentLevel >= avatar.Level && Gold >= avatar.Cost
+                && GetAvatarUnlockProgress(id).All(progress => progress.IsMet)));
 
     public IReadOnlyList<AvatarUnlockProgressDto> GetAvatarUnlockProgress(string? id)
     {
@@ -232,6 +232,8 @@ public sealed class DemoWorld
             return "Låst op";
         if (_avatarSubject is null)
             return "Log ind for at låse op";
+        if (CanUnlockAvatarsForFree)
+            return "Gratis";
         if (CurrentLevel < avatar.Level)
             return $"Kræver level {avatar.Level}";
         if (GetAvatarUnlockProgress(id).FirstOrDefault(progress => !progress.IsMet) is { } missing)
@@ -531,6 +533,7 @@ public sealed class DemoWorld
 
     private void ResetAvatarProfile()
     {
+        CanUnlockAvatarsForFree = false;
         _avatarUnlockProgress.Clear();
         _ownedAvatarIds.Clear();
         _ownedAvatarIds.Add(AvatarCatalog.StarterId);
@@ -551,6 +554,7 @@ public sealed class DemoWorld
         if (profile.Revision < _avatarRevision) return false;
         _avatarRevision = profile.Revision;
         ResetAvatarProfile();
+        CanUnlockAvatarsForFree = profile.CanUnlockAvatarsForFree;
         foreach (var progress in profile.UnlockProgress ?? [])
             if (progress is not null && AvatarEconomy.FindAvatar(progress.AvatarId)?.Requirements?.Any(requirement => requirement.Id == progress.RequirementId) == true)
                 _avatarUnlockProgress[(progress.AvatarId, progress.RequirementId)] = progress;

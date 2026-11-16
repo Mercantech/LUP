@@ -77,6 +77,52 @@ public sealed class ArenaMenuTests
         Assert.Empty(api.Requests);
     }
 
+    [Fact]
+    public async Task Instructor_can_unlock_and_select_a_fighter_with_one_roster_click()
+    {
+        using var api = new NoNetworkApi();
+        var subject = Guid.NewGuid().ToString();
+        var claims = new Claim[] { new("sub", subject), new("role", "Underviser") };
+        var javascript = new MenuJavascript { Token = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(claims: claims)) };
+        var profile = new AvatarProfileDto(AvatarEconomy.StarterId, [AvatarEconomy.StarterId],
+            0, 1, AvatarEconomy.InitialItemIds, false, 0, CanUnlockAvatarsForFree: true);
+        var pendingUnlock = new TaskCompletionSource<AvatarProfileDto>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requests = new List<(string AvatarId, string? Subject)>();
+        var avatars = new StarterAvatars(profile, (avatarId, expectedSubject) =>
+        {
+            requests.Add((avatarId, expectedSubject));
+            return pendingUnlock.Task;
+        });
+        await using var context = await CreateContext(api, javascript, avatars);
+        context.Services.GetRequiredService<NavigationManager>().NavigateTo(ArenaFighters.PlayPath);
+        var page = context.Render<Arena>();
+
+        AngleSharp.Dom.IElement Santa() => page.FindAll(".arena-fighter").Single(x => x.TextContent.Contains("Julemanden"));
+        page.WaitForAssertion(() => Assert.False(Santa().HasAttribute("disabled")));
+        Assert.Contains("Lås op gratis", Santa().TextContent);
+        Assert.Null(Santa().ParentElement!.QuerySelector(".arena-fighter-unlock"));
+
+        var clicking = Santa().ClickAsync(new MouseEventArgs());
+        page.WaitForAssertion(() => Assert.All(page.FindAll(".arena-fighter"), fighter => Assert.True(fighter.HasAttribute("disabled"))));
+        var request = Assert.Single(requests);
+        Assert.Equal(AvatarEconomy.SantaId, request.AvatarId);
+        Assert.Equal(subject, request.Subject);
+
+        pendingUnlock.SetResult(profile with
+        {
+            SelectedAvatarId = AvatarEconomy.SantaId,
+            OwnedAvatarIds = [AvatarEconomy.StarterId, AvatarEconomy.SantaId],
+            Revision = 1
+        });
+        await clicking;
+
+        Assert.Equal("true", Santa().GetAttribute("aria-pressed"));
+        Assert.Equal("Julemanden", page.Find(".arena-fighter-showcase h2").TextContent);
+        Assert.Contains("preview", javascript.Module.Calls);
+        Assert.Single(requests);
+        Assert.Empty(api.Requests);
+    }
+
     [Theory]
     [InlineData("/arena")]
     [InlineData("/games/arena")]
@@ -440,12 +486,14 @@ public sealed class ArenaMenuTests
         }
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
-    private sealed class StarterAvatars(AvatarProfileDto? profile = null) : IAvatarClient
+    private sealed class StarterAvatars(AvatarProfileDto? profile = null,
+        Func<string, string?, Task<AvatarProfileDto>>? unlock = null) : IAvatarClient
     {
         public Task<AvatarProfileDto> GetAsync(CancellationToken ct = default, string? expectedSubject = null)
             => Task.FromResult(profile ?? throw new InvalidOperationException("Guest menus must not request account data."));
         private static Task<AvatarProfileDto> Mutation() => throw new InvalidOperationException("Menu navigation must not mutate profile data.");
-        public Task<AvatarProfileDto> UnlockAsync(string avatarId, CancellationToken ct = default, string? expectedSubject = null) => Mutation();
+        public Task<AvatarProfileDto> UnlockAsync(string avatarId, CancellationToken ct = default, string? expectedSubject = null)
+            => unlock?.Invoke(avatarId, expectedSubject) ?? Mutation();
         public Task<AvatarProfileDto> SelectAsync(string avatarId, CancellationToken ct = default, string? expectedSubject = null) => Mutation();
         public Task<AvatarProfileDto> ImportLegacyAsync(AvatarLegacyImportRequest request, CancellationToken ct = default, string? expectedSubject = null) => Mutation();
         public Task<AvatarProfileDto> BuyItemAsync(string itemId, CancellationToken ct = default, string? expectedSubject = null) => Mutation();

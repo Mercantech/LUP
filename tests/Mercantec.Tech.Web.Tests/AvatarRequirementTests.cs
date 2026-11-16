@@ -191,6 +191,51 @@ public sealed class AvatarRequirementTests
     }
 
     [Fact]
+    public async Task Teacher_can_unlock_and_use_a_paid_avatar_with_one_click_in_the_collection()
+    {
+        using var api = new RequirementApi { Subject = LearningUiTestContext.AccountId.ToString() };
+        api.Profiles[api.Subject] = Profile(0) with { Gold = 0, Level = 1, CanUnlockAvatarsForFree = true };
+        await using var context = await LearningUiTestContext.CreateAsync(api, configure: services =>
+        {
+            services.AddSingleton<IAvatarClient>(api);
+            services.AddSingleton<DemoWorld>();
+            services.AddSingleton<GiftMailboxClient>();
+        });
+        context.ComponentFactories.AddStub<AvatarLayerPreview>();
+        var editor = context.Render<AvatarEditor>();
+
+        editor.WaitForAssertion(() => Assert.Equal("Lås op gratis", editor.Find("[data-testid=unlock-santa]").TextContent.Trim()));
+        Assert.False(editor.Find("[data-testid=unlock-santa]").HasAttribute("disabled"));
+        Assert.Empty(editor.FindAll("[data-avatar-id=santa] .avatar-unlock-requirements, [data-avatar-id=santa] .avatar-requirement"));
+        editor.Find("[data-testid=unlock-santa]").Click();
+
+        editor.WaitForAssertion(() => Assert.Equal("Julemanden", editor.Find("[data-testid=selected-avatar-name]").TextContent.Trim()));
+        Assert.Equal(0, context.Services.GetRequiredService<DemoWorld>().Gold);
+        Assert.Equal(1, api.UnlockCalls);
+    }
+
+    [Fact]
+    public async Task Teacher_unlock_capability_is_cleared_when_switching_to_another_account()
+    {
+        using var api = new RequirementApi();
+        api.Profiles["teacher"] = Profile(0) with { CanUnlockAvatarsForFree = true };
+        var world = new DemoWorld(new EmptyRuntime(), api);
+        await world.BindAvatarProfileAsync("teacher");
+        Assert.True(world.CanUnlockAvatar(AvatarEconomy.BilboId));
+
+        var delayed = new TaskCompletionSource<AvatarProfileDto>(TaskCreationOptions.RunContinuationsAsynchronously);
+        api.PendingGets["student"] = delayed;
+        var switching = world.BindAvatarProfileAsync("student");
+        Assert.False(world.CanUnlockAvatarsForFree);
+        Assert.False(world.CanUnlockAvatar(AvatarEconomy.BilboId));
+        delayed.SetResult(Profile(0));
+        await switching;
+
+        Assert.False(await world.TryUnlockAvatarAsync(AvatarEconomy.BilboId));
+        Assert.Equal(0, api.UnlockCalls);
+    }
+
+    [Fact]
     public async Task Collection_shows_live_server_progress_and_a_confirmed_third_gift_refreshes_the_gate_without_reload()
     {
         using var api = new RequirementApi { Subject = LearningUiTestContext.AccountId.ToString() };
@@ -325,7 +370,13 @@ public sealed class AvatarRequirementTests
         {
             UnlockCalls++;
             var p = Get(expectedSubject);
-            var updated = PendingUnlock is not null ? await PendingUnlock.Task : p with { SelectedAvatarId = avatarId, OwnedAvatarIds = p.OwnedAvatarIds.Append(avatarId).ToArray(), Gold = p.Gold - AvatarEconomy.FindAvatar(avatarId)!.Cost, Revision = p.Revision + 1 };
+            var updated = PendingUnlock is not null ? await PendingUnlock.Task : p with
+            {
+                SelectedAvatarId = avatarId,
+                OwnedAvatarIds = p.OwnedAvatarIds.Append(avatarId).ToArray(),
+                Gold = p.CanUnlockAvatarsForFree ? p.Gold : p.Gold - AvatarEconomy.FindAvatar(avatarId)!.Cost,
+                Revision = p.Revision + 1
+            };
             // A purchase response may be stale, but a later GET derives current
             // gift progress independently from the committed gift history.
             Profiles[expectedSubject ?? Subject] = updated with { UnlockProgress = Get(expectedSubject).UnlockProgress };

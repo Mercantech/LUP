@@ -38,7 +38,8 @@ public sealed class AvatarRequirementTests : IAsyncLifetime
                 teacher ? [new("sub", subject.ToString()), new("role", "Underviser")] : [new("sub", subject.ToString())], "test"))
         }
     };
-    private static AvatarsController As(AppDbContext db, Guid subject) => new(db) { ControllerContext = Context(subject) };
+    private static AvatarsController As(AppDbContext db, Guid subject, bool teacher = false) =>
+        new(db) { ControllerContext = Context(subject, teacher) };
     private static AvatarProfileDto Ok(ActionResult<AvatarProfileDto> result) => Assert.IsType<AvatarProfileDto>(Assert.IsType<OkObjectResult>(result.Result).Value);
     private static AvatarUnlockProgressDto Progress(AvatarProfileDto profile) => Assert.Single(profile.UnlockProgress!, p => p.AvatarId == "santa" && p.RequirementId == "christmas-gift-recipients");
     private static AvatarUnlockProgressDto BilboProgress(AvatarProfileDto profile) =>
@@ -143,6 +144,44 @@ public sealed class AvatarRequirementTests : IAsyncLifetime
         var restored = Ok(await controller.Select(new("santa"), default));
         Assert.Equal("santa", restored.SelectedAvatarId); Assert.Equal(170, restored.Gold);
         var retry = Ok(await controller.Unlock("santa", default)); Assert.Equal(restored.Revision, retry.Revision);
+    }
+
+    [Fact]
+    public async Task TeacherUnlocksPaidAndTaskLockedAvatarsForFreeAndKeepsThemOnTheAccount()
+    {
+        await using var db = Open();
+        var teacher = As(db, Alice, teacher: true);
+        Assert.True(Ok(await teacher.Get(default)).CanUnlockAvatarsForFree);
+        var stored = await db.AvatarProfiles.SingleAsync(profile => profile.UserSub == Alice);
+        stored.Level = 1;
+        stored.Gold = 0;
+        await db.SaveChangesAsync();
+
+        var santa = Ok(await teacher.Unlock(AvatarEconomy.SantaId, default));
+        Assert.True(santa.CanUnlockAvatarsForFree);
+        Assert.False(Progress(santa).IsMet);
+        Assert.Equal(1, santa.Level);
+        Assert.Equal(0, santa.Gold);
+        Assert.Equal(AvatarEconomy.SantaId, santa.SelectedAvatarId);
+        Assert.Equal(santa.Revision, Ok(await teacher.Unlock(AvatarEconomy.SantaId, default)).Revision);
+
+        var bilbo = Ok(await teacher.Unlock(AvatarEconomy.BilboId, default));
+        Assert.False(BilboProgress(bilbo).IsMet);
+        Assert.Equal(AvatarEconomy.BilboId, bilbo.SelectedAvatarId);
+        Assert.Equal(0, bilbo.Gold);
+
+        await using var secondDevice = Open();
+        var saved = Ok(await As(secondDevice, Alice).Get(default));
+        Assert.False(saved.CanUnlockAvatarsForFree);
+        Assert.Equal(AvatarEconomy.BilboId, saved.SelectedAvatarId);
+        Assert.Contains(AvatarEconomy.SantaId, saved.OwnedAvatarIds);
+        Assert.Contains(AvatarEconomy.BilboId, saved.OwnedAvatarIds);
+        Assert.Equal(0, saved.Gold);
+
+        var student = As(secondDevice, Bob);
+        Assert.False(Ok(await student.Get(default)).CanUnlockAvatarsForFree);
+        Missing(await student.Unlock(AvatarEconomy.SantaId, default));
+        Missing(await student.Unlock(AvatarEconomy.BilboId, default));
     }
 
     [Fact]
