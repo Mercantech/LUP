@@ -11,6 +11,8 @@
     <EmbeddedResource Include="KnowledgeChecks/ControlFlowPilot.json" LogicalName="Mercantec.Tech.Api.ControlFlowPilot.json" />
     <Content Remove="KnowledgeChecks/LegacyTemplates.json" />
     <EmbeddedResource Include="KnowledgeChecks/LegacyTemplates.json" LogicalName="Mercantec.Tech.Api.LegacyKnowledgeChecks.json" />
+    <Content Remove="KnowledgeChecks/CharacterTemplates.json" />
+    <EmbeddedResource Include="KnowledgeChecks/CharacterTemplates.json" LogicalName="Mercantec.Tech.Api.CharacterKnowledgeChecks.json" />
     <EmbeddedResource Include="Emojis/Standard/*.png" LogicalName="standard-emojis/%(Filename)%(Extension)" />
     <EmbeddedResource Include="Updates/Images/*.webp" LogicalName="platform-updates/%(Filename)%(Extension)" />
     <EmbeddedResource Include="Updates/coverage.json" LogicalName="platform-updates/coverage.json" />

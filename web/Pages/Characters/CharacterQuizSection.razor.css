@@ -1,0 +1,45 @@
+.character-quizzes {
+    margin-block: clamp(1.5rem, 4vw, 2.5rem);
+    scroll-margin-block-start: 5rem;
+}
+
+.character-quizzes h2 {
+    margin-block: 0 .75rem;
+    font-size: 1.25rem;
+    text-wrap: balance;
+}
+
+.character-quiz {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem 1.5rem;
+    padding: clamp(.875rem, 3vw, 1.25rem);
+    border: 1px solid var(--rule);
+    border-radius: .75rem;
+    background: var(--paper);
+}
+
+.character-quiz + .character-quiz { margin-block-start: .625rem; }
+
+.character-quiz h3 {
+    margin: 0;
+    font-size: 1.075rem;
+    overflow-wrap: anywhere;
+}
+
+.character-quiz-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem .75rem;
+    margin: .4rem 0 0;
+    color: var(--muted);
+    font-size: .875rem;
+}
+
+.character-quizzes :is(.action, .secondary) { min-height: 2.75rem; }
+.character-quizzes :is(a, button):focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+}

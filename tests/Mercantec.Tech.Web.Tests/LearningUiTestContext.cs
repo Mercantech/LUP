@@ -4,6 +4,7 @@ using System.Text.Json;
 using Bunit;
 using Mercantec.Tech.Web.Auth;
 using Mercantec.Tech.Web.Emojis;
+using Mercantec.Tech.Web.KnowledgeChecks;
 using Mercantec.Tech.Web.Learning;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -37,6 +38,7 @@ internal sealed class LearningUiTestContext : BunitContext
         Services.AddSingleton(http);
         Services.AddSingleton(new LearningClient(http));
         Services.AddSingleton(new EmojiClient(http));
+        Services.AddSingleton(new KnowledgeCheckClient(http));
         configure?.Invoke(Services);
     }
 

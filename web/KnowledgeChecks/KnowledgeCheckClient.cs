@@ -6,12 +6,14 @@ namespace Mercantec.Tech.Web.KnowledgeChecks;
 
 public sealed class KnowledgeCheckClient(HttpClient http)
 {
-    public Task<T> GetAsync<T>(string path = "") where T : class => SendAsync<T>(HttpMethod.Get, path);
+    public Task<T> GetAsync<T>(string path = "", CancellationToken cancellationToken = default) where T : class =>
+        SendAsync<T>(HttpMethod.Get, path, cancellationToken: cancellationToken);
 
-    public async Task<T> SendAsync<T>(HttpMethod method, string path, object? body = null) where T : class
+    public async Task<T> SendAsync<T>(HttpMethod method, string path, object? body = null,
+        CancellationToken cancellationToken = default) where T : class
     {
-        using var response = await SendRequestAsync(method, path, body);
-        return await response.Content.ReadFromJsonAsync<T>()
+        using var response = await SendRequestAsync(method, path, body, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<T>(cancellationToken: cancellationToken)
             ?? throw new KnowledgeCheckException("LUP modtog et tomt svar.");
     }
 
@@ -20,11 +22,12 @@ public sealed class KnowledgeCheckClient(HttpClient http)
         using var response = await SendRequestAsync(method, path, body);
     }
 
-    private async Task<HttpResponseMessage> SendRequestAsync(HttpMethod method, string path, object? body)
+    private async Task<HttpResponseMessage> SendRequestAsync(HttpMethod method, string path, object? body,
+        CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(method, path.Length == 0 ? "knowledge-checks" : $"knowledge-checks/{path}");
         if (body is not null) request.Content = JsonContent.Create(body);
-        var response = await http.SendAsync(request);
+        var response = await http.SendAsync(request, cancellationToken);
         if (response.IsSuccessStatusCode) return response;
 
         using (response)
@@ -32,7 +35,7 @@ public sealed class KnowledgeCheckClient(HttpClient http)
             var status = response.StatusCode;
             try
             {
-                using var json = await response.Content.ReadFromJsonAsync<JsonDocument>();
+                using var json = await response.Content.ReadFromJsonAsync<JsonDocument>(cancellationToken: cancellationToken);
                 if (json?.RootElement.ValueKind == JsonValueKind.Object
                     && json.RootElement.TryGetProperty("error", out var error))
                 {

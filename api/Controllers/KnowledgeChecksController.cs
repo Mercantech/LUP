@@ -33,7 +33,10 @@ public sealed partial class KnowledgeChecksController(AppDbContext db, CourseAcc
             publication.HoldId == null
                 ? publication.IsActive || teacher && publication.Version.Quiz.OwnerSub == sub
                 : allowed.Contains(publication.HoldId.Value) && (publication.IsActive || managed.Contains(publication.HoldId.Value)))
-            .OrderByDescending(publication => publication.CreatedAtUtc).ToArrayAsync(ct);
+            .OrderByDescending(publication => publication.CreatedAtUtc).ThenBy(publication => publication.Id).ToArrayAsync(ct);
+        var latestCharacterPublications = visible.Where(publication => publication.IsActive && publication.HoldId is null
+                && CharacterKnowledgeCheckCatalog.All.ContainsKey(publication.Version.QuizId))
+            .DistinctBy(publication => publication.Version.QuizId).Select(publication => publication.Id).ToHashSet();
         var attempts = await db.KnowledgeCheckAttempts.AsNoTracking().Where(attempt => attempt.UserSub == sub)
             .OrderByDescending(attempt => attempt.StartedAtUtc).ThenBy(attempt => attempt.Id)
             .Select(attempt => new
@@ -55,6 +58,9 @@ public sealed partial class KnowledgeChecksController(AppDbContext db, CourseAcc
                 ? managed.Contains(hold) : teacher && owner == sub;
             var view = View(publication, canManage, own.FirstOrDefault(attempt => attempt.Status == Started)?.Id,
                 own.FirstOrDefault()?.Id, own.Count());
+            if (view.CharacterHost is not null && publication.IsActive)
+                view = view with { IsCurrentPractice = latestCharacterPublications.Contains(publication.Id) };
+
             return publication.IsActive && publication.HoldId is null
                 && legacyByOwner[owner].TryGetValue(publication.Version.QuizId, out var legacy)
                 ? view with { LegacyDiscovery = legacy.DiscoveryForTopic(publication.Version.Topic) }
@@ -217,14 +223,19 @@ public sealed partial class KnowledgeChecksController(AppDbContext db, CourseAcc
         var query = db.KnowledgeCheckAttempts.AsNoTracking().Where(row => row.PublicationId == publication.Id && row.UserSub == sub);
         var latest = await query.OrderByDescending(row => row.StartedAtUtc).ThenBy(row => row.Id)
             .Select(row => new { row.Id, row.Status }).FirstOrDefaultAsync(ct);
-        return View(publication, await CanManage(publication, sub, ct), latest?.Status == Started ? latest.Id : null, latest?.Id,
+        var view = View(publication, await CanManage(publication, sub, ct), latest?.Status == Started ? latest.Id : null, latest?.Id,
             await query.CountAsync(ct));
+        if (view.CharacterHost is null || !publication.IsActive) return view;
+
+        var current = await ActiveCharacterPublications([view.QuizId]).Select(row => row.Id).FirstOrDefaultAsync(ct);
+        return view with { IsCurrentPractice = current == publication.Id };
     }
 
     private static KnowledgeCheckPublicationView View(KnowledgeCheckPublication row, bool manage, Guid? active = null, Guid? latest = null,
         int used = 0) => new(row.Id, row.Version.QuizId, row.Version.Title, row.Version.Description, row.Version.Topic, row.Version.EstimatedMinutes,
         row.Version.QuestionCount, row.HoldId, row.Hold?.Name, row.MaxAttempts, row.IsActive, manage, row.FeedbackMode,
-        row.FeedbackReleased, active, latest, used, row.CreatedAtUtc);
+        row.FeedbackReleased, active, latest, used, row.CreatedAtUtc,
+        CharacterHost: row.HoldId is null ? CharacterKnowledgeCheckCatalog.Host(row.Version.QuizId) : null);
 
     private static KnowledgeCheckDraftView DraftView(KnowledgeCheckQuiz quiz) =>
         new(quiz.Id, quiz.Title, quiz.Description, quiz.Topic, quiz.EstimatedMinutes, Read<KnowledgeCheckQuestion>(quiz.QuestionsJson),

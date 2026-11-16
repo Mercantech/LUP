@@ -40,8 +40,11 @@ type Publication = {
   activeAttemptId: string | null;
   latestAttemptId: string | null;
   attemptsUsed: number;
+  characterHost?: { slug: string; intro: string; difficulty: string } | null;
 };
 type Draft = Pick<Attempt, 'questionIndex' | 'answers'>;
+
+export type CharacterHostPresentation = { slug: string; name: string; profilePath: string; portrait?: string | null };
 
 export type KnowledgeCheckRunnerProps = {
   distributionId: string;
@@ -51,6 +54,7 @@ export type KnowledgeCheckRunnerProps = {
   pageId?: string;
   blockId?: string;
   attemptId?: string | null;
+  characterHosts?: CharacterHostPresentation[];
 };
 
 class KnowledgeCheckError extends Error {
@@ -205,6 +209,8 @@ export function KnowledgeCheckRunner(props: KnowledgeCheckRunnerProps) {
   const mayStart = publication?.isActive
     && (publication.maxAttempts == null || publication.attemptsUsed < publication.maxAttempts);
   const practice = !inline && publication?.holdId === null;
+  const characterHost = practice ? publication?.characterHost : null;
+  const presenter = characterHost && props.characterHosts?.find(host => host.slug === characterHost.slug);
   const practiceStage = !attempt ? 'is-intro' : attempt.status === 'started' ? 'is-answering' : 'is-reviewing';
   const anotherAttemptIsActive = practice && publication?.activeAttemptId && publication.activeAttemptId !== attempt?.id;
   const retryLabel = anotherAttemptIsActive ? 'Fortsæt igangværende forsøg' : 'Nyt forsøg';
@@ -216,6 +222,13 @@ export function KnowledgeCheckRunner(props: KnowledgeCheckRunnerProps) {
         <h2 id={headingId}>{publication?.title ?? 'Videnstjek'}</h2>
         {publication && <PublicationMeta publication={publication} practice={practice} />}
       </div>
+      {presenter && characterHost && <aside className="lup-knowledge-host" aria-label="Quizvært">
+        {presenter.portrait && <img src={presenter.portrait} alt="" width="52" height="52" />}
+        <div>
+          <a href={presenter.profilePath}>Vært: {presenter.name}</a>
+          <p>{characterHost.intro}</p>
+        </div>
+      </aside>}
       {inline && publication && attempt?.status !== 'started' &&
         <a className="secondary" href={openUrl}>Åbn på egen side</a>}
     </header>

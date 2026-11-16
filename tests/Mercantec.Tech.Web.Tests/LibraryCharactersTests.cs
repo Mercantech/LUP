@@ -18,7 +18,7 @@ public sealed class LibraryCharactersTests
     [InlineData(true)]
     public async Task Character_category_uses_public_profile_portraits_and_stable_links(bool authenticated)
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await CreateContext(api, authenticated);
         var page = RenderCharacters(context);
 
@@ -41,7 +41,7 @@ public sealed class LibraryCharactersTests
     [Fact]
     public async Task Material_shortcuts_show_available_media_and_land_on_the_profile_galleries()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await CreateContext(api);
         var page = RenderCharacters(context);
         var expected = new[]
@@ -118,7 +118,7 @@ public sealed class LibraryCharactersTests
     [Fact]
     public async Task Search_keeps_character_portraits_and_clear_returns_to_the_selected_category()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await CreateContext(api);
         var page = RenderCharacters(context);
 
@@ -179,7 +179,7 @@ public sealed class LibraryCharactersTests
     [Fact]
     public async Task Character_overview_and_each_profile_link_back_to_the_library_category()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         using var context = await CreateContext(api);
         var overview = context.Render<CharacterIndex>();
         Assert.Contains(overview.FindAll("a"), link => link.GetAttribute("href") == "/library?category=characters" && link.TextContent.Contains("Oversigt", StringComparison.Ordinal));
@@ -192,6 +192,8 @@ public sealed class LibraryCharactersTests
 
     [Theory]
     [InlineData("raymond", "character-animations-title")]
+    [InlineData("raymond", "animation-find-row")]
+    [InlineData("raymond", "animation-sort-rows")]
     [InlineData("raymond", "character-gallery-title")]
     [InlineData("vatson", "character-reactions-title")]
     [InlineData("beaver", "character-reactions-title")]
@@ -201,7 +203,7 @@ public sealed class LibraryCharactersTests
     [InlineData("bee", "character-gallery-title")]
     public async Task Gallery_deep_links_scroll_after_render_without_repeating_on_profile_interactions(string slug, string section)
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         var javascript = new ScrollJavascript();
         using var context = await LearningUiTestContext.CreateAsync(api,
             configure: services => services.AddSingleton<IJSRuntime>(javascript));
@@ -222,7 +224,7 @@ public sealed class LibraryCharactersTests
     [Fact]
     public async Task A_new_gallery_location_scrolls_once_to_the_new_target()
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         var javascript = new ScrollJavascript();
         using var context = await LearningUiTestContext.CreateAsync(api,
             configure: services => services.AddSingleton<IJSRuntime>(javascript));
@@ -246,12 +248,13 @@ public sealed class LibraryCharactersTests
     [Theory]
     [InlineData("raymond", "#not-a-gallery")]
     [InlineData("beaver", "#character-animations-title")]
+    [InlineData("beaver", "#animation-find-row")]
     [InlineData("lupp", "#character-animations-title")]
     [InlineData("missing", "#character-animations-title")]
     [InlineData("raymond", "")]
     public async Task Unknown_or_unavailable_gallery_targets_do_not_scroll(string slug, string fragment)
     {
-        using var api = new NoNetwork();
+        using var api = new CharacterQuizTestApi();
         var javascript = new ScrollJavascript();
         using var context = await LearningUiTestContext.CreateAsync(api,
             configure: services => services.AddSingleton<IJSRuntime>(javascript));
@@ -281,7 +284,7 @@ public sealed class LibraryCharactersTests
         }
     }
 
-    private static async Task<LearningUiTestContext> CreateContext(NoNetwork api, bool authenticated = false)
+    private static async Task<LearningUiTestContext> CreateContext(CharacterQuizTestApi api, bool authenticated = false)
     {
         var context = await LearningUiTestContext.CreateAsync(api,
             configure: services => services.AddSingleton<LearningContext>());
@@ -293,11 +296,5 @@ public sealed class LibraryCharactersTests
     {
         context.Services.GetRequiredService<NavigationManager>().NavigateTo("/library?category=characters");
         return context.Render<LibraryPage>();
-    }
-
-    private sealed class NoNetwork : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            => throw new InvalidOperationException($"Public character library must not request private data: {request.Method} {request.RequestUri}");
     }
 }

@@ -198,6 +198,34 @@
     border-inline-start: 1px solid var(--practice-border);
 }
 
+.lup-knowledge-host {
+    display: flex;
+    align-items: flex-start;
+    flex: 0 1 24rem;
+    gap: .75rem;
+    min-width: 0;
+    font-size: .875rem;
+}
+
+.lup-knowledge-host img {
+    flex: none;
+    border-radius: .5rem;
+    background: var(--practice-tint);
+    object-fit: cover;
+}
+
+.lup-knowledge-host a {
+    display: inline-block;
+    color: var(--practice-accent);
+    font-weight: 700;
+}
+
+.lup-knowledge-host p {
+    margin: .25rem 0 0;
+    color: var(--practice-muted);
+    line-height: 1.5;
+}
+
 .is-practice .lup-knowledge-intro,
 .is-practice .lup-knowledge-result {
     padding: var(--practice-padding);
