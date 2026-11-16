@@ -14,7 +14,9 @@ fi
 
 if [ ! -s /vm/guest.qcow2 ]; then
     : "${LUP_VM_USER_DATA_B64:?Cloud-init data is required for the first boot}"
+    rm -f /vm/guest.qcow2.new
     cp --sparse=always /opt/lup-vm/base.qcow2 /vm/guest.qcow2.new
+    chmod 0600 /vm/guest.qcow2.new
     qemu-img resize /vm/guest.qcow2.new 32G
     cp /usr/share/OVMF/OVMF_VARS_4M.fd /vm/ovmf-vars.fd
     printf '%s' "$LUP_VM_USER_DATA_B64" | base64 -d > /vm/user-data
