@@ -1,6 +1,6 @@
 import { ArenaEffectArt, combatPresentation, combatStatusFor, effectAvatarForEvent, projectileArtFor, repairReadinessFor } from './arena-effect-art.js?v=20261112-2';
 import { isOriginalAvatar, originalAvatarAction, originalAvatarAssets, originalAvatarFace, originalAvatarFrame, originalAvatarKey, originalAvatarSource } from './arena-avatar-art.js?v=20261112-2';
-import { ArenaMotion } from './arena-motion.js?v=20261112-2';
+import { ArenaMotion } from './arena-motion.js?v=20261116-stability';
 
 const WIDTH = 1280;
 const HEIGHT = 720;

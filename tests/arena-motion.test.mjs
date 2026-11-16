@@ -27,21 +27,38 @@ test('remote motion stays forward through jitter while the local fighter uses th
             prior && snapshot(prior[0], (prior[0] - 100) * 5), receivedAt, prior?.[1], 'own');
         positions.push(rendered.fighters[1].x);
         assert.ok(rendered.fighters[0].x >= state.fighters[0].x);
-        assert.ok(rendered.fighters[0].x <= state.fighters[0].x + 7.5);
+        assert.ok(rendered.fighters[0].x <= state.fighters[0].x + 15);
     }
     assert.ok(positions.some(x => x > 10 && x < 20), 'there are frames between authoritative positions');
     assert.ok(positions.every((x, index) => !index || x >= positions[index - 1]));
+});
+
+test('the local fighter moves smoothly at 120 Hz between 20 Hz snapshots', () => {
+    const motion = new ArenaMotion();
+    const frameRate = 120;
+    const framesPerSnapshot = frameRate / 20;
+    const world = tick => snapshot(tick, tick * 5);
+
+    for (let frame = 0; frame <= frameRate; frame++) {
+        const packet = Math.floor(frame / framesPerSnapshot);
+        const tick = packet * 3;
+        const result = motion.sample(frame * 1000 / frameRate, 1 / frameRate,
+            world(tick), packet ? world(tick - 3) : null, packet * 50, (packet - 1) * 50, 'own');
+        assert.ok(Math.abs(result.fighters[0].x - frame * 2.5) < 1e-9,
+            `local movement should advance by 2.5 px per frame (frame ${frame})`);
+    }
 });
 
 test('the renderer caps extrapolation on a stale snapshot and snaps after reconnect', () => {
     const motion = new ArenaMotion();
     const first = snapshot(100, 100);
     motion.sample(0, 0, first, null, 0, 0, 'own');
-    let remote;
+    let fighters;
     for (let now = 17; now < 1000; now += 17) {
-        remote = motion.sample(now, .017, first, null, 0, 0, 'own').fighters[1];
+        fighters = motion.sample(now, .017, first, null, 0, 0, 'own').fighters;
     }
-    assert.equal(remote.x, 107.5);
+    assert.equal(fighters[0].x, 115);
+    assert.equal(fighters[1].x, 107.5);
     const recovered = snapshot(160, 600);
     const result = motion.sample(1000, .016, recovered, first, 1000, 0, 'own');
     assert.equal(result.fighters[1].x, 600);
