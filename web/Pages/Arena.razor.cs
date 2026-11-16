@@ -62,6 +62,8 @@ public partial class Arena
     private string FighterSpecial => _selectedAvatarId switch { "bip01" => "Pulsbolt & raketryk", "raymond" => "Snabelpuls & elefantstorm", "santa" => "Stjerneskud & kanesus", "lupp" => "Idépuls & iterationsryk", AvatarEconomy.BilboId => "Syltetøjskast & bodryk", _ => "Energipuls & himmelspring" };
     private static string FighterRole(string id) => ArenaMoveSets.Find(id)?.Role ?? "Alsidig";
     private bool Owns(string id) => id == "starter" || World.OwnsAvatar(id);
+    private bool CanUnlockFighters =>
+        (_screen is "fighters" or "setup") && Auth.IsAuthenticated && World.CanUnlockAvatarsForFree;
 
     protected override void OnInitialized() { Auth.AuthStateChanged += AuthChanged; }
 
@@ -142,7 +144,25 @@ public partial class Arena
         else Back();
     }
     private async Task StartTraining() { _practicePaused = false; await StartPractice(); }
-    private async Task SelectFighter(string id) { if (!Owns(id) || _practice || _busy) return; _selectedAvatarId = id; if (_module is not null) await _module.InvokeVoidAsync("preview", _stageId, id); }
+    private async Task SelectFighter(string id)
+    {
+        if (_disposed || _loading || _practice || _busy || (CanUnlockFighters && World.AvatarBusy)) return;
+        if (!Owns(id))
+        {
+            var screen = _screen;
+            if (!CanUnlockFighters || !await World.TryUnlockAvatarAsync(id)) return;
+            if (_disposed || _screen != screen || !Owns(id)) return;
+        }
+        _selectedAvatarId = id;
+        if (_module is not null) await _module.InvokeVoidAsync("preview", _stageId, id);
+    }
+
+    private async Task ReloadAvatarProfile()
+    {
+        await World.ReloadAvatarProfileAsync();
+        if (CanUnlockFighters && World.AvatarProfileError is null)
+            await SelectFighter(World.SelectedAvatarId);
+    }
     private async Task SelectStage(string id) { if (SettingsDisabled || _busy) return; _stageId = id; if (_module is not null) await _module.InvokeVoidAsync("preview", id, _selectedAvatarId); await ConfigureRoom(); }
     private async Task ToggleSound() { _sound = !_sound; if (_module is not null) await _module.InvokeVoidAsync("sound", _sound); }
     private async Task ChangeVolume(ChangeEventArgs args)

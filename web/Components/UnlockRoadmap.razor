@@ -16,7 +16,13 @@ else
                 <div>
                     <h2>@avatar.Name <span class="pill">@(World.OwnsAvatar(avatar.Id) ? "I din samling" : "Avatar")</span></h2>
                     <p>@avatar.Description</p>
-                    <p class="tiny muted">Level @avatar.Level · @avatar.Cost guld · @World.AvatarRequirementText(avatar.Id)</p>
+                    <p class="tiny muted">
+                        @if (!World.CanUnlockAvatarsForFree)
+                        {
+                            <text>Level @avatar.Level · @avatar.Cost guld · </text>
+                        }
+                        @World.AvatarRequirementText(avatar.Id)
+                    </p>
                 </div>
                 <a class="secondary" href="/profile/character">Se avatarsamlingen</a>
             </div>

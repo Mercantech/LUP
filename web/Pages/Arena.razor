@@ -18,6 +18,10 @@
         </div>
     </header>
     @if (_error is not null) { <div class="arena-notice" role="alert"><span>@_error</span><button @onclick="ClearError" aria-label="Luk besked">×</button></div> }
+    else if (CanUnlockFighters && World.AvatarProfileError is { } avatarError)
+    {
+        <div class="arena-notice" role="alert"><span>@avatarError</span><button @onclick="ReloadAvatarProfile" disabled="@World.AvatarBusy">Prøv igen</button></div>
+    }
     @if (_reconnecting) { <div class="arena-reconnecting" role="status">Forbinder igen…</div> }
     <p id="arena-speech" class="arena-speech" role="status" hidden></p>
 
@@ -56,15 +60,17 @@
                     @foreach (var avatar in AvatarCatalog.All)
                     {
                         var owned = Owns(avatar.Id);
-                        var showUnlock = isRoster && !owned && !ownershipPending;
+                        var freeUnlock = !owned && CanUnlockFighters;
+                        var canChoose = owned || (freeUnlock && World.CanUnlockAvatar(avatar.Id));
+                        var showUnlock = isRoster && !owned && !ownershipPending && !freeUnlock;
                         var requirements = showUnlock ? ArenaFighters.Requirements(avatar.Id) : null;
                         var unlockId = requirements is { Count: > 0 } ? $"arena-unlock-{avatar.Id}" : null;
-                        var status = owned ? FighterRole(avatar.Id) : "Låst";
+                        var status = owned ? FighterRole(avatar.Id) : freeUnlock ? "Lås op gratis" : "Låst";
                         if (!owned && ownershipPending)
                             status = _loading ? "Indlæser…" : "Ejerskab ukendt";
 
                         <div class="arena-fighter-entry @(showUnlock ? "has-unlock" : null)">
-                            <button class="arena-fighter @(_selectedAvatarId == avatar.Id ? "is-selected" : "")" disabled="@(!owned || _loading)" @onclick="() => SelectFighter(avatar.Id)" aria-pressed="@(_selectedAvatarId == avatar.Id ? "true" : "false")" aria-describedby="@unlockId">
+                            <button class="arena-fighter @(_selectedAvatarId == avatar.Id ? "is-selected" : "")" disabled="@(!canChoose || _loading || (CanUnlockFighters && World.AvatarBusy))" @onclick="() => SelectFighter(avatar.Id)" aria-pressed="@(_selectedAvatarId == avatar.Id ? "true" : "false")" aria-describedby="@unlockId">
                                 <img src="@Portrait(avatar.Id)" alt="" />
                                 <span><strong>@FighterName(avatar.Id)</strong><small>@status</small></span>
                                 <span class="arena-choice-mark" aria-hidden="true">@(_selectedAvatarId == avatar.Id ? "✓" : "")</span>

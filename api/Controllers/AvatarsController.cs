@@ -31,19 +31,23 @@ public sealed class AvatarsController(AppDbContext db) : ControllerBase
         return ExecuteAsync((profile, progress) =>
         {
             if (profile.Avatars.Any(owned => owned.AvatarId == id)) return Mutation.Unchanged;
-            if (profile.Level < avatar.Level)
-                return Mutation.Fail(409, "level_required", $"Avataren kræver level {avatar.Level}.");
-            foreach (var requirement in avatar.Requirements ?? [])
+            if (!UserClaims.IsTeacher(User))
             {
-                var matching = progress.Where(item => item.AvatarId == id && item.RequirementId == requirement.Id).ToArray();
-                if (matching.Length != 1 || !matching[0].IsMet)
-                    return Mutation.Fail(409, "avatar_requirement_not_met",
-                        $"Kravet er ikke opfyldt: {requirement.Description} ({matching.FirstOrDefault()?.Current ?? 0}/{requirement.RequiredCount}).");
-            }
-            if (profile.Gold < avatar.Cost)
-                return Mutation.Fail(409, "insufficient_gold", $"Du mangler {avatar.Cost - profile.Gold} guld.");
+                if (profile.Level < avatar.Level)
+                    return Mutation.Fail(409, "level_required", $"Avataren kræver level {avatar.Level}.");
+                foreach (var requirement in avatar.Requirements ?? [])
+                {
+                    var matching = progress.Where(item => item.AvatarId == id && item.RequirementId == requirement.Id).ToArray();
+                    if (matching.Length != 1 || !matching[0].IsMet)
+                        return Mutation.Fail(409, "avatar_requirement_not_met",
+                            $"Kravet er ikke opfyldt: {requirement.Description} ({matching.FirstOrDefault()?.Current ?? 0}/{requirement.RequiredCount}).");
+                }
+                if (profile.Gold < avatar.Cost)
+                    return Mutation.Fail(409, "insufficient_gold", $"Du mangler {avatar.Cost - profile.Gold} guld.");
 
-            profile.Gold -= avatar.Cost;
+                profile.Gold -= avatar.Cost;
+            }
+
             profile.Avatars.Add(new AvatarOwnership { UserSub = profile.UserSub, AvatarId = id });
             profile.SelectedAvatarId = id;
             return Mutation.Changed;
@@ -190,7 +194,7 @@ public sealed class AvatarsController(AppDbContext db) : ControllerBase
         return profile;
     }
 
-    private static AvatarProfileDto ToDto(AvatarProfile profile, IReadOnlyList<AvatarUnlockProgressDto> progress) => new(
+    private AvatarProfileDto ToDto(AvatarProfile profile, IReadOnlyList<AvatarUnlockProgressDto> progress) => new(
         profile.SelectedAvatarId,
         profile.Avatars.Select(ownership => ownership.AvatarId).Order(StringComparer.Ordinal).ToArray(),
         profile.Gold,
@@ -198,7 +202,8 @@ public sealed class AvatarsController(AppDbContext db) : ControllerBase
         profile.Items.Select(ownership => ownership.ItemId).Order(StringComparer.Ordinal).ToArray(),
         profile.LegacyImportAvailable,
         profile.Revision,
-        progress);
+        progress,
+        CanUnlockAvatarsForFree: UserClaims.IsTeacher(User));
 
     private static bool IsRetryableConflict(Exception error)
     {
