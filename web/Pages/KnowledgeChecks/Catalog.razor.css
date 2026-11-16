@@ -228,6 +228,11 @@
     padding-inline-start: 2.15rem;
 }
 
+.knowledge-search input::placeholder {
+    color: color-mix(in srgb, var(--knowledge-muted), var(--ink) 20%);
+    opacity: 1;
+}
+
 .knowledge-result-bar {
     display: flex;
     align-items: center;
