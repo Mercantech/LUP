@@ -1,0 +1,311 @@
+@page "/videnstjek/live"
+@page "/videnstjek/live/{Code}/vaert"
+@layout LiveGameLayout
+@implements IDisposable
+
+<PageTitle>@(Game is null ? "Spil videnstjek live" : Game.Title + " live") · LUP</PageTitle>
+
+<section class="live-host" aria-labelledby="live-host-heading">
+    @if (!CanHost)
+    {
+        <div class="live-game-panel live-host-setup">
+            <h1 id="live-host-heading">Spil videnstjek live</h1>
+            <p>@(ViewAs.IsActive ? "Afslut elevvisningen for at være vært." : "En underviser kan oprette et spil. Har du en spilkode, kan du deltage her.")</p>
+            <a class="live-game-button is-primary" href="/spil">Deltag med kode</a>
+        </div>
+    }
+    else if (Code is null)
+    {
+        <div class="live-game-panel live-host-setup">
+            <div class="live-game-header">
+                <h1 id="live-host-heading">Spil videnstjek live</h1>
+                <p>Vælg en quiz, og saml klassen i lobbyen.</p>
+            </div>
+            @if (_loading)
+            {
+                <p role="status">Henter dine quizzer og de frie øvelser…</p>
+            }
+            else if (_sources is null)
+            {
+                <p role="alert">@(_error ?? "Quizzerne kunne ikke hentes.")</p>
+                <button class="live-game-button" type="button" @onclick="LoadSourcesAsync">Prøv igen</button>
+            }
+            else if (Drafts.Length == 0 && Publications.Length == 0)
+            {
+                <p>Du skal have en quiz med spørgsmål for at åbne en lobby.</p>
+                <a class="live-game-button is-primary" href="/videnstjek/rediger/ny">Opret videnstjek</a>
+            }
+            else
+            {
+                <form class="live-host-setup-form" @onsubmit="CreateAsync" @onsubmit:preventDefault>
+                    <div class="live-host-fields">
+                        <label for="live-quiz-source">Videnstjek</label>
+                        <select id="live-quiz-source" name="source" @bind="_source" required disabled="@_busy">
+                            <option value="">Vælg en quiz</option>
+                            @if (Drafts.Length > 0)
+                            {
+                                <optgroup label="Dine kladder">
+                                    @foreach (var draft in Drafts)
+                                    {
+                                        <option value="@SourceKey(draft.Id, true)">@draft.Title</option>
+                                    }
+                                </optgroup>
+                            }
+                            @if (Publications.Length > 0)
+                            {
+                                <optgroup label="Frie øvelser">
+                                    @foreach (var publication in Publications)
+                                    {
+                                        <option value="@SourceKey(publication.Id, false)">@publication.Title</option>
+                                    }
+                                </optgroup>
+                            }
+                        </select>
+                        <label for="live-quiz-seconds">Tid pr. spørgsmål</label>
+                        <select id="live-quiz-seconds" name="seconds" @bind="_seconds" disabled="@_busy">
+                            @foreach (var seconds in QuestionDurations)
+                            {
+                                <option value="@seconds">@seconds sekunder</option>
+                            }
+                        </select>
+                    </div>
+                    <button class="live-game-button is-primary" type="submit" disabled="@(_busy || _source.Length == 0)">
+                        @(_busy ? "Åbner lobby…" : "Åbn lobby")
+                    </button>
+                    @if (_error is not null)
+                    {
+                        <p class="live-host-message" role="alert">@_error</p>
+                    }
+                </form>
+            }
+        </div>
+    }
+    else if (Game is not { } game)
+    {
+        <div class="live-game-panel live-host-setup">
+            <h1 id="live-host-heading">Videnstjek live</h1>
+            @if (_loading)
+            {
+                <p role="status">Henter spillet…</p>
+            }
+            else
+            {
+                <p role="alert">@(_error ?? "Spillet kunne ikke åbnes.")</p>
+                @if (LiveQuiz.IsCode(Code))
+                {
+                    <button class="live-game-button" type="button" @onclick="RetryRoomAsync">Prøv igen</button>
+                }
+                <a class="live-game-button" href="/videnstjek/live">Opret et spil</a>
+            }
+        </div>
+    }
+    else
+    {
+        <header class="live-game-header live-host-toolbar">
+            <h1 id="live-host-heading">@game.Title</h1>
+            <div class="live-host-controls">
+                @if (!game.Locked && game.Phase is not (LiveQuiz.Lobby or LiveQuiz.Finished))
+                {
+                    <a class="live-host-code-reminder" href="@JoinPath" target="_blank" rel="noopener noreferrer">Spilkode <strong>@game.Code</strong></a>
+                }
+                <button class="live-game-button" type="button" aria-pressed="@(_soundOn ? "true" : "false")"
+                        disabled="@_changingSound" @onclick="ToggleSoundAsync">Spillyd</button>
+                <button class="live-game-button" type="button" @onclick="ToggleFullscreenAsync"><UiIcon Name="screen" /> Fuld skærm</button>
+                @if (game.Phase != LiveQuiz.Finished)
+                {
+                    <button class="live-game-button" type="button" @onclick="() => _confirmEnd = true" disabled="@_busy">Afslut spil</button>
+                }
+            </div>
+        </header>
+
+        @if (_confirmEnd)
+        {
+            <div class="live-host-confirm" role="group" aria-label="Bekræft afslutning">
+                <p>Vil du afslutte spillet nu?</p>
+                <button class="live-game-button is-primary" type="button" @onclick="EndAsync" disabled="@_busy">Ja, afslut</button>
+                <button class="live-game-button" type="button" @onclick="() => _confirmEnd = false">Fortsæt spillet</button>
+            </div>
+        }
+        @if (_error is not null)
+        {
+            <p class="live-host-message" role="alert">@_error</p>
+        }
+        @if (_connectionError)
+        {
+            <p class="live-host-message" role="status">Forbindelsen er ustabil. Prøver igen…</p>
+        }
+        <p class="visually-hidden" role="status">@_announcement</p>
+
+        @if (game.Phase == LiveQuiz.Lobby)
+        {
+            <div class="live-host-lobby">
+                <section class="live-game-panel live-host-pin-panel" aria-labelledby="live-host-pin-label">
+                    <div class="live-host-pin-copy">
+                        <h2 id="live-host-pin-label">Spilkode</h2>
+                        <p class="live-host-pin" aria-label="@string.Join(" ", game.Code.AsEnumerable())">@game.Code</p>
+                        <p>Gå til <a href="@JoinPath">@JoinAddress</a></p>
+                        <button class="live-game-button" type="button" @onclick="CopyInviteAsync">@(_linkCopied ? "Link kopieret" : "Kopiér link")</button>
+                    </div>
+                    <div class="live-host-qr">
+                        <LiveGameQr Code="@game.Code" />
+                    </div>
+                </section>
+
+                <section class="live-game-panel live-host-guest-panel" aria-labelledby="live-host-roster">
+                    <header>
+                        <h2 id="live-host-roster" @ref="_stageHeading" tabindex="-1">Deltagere</h2>
+                        <p role="status">@PlayerLabel(game.PlayerCount)</p>
+                    </header>
+                    @if (game.Players.Length == 0)
+                    {
+                        <p>Navnene dukker op her, når eleverne deltager.</p>
+                    }
+                    else
+                    {
+                        <ul class="live-host-roster">
+                            @foreach (var player in game.Players)
+                            {
+                                <li @key="player.Id">
+                                    <span>@player.Nickname</span>
+                                    <button type="button" aria-label="@($"Fjern {player.Nickname}")" disabled="@_busy" @onclick="() => KickAsync(player.Id)">
+                                        <UiIcon Name="close" />
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </section>
+            </div>
+            <div class="live-host-stage-controls">
+                <button class="live-game-button" type="button" @onclick="ToggleLockAsync" disabled="@_busy">@(game.Locked ? "Åbn for deltagere" : "Luk for nye deltagere")</button>
+                <button class="live-game-button is-primary" type="button" @onclick="AdvanceAsync" disabled="@(_busy || game.PlayerCount == 0)">Start spil</button>
+            </div>
+        }
+        else if ((game.Phase == LiveQuiz.Question || game.Phase == LiveQuiz.Reveal) && game.Question is { } question)
+        {
+            <section class="live-game-panel live-host-round" aria-labelledby="live-host-question">
+                <div class="live-host-round-meta">
+                    <span>Spørgsmål @(game.QuestionIndex + 1) af @game.QuestionCount</span>
+                    <span role="status"><strong>@game.AnsweredCount af @game.PlayerCount</strong> har svaret</span>
+                    @if (game.Phase == LiveQuiz.Question)
+                    {
+                        <span class="live-host-countdown" aria-label="Tid tilbage">@RemainingSeconds s</span>
+                    }
+                </div>
+                @if (game.Phase == LiveQuiz.Question)
+                {
+                    <progress class="live-host-progress" value="@RemainingSeconds" max="@game.QuestionSeconds" aria-label="Tid tilbage"></progress>
+                }
+                <h2 id="live-host-question" @ref="_stageHeading" tabindex="-1"><LiveQuizText Text="@question.Prompt" /></h2>
+                @if (question.Options.Length > 0)
+                {
+                    <ol class="live-game-answers live-host-answers">
+                        @for (var index = 0; index < question.Options.Length; index++)
+                        {
+                            var tone = index % 4;
+                            var reveal = game.Reveal;
+                            var correct = reveal?.CorrectOptions.Contains(index) == true;
+                            <li class="live-game-answer @(correct ? "is-correct" : null)" data-tone="@tone">
+                                <span class="live-game-shape" data-tone="@tone" aria-hidden="true"></span>
+                                <span class="live-host-option"><LiveQuizText Text="@question.Options[index]" /></span>
+                                @if (reveal is not null)
+                                {
+                                    <span class="live-host-answer-count">
+                                        @if (correct)
+                                        {
+                                            <UiIcon Name="check" /><span class="visually-hidden">Korrekt. </span>
+                                        }
+                                        @AnswerLabel(reveal.AnswerCounts.ElementAtOrDefault(index))
+                                    </span>
+                                }
+                            </li>
+                        }
+                    </ol>
+                }
+                else if (game.Reveal is null)
+                {
+                    <p>Deltagerne skriver deres svar på deres egen enhed.</p>
+                }
+                @if (game.Reveal is { } solution)
+                {
+                    <div class="live-host-solution">
+                        <h3>Facit</h3>
+                        @if (solution.AcceptedAnswers.Length > 0)
+                        {
+                            <p><strong>@string.Join(" / ", solution.AcceptedAnswers)</strong></p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(solution.Explanation))
+                        {
+                            <p><LiveQuizText Text="@solution.Explanation" /></p>
+                        }
+                        @if (solution.LearnMoreUrl is { Length: > 0 } source)
+                        {
+                            <a href="@source" target="_blank" rel="noopener noreferrer">@(solution.LearnMoreTitle ?? "Læs mere")</a>
+                        }
+                    </div>
+                }
+            </section>
+            <div class="live-host-stage-controls">
+                <button class="live-game-button" type="button" @onclick="ToggleLockAsync" disabled="@_busy">@(game.Locked ? "Åbn for deltagere" : "Luk for nye deltagere")</button>
+                <button class="live-game-button is-primary" type="button" @onclick="AdvanceAsync" disabled="@_busy">
+                    @(game.Phase == LiveQuiz.Question ? "Vis facit" : "Vis pointtavlen")
+                </button>
+            </div>
+        }
+        else
+        {
+            var finished = game.Phase == LiveQuiz.Finished;
+            <section class="live-game-panel live-host-places" aria-labelledby="live-host-places-title">
+                <h2 id="live-host-places-title" @ref="_stageHeading" tabindex="-1">@(finished ? "Podiet" : "Pointtavlen")</h2>
+                @if (game.Standings.Length == 0)
+                {
+                    <p>Der blev ikke registreret nogen placeringer.</p>
+                }
+                else
+                {
+                    var standings = game.Standings.Take(finished ? 3 : 5).ToArray();
+                    <ol class="@(finished ? "live-host-podium" : "live-host-rankings")">
+                        @for (var index = 0; index < standings.Length; index++)
+                        {
+                            var player = standings[index];
+                            <li @key="player.Nickname" data-rank="@player.Rank" data-place="@(index + 1)">
+                                <span class="live-host-rank"><span class="visually-hidden">Plads </span>@player.Rank</span>
+                                <strong>@player.Nickname</strong>
+                                <span>@player.Score.ToString("N0", Danish) point</span>
+                            </li>
+                        }
+                    </ol>
+                    @if (finished && game.Standings.Length > 3)
+                    {
+                        <details class="live-host-more-places">
+                            <summary>Se flere placeringer</summary>
+                            <ol class="live-host-rankings" start="4">
+                                @foreach (var player in game.Standings.Skip(3))
+                                {
+                                    <li @key="player.Nickname">
+                                        <span class="live-host-rank"><span class="visually-hidden">Plads </span>@player.Rank</span>
+                                        <strong>@player.Nickname</strong>
+                                        <span>@player.Score.ToString("N0", Danish) point</span>
+                                    </li>
+                                }
+                            </ol>
+                        </details>
+                    }
+                }
+            </section>
+            <div class="live-host-stage-controls">
+                @if (finished)
+                {
+                    <a class="live-game-button is-primary" href="/videnstjek/live">Spil igen</a>
+                }
+                else
+                {
+                    <button class="live-game-button" type="button" @onclick="ToggleLockAsync" disabled="@_busy">@(game.Locked ? "Åbn for deltagere" : "Luk for nye deltagere")</button>
+                    <button class="live-game-button is-primary" type="button" @onclick="AdvanceAsync" disabled="@_busy">
+                        @(game.QuestionIndex + 1 == game.QuestionCount ? "Vis podiet" : "Næste spørgsmål")
+                    </button>
+                }
+            </div>
+        }
+    }
+</section>

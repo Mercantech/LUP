@@ -26,9 +26,18 @@ if (Environment.GetEnvironmentVariable("NOTEBOOK_BROWSER_QA") != "1")
 
 SQLitePCL.Batteries_V2.Init();
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://127.0.0.1:8088");
+var apiPort = QaPort("NOTEBOOK_BROWSER_QA_API_PORT", 8088);
+var collaborationPort = QaPort("NOTEBOOK_BROWSER_QA_COLLAB_PORT", 9099);
+builder.WebHost.UseUrls($"http://127.0.0.1:{apiPort}");
 builder.Configuration["Notion:ServiceSecret"] = QaIdentities.ServiceKey;
-builder.Configuration["Notebook:CollaborationBaseUrl"] = "http://127.0.0.1:9099";
+builder.Configuration["Notebook:CollaborationBaseUrl"] = $"http://127.0.0.1:{collaborationPort}";
+
+static int QaPort(string key, int fallback) => Environment.GetEnvironmentVariable(key) switch
+{
+    null => fallback,
+    { } value when int.TryParse(value, out var port) && port is >= 1024 and <= 65535 => port,
+    _ => throw new InvalidOperationException($"{key} must be a loopback test port.")
+};
 var connectionString = $"Data Source=notebook-browser-qa-{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
 await using var keepAlive = new SqliteConnection(connectionString);
 await keepAlive.OpenAsync();
@@ -41,6 +50,7 @@ builder.Services.AddScoped<FileAuthorization>();
 builder.Configuration["Wordle:ScheduleKey"] = QaIdentities.ServiceKey;
 builder.Configuration["DailyGames:ScheduleKey"] = QaIdentities.ServiceKey;
 builder.Services.AddWordle();
+builder.Services.AddLiveQuiz();
 builder.Services.AddSingleton<NotebookServiceKey>();
 builder.Services.AddHttpClient<NotebookEngineClient>(client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddSingleton<IObjectStorage, QaMemoryStorage>();
@@ -58,6 +68,7 @@ app.Use(async (context, next) =>
     { context.Response.StatusCode = 403; return; }
     await next();
 });
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapGet("/_qa/health", () => Results.Json(new { status = "ok", fixture = "fictional-notebook-browser-qa" }));

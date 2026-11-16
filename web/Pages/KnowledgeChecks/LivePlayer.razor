@@ -1,0 +1,216 @@
+@page "/spil"
+@page "/spil/{Code}"
+@layout LiveGameLayout
+@using Mercantec.Tech.Web.KnowledgeChecks
+@inject LiveKnowledgeCheckClient Client
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<PageTitle>@(_state is null ? "Deltag i klassespillet" : _state.Title) · LUP</PageTitle>
+
+<div class="live-player">
+    @if (_restoring)
+    {
+        <section class="live-game-panel player-entry" aria-busy="true">
+            <h1>Klassespil</h1>
+            <p role="status">Åbner din plads i spillet…</p>
+        </section>
+    }
+    else if (_state is null)
+    {
+        <section class="live-game-panel player-entry">
+            <header>
+                <h1>@(_roomCode is null ? "Deltag i klassespillet" : "Hvad vil du hedde?")</h1>
+                @if (_roomCode is null)
+                {
+                    <p>Brug PIN-koden fra tavlen.</p>
+                }
+                else
+                {
+                    <p>Dit kaldenavn vises på tavlen.</p>
+                }
+            </header>
+            @if (_roomCode is null)
+            {
+                <form class="player-form" @onsubmit="OpenRoom" @onsubmit:preventDefault>
+                    <label for="player-code">PIN-kode</label>
+                    <input id="player-code" class="player-code-input" type="text" inputmode="numeric" autocomplete="off"
+                           placeholder="6 cifre" required maxlength="6" spellcheck="false" @bind="_typedCode" @bind:event="oninput" />
+                    @if (_entryError is not null) { <p class="player-error" role="alert">@_entryError</p> }
+                    <button class="live-game-button is-primary" type="submit">Fortsæt</button>
+                </form>
+            }
+            else if (_playerToken is null)
+            {
+                <form class="player-form" @onsubmit="JoinAsync" @onsubmit:preventDefault>
+                    <label for="player-nickname">Kaldenavn</label>
+                    <input id="player-nickname" @ref="_nicknameField" type="text" autocomplete="off" required
+                           maxlength="24" spellcheck="false" @bind="_nickname" @bind:event="oninput" />
+                    @if (_entryError is not null) { <p class="player-error" role="alert">@_entryError</p> }
+                    <button class="live-game-button is-primary" type="submit" disabled="@_busy">
+                        @(_busy ? "Finder din plads…" : "Deltag")
+                    </button>
+                </form>
+                <a class="player-change-pin" href="/spil">Brug en anden PIN-kode</a>
+            }
+            else
+            {
+                <p class="player-error" role="alert">@_entryError</p>
+                <button class="live-game-button is-primary" type="button" @onclick="RetryRestoreAsync">Prøv igen</button>
+                <a class="player-change-pin" href="/spil">Brug en anden PIN-kode</a>
+            }
+        </section>
+    }
+    else
+    {
+        var state = _state;
+        var personal = state.Personal!;
+        <header class="live-game-header player-top">
+            <p class="player-game-title">@state.Title</p>
+            <span class="player-identity">@personal.Nickname</span>
+            <span class="visually-hidden" role="status">@PhaseAnnouncement(state)</span>
+        </header>
+        @if (_connectionError)
+        {
+            <p class="player-connection" role="status">Forbindelsen er afbrudt. Prøver igen…</p>
+        }
+        @if (_entryError is not null)
+        {
+            <p class="player-error player-response-error" role="alert">@_entryError</p>
+        }
+
+        @switch (state.Phase)
+        {
+            case LiveQuiz.Lobby:
+                <section class="live-game-panel player-waiting" aria-labelledby="player-lobby">
+                    <img class="player-mascot" src="/images/about/lupp.webp" width="128" height="128" alt="" />
+                    <h1 id="player-lobby">Du er med!</h1>
+                    <p>Vent på, at underviseren starter spillet.</p>
+                    <p class="player-lobby-count">@state.PlayerCount @(state.PlayerCount == 1 ? "spiller" : "spillere") i lobbyen</p>
+                </section>
+                break;
+            case LiveQuiz.Question when state.Question is { } question:
+                <section class="player-round" aria-labelledby="player-question" @key="state.QuestionIndex">
+                    <div class="player-progress">
+                        <span>Spørgsmål @(state.QuestionIndex + 1) af @state.QuestionCount</span>
+                        <span class="player-seconds">@SecondsLeft <span>sek.</span></span>
+                        <progress aria-label="Tid tilbage til at svare" max="@state.QuestionSeconds" value="@SecondsLeft"></progress>
+                    </div>
+                    @if (personal.HasAnswered)
+                    {
+                        <div class="live-game-panel player-waiting">
+                            <h1 id="player-question">Svaret er låst</h1>
+                            <p role="status">Vent på facit.</p>
+                            @if (SelectedText(question, personal) is { Length: > 0 } selected)
+                            {
+                                <p class="player-saved-answer"><LiveQuizText Text="@selected" /></p>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <h1 id="player-question" tabindex="-1" @ref="_questionHeading"><LiveQuizText Text="@question.Prompt" /></h1>
+                        @if (SecondsLeft == 0)
+                        {
+                            <p role="status" class="player-wait-inline">Tiden er gået. Vent på facit.</p>
+                        }
+                        @if (question.Kind == "short")
+                        {
+                            <form class="player-form player-short-form" @onsubmit="SubmitSelectionAsync" @onsubmit:preventDefault>
+                                <label for="player-short-answer">Dit svar</label>
+                                <textarea id="player-short-answer" maxlength="250" rows="2"
+                                          @bind="_writtenAnswer" @bind:event="oninput" disabled="@(!CanAnswer)"></textarea>
+                                <button type="submit" class="live-game-button is-primary"
+                                        disabled="@(!CanAnswer || string.IsNullOrWhiteSpace(_writtenAnswer))">Lås svar</button>
+                            </form>
+                        }
+                        else
+                        {
+                            var multiple = question.Kind == "multiple";
+                            @if (multiple)
+                            {
+                                <p class="player-instruction" id="player-answer-instruction">Vælg alle de rigtige svar.</p>
+                            }
+                            <div class="live-game-answers player-choices" role="group" aria-label="Svarmuligheder"
+                                 aria-describedby="@(multiple ? "player-answer-instruction" : null)">
+                                @for (var optionIndex = 0; optionIndex < question.Options.Length; optionIndex++)
+                                {
+                                    var index = optionIndex;
+                                    var picked = _selected.Contains(index);
+                                    <button type="button" class="live-game-answer @(picked ? "is-selected" : null)"
+                                            data-tone="@(index % 4)" aria-pressed="@(multiple ? (picked ? "true" : "false") : null)"
+                                            disabled="@(!CanAnswer)" @onclick="() => ChooseAsync(index, multiple)">
+                                        <span class="live-game-shape" data-tone="@(index % 4)" aria-hidden="true"></span>
+                                        <span class="player-option-letter" aria-hidden="true">@((char)('A' + index))</span>
+                                        <span><LiveQuizText Text="@question.Options[index]" /></span>
+                                    </button>
+                                }
+                            </div>
+                            @if (multiple)
+                            {
+                                <button type="button" class="live-game-button is-primary player-confirm"
+                                        disabled="@(!CanAnswer || _selected.Count == 0)" @onclick="SubmitSelectionAsync">Lås svar</button>
+                            }
+                        }
+                    }
+                </section>
+                break;
+            case LiveQuiz.Reveal:
+                <section class="live-game-panel player-result @(personal.Correct == true ? "is-correct" : null)" aria-labelledby="player-reveal">
+                    <p class="player-round-number">Spørgsmål @(state.QuestionIndex + 1) af @state.QuestionCount</p>
+                    <h1 id="player-reveal">@(personal.Correct == true ? "Helt rigtigt!" : personal.HasAnswered ? "Forkert svar" : "Tiden er gået")</h1>
+                    <p class="player-points">+@(personal.Points ?? 0) point</p>
+                    @if (personal.Streak > 1)
+                    {
+                        <p>@personal.Streak rigtige i træk</p>
+                    }
+                    @if (state.Reveal is { } reveal)
+                    {
+                        @if (CorrectText(state.Question, reveal) is { Length: > 0 } correct)
+                        {
+                            <p class="player-correct-answer"><strong>Facit</strong> <LiveQuizText Text="@correct" /></p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(reveal.Explanation))
+                        {
+                            <p><LiveQuizText Text="@reveal.Explanation" /></p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(reveal.LearnMoreUrl))
+                        {
+                            <a href="@reveal.LearnMoreUrl" target="_blank" rel="noopener noreferrer">@(reveal.LearnMoreTitle ?? "Læs mere")</a>
+                        }
+                    }
+                </section>
+                break;
+            case LiveQuiz.Leaderboard:
+                <section class="live-game-panel player-result" aria-labelledby="player-rank">
+                    <h1 id="player-rank">Din placering</h1>
+                    <p class="player-position">@RankText(personal)</p>
+                    <p>@personal.Score point i alt</p>
+                    <p>Vent på næste spørgsmål.</p>
+                </section>
+                break;
+            case LiveQuiz.Finished:
+                <section class="live-game-panel player-result" aria-labelledby="player-finished">
+                    <h1 id="player-finished">Spillet er slut</h1>
+                    <p class="player-position">@RankText(personal)</p>
+                    <p>@personal.Score point i alt</p>
+                    @if (state.Standings.Length > 0)
+                    {
+                        <ol class="player-podium" aria-label="Podie" role="list">
+                            @foreach (var winner in state.Standings.Take(3))
+                            {
+                                <li>
+                                    <span aria-hidden="true">@winner.Rank</span>
+                                    <strong>@winner.Nickname</strong>
+                                    <span>@winner.Score point</span>
+                                </li>
+                            }
+                        </ol>
+                    }
+                    <a class="live-game-button is-primary" href="/spil">Deltag i et andet spil</a>
+                </section>
+                break;
+        }
+    }
+</div>

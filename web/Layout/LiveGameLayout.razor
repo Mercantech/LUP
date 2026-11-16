@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Nav
+
+<div class="live-game">
+    <header class="live-game-bar">
+        <div class="live-game-bar-inner">
+            <a class="live-game-brand" href="@Home">
+                <img src="/images/branding/pixel-lup.svg" width="30" height="30" alt="" />
+                <span>LUP Live</span>
+            </a>
+            @if (Hosting)
+            {
+                <a class="live-game-back" href="/videnstjek">Videnstjek</a>
+            }
+        </div>
+    </header>
+
+    <main class="live-game-main" id="main-content">
+        @Body
+    </main>
+</div>
+
+@code {
+    private bool Hosting => Nav.ToBaseRelativePath(Nav.Uri).StartsWith("videnstjek/live", StringComparison.OrdinalIgnoreCase);
+    private string Home => Hosting ? "/videnstjek" : "/spil";
+}

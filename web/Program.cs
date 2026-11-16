@@ -44,6 +44,7 @@ builder.Services.AddScoped<Mercantec.Tech.Web.Games.DailyGamesClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Games.DailyGameProgressClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Polls.PollClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.KnowledgeChecks.KnowledgeCheckClient>();
+builder.Services.AddScoped<Mercantec.Tech.Web.KnowledgeChecks.LiveKnowledgeCheckClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Electives.ElectiveClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Learning.LearningClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Learning.TeachingCoursesClient>();
