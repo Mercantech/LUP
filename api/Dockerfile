@@ -18,7 +18,8 @@ RUN dotnet restore api/Mercantec.Tech.Api.csproj
 COPY shared/ shared/
 COPY api/ api/
 COPY web/Courses/CourseTemplateCatalog.cs web/Courses/
-COPY web/Public/PublicCatalog.cs web/Public/
+COPY web/Public/PublicCatalog.cs web/Public/PublicGlobalSearch.cs web/Public/
+COPY web/Games/GamesCatalog.cs web/Games/
 COPY web/Demo/DemoCatalog.cs web/Demo/
 COPY web/Demo/LearningContent.cs web/Demo/
 COPY web/Characters/CharacterCatalog.cs web/Characters/
