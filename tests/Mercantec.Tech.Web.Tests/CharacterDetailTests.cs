@@ -461,7 +461,7 @@ public sealed class CharacterDetailTests
     }
 
     [Fact]
-    public async Task GitmejsenProfileShowsThreeGitExercisesAndSearchableReactions()
+    public async Task GitmejsenProfileShowsGitExercisesAndSearchableReactions()
     {
         using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
@@ -469,15 +469,17 @@ public sealed class CharacterDetailTests
 
         Assert.Equal("Gitmejsen", page.Find("h1").TextContent);
         Assert.Equal(3, page.FindAll(".character-appearance-picker button").Count);
-        Assert.Equal(10, page.FindAll(".character-scenes figure").Count);
+        Assert.Equal(14, page.FindAll(".character-scenes figure").Count);
         Assert.Contains("fire små hilsner fra Mumi-universet", page.Find(".character-scenes header").TextContent);
         Assert.Equal(30, page.FindAll(".character-reactions figure").Count);
         Assert.Equal(3, page.FindAll(".character-animation-card").Count);
         var exercises = page.FindAll(".character-gallery figure");
-        Assert.Equal(3, exercises.Count);
+        Assert.Equal(11, exercises.Count);
         Assert.Contains("git diff --cached", exercises[0].QuerySelector("code")!.TextContent);
         Assert.Contains("git log --graph", exercises[1].QuerySelector("code")!.TextContent);
         Assert.Contains("i en udskiftelig, firkantet frontplade.", exercises[2].QuerySelector("code")!.TextContent);
+        Assert.Contains(exercises, exercise => exercise.QuerySelector("code")!.TextContent.Contains("git fetch origin", StringComparison.Ordinal));
+        Assert.Contains(exercises, exercise => exercise.QuerySelector("code")!.TextContent.Contains("git bisect reset", StringComparison.Ordinal));
         Assert.All(exercises, exercise => Assert.EndsWith(".png", exercise.QuerySelector("a[download]")!.GetAttribute("href")));
 
         page.FindAll(".character-appearance-picker button")[1].Click();

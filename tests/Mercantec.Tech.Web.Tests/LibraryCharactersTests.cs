@@ -84,9 +84,9 @@ public sealed class LibraryCharactersTests
             ("bilbo", "character-animations-title", "3 GIF-animationer"),
             ("bilbo", "character-gallery-title", "16 infografikker"),
             ("gitmejsen", "character-reactions-title", "30 emojis"),
-            ("gitmejsen", "character-scenes-title", "10 miljøer"),
+            ("gitmejsen", "character-scenes-title", "14 miljøer"),
             ("gitmejsen", "character-animations-title", "3 GIF-animationer"),
-            ("gitmejsen", "character-gallery-title", "3 øvelser")
+            ("gitmejsen", "character-gallery-title", "11 øvelser")
         };
         foreach (var (slug, section, label) in expected)
         {
@@ -175,6 +175,8 @@ public sealed class LibraryCharactersTests
     [InlineData("Bilbo Backend idempotens", "/characters/bilbo")]
     [InlineData("Gitmejsen mergekonflikt", "/characters/gitmejsen")]
     [InlineData("topmejse versionsstyring", "/characters/gitmejsen")]
+    [InlineData("Gitmejsen bisect", "/characters/gitmejsen")]
+    [InlineData("Mumihuset", "/characters/gitmejsen")]
     public void Public_search_finds_media_types_and_named_motifs(string query, string expectedPath)
     {
         var hit = Assert.Single(PublicCatalog.Search(query), hit => hit.Href == expectedPath);
