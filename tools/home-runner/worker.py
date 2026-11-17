@@ -35,12 +35,13 @@ DOCKER_ENV = {
     "DOCKER_CONFIG": "/etc/lup-home-runner/docker-cli",
 }
 
-# Cores, RAM, processes, workspace. Core quota times wall clock caps CPU per
-# activation; the independent wall-clock deadline also covers sleeping code.
+# Cores, RAM, processes, workspace and open files. MSBuild loads more
+# assemblies in parallel than the Python and Arduino toolchains.
+# The independent wall-clock deadline also covers sleeping code.
 PROFILES = {
-    "python": ("0.5", "128m", "32", "16m"),
-    "csharp": ("1", "768m", "96", "96m"),
-    "arduino": ("1", "512m", "64", "48m"),
+    "python": ("0.5", "128m", "32", "16m", 128),
+    "csharp": ("1", "768m", "96", "96m", 1024),
+    "arduino": ("1", "512m", "64", "48m", 128),
 }
 
 
@@ -109,7 +110,7 @@ class Session:
         self.process_lock = threading.Lock()
 
     def start(self, request):
-        cpu, memory, pids, work = PROFILES[self.language]
+        cpu, memory, pids, work, files = PROFILES[self.language]
         # The gateway removes the container before releasing its slot.
         command = [
             "docker", "create", "--pull=never", "--runtime=runsc",
@@ -118,7 +119,7 @@ class Session:
             "--security-opt=no-new-privileges", "--log-driver=none",
             "--memory", memory, "--memory-swap", memory, "--cpus", cpu,
             "--pids-limit", pids, "--cgroupns=private", "--shm-size=8m",
-            "--ulimit=nofile=128:128", "--ulimit=core=0:0",
+            f"--ulimit=nofile={files}:{files}", "--ulimit=core=0:0",
             "--tmpfs", f"/work:rw,exec,nosuid,nodev,mode=1777,size={work}",
             "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,mode=1777,size=16m",
             "-i", f"lup-home-{self.language}:sdk{SDK_VERSION}",
