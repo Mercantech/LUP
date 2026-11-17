@@ -76,7 +76,9 @@ public static class PublicCatalog
                 .Select(image => image.Title + " " + image.Alt + " " + image.Summary + " " + image.Stage
                     + " " + string.Join(" ", image.Explanation)))
             .Concat(character.Animations.Select(animation => animation.Title + " " + animation.Topic + " " + animation.Alt))
-            .Concat(character.Collaborations.Select(scene => scene.Title + " " + scene.Description)));
+            .Concat(character.Collaborations.Select(scene => scene.Exercise is { } exercise
+                ? $"{scene.Title} {scene.Description} {exercise.Topic} {exercise.Task}"
+                : $"{scene.Title} {scene.Description}")));
 }
 
 public sealed record PublicCourse(string Slug, string Name, string Subject, string Icon, string Cover)

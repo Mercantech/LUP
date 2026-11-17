@@ -76,6 +76,12 @@
 .lup .character-collaborations figcaption>p { margin:7px 0; line-height:1.65; }
 .lup .character-collaboration-caption { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:5px 12px; }
 .lup .character-collaboration-caption strong { color:var(--ink); font-size:14px; }
+.lup .character-collaboration-exercise { margin:12px 0; padding:12px; border:1px solid var(--rule); border-radius:8px; color:var(--ink); }
+.lup .character-collaboration-exercise h3 { font-size:13px; margin:0 0 3px; }
+.lup .character-collaboration-exercise p { line-height:1.65; margin:7px 0; }
+.lup .character-collaboration-topic { color:var(--muted); }
+.lup .character-collaboration-exercise pre { margin:8px 0; padding:8px; overflow-x:auto; border:1px solid var(--rule); border-radius:6px; }
+.lup .character-collaboration-exercise summary { cursor:pointer; color:var(--blue); }
 .lup .character-artwork-gallery { border-top:1px solid var(--rule); padding-top:30px; margin-top:32px; }
 .lup .character-artwork-gallery h2 { font-size:24px; letter-spacing:-.5px; }
 .lup .character-artwork-gallery header>p { color:var(--muted); font-size:13px; line-height:1.75; margin-top:9px; max-width:75ch; }

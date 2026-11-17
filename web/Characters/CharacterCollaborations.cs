@@ -51,7 +51,52 @@ internal static class CharacterCollaborations
             "Ræv følger genvejen med et papirspøgelse, mens LUPP sammenligner to testkort. Lanternen lyser efter hovedruten, men forbliver slukket efter genvejen."),
         new("raymond-vatson", "raymond", "vatson", "Raymond og Vatson · Nattoget klokken halv tre",
             "Da uret stilles tilbage ved skiftet til vintertid, kan stationen registrere to afgange med det samme lokale klokkeslæt. Vatson finder afgangene i loggen, og Raymond sorterer dem efter UTC i databasen. Billetten med 00:30 UTC kom en time før den med 01:30 UTC.",
-            "På en togstation med et ur på 02.30 peger Raymond på billetten mærket 00:30 UTC. Vatson holder en strimmel fra loggen ved siden af.")
+            "På en togstation med et ur på 02.30 peger Raymond på billetten mærket 00:30 UTC. Vatson holder en strimmel fra loggen ved siden af."),
+        new("raymond-bilbo-left-join", "raymond", "bilbo", "Raymond og Bilbo · Tæl alle kunder med LEFT JOIN",
+            "Bilbo vil have alle kunder på bestillingslisten. På markedet lægger Raymond to sedler hos Alma, én hos Bo og lader Claras plads stå tom. Databasen skal give det samme overblik.",
+            "Raymond peger på Claras tomme rum ved markedets syltetøjsbod. Alma har to bestillingssedler, Bo har én, og Clara er stadig med.")
+        {
+            Exercise = new("H1 · Databaseprogrammering · Mål 2 og 7",
+                "Sæt forespørgslen ind efter øvedataene i PostgreSQL. Brug LEFT JOIN på kundens id, gruppér pr. kunde, og tæl ordrenøglerne med COUNT(orders.id). Prøv derefter COUNT(*) og sammenlign Claras tal.",
+                "Alma får 2, Bo får 1, og Clara får 0. Med COUNT(*) får Clara 1, fordi hendes række stadig er med efter LEFT JOIN. COUNT(orders.id) springer NULL over.",
+                """
+                WITH customers(id, name) AS (
+                    VALUES (1, 'Alma'), (2, 'Bo'), (3, 'Clara')
+                ), orders(id, customer_id) AS (
+                    VALUES (101, 1), (102, 1), (103, 2)
+                )
+                -- Skriv din SELECT her
+                """)
+        },
+        new("naesebladet-gummianden-timeout", "bat", "gummianden", "Næsebladet og Gummianden · Test et manglende ekko",
+            "Bag scenen prøver de tre målinger. Den midterste udløber, og Gummianden vil se, om displayet viser, at målingen mangler. Næsebladet tester visningen med tal fra et array.",
+            "Gummianden lytter, mens Næsebladet tester en afstandssensor bag scenen. Tre billedfelter viser et kort ekko, et manglende ekko med et timeglas og et længere ekko.")
+        {
+            Exercise = new("IoT · Sensorer, timeout og testdata",
+                "Skriv en funktion i C++, der formaterer én prøve som en afstand i cm eller teksten »Intet ekko«. Kør funktionen på alle tre øvedata. Værdien −1 er markøren for timeout.",
+                "Visningen skal i rækkefølge give »18 cm«, »Intet ekko« og »25 cm«. Den sidste værdi viser, at visningen også kommer videre efter et manglende svar.",
+                """
+                constexpr int INTET_EKKO = -1;
+                int maalinger[] = {18, INTET_EKKO, 25};
+                """)
+        },
+        new("kamaeleonen-raev-confusion", "chameleon", "fox", "Kamæleonen og Ræv · Find fejlene i frugtsorteringen",
+            "Ræv finder et æble i pærekassen. Kamæleonen tæller hver frugts faktiske type og modellens bud for at se, hvor modellen tager fejl.",
+            "Ræv peger på et æble i pærekassen, mens Kamæleonen betjener sorteringen. Fire kort viser, hvordan æbler og pærer kan blive sorteret rigtigt eller forkert.")
+        {
+            Exercise = new("Machine Learning · Forvekslingsmatrix",
+                "Modellen ser 10 æbler og 10 pærer. Den kalder 8 æbler for æbler og 2 for pærer. Den kalder 1 pære for et æble og 9 pærer for pærer. Tegn en 2 × 2-matrix med faktisk type på rækkerne og forudsagt type i kolonnerne. Begynd med æble på begge akser. Hvor stor en andel af æblerne finder modellen?",
+                "Æblerækken bliver 8 og 2, pærerækken 1 og 9. Modellen finder 8 af 10 faktiske æbler, altså 80 %. Den klassificerer 17 af de 20 frugter korrekt.")
+        },
+        new("docker-gitmejsen-ci", "whale", "gitmejsen", "Docker og Gitmejsen · Stop containeren ved en rød test",
+            "Gitmejsen finder en rød test på havnens kontrolpost. Containerbygget må vente, til testen er rettet og kørt igen.",
+            "Gitmejsen ser en rød test ved bommen. Docker holder containeren tilbage på sporet foran lastekranen.")
+        {
+            Exercise = new("CI og deployment · Test før containerbuild",
+                "Åbn et .NET-øvelsesprojekt med en Dockerfile og mindst én bestået test. Kør kommandoen i Bash fra projektets rod. Få derefter en assertion til at fejle, kør igen, og kig efter, om Docker går i gang. Gendan assertionen og kør en sidste gang.",
+                "Når testen fejler, stopper kommandoen efter dotnet test. Når testene er grønne igen, går docker build i gang.",
+                "dotnet test && docker build -t undervisning/syltetoej:lokal .")
+        }
     ];
 
     public static IReadOnlyList<CharacterCollaboration> For(string slug) =>
@@ -61,8 +106,11 @@ internal static class CharacterCollaborations
 public sealed record CharacterCollaboration(string Id, string FirstSlug, string SecondSlug, string Title, string Description, string Alt)
 {
     public const string SectionId = "character-collaborations-title";
+    public CharacterCollaborationExercise? Exercise { get; init; }
     public string Anchor => $"collaboration-{Id}";
     public string Image => $"/images/characters/collaborations/{Id}.png";
     public string Preview => $"/images/characters/collaborations/{Id}.webp";
     public string PartnerSlug(string slug) => slug == FirstSlug ? SecondSlug : FirstSlug;
 }
+
+public sealed record CharacterCollaborationExercise(string Topic, string Task, string ExpectedResult, string? StarterCode = null);

@@ -186,6 +186,7 @@ public sealed class LibraryCharactersTests
     [InlineData("bilbo-raymond", "Bilbo Raymond EF Core", "bilbo", "raymond")]
     [InlineData("gitmejsen-bilbo", "Gitmejsen Bilbo mergekonflikt", "gitmejsen", "bilbo")]
     [InlineData("raymond-vatson", "Raymond Vatson nattoget UTC", "raymond", "vatson")]
+    [InlineData("raymond-bilbo-left-join", "Raymond Bilbo LEFT JOIN", "raymond", "bilbo")]
     public async Task Collaboration_uses_one_image_and_links_to_the_partner_on_both_profiles(
         string id, string query, string first, string second)
     {
@@ -208,6 +209,31 @@ public sealed class LibraryCharactersTests
             Assert.Equal($"{id}.png", scene.QuerySelector("a[download]")!.GetAttribute("download"));
             Assert.NotNull(scene.QuerySelector($"a[href='/characters/{partner}#{sceneId}']"));
         }
+    }
+
+    [Theory]
+    [InlineData("raymond", "raymond-bilbo-left-join", "COUNT(*)", "Alma får 2", "WITH customers")]
+    [InlineData("gummianden", "naesebladet-gummianden-timeout", "Intet ekko", "18 cm", "INTET_EKKO")]
+    [InlineData("fox", "kamaeleonen-raev-confusion", "2 × 2-matrix", "80 %", null)]
+    [InlineData("gitmejsen", "docker-gitmejsen-ci", "assertion", "stopper kommandoen", "dotnet test && docker build")]
+    public async Task Collaboration_exercises_show_the_task_and_allow_revealing_the_result(
+        string slug, string sceneId, string task, string result, string? starter)
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await CreateContext(api);
+        var profile = context.Render<CharacterDetail>(parameters => parameters.Add(page => page.Slug, slug));
+        var exercise = profile.Find($"#collaboration-{sceneId} .character-collaboration-exercise");
+        var details = exercise.QuerySelector("details")!;
+
+        Assert.Contains(task, exercise.TextContent);
+        Assert.Equal("Vis forventet resultat", details.QuerySelector("summary")!.TextContent);
+        Assert.Contains(result, details.TextContent);
+        Assert.False(details.HasAttribute("open"));
+        var code = exercise.QuerySelector("pre code");
+        if (starter is null)
+            Assert.Null(code);
+        else
+            Assert.Contains(starter, code!.TextContent);
     }
 
     [Fact]

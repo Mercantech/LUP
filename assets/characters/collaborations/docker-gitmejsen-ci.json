@@ -1,0 +1,30 @@
+{
+  "id": "docker-gitmejsen-ci",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+      "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+    }
+  ],
+  "prompt": "Use case: illustration-story. Original 1536×1024 landscape 3:2 LUP teaching illustration about a CI build being gated by tests. Story: at a coastal wharf freight terminal in bright brisk sunrise, an old humpback captain Docker (source 1 for exact warm weathered blue-gray whale identity, pale baleen jaw, round expressive eye, navy cable-knit sweater, mustard knitted beanie; normal paired flippers, no human hands) looks at the shut striped wooden boom across a short industrial track. Gitmejsen (source 2 exact crest, warm cream patterned feathers, black cheek markings, knitted cobalt blue scarf, small wings and talons) perches on the compact terminal at the red signal and notices the failed test. Strong left to right composition: a small wheeled teal shipping crate on a railway flat cart waiting on the near side of the gate, checkpoint with clearly lit red X on the middle terminal, an EMPTY separated dock-loading cradle with a crane on the far side of the gate. The terminal has just one red X icon, and underneath it readable exact short cream monospace type 'dotnet test'. It also has one small clipboard card showing one green pass check and one red test X, no words. Both figures look at or gesture towards the failed checkpoint. A gate barrier at the rail makes it obvious that the build cannot begin while tests fail. Bright painterly gouache with salt air, forest green, rust ochre, ocean turquoise and peat-dark rail, crafted wood and metal, rich but readable expression. Different staging from a lighthouse or customs booth. No barcodes, other lettering, watermarks, Docker logo, mascots other than the two referenced characters, excessive UI boxes or glows. Preserve reference identities and proportions; all instructional props large and legible.",
+  "alt": "Gitmejsen ser en rød test ved bommen. Docker holder containeren tilbage på sporet foran lastekranen.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-gitmejsen-ci.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3671236,
+    "sha256": "3f20122bd0f37d16c26570bd1d3ab79d8e63ecbc4a28d0bc5696a06b24175c94"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-gitmejsen-ci.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 174702,
+    "sha256": "5d5165f6cbc668e3c428750341b53596f5eb8aaff93afaa21fea05d6b5aad664"
+  }
+}

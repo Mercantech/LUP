@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "naesebladet-gummianden-timeout",
+  "alt": "Gummianden lytter, mens Næsebladet tester en afstandssensor bag scenen. Tre billedfelter viser et kort ekko, et manglende ekko med et timeglas og et længere ekko.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-d9c44f50-47e0-49b0-8970-fe316e369f53.png",
+  "prompt": "Create ONE opaque 1536×1024 landscape 3:2 finely painted LUP storybook collaboration scene. Use the two attached canonical cutouts only to match the characters' exact identity. Næsebladet (first reference) is the broad-shouldered short auburn bat, huge rounded russet ears with notch on viewer's right, fleshy leaf-shaped nose, skeptical amber eyes, plush burgundy Victorian long velvet coat edged with fine gold, warm red brocade waistcoat, cream cravat with amber pin. Preserve anatomically accurate folded membranous wings with two hooked wrist-claws total and two foot paws, no free humanoid arms or added hands. One naturally bent wing and its attached wrist claw operate a simple test button on a small authentic two-round-transducer ultrasound distance sensor, one real apparatus on the bench. Second reference is Gummianden, the genuinely small rounded shiny smooth yellow rubber toy duck, two oval black eyes, same little yellow crest, orange flattened beak and little feet, in chunky terracotta knitted cardigan with one wooden button. Keep silhouette, one wing raised listening against side of head. Other wing unobtrusively indicates the incoming storyboard, no human hands. Næsebladet works at right, character Gummianden attentively listens at left. Depict them from low stage-level as if the viewer is in the actual wings of a theatrical set during a gentle nighttime echo rehearsal. It is unmistakable backstage: black timber wings, old brass footlights, abstract raised cardboard city-silhouette model, burnt sienna theatre drapery to one side, blue midnight and violet canvas acoustic backdrop, scattered prop shelving far behind, a single tea spoon near the bat. Characters share the same soft amber light and look toward their setup instead of camera. A simple three-position paper storyboard is mounted along the near edge of the one wooden rehearsal table; three separated equal tiles in one horizontal line occupying the lower third of the artwork, clear icons and very few details. First and third tiles show identical blue two-round-eye sensor pictogram and pale concrete rectangle as a target, with a clearly readable complete turquoise cue travelling back FROM target TO sensor using one left-facing arrow; first tile shows the target closer and shorter path, third tile target farther and longer path. The middle tile shows exactly the same small sensor pictogram and an incomplete, fading cyan dashed arc with no arrow back, and a small, clearly distinct sand timer pictogram to indicate no answer arrived before timeout. The middle icon must be empty space/dots/hourglass, absolutely no apparent return or reading in the middle. No numbers at all (especially do not print a zero), no words, fake writing or code, text-free as well as entirely logo-free. Stage depth and handmade painted detail, composed human-scale natural character acting, cozy, clear subjects and hands, warm plum and brass with simple vivid turquoise echoes, generous crop safety, not visually busy. Keep all 3 tiles fully visible, unoccluded and easy to compare at thumbnail size. Do not introduce extra animals or vertical side panels.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.webp",
+      "sha256": "5c15516ee9e4755d31081e62a9b62e09aa6c99b3af15a2f537991568107941fc"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-gummianden-timeout.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3149558,
+    "sha256": "88a0f9487390b17f1a05a1ee38155b69ad611730233e62959b6ae80c32b850c1"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-gummianden-timeout.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 110536,
+    "sha256": "0b305be58f4b787ca5ff890da97ae46bef315b351fdd69c07dce9926dc9602f7"
+  }
+}

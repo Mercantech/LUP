@@ -1,0 +1,34 @@
+{
+  "id": "raymond-bilbo-left-join",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/raymond/neutral.webp",
+      "sha256": "a6dcd3b8bb003ccafaa476bcd410d862ab55cc0c49e140b3f743e622bc166509"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    }
+  ],
+  "alt": "Raymond peger på Claras tomme rum ved markedets syltetøjsbod. Alma har to bestillingssedler, Bo har én, og Clara er stadig med.",
+  "prompt": "Render a single 1536×1024 3:2 landscape storybook illustration for the LUP teaching collection, using the supplied references as exact character identity. The lesson is to count linked purchases while retaining every customer including a customer with zero orders (SQL LEFT JOIN and COUNT of the matched order ID). Illustrate this through a very precise miniature market sorting activity. In the foreground, a long low painted wood counter has EXACTLY THREE equal clearly separated open shallow wooden compartments placed left to right, each compartment equally visible and each with a distinctive small upright customer name card: EXACT lettering \"Alma\", \"Bo\", \"Clara\" in that order, simple dark matte crisp large handwriting, no other letters. The first compartment, Alma, contains EXACTLY TWO small tan paper order tickets side by side with a tiny painted blackberry stamp on each. The middle compartment, Bo, contains EXACTLY ONE identical small tan paper order ticket with a tiny blackberry stamp. The third compartment, Clara, is visibly EMPTY with the wood grain of the bare bottom exposed, but its upright named card has the same prominent scale and treatment as the others. The standing cards are on the rim of each compartment and do not count as order tickets. Ensure exactly two paper tickets left, one paper ticket middle, and zero right. No overlay or hidden extra tickets. Draw the interior of all three shallow compartments clearly from a three-quarter camera angle slightly above the counter. Center this three-bin tableau and keep it uncluttered. Off to the sides, the friendly blue elephant professor Raymond (first and second reference) with his familiar round bronze glasses, cream knitted cardigan, blue shirt, uneven blue hair tuft, deep brown eyes and large curled trunk, is lowering a slender teaching pointer toward the front corner of the intentionally empty compartment, without blocking the named card. Next to him Bilbo Backend from third reference, short adult hobbit with exactly two arms, dark chestnut curls, pointed ears, flushed round cheeks, green velvet vest with brass buttons, rolled ivory sleeves, brown cuffed trousers and large hairy bare feet clearly seen beneath the low counter, looks thoughtfully at Clara's card. Readable silhouettes, natural anatomy. Warm open-air afternoon market in a rustic grassy square, painted teal storefront with striped linen canopy on left and distant friendly blurry market stalls, amber light and deep blackberry burgundy accents. One finished jam jar stands well apart on a rear side shelf outside the compartments. Warm hand-painted gouache and wholesome dimensional texture, recognizable faces, amusing collegial teaching scene, no laptop, no chalkboard. One coherent full-bleed illustration, no title, subtitle, SQL, extra text, digits, handwritten squiggles, faux lettering, logos or borders. The only written words anywhere in the scene are these separate individual exact labels Alma, Bo, Clara. The three separate compartments and 2–1–0 ticket rule are mandatory.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-bilbo-left-join.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3416397,
+    "sha256": "09c8836bbad08ede076ff720f08b32b401c7108e38dd748789d4d4987495115a"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-bilbo-left-join.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 168496,
+    "sha256": "ec1f2ae0735031d4b5d16ecaac7519dc0a94c3eecadfa67937d780130d44a02e"
+  }
+}

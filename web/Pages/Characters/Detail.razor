@@ -151,6 +151,22 @@ else
                                     <a href="@scene.Image" download="@($"{scene.Id}.png")" aria-label="@($"Hent {scene.Title} som PNG")">Hent PNG <span aria-hidden="true">↓</span></a>
                                 </div>
                                 <p>@scene.Description</p>
+                                @if (scene.Exercise is { } exercise)
+                                {
+                                    <div class="character-collaboration-exercise">
+                                        <h3>Prøv selv</h3>
+                                        <p class="character-collaboration-topic">@exercise.Topic</p>
+                                        <p>@exercise.Task</p>
+                                        @if (exercise.StarterCode is { } starterCode)
+                                        {
+                                            <pre><code>@starterCode</code></pre>
+                                        }
+                                        <details>
+                                            <summary>Vis forventet resultat</summary>
+                                            <p>@exercise.ExpectedResult</p>
+                                        </details>
+                                    </div>
+                                }
                                 @if (partner is not null)
                                 {
                                     <a href="@($"{partner.Path}#{scene.Anchor}")">Se billedet hos @partner.Name <span aria-hidden="true">↗</span></a>
