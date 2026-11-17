@@ -400,6 +400,6 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: ${LUP_PRIVATE_SUBNET:-}
+        - subnet: ${LUP_PRIVATE_SUBNET:-10.251.90.0/24}
   dokploy-network:
     external: true

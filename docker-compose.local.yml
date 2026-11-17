@@ -28,4 +28,8 @@ services:
       - "9001:9001"
 
 networks:
+  default:
+    ipam:
+      config: !override
+        - subnet: ${LUP_PRIVATE_SUBNET:-}
   dokploy-network: !reset null
