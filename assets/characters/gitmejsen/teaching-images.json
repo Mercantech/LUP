@@ -1,0 +1,47 @@
+{
+  "generator": "ImageGen",
+  "reference": "web/wwwroot/images/characters/gitmejsen/portrait.png",
+  "referenceSha256": "cd1d21dec5e179cb063b806adee081e104df2975a709627e92530ffc204120b0",
+  "previewSettings": "WebP; Lanczos, 768 px bred, kvalitet 86",
+  "entries": [
+    {
+      "id": "foerste-commit",
+      "title": "Første commit",
+      "alt": "Gitmejsen ser på en kladde og en færdig skitse af den samme redekasse. Den færdige skitse er mærket med et gyldent frø.",
+      "png": "web/wwwroot/images/characters/gitmejsen/teaching/foerste-commit.png",
+      "preview": "web/wwwroot/images/characters/gitmejsen/teaching/foerste-commit.webp",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "bcb84cdc2aae2972774cd25ec8abb00792ee9b8a300ec11eb78209938807d900",
+      "previewSha256": "1a66a1e567fa319d0714e0e2bbfbc588c3d6e4e6f6f0c77c293ef1fa435ae581",
+      "source": "exec-69ed68f6-e354-4ca5-9b99-86d1dd73983d.png",
+      "prompt": "Make one 3:2 landscape teaching story illustration for ages 15+ (no graphic overlays and no words). Use reference image as the exact identity of the original female crested tit teacher. Preserve her tall tapered black-speckled cream feather crest, curved dark cheek marking, cream belly, small dark bib and short pointed bill, taupe wings, gentle expressive amber-brown eyes, two natural bird feet, and her one signature woven cobalt-blue scarf with exactly two short ends at its knot. She is a proper bird throughout with two wings, two tiny clawed feet, no hands, no human arms or additional limbs. Same softly sculpted matte, tactile, subtly stylized Nordic 3D stop-motion storybook render, natural scale, warm materials. No logos, text, labels, signatures or fake typography. Show the bird as the keeper of a little spruce-wood workbench in her quiet Finnish treehouse. On the workbench are a clearly unfinished, hand-drawn simple birdhouse sketch on a sheet of light paper and beside it a single neat final birdhouse sketch on new ivory archival paper, with a tiny golden seed-shaped seal, suggesting the first saved version. An elegant small empty clip and a dark blue pencil sit nearby. Bird on left perches with two feet on edge of table and looks towards final sketch. Artful storybook realism, clean composition, readable two separate versions, wood grain and warm afternoon light. No apparent writing or lettering anywhere, only abstract birdhouse outlines and no human hands."
+    },
+    {
+      "id": "branches-og-merge",
+      "title": "To branches, ét merge",
+      "alt": "På bordet viser to tegninger hvert sit forslag. Redekassen i midten har både den blå tagflade og den gyldne siddepind.",
+      "png": "web/wwwroot/images/characters/gitmejsen/teaching/branches-og-merge.png",
+      "preview": "web/wwwroot/images/characters/gitmejsen/teaching/branches-og-merge.webp",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "362513366a446fb52fb1f055eb51a975137780bbcb3a5c98d4e03ac656624355",
+      "previewSha256": "0e9b845c1e84cb151cf15d7cd3ecf96ddf6dec9a91b81d5d6df7922b29bf1493",
+      "source": "exec-0e7bb83f-504c-4f68-be3a-424b44cb801c.png",
+      "prompt": "Make one 3:2 landscape teaching story illustration for ages 15+. Use reference image as the exact identity of the original female crested tit teacher. Preserve her tall tapered black-speckled cream feather crest, curved dark cheek marking, cream belly, small dark bib and short pointed bill, taupe wings, gentle expressive amber-brown eyes, two natural bird feet, and her one signature woven cobalt-blue scarf with exactly two short ends at its knot. She is a proper bird throughout with two wings, two tiny clawed feet, no hands, no human arms or additional limbs. Same softly sculpted matte, tactile, subtly stylized Nordic 3D stop-motion storybook render, natural scale, warm materials. No logos, text, labels, signatures or fake typography. An overhead three-quarter view of one wooden workbench in a cosy Finnish spruce forest workshop. The small crested tit perches on the bench behind a miniature model of a birdhouse. Two separate drawings laid beside it show two visibly complementary design changes: left a simple BLUE roof on a small plain birdhouse, right a short AMBER landing perch below the round opening on another drawing with a plain roof. The single assembled small wooden birdhouse in the middle has BOTH a BLUE roof and an AMBER landing perch, visibly distinct. On the bench edge a slim forked spruce twig and two subtle brass clips reference branches. Exactly three birdhouses pictured total: two simple one-color construction sketches, one central physical combined model. Warm and tactile 3D stop-motion set, candle-gold and slate blue, no labels, text or bogus code. The contrasting accents and the resulting model should read clearly. Only one bird, no other figures."
+    },
+    {
+      "id": "mergekonflikt",
+      "title": "To forslag til den samme linje",
+      "alt": "Gitmejsen sammenligner to tegninger af samme redekasse. De viser en rund og en firkantet åbning.",
+      "png": "web/wwwroot/images/characters/gitmejsen/teaching/mergekonflikt.png",
+      "preview": "web/wwwroot/images/characters/gitmejsen/teaching/mergekonflikt.webp",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "fe5f8bf7fcfd5548990a6003a390639c412a8d421320cfd7533218fe6778fc03",
+      "previewSha256": "3fad5a3381b31d6d15acd873a08be0ff407b0408007440063300d4fc80556f07",
+      "source": "exec-45612f02-ea4f-4243-933d-1710ac57b5ae.png",
+      "prompt": "Make one 3:2 landscape teaching story illustration for ages 15+. Use reference image as the exact identity of the original female crested tit teacher. Preserve her tall tapered black-speckled cream feather crest, curved dark cheek marking, cream belly, small dark bib and short pointed bill, taupe wings, gentle expressive amber-brown eyes, two natural bird feet, and her one signature woven cobalt-blue scarf with exactly two short ends at its knot. She is a proper bird throughout with two wings, two tiny clawed feet, no hands, no human arms or additional limbs. Same softly sculpted matte, tactile, subtly stylized Nordic 3D stop-motion storybook render, natural scale, warm materials. No logos, text, labels, signatures or fake typography. Cozy archival workbench, the bird perches between a pair of loose parallel ivory plans and looks thoughtfully down, beak free, both bird feet firmly gripping a short rustic perch. Each plan depicts the same little birdhouse front, but the opening is a large round circle in the blue drawing on the left and a small rounded square in the ochre drawing on the right. These are two alternatives for the SAME part, for a lesson about two edits to the same line. Keep both plans sharply visible, comparably sized, purposefully laid flat toward the camera. A tiny wooden ruler and a single cork stopper remain by the left edge; no third plan and no chosen result. A deeper late-afternoon Nordic window light and soft layered matte feather volume. No writing, lettering, numbers, labels or logos, only clean hand-drawn geometric shapes."
+    }
+  ]
+}

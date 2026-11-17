@@ -18,11 +18,12 @@ namespace Mercantec.Tech.Api.Tests;
 public sealed class CharacterKnowledgeCheckSeriesTests
 {
     [Fact]
-    public void SeriesUsesElevenDifferentCharacterProfilesAndSixQuestionsPerQuiz()
+    public void SeriesCoversEveryCharacterProfileAndUsesSixQuestionsPerQuiz()
     {
         var entries = CharacterKnowledgeCheckCatalog.All.Values;
-        Assert.Equal(16, entries.Count());
-        Assert.Equal(11, entries.Select(template => template.CharacterSlug).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(CharacterCatalog.All.Select(character => character.Slug).Order(StringComparer.Ordinal),
+            entries.Select(template => template.CharacterSlug).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal));
+        Assert.Single(entries, template => template.CharacterSlug == "gitmejsen");
         Assert.All(entries, template =>
         {
             Assert.NotNull(CharacterCatalog.Find(template.CharacterSlug));
@@ -110,6 +111,9 @@ public sealed class CharacterKnowledgeCheckSeriesTests
         Assert.Equal(2, profiles.Length);
         var profile = Assert.Single(profiles, row => row.Title == CharacterKnowledgeCheckCatalog.All[quizId].Draft.Title);
         var joinProfile = Assert.Single(profiles, row => row.Title == CharacterKnowledgeCheckCatalog.All[joinQuizId].Draft.Title);
+        var gitmejsen = Assert.Single(await guest.CharacterExercises("gitmejsen", default));
+        Assert.Equal("Fra første commit til et merge", gitmejsen.Title);
+        Assert.Equal(6, gitmejsen.QuestionCount);
         Assert.Empty(await guest.CharacterExercises("unknown", default));
         Assert.NotNull(typeof(KnowledgeChecksController).GetMethod(nameof(KnowledgeChecksController.CharacterExercises))!
             .GetCustomAttributes(typeof(AllowAnonymousAttribute), inherit: false).SingleOrDefault());

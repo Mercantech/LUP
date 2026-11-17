@@ -34,6 +34,7 @@ COPY web/Characters/BatTeachingMaterials.cs web/Characters/
 COPY web/Characters/BatMotionMaterials.cs web/Characters/
 COPY web/Characters/BilboTeachingMaterials.cs web/Characters/
 COPY web/Characters/BilboMotionMaterials.cs web/Characters/
+COPY web/Characters/GitmejsenMaterials.cs web/Characters/
 WORKDIR /src/api
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 

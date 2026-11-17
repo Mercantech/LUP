@@ -2276,6 +2276,136 @@
           }
         ]
       }
+    },
+    {
+      "key": "gitmejsen-fra-commit-til-merge",
+      "characterSlug": "gitmejsen",
+      "intro": "Kom med op på grenen. Vi bygger en redekasse i flere versioner og ser, hvordan Git holder styr på, hvad vi hver især har ændret.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Fra første commit til et merge",
+        "topic": "Git og versionsstyring",
+        "description": "Gem en version, prøv en idé på en ny branch, og gennemgå to ændringer med Gitmejsen.",
+        "estimatedMinutes": 7,
+        "questions": [
+          {
+            "id": "020f4204-eb14-5c72-9628-ad7c0587e2d2",
+            "kind": "single",
+            "prompt": "Du har tilføjet mål på redekassen i README.md og har klargjort filen med git add. Hvilken commitbesked gør ændringen nemmest at finde igen?",
+            "options": [
+              "Diverse",
+              "Retter noget",
+              "Tilføj mål på redekassen",
+              "Opdater fil"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg navngiver versionen ud fra det konkrete arbejde. Så kan du finde ændringen i git log med det samme.",
+            "learnMoreUrl": "/characters/gitmejsen#character-gallery-title",
+            "learnMoreTitle": "Gitmejsen · Første commit"
+          },
+          {
+            "id": "fd6a1af5-ca70-5b86-ab7c-385d4655e4ff",
+            "kind": "single",
+            "prompt": "Du står på main og opretter branchen nyt-tag. Hvad peger nyt-tag på lige efter, at den er oprettet?",
+            "options": [
+              "En tom historik",
+              "Samme commit som main",
+              "Det første commit i projektet",
+              "Et nyt commit med en kopi af alle filer"
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Det nye navn peger på det commit, du står på. Når du senere laver et commit på nyt-tag, flytter kun det navn frem.",
+            "learnMoreUrl": "/characters/gitmejsen#character-gallery-title",
+            "learnMoreTitle": "Gitmejsen · Branches og merge"
+          },
+          {
+            "id": "edb5af4d-0ace-55df-b168-41c5452abf68",
+            "kind": "single",
+            "prompt": "Du vil finde de commits, hvor README.md blev ændret. Hvilken kommando viser dem i forkortet form?",
+            "options": [
+              "git log --oneline -- README.md",
+              "git status --short",
+              "git branch --list",
+              "git stash list"
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg bruger git log til den gemte historik. Stien efter -- afgrænser historikken til README.md.",
+            "learnMoreUrl": "https://git-scm.com/docs/git-log",
+            "learnMoreTitle": "Git · Se ændringer for en fil"
+          },
+          {
+            "id": "bdd56ecf-abd2-5d05-bc21-599ea518503a",
+            "kind": "multiple",
+            "prompt": "Du har halvfærdige ændringer i en fil, Git allerede følger. Du vil lægge dem midlertidigt til side, rette en anden fejl og derefter hente dem frem. Hvilke to trin passer?",
+            "options": [
+              "Kør git stash push for at gemme ændringerne midlertidigt.",
+              "Kør git tag for at gemme de ugemte ændringer.",
+              "Kør git stash apply, når du er klar til at fortsætte.",
+              "Kør git log for at lægge ændringerne tilbage i filen."
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg bruger stash som en midlertidig lomme til ufærdigt arbejde. Med apply får jeg ændringerne tilbage og beholder posten i min stash.",
+            "learnMoreUrl": "https://git-scm.com/docs/git-stash",
+            "learnMoreTitle": "Git · Midlertidig opbevaring med stash"
+          },
+          {
+            "id": "1a3516a3-3f49-5ba3-991e-c8b566feaeb1",
+            "kind": "multiple",
+            "prompt": "Du og din makker har ændret samme linje om åbningen på redekassen. Git viser en mergekonflikt. Hvilke to trin hjælper jer med at afslutte det på en gennemgået måde?",
+            "options": [
+              "Slet filen, når Git skriver CONFLICT.",
+              "Læs begge versioner, og aftal den endelige tekst.",
+              "Flyt en tag til main, så konflikten forsvinder.",
+              "Fjern konfliktmarkørerne, klargør den rettede fil med git add, og fuldfør merge efter at have tjekket resultatet."
+            ],
+            "correctOptions": [
+              1,
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg læser begge forslag, vælger eller kombinerer indholdet og tjekker resultatet. Når den færdige fil er klargjort, kan Git afslutte merge.",
+            "learnMoreUrl": "/characters/gitmejsen#character-gallery-title",
+            "learnMoreTitle": "Gitmejsen · Gennemgå en mergekonflikt"
+          },
+          {
+            "id": "df3d17f6-ab90-5984-a046-f791e201c411",
+            "kind": "single",
+            "prompt": "Version 1.0 af redekassen er klar. Hvad kan I sætte på det præcise commit, så versionen er let at finde efter nye commits på main?",
+            "options": [
+              "En stash med de aktuelle ændringer",
+              "En ny commitbesked i hver fil",
+              "En ændring i git status",
+              "En tag med navnet v1.0"
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Jeg sætter en tag på den bestemte version. Navnet bliver ved med at henvise til den udgivelse, mens main kan vokse videre.",
+            "learnMoreUrl": "https://git-scm.com/book/en/v2/Git-Basics-Tagging",
+            "learnMoreTitle": "Git · Tags"
+          }
+        ]
+      }
     }
   ]
 }

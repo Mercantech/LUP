@@ -3262,5 +3262,245 @@
     "previewBytes": 68776,
     "originalSha256": "e66197696d8e5316e542b08889b5f8c7bb0bce4af281f769e1c74ad335353588",
     "previewSha256": "61fbb7aa3f446f542c3ae10aba91b1879e387f541dbfd59fdd975e8c009e53e0"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/first-commit.png",
+    "preview": "/images/characters/gitmejsen/reactions/first-commit.webp",
+    "originalBytes": 1102904,
+    "previewBytes": 64476,
+    "originalSha256": "a11060361257db4ae834c2c9edf2d9d3ad09df984ce6c441497ee10c5d49aab2",
+    "previewSha256": "cf93d9782ce63d1d3f59afd047f714eedbb4507b83cabe12650221a951a808aa"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/commit-message.png",
+    "preview": "/images/characters/gitmejsen/reactions/commit-message.webp",
+    "originalBytes": 1172434,
+    "previewBytes": 71616,
+    "originalSha256": "2f4ecb069ea32a792ed96f84ae4db09219f3f53f0fda795c38a2daa40b66e651",
+    "previewSha256": "1cf4ffc00215d2ad4e95d1e4e36422d83826a5e5654d8b21d3ccd843b2d3fedd"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/branch.png",
+    "preview": "/images/characters/gitmejsen/reactions/branch.webp",
+    "originalBytes": 1232508,
+    "previewBytes": 76734,
+    "originalSha256": "50f793a4d5d4baa1c1a0b19096f7405d491403fdcb0d45a62877691128e9137d",
+    "previewSha256": "2dc04feeb4797d84ffbda661546a87fd93be0a4145128684013def2cc92cc073"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/merge-conflict.png",
+    "preview": "/images/characters/gitmejsen/reactions/merge-conflict.webp",
+    "originalBytes": 1145465,
+    "previewBytes": 69526,
+    "originalSha256": "d5a331d38915134ac2a4dfde327554d54d98904037be11a557be164c571a3285",
+    "previewSha256": "65e465de08bbe4955decb6ba0c36b804508a5b671f79f28e21dfbb83d14b29e8"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/conflict-resolved.png",
+    "preview": "/images/characters/gitmejsen/reactions/conflict-resolved.webp",
+    "originalBytes": 1124849,
+    "previewBytes": 70858,
+    "originalSha256": "7e0a5ada9c3f12333fc5ed84418d42ab33fc53a993cf5c22104ac921add1ae92",
+    "previewSha256": "9ddd352fb91d317332c53d366719578b4eaed9b5d02e062a0dc4310cd48623c1"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/release.png",
+    "preview": "/images/characters/gitmejsen/reactions/release.webp",
+    "originalBytes": 1180854,
+    "previewBytes": 74342,
+    "originalSha256": "5042fa40787e5a81ae315b9bb2234fe509db31c1dd379089a5bf707a893a477e",
+    "previewSha256": "d6a5f324bce98f49bd6fd49b056eed049a7873626ceb42dcba132c973f9262a1"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/commit.png",
+    "preview": "/images/characters/gitmejsen/reactions/commit.webp",
+    "originalBytes": 1117715,
+    "previewBytes": 60054,
+    "originalSha256": "a826c11f5cfbee4205d95a932cabc830899df3fc4c62e5b2137593113375a9ed",
+    "previewSha256": "e82311e577eac7e110736070c40d571a6139017fe70456e9888e88a8708236a6"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/stash.png",
+    "preview": "/images/characters/gitmejsen/reactions/stash.webp",
+    "originalBytes": 1289663,
+    "previewBytes": 76892,
+    "originalSha256": "dc8713e7863525ba28e5cc8cd6df8045edcf5f31c97883405ef8e81730abb0e6",
+    "previewSha256": "cf140523cb8043b1d55e28c85b4fe5b88eb5c7f71dac77d3e7f192ce8338af64"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/history.png",
+    "preview": "/images/characters/gitmejsen/reactions/history.webp",
+    "originalBytes": 1138012,
+    "previewBytes": 61002,
+    "originalSha256": "be8b064c7782aa258e22eaece46e46ae9956300e58b541da891fb869c00e223b",
+    "previewSha256": "446ede6c2aa12d911c1a5f9e305840401e500c065b5725d830d0667462789ef3"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/branch-switch.png",
+    "preview": "/images/characters/gitmejsen/reactions/branch-switch.webp",
+    "originalBytes": 1060956,
+    "previewBytes": 64144,
+    "originalSha256": "f53eb95a9d5917eec7ac24fd1dbbe9a5b30bf18eb0216c10769b402c5c741e42",
+    "previewSha256": "abd25518f205a4ed2908eb319e9c3876a2ff504b1a6d8715e0afdb7583b1f239"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/merge.png",
+    "preview": "/images/characters/gitmejsen/reactions/merge.webp",
+    "originalBytes": 1113483,
+    "previewBytes": 68832,
+    "originalSha256": "545f01d6b5987d3e0e4367f3646352c8a99b9acd72e286471e897303c0f6a7ad",
+    "previewSha256": "bb6c432a271137748c9ee94fa814564b69bc75f8a42d557a840230d4dd19266c"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/diff.png",
+    "preview": "/images/characters/gitmejsen/reactions/diff.webp",
+    "originalBytes": 1240298,
+    "previewBytes": 72048,
+    "originalSha256": "4d899716ded9e5e50bb5b9e132591f127409d544ee14dec8b684a5e96d552a49",
+    "previewSha256": "04a3c19bedbcf96247bb458208fe1e51e7747f7c777e241971568a48b9138ccb"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/wave.png",
+    "preview": "/images/characters/gitmejsen/reactions/wave.webp",
+    "originalBytes": 1026074,
+    "previewBytes": 84088,
+    "originalSha256": "68607f15691507d446661ec37715664bb4ec7d673eac6372ab718dddfa030000",
+    "previewSha256": "05ed10446ec8ebaf9d9988ed930d6a5f0239e18f52faaa66fcd2ea31d5ea2dad"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/thinking.png",
+    "preview": "/images/characters/gitmejsen/reactions/thinking.webp",
+    "originalBytes": 1088104,
+    "previewBytes": 92814,
+    "originalSha256": "40e03a966f2c4aece78ceec5c31cd426c3d2b0271cf6385e14c1b31eb102c336",
+    "previewSha256": "2b5c7716a81fa208ba358db9ca72b593f4af2e1fe5053fc43816bc61e37759d0"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/idea.png",
+    "preview": "/images/characters/gitmejsen/reactions/idea.webp",
+    "originalBytes": 1083743,
+    "previewBytes": 91096,
+    "originalSha256": "937e9184b3c967a27c3eef43df1f7d0f5bad1ddf8da280dabe361c717db37e9d",
+    "previewSha256": "6ea3ee243539ede039755f46e420714809a9437f8e8e94c4b2a19539f68322f0"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/question.png",
+    "preview": "/images/characters/gitmejsen/reactions/question.webp",
+    "originalBytes": 1139806,
+    "previewBytes": 91538,
+    "originalSha256": "0e8c8cf7a647ae52dde18ba8d56825dc248efbf6a2eeb7a63a3105b7569634aa",
+    "previewSha256": "be66b12de4f9f110982092fd005f540ccaf43dd107d1816957460b40b028b6f4"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/warning.png",
+    "preview": "/images/characters/gitmejsen/reactions/warning.webp",
+    "originalBytes": 1112833,
+    "previewBytes": 95530,
+    "originalSha256": "66f8a559abdc7256335c5fd6b5dd6ebdb493c2ddf66bcb6a94b8a6202df64cbc",
+    "previewSha256": "2c1a6f0db8d1f8477fff3b93e5c6df517d8d59e74e40ceb8cd18a8da41c0148b"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/help.png",
+    "preview": "/images/characters/gitmejsen/reactions/help.webp",
+    "originalBytes": 1197820,
+    "previewBytes": 97688,
+    "originalSha256": "245f75498f32d636698bf843feabec38dad0508ab2b430c1a9aa5540dc42f449",
+    "previewSha256": "19ce93507788032b992a60e62239542f73c720186e167fa06442a07f9e998478"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/approval.png",
+    "preview": "/images/characters/gitmejsen/reactions/approval.webp",
+    "originalBytes": 1033189,
+    "previewBytes": 58964,
+    "originalSha256": "196a28638425b8203c765e7b40ec908f704336dd246758721b4c6504ab65bc0d",
+    "previewSha256": "e312c170511ad7b688ebdb34b30eda7e1117f8b1bbbe6e718f653cc31de5c8c9"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/celebration.png",
+    "preview": "/images/characters/gitmejsen/reactions/celebration.webp",
+    "originalBytes": 1168167,
+    "previewBytes": 78710,
+    "originalSha256": "78e9d18c2abd939ea2af861d5dff7bb776b0daf1eeaa997f8821832ed4dae57f",
+    "previewSha256": "d11d6df2940fc9f8f1c9d138329c2e63effe770f88876945d5d9b695a2436fd1"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/gratitude.png",
+    "preview": "/images/characters/gitmejsen/reactions/gratitude.webp",
+    "originalBytes": 1017571,
+    "previewBytes": 61462,
+    "originalSha256": "5966f58e2b922d671abfeaa40dcc0076289e787e48a0558fc9c5097a5848a614",
+    "previewSha256": "d0438209b115fcbdb70a0c80bee1bf3a69deb5a888d6c026ef392ad03e75c87f"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/tea.png",
+    "preview": "/images/characters/gitmejsen/reactions/tea.webp",
+    "originalBytes": 1046325,
+    "previewBytes": 64422,
+    "originalSha256": "46930c910d24861530517df1f5d3b1d7dff8e54bc772652e2bd526eba4ba7caa",
+    "previewSha256": "e85e29f3b9013f058bc78db8e172f2092c68ff3521ca5753bb1566bcb191cafd"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/try-again.png",
+    "preview": "/images/characters/gitmejsen/reactions/try-again.webp",
+    "originalBytes": 1018428,
+    "previewBytes": 64078,
+    "originalSha256": "66c5c5446ca133f26ce688bc0c6695313603d043b67d0cc3e14de045adf4cdd1",
+    "previewSha256": "c73de569363fda574e331bb8df83a9209a8bb843bbd65b5301d2d59421a79204"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/listening.png",
+    "preview": "/images/characters/gitmejsen/reactions/listening.webp",
+    "originalBytes": 1013591,
+    "previewBytes": 61704,
+    "originalSha256": "b7292117b7ac22f4459b9de87e8d060d7c88ce6e2da696bae79bb12f06866e3f",
+    "previewSha256": "6e8d124e677ad3766083972288aaeb7cf5d206dd1af673a3521b05870ffaa77d"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/review.png",
+    "preview": "/images/characters/gitmejsen/reactions/review.webp",
+    "originalBytes": 1140647,
+    "previewBytes": 60038,
+    "originalSha256": "778926bdd07988c0436568a5abf02ff788682966e759bee3edb6b815b627915d",
+    "previewSha256": "59651ee9648b5f07f4ff4cc9f033e07887b4e224ec966143162f7cfd14e22cc6"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/revert.png",
+    "preview": "/images/characters/gitmejsen/reactions/revert.webp",
+    "originalBytes": 1091605,
+    "previewBytes": 62674,
+    "originalSha256": "ea2b4f6be60730b4df8b1101e37328b77f59d13f0d67e69a2ef49639a1ee830e",
+    "previewSha256": "583424a0a84f35c3d1f722e7b649d44f3b71b0106a7315dac09440dd4147c047"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/tag.png",
+    "preview": "/images/characters/gitmejsen/reactions/tag.webp",
+    "originalBytes": 1234049,
+    "previewBytes": 65432,
+    "originalSha256": "7b85bcc8d53298b638b1f95db228965f98db56a14d89311828e4ce986006ac5a",
+    "previewSha256": "4110060a4df76ab680d5e15cf2092915f94c9367f4a8dd61bd8c9f0b74c07314"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/push.png",
+    "preview": "/images/characters/gitmejsen/reactions/push.webp",
+    "originalBytes": 1166287,
+    "previewBytes": 62246,
+    "originalSha256": "481b604d99f7f5f88cb00a285d6178ae53c18e621bee140b961ae4f47fd1d44b",
+    "previewSha256": "908e4a48176cb71a82e2eca98c1a84d4ea447c6b36548a1d850f443d16ff5d42"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/pull.png",
+    "preview": "/images/characters/gitmejsen/reactions/pull.webp",
+    "originalBytes": 1168167,
+    "previewBytes": 63564,
+    "originalSha256": "c947d73afc25465546bef8f327a556908a85311a81a79c50cd50ff9a0e9b89d2",
+    "previewSha256": "2160c52ea27d1788b52e3ba18e98275b151f5d71bd58f015bb31aa385a668008"
+  },
+  {
+    "image": "/images/characters/gitmejsen/reactions/clean.png",
+    "preview": "/images/characters/gitmejsen/reactions/clean.webp",
+    "originalBytes": 1258371,
+    "previewBytes": 75708,
+    "originalSha256": "d30f90fe7d92e50ee1a1da658bbab5194eb570e0da96bd8f32484b7bf2e195a7",
+    "previewSha256": "4fd0a7017b157e20088594bf1878127eeb85b8a816b5470750c0d66dfd7c12c1"
   }
 ]

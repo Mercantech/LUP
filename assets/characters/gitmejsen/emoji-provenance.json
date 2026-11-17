@@ -1,0 +1,722 @@
+{
+  "generator": "builtin-imagegen",
+  "character": "gitmejsen",
+  "source": "Originale emojiudtryk genereret med det godkendte 3D-portræt som identitetsreference.",
+  "identityReference": {
+    "file": "exec-4e4e76c0-80ef-433c-8e3f-118e74706a8b.png",
+    "sha256": "cd1d21dec5e179cb063b806adee081e104df2975a709627e92530ffc204120b0"
+  },
+  "preparation": "Fem transparente ark med seks reaktioner hver. Hver reaktion er beskåret i sin egen celle og centreret med ensartet transparent margen i en RGBA PNG på 1254 × 1254 px. Oprindelige farver og halvgennemsigtige kanter er bevaret.",
+  "sheets": [
+    {
+      "id": "milestones",
+      "file": "exec-dedee977-30ff-4b38-b3e9-2202e89095b6.png",
+      "sha256": "f68e8289d57035d4b03a1a7681d387fdd20fc0ab802bf3065eea780a2ef5731e",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Create a game-ready transparent six-cell reaction atlas, 1536x1024 LANDSCAPE with EXACTLY 3 columns by 2 rows. The provided image is the approved identity reference for the one adult female Crested Tit character present once in each cell. Match her tall swept black-and-cream speckled feather crest, tiny pointed beak, charcoal cheek stripe and throat bib, creamy belly, taupe wings, dark warm eye and exact cobalt blue scarf with ONE knot and TWO short ends. Painterly Danish/Finnish storybook warmth, softly modeled realistic feather layers, gentle stylized stop-motion/matte textile maquette depth, warm rich readable materials. Each reaction is an optically centered compact animated bird BUST sticker, crop body smoothly at its natural rounded base, no rectangular crop. One bird only in every cell. Focus on readable head and face, emotions and one large clear symbol or prop placed comfortably alongside the bird, using depth sparingly at emoji size. Give each cell strict generous transparent gutters on every side, use no more than 73% of its own 512x512 invisible square. No cross-cell elements, no touching, no backgrounds, no plinths, no colored halos, no fading shadows, no squares, no cutting off crest, no borders, no grid lines, no labels, no numbering, no watermarks, no legibility-dependent text. Full true transparent alpha around each silhouette and the whole atlas. No fingers/hands, anatomically correct folded or naturally raised bird wings, exactly one head, scarf one knot and two tails. There must be EXACTLY SIX reactions, in the precise row-major order dictated below.\nTop-left. Quietly proud uplifted head beside a single round blue seal with a clear gold four-point star, her first saved milestone.\nTop-middle. Thoughtful clear open eye beside one small tan note with three simple dark line marks and an obvious green check stamp.\nTop-right. Eager upward gaze at an unambiguous miniature forked tan Y-shaped twig with one small cobalt tip marker.\nBottom-left. Concerned expression beside two visibly crossing burnt-orange and blue strips with a small red warning diamond at their intersection.\nBottom-middle. Relief alongside two differently colored wooden strips that fit together, with a large green check.\nBottom-right. Celebratory beak slightly open beside one ochre hanging gift tag with a teal bow, two tiny gold glints. No numerals.",
+      "entries": [
+        {
+          "id": "first-commit",
+          "title": "Første commit",
+          "alt": "Gitmejsen ser tilfreds på en blå medalje med en gylden stjerne.",
+          "keywords": [
+            "første commit",
+            "git commit",
+            "gem",
+            "versionsstyring"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/first-commit.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 61,
+            "top": 17,
+            "width": 412,
+            "height": 480
+          },
+          "pngSha256": "a11060361257db4ae834c2c9edf2d9d3ad09df984ce6c441497ee10c5d49aab2",
+          "pngBytes": 1102904
+        },
+        {
+          "id": "commit-message",
+          "title": "God commitbesked",
+          "alt": "Gitmejsen vurderer en note med tre linjer og et grønt flueben.",
+          "keywords": [
+            "commitbesked",
+            "commit message",
+            "git commit",
+            "beskriv ændringen"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/commit-message.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 540,
+            "top": 20,
+            "width": 440,
+            "height": 474
+          },
+          "pngSha256": "2f4ecb069ea32a792ed96f84ae4db09219f3f53f0fda795c38a2daa40b66e651",
+          "pngBytes": 1172434
+        },
+        {
+          "id": "branch",
+          "title": "Ny branch",
+          "alt": "Gitmejsen løfter en vinge mod en todelt kvist med en blå markør.",
+          "keywords": [
+            "ny branch",
+            "gren",
+            "git branch",
+            "forgrening"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/branch.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1058,
+            "top": 35,
+            "width": 433,
+            "height": 463
+          },
+          "pngSha256": "50f793a4d5d4baa1c1a0b19096f7405d491403fdcb0d45a62877691128e9137d",
+          "pngBytes": 1232508
+        },
+        {
+          "id": "merge-conflict",
+          "title": "Mergekonflikt",
+          "alt": "Gitmejsen kigger bekymret på to krydsede lister og et rødt advarselstegn.",
+          "keywords": [
+            "mergekonflikt",
+            "merge conflict",
+            "flettekonflikt",
+            "sammenfletning"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/merge-conflict.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 33,
+            "top": 527,
+            "width": 447,
+            "height": 468
+          },
+          "pngSha256": "d5a331d38915134ac2a4dfde327554d54d98904037be11a557be164c571a3285",
+          "pngBytes": 1145465
+        },
+        {
+          "id": "conflict-resolved",
+          "title": "Konflikt løst",
+          "alt": "Gitmejsen lukker øjet lettet ved to sammenføjede træstykker og et grønt flueben.",
+          "keywords": [
+            "løst konflikt",
+            "merge conflict",
+            "fletning",
+            "succes"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/conflict-resolved.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 536,
+            "top": 523,
+            "width": 453,
+            "height": 471
+          },
+          "pngSha256": "7e0a5ada9c3f12333fc5ed84418d42ab33fc53a993cf5c22104ac921add1ae92",
+          "pngBytes": 1124849
+        },
+        {
+          "id": "release",
+          "title": "Ny release",
+          "alt": "Gitmejsen fejrer en ny udgivelse ved et gyldent mærke med sløjfe.",
+          "keywords": [
+            "release",
+            "udgivelse",
+            "version",
+            "tag"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/release.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1052,
+            "top": 517,
+            "width": 455,
+            "height": 480
+          },
+          "pngSha256": "5042fa40787e5a81ae315b9bb2234fe509db31c1dd379089a5bf707a893a477e",
+          "pngBytes": 1180854
+        }
+      ]
+    },
+    {
+      "id": "git-tools",
+      "file": "exec-dfc0c46c-9ea8-4092-8274-d926496d4f48.png",
+      "sha256": "d931ee7ffb68ee50aaa60f595580ecc4d6a54c46778a8c6368531ebf18cf682e",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Create a game-ready transparent six-cell reaction atlas, 1536x1024 LANDSCAPE with EXACTLY 3 columns by 2 rows. The provided image is the approved identity reference for the one adult female Crested Tit character present once in each cell. Match her tall swept black-and-cream speckled feather crest, tiny pointed beak, charcoal cheek stripe and throat bib, creamy belly, taupe wings, dark warm eye and exact cobalt blue scarf with ONE knot and TWO short ends. Painterly Danish/Finnish storybook warmth, softly modeled realistic feather layers, gentle stylized stop-motion/matte textile maquette depth, warm rich readable materials. Each reaction is an optically centered compact animated bird BUST sticker, crop body smoothly at its natural rounded base, no rectangular crop. One bird only in every cell. Focus on readable head and face, emotions and one large clear symbol or prop placed comfortably alongside the bird, using depth sparingly at emoji size. Give each cell strict generous transparent gutters on every side, use no more than 73% of its own 512x512 invisible square. No cross-cell elements, no touching, no backgrounds, no plinths, no colored halos, no fading shadows, no squares, no cutting off crest, no borders, no grid lines, no labels, no numbering, no watermarks, no legibility-dependent text. Full true transparent alpha around each silhouette and the whole atlas. No fingers/hands, anatomically correct folded or naturally raised bird wings, exactly one head, scarf one knot and two tails. There must be EXACTLY SIX reactions, in the precise row-major order dictated below.\nTop-left. Focused bird beside a little ivory card with one dark blue round wax seal and a bold impression, closed beak.\nTop-middle. Bending inquisitively forward with a small ochre spruce seed at the tip of her beak and a small bark crevice beside her.\nTop-right. She looks downward at three stacked mini cream archive cards, paired with one small brass magnifying glass.\nBottom-left. Bird looks left over her shoulder with one clear double-arrow switching symbol next to her.\nBottom-middle. Bird turned slightly towards two small wood sticks, blue left and olive right, unambiguously converging into one neat Y-shaped branch with a gold junction.\nBottom-right. Thoughtful bird with two adjacent ivory paper cards at side; one plain red minus and one green plus. No words.",
+      "entries": [
+        {
+          "id": "commit",
+          "title": "Gem et commit",
+          "alt": "Gitmejsen ser på et gemt kort med et rundt blåt vokssegl.",
+          "keywords": [
+            "commit",
+            "git commit",
+            "gem",
+            "snapshot"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/commit.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 53,
+            "top": 12,
+            "width": 430,
+            "height": 480
+          },
+          "pngSha256": "a826c11f5cfbee4205d95a932cabc830899df3fc4c62e5b2137593113375a9ed",
+          "pngBytes": 1117715
+        },
+        {
+          "id": "stash",
+          "title": "Gem en kladde med stash",
+          "alt": "Gitmejsen bøjer sig mod en barkrevne med et frø i næbbet.",
+          "keywords": [
+            "stash",
+            "git stash",
+            "kladde",
+            "midlertidigt gemt"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/stash.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 541,
+            "top": 45,
+            "width": 454,
+            "height": 438
+          },
+          "pngSha256": "dc8713e7863525ba28e5cc8cd6df8045edcf5f31c97883405ef8e81730abb0e6",
+          "pngBytes": 1289663
+        },
+        {
+          "id": "history",
+          "title": "Se historikken",
+          "alt": "Gitmejsen ser ned på en bunke arkivkort med en messinglup.",
+          "keywords": [
+            "historik",
+            "git log",
+            "tidligere ændringer",
+            "historie"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/history.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1057,
+            "top": 15,
+            "width": 432,
+            "height": 475
+          },
+          "pngSha256": "be8b064c7782aa258e22eaece46e46ae9956300e58b541da891fb869c00e223b",
+          "pngBytes": 1138012
+        },
+        {
+          "id": "branch-switch",
+          "title": "Skift branch",
+          "alt": "Gitmejsen kigger tilbage ved to pile i hver sin retning.",
+          "keywords": [
+            "skift branch",
+            "git switch",
+            "checkout",
+            "gren"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/branch-switch.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 46,
+            "top": 532,
+            "width": 431,
+            "height": 471
+          },
+          "pngSha256": "f53eb95a9d5917eec7ac24fd1dbbe9a5b30bf18eb0216c10769b402c5c741e42",
+          "pngBytes": 1060956
+        },
+        {
+          "id": "merge",
+          "title": "Flet to branches",
+          "alt": "Gitmejsen betragter to farvede grene, der mødes i én.",
+          "keywords": [
+            "merge",
+            "git merge",
+            "flet branches",
+            "sammenfletning"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/merge.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 544,
+            "top": 526,
+            "width": 439,
+            "height": 478
+          },
+          "pngSha256": "545f01d6b5987d3e0e4367f3646352c8a99b9acd72e286471e897303c0f6a7ad",
+          "pngBytes": 1113483
+        },
+        {
+          "id": "diff",
+          "title": "Sammenlign ændringer",
+          "alt": "Gitmejsen sammenligner et kort med rødt minus og et med grønt plus.",
+          "keywords": [
+            "diff",
+            "git diff",
+            "forskel",
+            "ændring"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/diff.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1047,
+            "top": 536,
+            "width": 457,
+            "height": 468
+          },
+          "pngSha256": "4d899716ded9e5e50bb5b9e132591f127409d544ee14dec8b684a5e96d552a49",
+          "pngBytes": 1240298
+        }
+      ]
+    },
+    {
+      "id": "help",
+      "file": "exec-d1d228dd-0e5c-4e9a-95ac-e63c61a58ab9.png",
+      "sha256": "b7732ad1c58ea8c70d4351446827f10447d8643d7e2e9fb0f36186d89e2c6189",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Create a game-ready transparent six-cell reaction atlas, 1536x1024 LANDSCAPE with EXACTLY 3 columns by 2 rows. The provided image is the approved identity reference for the one adult female Crested Tit character present once in each cell. Match her tall swept black-and-cream speckled feather crest, tiny pointed beak, charcoal cheek stripe and throat bib, creamy belly, taupe wings, dark warm eye and exact cobalt blue scarf with ONE knot and TWO short ends. Painterly Danish/Finnish storybook warmth, softly modeled realistic feather layers, gentle stylized stop-motion/matte textile maquette depth, warm rich readable materials. Each reaction is an optically centered compact animated bird BUST sticker, crop body smoothly at its natural rounded base, no rectangular crop. One bird only in every cell. Focus on readable head and face, emotions and one large clear symbol or prop placed comfortably alongside the bird, using depth sparingly at emoji size. Give each cell strict generous transparent gutters on every side, use no more than 73% of its own 512x512 invisible square. No cross-cell elements, no touching, no backgrounds, no plinths, no colored halos, no fading shadows, no squares, no cutting off crest, no borders, no grid lines, no labels, no numbering, no watermarks, no legibility-dependent text. Full true transparent alpha around each silhouette and the whole atlas. No fingers/hands, anatomically correct folded or naturally raised bird wings, exactly one head, scarf one knot and two tails. There must be EXACTLY SIX reactions, in the precise row-major order dictated below.\nTop-left. Warm eye contact and raised little near wing in a greeting, exactly one raised wing, no extra appendages.\nTop-middle. Deeply thoughtful head tilt, eye looking up, closed tiny beak, with two small cloud-shaped thought beads beside her.\nTop-right. Very alert raised eye and gold lightbulb beside her, big simple recognizable silhouette.\nBottom-left. Engaged sideways head tilt and one large muted teal question mark beside her. No other glyphs.\nBottom-middle. Concerned upright head next to a large amber warning triangle with one dark exclamation mark.\nBottom-right. Warm reassuring expression with a large muted coral lifebuoy with a cream pattern next to her.",
+      "entries": [
+        {
+          "id": "wave",
+          "title": "Hej!",
+          "alt": "Gitmejsen hilser med en løftet vinge.",
+          "keywords": [
+            "hej",
+            "vinker",
+            "velkommen",
+            "hilsen"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/wave.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 82,
+            "top": 31,
+            "width": 386,
+            "height": 464
+          },
+          "pngSha256": "68607f15691507d446661ec37715664bb4ec7d673eac6372ab718dddfa030000",
+          "pngBytes": 1026074
+        },
+        {
+          "id": "thinking",
+          "title": "Tænkepause",
+          "alt": "Gitmejsen kigger eftertænksomt op mod to små tankeskyer.",
+          "keywords": [
+            "tænker",
+            "tænkepause",
+            "overvej",
+            "refleksion"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/thinking.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 596,
+            "top": 46,
+            "width": 365,
+            "height": 451
+          },
+          "pngSha256": "40e03a966f2c4aece78ceec5c31cd426c3d2b0271cf6385e14c1b31eb102c336",
+          "pngBytes": 1088104
+        },
+        {
+          "id": "idea",
+          "title": "God idé!",
+          "alt": "Gitmejsen får en idé ved en lysende gul pære.",
+          "keywords": [
+            "idé",
+            "aha",
+            "forslag",
+            "tip"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/idea.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1070,
+            "top": 35,
+            "width": 383,
+            "height": 460
+          },
+          "pngSha256": "937e9184b3c967a27c3eef43df1f7d0f5bad1ddf8da280dabe361c717db37e9d",
+          "pngBytes": 1083743
+        },
+        {
+          "id": "question",
+          "title": "Spørgsmål?",
+          "alt": "Gitmejsen lægger hovedet på skrå ved et turkis spørgsmålstegn.",
+          "keywords": [
+            "spørgsmål",
+            "undrer",
+            "afklaring",
+            "?"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/question.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 80,
+            "top": 550,
+            "width": 361,
+            "height": 428
+          },
+          "pngSha256": "0e8c8cf7a647ae52dde18ba8d56825dc248efbf6a2eeb7a63a3105b7569634aa",
+          "pngBytes": 1139806
+        },
+        {
+          "id": "warning",
+          "title": "Tjek lige en ekstra gang",
+          "alt": "Gitmejsen ser opmærksom ud ved en gul advarselstrekant.",
+          "keywords": [
+            "advarsel",
+            "pas på",
+            "tjek",
+            "kontrollér"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/warning.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 552,
+            "top": 536,
+            "width": 410,
+            "height": 443
+          },
+          "pngSha256": "66f8a559abdc7256335c5fd6b5dd6ebdb493c2ddf66bcb6a94b8a6202df64cbc",
+          "pngBytes": 1112833
+        },
+        {
+          "id": "help",
+          "title": "Jeg hjælper",
+          "alt": "Gitmejsen møder dig med et roligt blik ved en rød og hvid redningskrans.",
+          "keywords": [
+            "hjælp",
+            "hjælper",
+            "hint",
+            "støtte"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/help.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1037,
+            "top": 541,
+            "width": 458,
+            "height": 439
+          },
+          "pngSha256": "245f75498f32d636698bf843feabec38dad0508ab2b430c1a9aa5540dc42f449",
+          "pngBytes": 1197820
+        }
+      ]
+    },
+    {
+      "id": "everyday",
+      "file": "exec-fd26926a-b467-43b4-bb91-602881317303.png",
+      "sha256": "618c5069840ad5548b9889deac4aaf3cce51b2fe3fbc6fb10064dd0b4f4a2dd9",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Create a game-ready transparent six-cell reaction atlas, 1536x1024 LANDSCAPE with EXACTLY 3 columns by 2 rows. The provided image is the approved identity reference for the one adult female Crested Tit character present once in each cell. Match her tall swept black-and-cream speckled feather crest, tiny pointed beak, charcoal cheek stripe and throat bib, creamy belly, taupe wings, dark warm eye and exact cobalt blue scarf with ONE knot and TWO short ends. Painterly Danish/Finnish storybook warmth, softly modeled realistic feather layers, gentle stylized stop-motion/matte textile maquette depth, warm rich readable materials. Each reaction is an optically centered compact animated bird BUST sticker, crop body smoothly at its natural rounded base, no rectangular crop. One bird only in every cell. Focus on readable head and face, emotions and one large clear symbol or prop placed comfortably alongside the bird, using depth sparingly at emoji size. Give each cell strict generous transparent gutters on every side, use no more than 73% of its own 512x512 invisible square. No cross-cell elements, no touching, no backgrounds, no plinths, no colored halos, no fading shadows, no squares, no cutting off crest, no borders, no grid lines, no labels, no numbering, no watermarks, no legibility-dependent text. Full true transparent alpha around each silhouette and the whole atlas. No fingers/hands, anatomically correct folded or naturally raised bird wings, exactly one head, scarf one knot and two tails. There must be EXACTLY SIX reactions, in the precise row-major order dictated below.\nTop-left. Calm happy bird with a distinct large round moss green badge and cream check mark.\nTop-middle. Joyous bright eye and open beak, both short bird wings opened at sides, two simple gold confetti shapes within the sticker bounds.\nTop-right. Tender grateful eyes and one large muted rose felt heart tucked neatly beside the bird.\nBottom-left. Half-closed content eye with a tiny handmade sage ceramic mug of tea and a gentle curving steam mark at the side.\nBottom-middle. Optimistic curious bird and a tiny sprout of two big green leaves on a round brown seed, one cohesive symbol at side.\nBottom-right. Calm forward head tilt toward two clear pale teal sound-wave curves near the ear region, no speech balloon.",
+      "entries": [
+        {
+          "id": "approval",
+          "title": "Godkendt",
+          "alt": "Gitmejsen ser tilfreds ud ved en grøn medalje med et flueben.",
+          "keywords": [
+            "godkendt",
+            "flueben",
+            "bestået",
+            "succes"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/approval.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 75,
+            "top": 15,
+            "width": 391,
+            "height": 471
+          },
+          "pngSha256": "196a28638425b8203c765e7b40ec908f704336dd246758721b4c6504ab65bc0d",
+          "pngBytes": 1033189
+        },
+        {
+          "id": "celebration",
+          "title": "Flot klaret!",
+          "alt": "Gitmejsen jubler med åbne vinger og små gyldne konfettistykker.",
+          "keywords": [
+            "jubel",
+            "flot klaret",
+            "fejring",
+            "succes"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/celebration.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 550,
+            "top": 22,
+            "width": 437,
+            "height": 464
+          },
+          "pngSha256": "78e9d18c2abd939ea2af861d5dff7bb776b0daf1eeaa997f8821832ed4dae57f",
+          "pngBytes": 1168167
+        },
+        {
+          "id": "gratitude",
+          "title": "Tak!",
+          "alt": "Gitmejsen lukker øjet ved et rosa hjerte.",
+          "keywords": [
+            "tak",
+            "taknemmelig",
+            "hjerte",
+            "anerkendelse"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/gratitude.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1080,
+            "top": 17,
+            "width": 386,
+            "height": 469
+          },
+          "pngSha256": "5966f58e2b922d671abfeaa40dcc0076289e787e48a0558fc9c5097a5848a614",
+          "pngBytes": 1017571
+        },
+        {
+          "id": "tea",
+          "title": "Tepause",
+          "alt": "Gitmejsen holder en rolig pause ved en dampende grøn tekop.",
+          "keywords": [
+            "te",
+            "tepause",
+            "pause",
+            "hygge"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/tea.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 69,
+            "top": 528,
+            "width": 404,
+            "height": 467
+          },
+          "pngSha256": "46930c910d24861530517df1f5d3b1d7dff8e54bc772652e2bd526eba4ba7caa",
+          "pngBytes": 1046325
+        },
+        {
+          "id": "try-again",
+          "title": "Prøv igen",
+          "alt": "Gitmejsen ser nysgerrigt på et frø med to friske blade.",
+          "keywords": [
+            "prøv igen",
+            "gentag",
+            "nyt forsøg",
+            "spirer"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/try-again.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 565,
+            "top": 530,
+            "width": 411,
+            "height": 464
+          },
+          "pngSha256": "66c5c5446ca133f26ce688bc0c6695313603d043b67d0cc3e14de045adf4cdd1",
+          "pngBytes": 1018428
+        },
+        {
+          "id": "listening",
+          "title": "Jeg lytter",
+          "alt": "Gitmejsen lytter opmærksomt med to små lydbølger foran næbbet.",
+          "keywords": [
+            "lytter",
+            "lyd",
+            "opmærksom",
+            "fortæl"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/listening.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1070,
+            "top": 527,
+            "width": 408,
+            "height": 470
+          },
+          "pngSha256": "b7292117b7ac22f4459b9de87e8d060d7c88ce6e2da696bae79bb12f06866e3f",
+          "pngBytes": 1013591
+        }
+      ]
+    },
+    {
+      "id": "collaboration",
+      "file": "exec-69494fc4-babf-48e3-8308-43b68a1bba23.png",
+      "sha256": "20d2d4507965f23f454eeba23ca5f7710571b7f27cd4cb50510fda963276c9c9",
+      "width": 1536,
+      "height": 1024,
+      "prompt": "Create a game-ready transparent six-cell reaction atlas, 1536x1024 LANDSCAPE with EXACTLY 3 columns by 2 rows. The provided image is the approved identity reference for the one adult female Crested Tit character present once in each cell. Match her tall swept black-and-cream speckled feather crest, tiny pointed beak, charcoal cheek stripe and throat bib, creamy belly, taupe wings, dark warm eye and exact cobalt blue scarf with ONE knot and TWO short ends. Painterly Danish/Finnish storybook warmth, softly modeled realistic feather layers, gentle stylized stop-motion/matte textile maquette depth, warm rich readable materials. Each reaction is an optically centered compact animated bird BUST sticker, crop body smoothly at its natural rounded base, no rectangular crop. One bird only in every cell. Focus on readable head and face, emotions and one large clear symbol or prop placed comfortably alongside the bird, using depth sparingly at emoji size. Give each cell strict generous transparent gutters on every side, use no more than 73% of its own 512x512 invisible square. No cross-cell elements, no touching, no backgrounds, no plinths, no colored halos, no fading shadows, no squares, no cutting off crest, no borders, no grid lines, no labels, no numbering, no watermarks, no legibility-dependent text. Full true transparent alpha around each silhouette and the whole atlas. No fingers/hands, anatomically correct folded or naturally raised bird wings, exactly one head, scarf one knot and two tails. There must be EXACTLY SIX reactions, in the precise row-major order dictated below.\nTop-left. Scrutinizing friendly bird glances down at a little upright wooden clipboard with a short column of dark ticks. No words.\nTop-middle. Concerned but reassured bird alongside one distinct large muted coral counterclockwise undo arrow.\nTop-right. Bird with a pointed beak beside a large blank ivory luggage tag suspended from a simple blue loop with one ochre button.\nBottom-left. Admiring upward gaze alongside one big cobalt blue upload arrow emerging from a small wooden tray.\nBottom-middle. Attentive bird looking toward one big muted evergreen download arrow into a small cream tray.\nBottom-right. Bird closes her eye in contentment beside a small single handled miniature straw broom and two small ochre glints.",
+      "entries": [
+        {
+          "id": "review",
+          "title": "Klar til gennemgang",
+          "alt": "Gitmejsen gennemgår en lille tavle med tre flueben.",
+          "keywords": [
+            "gennemgang",
+            "review",
+            "code review",
+            "feedback"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/review.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 54,
+            "top": 30,
+            "width": 418,
+            "height": 475
+          },
+          "pngSha256": "778926bdd07988c0436568a5abf02ff788682966e759bee3edb6b815b627915d",
+          "pngBytes": 1140647
+        },
+        {
+          "id": "revert",
+          "title": "Fortryd med revert",
+          "alt": "Gitmejsen ser på en rød pil, der peger tilbage.",
+          "keywords": [
+            "revert",
+            "git revert",
+            "fortryd",
+            "tilbagefør"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/revert.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 545,
+            "top": 34,
+            "width": 425,
+            "height": 471
+          },
+          "pngSha256": "ea2b4f6be60730b4df8b1101e37328b77f59d13f0d67e69a2ef49639a1ee830e",
+          "pngBytes": 1091605
+        },
+        {
+          "id": "tag",
+          "title": "Sæt et tag",
+          "alt": "Gitmejsen ser på et lyst hængemærke med en blå snor.",
+          "keywords": [
+            "tag",
+            "git tag",
+            "mærke",
+            "version"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/tag.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1037,
+            "top": 31,
+            "width": 449,
+            "height": 472
+          },
+          "pngSha256": "7b85bcc8d53298b638b1f95db228965f98db56a14d89311828e4ce986006ac5a",
+          "pngBytes": 1234049
+        },
+        {
+          "id": "push",
+          "title": "Send dine commits",
+          "alt": "Gitmejsen ser på en blå pil, der peger op fra en lille bakke.",
+          "keywords": [
+            "push",
+            "git push",
+            "send commits",
+            "remote"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/push.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 39,
+            "top": 532,
+            "width": 437,
+            "height": 461
+          },
+          "pngSha256": "481b604d99f7f5f88cb00a285d6178ae53c18e621bee140b961ae4f47fd1d44b",
+          "pngBytes": 1166287
+        },
+        {
+          "id": "pull",
+          "title": "Hent nye commits",
+          "alt": "Gitmejsen ser på en grøn pil, der peger ned i en lille bakke.",
+          "keywords": [
+            "pull",
+            "git pull",
+            "hent commits",
+            "remote"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/pull.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 523,
+            "top": 528,
+            "width": 459,
+            "height": 466
+          },
+          "pngSha256": "c947d73afc25465546bef8f327a556908a85311a81a79c50cd50ff9a0e9b89d2",
+          "pngBytes": 1168167
+        },
+        {
+          "id": "clean",
+          "title": "Ren arbejdsmappe",
+          "alt": "Gitmejsen ser tilfreds ud ved en lille kost og to gyldne glimt.",
+          "keywords": [
+            "ren arbejdsmappe",
+            "git status",
+            "working tree",
+            "ryddeligt"
+          ],
+          "image": "/images/characters/gitmejsen/reactions/clean.png",
+          "width": 1254,
+          "height": 1254,
+          "crop": {
+            "left": 1043,
+            "top": 533,
+            "width": 426,
+            "height": 460
+          },
+          "pngSha256": "d30f90fe7d92e50ee1a1da658bbab5194eb570e0da96bd8f32484b7bf2e195a7",
+          "pngBytes": 1258371
+        }
+      ]
+    }
+  ]
+}
