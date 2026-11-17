@@ -7,9 +7,10 @@ import { canonicalAiJson, aiReceiptKey, aiHasReceipt, findAiBlockNodes, aiSelect
 const schema = new Schema({
   nodes: {
     doc: { content: 'blockGroup' }, blockGroup: { content: 'blockContainer+' },
-    blockContainer: { attrs: { id: { default: null } }, content: '(paragraph | code | media) blockGroup?' },
+    blockContainer: { attrs: { id: { default: null } }, content: '(paragraph | code | media | liveCourseActivity) blockGroup?' },
     paragraph: { content: 'inline*', group: 'block' }, code: { content: 'text*', group: 'block', code: true },
     media: { group: 'block', atom: true, attrs: { reference: {} } }, text: { group: 'inline' },
+    liveCourseActivity: { group: 'block', atom: true, attrs: { moduleId: {} } },
   }, marks: { bold: {}, italic: {} },
 });
 const block = (id, text, marks) => schema.node('blockContainer', { id }, schema.node('paragraph', null, text ? schema.text(text, marks) : undefined));
@@ -91,6 +92,24 @@ test('atomic batch validates overlap before applying any step', () => {
   const original = state(block('a', 'Mål'), block('b', 'Uændret'));
   assert.throws(() => buildAiReviewTransaction(original, [change(1, 8, []), change(5, 8, [])]), /overlapper/);
   assert.equal(original.doc.textContent, 'MålUændret');
+});
+
+test('AI range replacements preserve live activities, while edits beside them still apply', () => {
+  const live = schema.node('blockContainer', { id: 'live' }, schema.node('liveCourseActivity', { moduleId: 'poll-version' }));
+  const original = state(block('before', 'Før aktiviteten'), live, block('after', 'Efter aktiviteten'));
+  const [before, activity, after] = findAiBlockNodes(original.doc, ['before', 'live', 'after']);
+
+  assert.throws(() => buildAiReviewTransaction(original, [change(activity.from, activity.to, [])]), /blokmenu/);
+  assert.throws(() => buildAiReviewTransaction(original, [
+    change(before.from + 3, after.from + 3, [block('replacement', 'Nyt forslag')], { selection: true }),
+  ]), /blokmenu/);
+
+  const tr = buildAiReviewTransaction(original, [
+    change(before.from, before.to, [block('edited', 'Ny indledning')]),
+    change(activity.to, activity.to, [block('explanation', 'Læs spørgsmålet')]),
+  ]);
+  assert.equal(findAiBlockNodes(tr.doc, ['live'])[0].node.firstChild.attrs.moduleId, 'poll-version');
+  assert.equal(tr.doc.textContent, 'Ny indledningLæs spørgsmåletEfter aktiviteten');
 });
 
 test('continuation inserts sharing an anchor have stable document order', () => {

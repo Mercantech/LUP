@@ -4,7 +4,7 @@ import { Decoration, DecorationSet } from 'prosemirror-view';
 import type { Node as PmNode } from 'prosemirror-model';
 import { absolutePositionToRelativePosition, relativePositionToAbsolutePosition, ySyncPluginKey, yUndoPluginKey } from 'y-prosemirror';
 import * as Y from 'yjs';
-import { canonicalAiJson, aiReceiptKey, aiHasReceipt, findAiBlockNodes, aiSelectionSliceMatches, buildAiReviewTransaction } from './ai-review-core.mjs';
+import { canonicalAiJson, aiReceiptKey, aiHasReceipt, findAiBlockNodes, aiSelectionSliceMatches, assertAiRangePreservesLiveActivities, buildAiReviewTransaction } from './ai-review-core.mjs';
 import type { AiBlock, AiHunk, AiNativeTarget, AiPosition, AiRun } from './ai-native-types';
 
 type Editor = BlockNoteEditor<any, any, any>;
@@ -148,6 +148,7 @@ export class NativeAiReview {
         from = to = lower?.to ?? higher?.from ?? from;
       }
     }
+    assertAiRangePreservesLiveActivities(doc, from, to);
     const schema = doc.type.schema;
     const existingIds = new Set<string>();
     doc.descendants(node => { if (typeof node.attrs.id === 'string') existingIds.add(node.attrs.id); });
