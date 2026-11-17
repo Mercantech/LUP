@@ -239,6 +239,41 @@ public sealed class LibraryCharactersTests
     }
 
     [Fact]
+    public async Task Each_character_has_two_public_home_views_and_a_library_link()
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await CreateContext(api);
+        var library = RenderCharacters(context);
+
+        foreach (var character in CharacterCatalog.All)
+        {
+            var home = Assert.IsType<CharacterHome>(character.Residence);
+            Assert.Equal(2, home.Views.Count);
+            Assert.False(string.IsNullOrWhiteSpace(home.Description));
+            var href = $"{character.Path}#{CharacterHome.SectionId}";
+            var link = Assert.Single(library.FindAll($".character-card-materials a[href='{href}']"));
+            Assert.Contains("2 billeder af hjemmet", link.TextContent);
+            Assert.Contains(PublicCatalog.Search(home.Name), result => result.Href == character.Path);
+
+            var profile = context.Render<CharacterDetail>(p => p.Add(page => page.Slug, character.Slug));
+            var section = profile.Find(".character-residence");
+            Assert.Equal(home.Name, section.QuerySelector($"#{CharacterHome.SectionId}")!.TextContent);
+            var figures = section.QuerySelectorAll("figure");
+            Assert.Equal(2, figures.Length);
+
+            for (var index = 0; index < home.Views.Count; index++)
+            {
+                var view = home.Views[index];
+                var image = figures[index].QuerySelector("img")!;
+                var download = figures[index].QuerySelector("a[download]")!;
+                Assert.Equal(view.Preview, image.GetAttribute("src"));
+                Assert.Equal(view.Alt, image.GetAttribute("alt"));
+                Assert.Equal(view.Image, download.GetAttribute("href"));
+            }
+        }
+    }
+
+    [Fact]
     public async Task Character_overview_and_each_profile_link_back_to_the_library_category()
     {
         using var api = new CharacterQuizTestApi();
@@ -253,6 +288,7 @@ public sealed class LibraryCharactersTests
     }
 
     [Theory]
+    [InlineData("raymond", "character-home-title")]
     [InlineData("raymond", "character-animations-title")]
     [InlineData("raymond", "animation-find-row")]
     [InlineData("raymond", "animation-sort-rows")]

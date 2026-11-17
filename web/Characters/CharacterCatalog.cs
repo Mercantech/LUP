@@ -446,6 +446,7 @@ public sealed record CharacterProfile(string Slug, string Name, string Role, str
     public string ScenesDescription { get; init; } = "Små fortællinger med karakteren. Åbn et billede i fuld størrelse, eller hent en PNG.";
     public IReadOnlyList<CharacterAnimation> Animations { get; init; } = [];
     public IReadOnlyList<CharacterCollaboration> Collaborations { get; } = CharacterCollaborations.For(Slug);
+    public CharacterHome? Residence => CharacterHomes.For(Slug);
     public string AnimationSubject { get; init; } = "databaser";
     public IEnumerable<CharacterMaterialGroup> Materials
     {
@@ -462,6 +463,8 @@ public sealed record CharacterProfile(string Slug, string Name, string Role, str
                 yield return new(IllustrationsLabel, Illustrations.Count, "character-gallery-title", illustration.Preview, illustration.Alt);
             if (Animations.FirstOrDefault() is { } animation)
                 yield return new("GIF-animationer", Animations.Count, "character-animations-title", animation.Poster, animation.Alt);
+            if (Residence is { } home)
+                yield return new("billeder af hjemmet", home.Views.Count, CharacterHome.SectionId, home.Views[0].Preview, home.Views[0].Alt);
         }
     }
 }

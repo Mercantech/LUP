@@ -1,0 +1,70 @@
+{
+  "slug": "gitmejsen",
+  "name": "Grenhuset",
+  "description": "Gitmejsen bor i et lille træhus i en stor fyrs grenkløft. Hun gemmer frø i sprækkerne og bruger dem til at holde styr på sine forsøg.",
+  "generator": "ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Gitmejsen med blåt tørklæde sidder foran Grenhuset, et træhus med blå skodder oppe i en stor fyr.",
+      "prompt": "Landscape 1536×1024, 3:2, rich warm gouache and acrylic on paper, LUP’s distinctive painted storybook world. Design a small believable bird-scale home, a Finnish treetop cottage named Grenhuset, built snugly in the Y-shaped fork of a very old tall Scots pine. Strong architect's anchors for reuse in an interior illustration: a small golden-brown vertically paneled cottage with a steep triangular dark cedar shingle roof and pale trim, precisely one brass-hinged round-topped pine entry at the center, a single small square divided window to its right with two open cobalt-blue shutters, and two massive intersecting branches crossing just beneath a short wooden entry porch. Sun dapples granite lichen on the branches and illuminates needles; far behind, a quiet Finnish lake, morning mist and layers of pine forest. The natural warm little crested tit Gitmejsen from the reference is clearly in front of the entry, perched outside on the porch rail, with natural fine talons and folded wings. Exact distinct creamy face and sharp pointed black-speckled feather crest, black cheek arcs, black bib, fine pointed dark bill, tan-gray feathering and royal cobalt wool neck scarf, real crested tit, two eyes and two bird feet, no human hands or clothing other than scarf. Keep the home and the bird equally readable, bird actual scale in relation to this very small structure. Under the eaves a little seed bowl, woven doormat and a pale linen scarf border make this a warm private home. Accessible stable broad pine branch from lower left leading toward the front porch. Open and welcoming composition with a warm gaze. No signs, letters, logos, watermarks, text, diagram overlay, painted border or split panel.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/gitmejsen/portrait-transparent.webp",
+          "sha256": "2d6828c391f0744aa2a948e6be367eb3a87bc33c4fd132317d46cf74cfa5b6aa"
+        },
+        {
+          "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+          "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/gitmejsen/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3464924,
+        "sha256": "79bc85a08ddc90558ab1c27e43628de3f6490b6ce4fd0507ad80541fcfbe701d"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/gitmejsen/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 178340,
+        "sha256": "afd7fd071275cbe56213bff9e67f87d1b59072416a15ec862fa4ebeef6f7e307"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Gitmejsen lægger et frø i sit arkiv under den blåskoddede rude. En tavle med kogler og et lille hvilested står bag hende.",
+      "prompt": "One 3:2 landscape 1536×1024, beautifully detailed honey-warm storybook gouache and paper texture, illustrating the real inhabited interior of the exact small wooden treetop cottage from the third reference. Keep interior structurally consistent. From inside looking toward the entrance, the same pale wood round-topped door on the right and the same four-pane square window with pale trim and two open cobalt-blue shutters to the LEFT of the door, opened to a spectacular Finnish pine forest, neighboring branches, lake and mist from same place. Low peaked roof with visible steep little wooden rafters, amber vertical wooden paneling and hand-hewn pine beams. On the narrow sill the same small hand-painted white pot of heather and lace curtains, and one familiar woven cream mat with blue accents. Gitmejsen is exactly the natural small top-crested crested tit from refs one and two, very recognizable black speckled cream crest, two black arcs on the cream cheek, black bib, chestnut-grey folded feathers, fine pointed bill, two normal tiny gray bird feet and recognizable true cobalt wool neck scarf. At center foreground she perches on a short twig stand and, using the tip of her bill only, gently places one seed into a niche on a small carved branch-shaped archive track with several separated seeds and simple wooden branch junctions, her home pastime. Absolutely no human-like hands, human tools held in wings, or other animals. A rustic pinecone pegboard with a few simple pinecone pegs hangs at side left as a quiet hobby object; a woven scarf and small nest seat tucked into alcove signal that this is her private home. All indoor natural objects feel tactile, sunbeams and shadows softly warm with a cooler airy blue through the window, and palpable bird-scale intimacy. Never render writing, page labels, logos, UI elements, chart overlays or borders.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/gitmejsen/portrait-transparent.webp",
+          "sha256": "2d6828c391f0744aa2a948e6be367eb3a87bc33c4fd132317d46cf74cfa5b6aa"
+        },
+        {
+          "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+          "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+        },
+        {
+          "path": "web/wwwroot/images/characters/gitmejsen/home/outside.png",
+          "sha256": "79bc85a08ddc90558ab1c27e43628de3f6490b6ce4fd0507ad80541fcfbe701d"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/gitmejsen/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3567234,
+        "sha256": "319d3ac342a8f4817dbeb0d362af31e304ed93ec59bc69e67668ec58047277d9"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/gitmejsen/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 174096,
+        "sha256": "cd2b19b73a11c9b913beeb99473b6486b481fa12c8ee695cd885d1e3c6a91447"
+      }
+    }
+  ]
+}

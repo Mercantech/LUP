@@ -1,0 +1,70 @@
+{
+  "slug": "chameleon",
+  "name": "Cremonaværkstedet",
+  "description": "Kamæleonen bor i et honningfarvet hus, hvor stueetagen er violinværksted. Når limen tørrer, tager han banjoen ned fra væggen og spiller.",
+  "generator": "ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Kamæleonen står foran sit honningfarvede hus med en ufærdig violin. Huset har en grøn buedør og et rundt vindue med træroset.",
+      "prompt": "Landscape 1536×1024, 3:2, rich warm hand-painted storybook gouache on textured paper, LUP character home image. Use the two reference pictures for the exact beloved chameleon: bright leaf-green and olive scaled skin, orange-edged ochre/green scalloped crest, golden throat, warm dark-amber eyes, coiled striped green tail, beige rolled shirt, brown leather apron with brass fittings and brown cuffed trousers, bare green chameleon toes. He is warmly smiling and standing upright outside his true home, in front of it in full view near the door on sunlit cobbles, holding a single unvarnished wooden violin with believable body and paired f-holes. Only two natural hands, one holds instrument securely, the other relaxes at apron. Design the handcrafted residential luthier’s house in a quiet old Cremona lane, no fantasy castle or commercial logo: repeated architecture should be a two-story golden honey-plastered Italian townhouse, aged terracotta low tile roof, moss-green arched timber front door with a dark bronze ring knocker, one unmistakable round circular violin-rosette-inspired wood-mullioned front window with a symmetrical carved wooden floral center and six wedge-shaped glass panels on the left of the same door, no other round shape on front, two modest rectangular green-shuttered windows upstairs and green vines over the side. A modest ceramic planter, a small bench, low pots of rosemary and terracotta-colored geraniums, lived-in domestic details. Keep both identifiable rosette window and arched door fully visible and relative layout evident. Early golden slanting Italian sun, curved alley and soft ochre paving, varied hand-painted texture with carefully matched face and curled tail. Home at right center, chameleon at left center beside front door, establish entire shape through wide three-quarter view. No lettering whatsoever, no signage, logos or watermark, no border.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/chameleon/portrait-transparent.webp",
+          "sha256": "325dcb76839f9e7aec388d388ce9e58d0296e10be1a8c0817e0498914db2d4af"
+        },
+        {
+          "path": "web/wwwroot/images/characters/chameleon/scenes/workshop.webp",
+          "sha256": "36ba5b2e1ba029cf3637247ee7ba898cbe429ad163fa0aa57b9bee6d9131ad77"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/chameleon/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3778795,
+        "sha256": "de5dec832847e4d6718e39a3f7f5551a9482691d1a4c935f5765e9728cd5e57f"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/chameleon/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 189218,
+        "sha256": "018032043ba49f1677855d832cdde0ec7e1868c3ac86e480aac68ef2184b4a80"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Kamæleonen arbejder på en violin foran det runde rosetvindue i sit hjem. Banjoen hænger på væggen ved den grønne buedør.",
+      "prompt": "One 3:2 storybook landscape, 1536×1024, rich warm hand-painted gouache on textured paper. This is the ACTUAL private violinværksted and home inside the EXACT townhouse shown in the final reference, named Cremonaværkstedet. From inside looking toward the front wall, the distinctive big circular rosette window is right of the moss-green arched wooden entry door (mirrored exterior relationships), with exactly the same carved floral wood center and six curved spokes into six matching wedge-shaped glass panes. Include that unmistakable window and match its detail precisely; light warm honey plaster, old stone arched door jamb, original deep sage green thick door with brass lock. Warm reflected golden daylight through rosette onto handmade oak workbench foreground. Modest private home details such as a little green ceramic teacup, knitted throw on chair, small framed paper face down, home plants, nothing resembling a factory. Match the chameleon's canonical appearance from first portrait and second workshop reference EXACTLY: leafy-green and golden detailed scales, warm brown-amber eyes, rust-orange scalloped crest edging, gentle same expression, rolled white beige shirt, leather work apron with brass fasteners, brown trousers, bare green chameleon feet if visible, tightly coiled green tail clearly visible to his left. On a folded cloth at center he is finishing ONE wooden violin with paired f-holes and normal neck with scroll, steadying it on the worktable with one green hand and lightly adjusting its bridge with his other, correct posture and no additional hands. One unmistakable American banjo with single circular pale membrane body and long wood neck hangs on OTHER plain workshop wall, distinct shape beside a small gouge rack and neatly organized few wooden forms. Keep rosette, door, chameleon and banjo all visibly clear. Warm late-afternoon shadows, recognizable plaster and correspondence to Italian alley view, hand-painted material detail. No lettering, words, logos, watermark, poster typography, layout borders or panels.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/chameleon/portrait-transparent.webp",
+          "sha256": "325dcb76839f9e7aec388d388ce9e58d0296e10be1a8c0817e0498914db2d4af"
+        },
+        {
+          "path": "web/wwwroot/images/characters/chameleon/scenes/workshop.webp",
+          "sha256": "36ba5b2e1ba029cf3637247ee7ba898cbe429ad163fa0aa57b9bee6d9131ad77"
+        },
+        {
+          "path": "web/wwwroot/images/characters/chameleon/home/outside.png",
+          "sha256": "de5dec832847e4d6718e39a3f7f5551a9482691d1a4c935f5765e9728cd5e57f"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/chameleon/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3645256,
+        "sha256": "e14f60e16253aa71429a0f85186fe09b3658370f306d697ab5f7e1e6cf1e9bc6"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/chameleon/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 179812,
+        "sha256": "1b67715beade74a7f430055287943b0dc783e19752e143fbaaadd60bd7ae4b59"
+      }
+    }
+  ]
+}

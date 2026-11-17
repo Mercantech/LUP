@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "slug": "fox",
+  "name": "Genvejshuset",
+  "description": "Ræv bor i Genvejshuset, et rødstenshus med mostag og en lille skovsti, der ender i en buet sidedør. Indenfor kan reolen drejes til side og give adgang til en læsekrog med bøger og skitser.",
+  "generator": "Indbygget ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Ræv står med sin notesbog foran rødstenshuset med mostag. En smal skovsti fører gennem en lille stenbue til sidedøren.",
+      "prompt": "Create one polished opaque 1536×1024 landscape 3:2 storybook scene in the cohesive painted LUP character family. It is a quiet distinctive character home, with an environment strongly in focus AND exactly one recognizable character actively using that place at roughly one third of composition. Use the FIRST attached portrait for exact recognizable anatomy and costume, not its isolated pose. Create a totally new composition. Rich handmade materials, careful expressive anatomy, natural shadows, subtle paper grain, unified mature painterly look. No lettering, numbers, invented brand marks, symbols unrelated to the scene, watermark, extraneous animals or people, landscape borders or title cards. Make key architectural landmarks clear and with gentle visual hierarchy at 768px. Keep complete face/ears and hand count correct. No photorealism. No comic panels, opaque and full bleed.\n\nCharacter identity: Ræv is the exact friendly auburn anthropomorphic fox from the attached portrait: pointed upright ears, slender inquisitive face, large warm eyes, cream muzzle and neck, rust-red tailored instructor jacket and waistcoat over cream shirt with rolled-up sleeves, cuffed brown trousers and lace-up brown boots, single large white-tipped tail. Correct two arms ending in natural hand paws, never extra digits/paws. Pencil/check notebook if useful.\n\nExterior environment: A slightly eccentric compact RED-BRICK cottage on a small forest clearing, broad low pitched thick green moss roof, central muted rust-red brickwork, hand-forged hinges, one large circular copper-trimmed window, deep muted cranberry front door under simple lintel, and a much smaller blue-grey wooden side door under a rounded brick arch at right, visibly connected to a narrow meandering forest footpath. The shortcut is an ordinary charming private trail from the clearing through ferns with uneven stepping stones and one weathered arch linked to the side of the house. Ræv stands on the edge of this side path, recognizable full or 3/4 body with actual boots and full tail, carrying one closed worn sketch book and smiling slightly as she pauses at the gate with her other paw. Mature trees frame the composition, floating autumn leaves, warm dappled sunlight, rich brick and green moss texture. Coherent crisp façade and a quiet friendly air, no cottage sign or typography.",
+      "generation": "exec-5ce67fd3-8713-4a1b-b935-2c4589860ca4.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/fox/portrait.png",
+          "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/fox/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3656640,
+        "sha256": "f1686722b0b1cbc8e54438dccda75b14bd3d10a57c0323849eb708dbfeb8be33"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/fox/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 160258,
+        "sha256": "51bd1c087c43b812c624c397091c08e4dd5393df46c1304c8956efc62fe433ef"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Ræv drejer reolen til side og viser sin læsekrog med bøger, skitser og en lampe. Ved siden af ses den buede sidedør.",
+      "prompt": "Create one polished opaque 1536×1024 landscape 3:2 storybook scene in the cohesive painted LUP character family. It is a quiet distinctive character home, with an environment strongly in focus AND exactly one recognizable character actively using that place at roughly one third of composition. Use the FIRST attached portrait for exact recognizable anatomy and costume, not its isolated pose. Create a totally new composition. Rich handmade materials, careful expressive anatomy, natural shadows, subtle paper grain, unified mature painterly look. No lettering, numbers, invented brand marks, symbols unrelated to the scene, watermark, extraneous animals or people, landscape borders or title cards. Make key architectural landmarks clear and with gentle visual hierarchy at 768px. Keep complete face/ears and hand count correct. No photorealism. No comic panels, opaque and full bleed.\n\nCharacter identity: Ræv is the exact friendly auburn anthropomorphic fox from the attached portrait: pointed upright ears, slender inquisitive face, large warm eyes, cream muzzle and neck, rust-red tailored instructor jacket and waistcoat over cream shirt with rolled-up sleeves, cuffed brown trousers and lace-up brown boots, single large white-tipped tail. Correct two arms ending in natural hand paws, never extra digits/paws. Pencil/check notebook if useful.\n\nThe SECOND reference is the exterior of this exact same home. Now move the eye INSIDE it and compose the scene from the inside looking at the interior side of the entrance and adjacent windows. Use second reference to preserve its material, geometry, distinctive door and glazing and exact shared exterior scenery. The first reference remains canonical for the character. No cutaway or wide outside view.\n\nInterior environment: Inside the very same red-brick cottage, warm copper-trimmed circular window with green trees readable, graceful small red-brick arch and cool grey-blue wooden side door visible through a corner. Main story: a tall loaded domestic bookshelf sits on a single vertical pivot and has swung physically inward at an angle, one readable open edge, a clear strip of true floor beneath, to reveal a NARROW and inviting very personal reading nook behind it. The nook has an ochre seat cushion, wool quilt, amber lamp and neatly set little side table with sketches/playful doodles. Ræv leans on the swiveling edge, one plausible natural paw opening the shelf, the other holding one notebook close to their body, wearing normal canonical red instructor jacket and brown boots. Tail flows naturally behind her and doesn't look like fox number two. Do not duplicate any furniture into the middle of the opening. Copper, terra-red brick and fern green over softly painted timber, one paper filled only with curve or leaf doodles, the atmosphere of a secret private domestic reading habit.",
+      "generation": "exec-3efd6353-c843-4e50-9230-d9ed98af64fc.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/fox/portrait.png",
+          "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+        },
+        {
+          "path": "web/wwwroot/images/characters/fox/home/outside.png",
+          "sha256": "f1686722b0b1cbc8e54438dccda75b14bd3d10a57c0323849eb708dbfeb8be33"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/fox/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3494233,
+        "sha256": "bae4032558f5f353b6a92103c987b063ff6bfdab44d51e39d9b0cd6d3ae79012"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/fox/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 148572,
+        "sha256": "0d40de01e68c7ab4d282738fb20d0dfa0fe8705cde4b7ae91cd4449cba503a87"
+      }
+    }
+  ]
+}

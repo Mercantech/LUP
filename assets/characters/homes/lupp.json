@@ -1,0 +1,63 @@
+{
+  "slug": "lupp",
+  "name": "Papirhuset",
+  "description": "LUPP bor i et hus af foldet karton med en blommefarvet dør og et rundt, turkis vindue ud mod haven. Når der er ro på, folder LUPP nye spilbaner ud på sofabordet og prøver dem med sin gule blyant inden for rækkevidde.",
+  "scenes": [
+    {
+      "id": "outside",
+      "generator": "Built-in ImageGen",
+      "alt": "LUPP sidder med sin gule blyant foran Papirhusets blommefarvede dør, foldede koraltag og runde turkise vindue.",
+      "prompt": "3:2 1536x1024 landscape illustration in the LUP mascot collection. Use the first provided image for exact mascot identity. Grounded handcrafted storybook illustration, lush tactile paint, full home in frame, one easily recognized character in front of the doorway with ample detail at 768px, natural expressive pose, no other mascot, no lettering or watermark. LUPP lives in Papirhuset. A small fantasy cottage built from layered warm cream paperboard panels and folded coral roofs, cutout petals, a broad plum-purple rounded rectangular doorway, and one circular teal paper-cut porthole beside it in the front wall. Porch steps made of thick stacked card, pinwheel and little paper stepping stones, real garden and soft sunlight. Purple clay rounded-square LUPP with two huge ivory-and-black eyes, no body, set welcoming at threshold with iconic oversized yellow pencil leaning against it, visible in the front left foreground. Whimsical tactile stop-motion construction, with thick hand-cut fibers and quiet green-blue meadow. Whole little house is a place built to live in, with closed roof and sheltered porch. Composition includes distinctive plum door and teal porthole clearly, for reuse indoors.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+          "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/lupp/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3221413,
+        "sha256": "d7df1ef9a160acd20aa9f7a8a92f10dbaac91b6a666d28e2f858b454c842bd43"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/lupp/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 133992,
+        "sha256": "c782eaa97412f6ab7b118ca00410c59bf9a5a5dda0f8331bde91b1b5b4419d12"
+      }
+    },
+    {
+      "id": "inside",
+      "generator": "Built-in ImageGen",
+      "alt": "LUPP sidder på en pude i Papirhuset. En papbane ligger slået op på bordet foran det runde turkise vindue.",
+      "prompt": "Create an interior landscape LUP character illustration, 3:2 1536x1024. Use source 1 as exact mascot identity and source 2 as the exterior of this exact house. This is a different camera shot, entirely from inside, with recognizable door or window materials from the exterior carried into the interior at the correct analogous scale. Strong storytelling and handmade painterly materials, one mascot visible and unoccluded, clean anatomy, no logos, rendered text or second character. Papirhuset from inside. Close warmly lit cozy little lounge, folded cream paperboard walls and plum-purple rounded-rectangle door, large round teal four-pane window from the facade with a glimpse of the flower garden outside. LUPP lives there, purple rounded-square clay block with huge expressive eyes, oversized yellow pencil leaning near it, settled on a big flat cushion by the low table. On the table a fold-out cardboard game landscape with just one amber token and one teal path; the prototype is a hobby on the coffee table. Books from the original window, little amber reading lamp and yellow couch cushion visible on the inside of the window. Cozy hand-cut layers, quiet sunset in the paper cottage, no limbs on LUPP.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+          "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+        },
+        {
+          "path": "web/wwwroot/images/characters/lupp/home/outside.png",
+          "sha256": "d7df1ef9a160acd20aa9f7a8a92f10dbaac91b6a666d28e2f858b454c842bd43"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/lupp/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2869215,
+        "sha256": "bc97e0ca0495072ac138b93c928b9eba87af0d4fe6903bb87679bb0080ca697b"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/lupp/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 100982,
+        "sha256": "363010da44e977a12569473192473a2ad467abb985da128329296c35c3d37a0e"
+      }
+    }
+  ]
+}

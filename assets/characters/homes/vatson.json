@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "slug": "vatson",
+  "name": "Prototypehuset",
+  "description": "Vatson bor i et lille turkis hus med en rund glasport og en analog måler ved indgangen. Ved arbejdsbænken afprøver han sine prototyper og har ringbindet inden for rækkevidde.",
+  "generator": "Indbygget ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Vatson svæver foran Prototypehusets rundede glasport. Ved døren sidder en rund analog måler.",
+      "prompt": "One finished standalone widescreen landscape illustration at 1536 by 1024 pixels, 3:2 aspect ratio. Create a very beautiful, tactile, painterly and premium hand-painted storybook environment in the recognizable LUP character world. Quietly imaginative architecture, clear identifiable doors and windows, tactile contrasting materials, inviting details, interior/exterior continuity will matter. No text, lettering, numbers, signatures, watermarks or brands. One true scene filling the frame. Show the outside of Vatson's own compact retro-fabulist turquoise workshop-home on a sunny small garden lane. The canon Vatson attached is a white compact hovering robot with rounded cream-white radio-cabinet rectangular head, shiny black display with turquoise happy crescent eyes and turquoise pixel smile, single black spring antenna ending in tiny white ball, white tapered legless body with small blue-lit hover ring and two black ribbed arms with small simple white grippers. Preserve identity and scale. He floats just in front of home with a familiar teal 3-ring binder held in one arm. The home is a single modest single story workshop and dwelling, gently rounded turquoise painted exterior, ivory trim, smooth timber lower facade. Distinctive big rounded-top glass garage-style door with curved upper frame and a simple 3-way radial muntin pattern in the arch, see warm lights and a small tasteful glimpse of the workshop behind the glass. A small round brass-rimmed old analog dial above a white side plate at one side of the entrance, no numerals visible. A single sleek ivory barn lamp above the dial, white frame and molded tubular handle. Soft little planter, lively distant greenery, harmless tiny solar lamp on stoop; paving stones under the clear garage door. Cozy home atmosphere, no industrial warehouse. Infused with turquoise, warm sandstone and pale sunset apricot. Clearly show entry and full characteristic house. No visible readable symbols on dial or binder except quiet small tool pictograms.",
+      "generation": "exec-cc28ab4c-34c9-4107-af81-deed16a2b4b2.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+          "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/vatson/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3218722,
+        "sha256": "2ecc47a21a79b94688f139e5cdcaa1b8bbdd9d1ff4d2b39f1854a688106eda00"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/vatson/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 144574,
+        "sha256": "051f91b6dc82d5e5e6aae1b886fdddb8dbfd6e1d01be2f13ccc40aed93b8ea1d"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Vatson svæver ved arbejdsbænken med sit turkise ringbind. En lille prøvelampe lyser ved den rundede glasport.",
+      "prompt": "One beautiful finished widescreen landscape image at native 1536x1024 in the painterly storytelling style of the attachments. Attached 1 is an EXACT identity reference and attached 2 is the actual exterior of THIS EXACT HOME to match in trim materials, window or door construction, architecture and color, seen from indoors. Make a separate three-quarter interior view of the home, never show facade again, carefully establish shape and domestic coziness, coherent materials and correct character anatomy. No words, logos, watermarks, text or letters, no border. Show the interior of the exact house from reference 2, now looking back toward the inside of the SAME large arched garage-style glass entrance, cream trim with asymmetrical normal lower window divisions and top radial fan mullions, hint of the same stone-paved courtyard and hydrangea flowers in the exterior glimpsed through windows. Curving turquoise exterior color carries to some interior walls while warm framed pale oak supports complement cream frames and softly rounded interior furniture. A coherent small retro-fabulous home workspace, not commercial or high-tech lab. One modest modular wooden workbench with three low small mint teal drawers, perforated peach backing and a few domestic hand tools, the SAME style and scale as glimpsed from outside. One modest lit amber test lamp sits on bench with a solitary button in a low simple test module, and two small insulated cables connecting them. The left side has the same soft cream curtains, quiet comfortable reading nook with a teal pillow, low bookshelf, plus mug and small houseplant near the bench. Warm lamp fixtures match those glimpsed from outside. The canon Vatson attached floats happily in front of its workbench with the authentic teal binder open in one hand, one white gripper pointing to glowing test lamp, ribbed black flexible arms, white signal-rimmed legless hover body, rounded white radio-cabinet head with black screen and HAPPY cyan pixel crescent eyes and smile, single thin black coiled antenna ending in a small opaque white ball. Keep him the same recognizable figure, no legs, third hands, unreadable symbols masquerading as letters or industrial clutter. Domestic atmosphere with believable visual relationship to earlier exterior door and room. Gentle golden sunlight through glazing into a quiet interior, two-toned ground-level warm turquoise runner, painted classical material rendering, no lettering.",
+      "generation": "exec-21c0e87a-c479-44b4-afed-91d2015ba996.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+          "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+        },
+        {
+          "path": "web/wwwroot/images/characters/vatson/home/outside.png",
+          "sha256": "2ecc47a21a79b94688f139e5cdcaa1b8bbdd9d1ff4d2b39f1854a688106eda00"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/vatson/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2869546,
+        "sha256": "17556a7a5b5227c1a6c03652b810bab8c9d6de10658a7e468c62ab9482a61d9b"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/vatson/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 127224,
+        "sha256": "6a7ed3084095dcfa1fa76484b46305f38d2b1d3488cb9b3bb4034e6069e4737f"
+      }
+    }
+  ]
+}

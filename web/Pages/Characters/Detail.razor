@@ -81,6 +81,11 @@ else
             </div>
         </section>
 
+        @if (character.Residence is { } residence)
+        {
+            <CharacterHomeGallery Home="@residence" CharacterSlug="@character.Slug" />
+        }
+
         <CharacterQuizSection @key="character.Slug" Character="character" />
 
         <div class="character-features">

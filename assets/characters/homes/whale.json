@@ -1,0 +1,70 @@
+{
+  "slug": "whale",
+  "name": "Lanternehuset",
+  "description": "Docker bor i havnefogedens gamle flydehus, som ligger fortøjet ved containerkajen. Han passer den gule lanterne hver aften og fører tidevandsbog ved koøjet.",
+  "generator": "ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Docker vinker fra vandet ved rampen til sit skiferblå flydehus. En gul lanterne lyser over døren ved det store koøje.",
+      "prompt": "Landscape 1536×1024, 3:2, window into LUP’s richly textured hand-painted picture-book universe, detailed paper-and-gouache brushwork. Build a truly distinctive and repeatable home, Lanternehuset, for Docker, canonical old enormous navy/slate gray humpback whale from the references, with cream-colored pleated throat, humpback bumps and fluke, warm brown sympathetic eyes, dark navy chunky cable knit sweater, small mustard yellow knit cap exactly as reference. He has flippers and tail, no legs or human hands. Take a wide three-quarter view of the long, modest floating former harbormaster’s boathouse, left and middle of frame and actually floating on a weathered dark wood and metal pontoon with fat mooring lines. Repeatable architect's anchors: single-story slate-blue horizontal clapboard, charcoal low sloped roof, one huge circular brass-rim porthole with a simple plain clear glass set to the left of a heavy faded navy door, one hexagonal mustard-yellow tin lantern centered above the door, a short gently sloping wooden access ramp with mustard side rails coming down to the harbor quay. Docker is prominently outside, head and torso above the water and beside his ramp on the right side, eye level friendly, his near flipper waves back toward us, body rising believably from the water. Leave the entire door, big porthole and main silhouette of the house visible; he isn't inside and must not cover his front entry. Threadbare postal flag, a tidy coil of light jute rope on a peg and whale-tail carved door knocker help it feel lived-in. A few unmarked containers and a dock crane across calm water, light silver-blue harbor fog and a muted warm dawn reflect on the water. This is his personal residence, humble and full of affection, no bridge console, vessel wheel, writing, labels, logotypes, watermarks, layout, panel borders or lettering. Capture warm paper textures and the face from reference exactly.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/whale/portrait-transparent.webp",
+          "sha256": "85490b2a05edc3499846b1789678cd8feebe56a8745933300511c397012af92f"
+        },
+        {
+          "path": "web/wwwroot/images/characters/whale/scenes/kommandobroen.webp",
+          "sha256": "020968fbf79a46ceed1dec81b9882d72d9227fcc4e3a1670d6c4e6829a8e53ac"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/whale/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3630669,
+        "sha256": "4068c4c71da534298a689506b125077770ae2c6d2057466826a2ec94edd0337d"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/whale/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 173896,
+        "sha256": "c84a01f78036024ff4129fdfad935aea41b3820104746f2b0bebd61ba07c56c3"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Docker sidder under flydehusets store messingkoøje med et modelcontainerskib. Et tidevandsur og hans knyttede reb hænger i stuen.",
+      "prompt": "One rich warm hand-painted LUP storybook landscape 1536×1024, 3:2. You are inside the exact outside house shown in the final input, Lanternehuset, former harbor-master's cozy floating slate-blue boathouse. Retain the signature architectural relationships from that reference, as seen from inside and facing the front wall: the same enormous simple round clear glass porthole in its exquisitely bolted brass ring on the RIGHT of the heavy plank door, the door at left has the same pale weathered frame and antique metal hinges. Outside through the porthole show softly lit container quay, crane, blue fog, amber reflections and the same rocky mountains, softly atmospheric rather than a busy ship interior. Interior horizontal slate blue-gray wooden wall planks and warm old nautical oak; boat ropes with various practical sailing knots in a hanging coil at left, an authentic brass tide clock with single uncomplicated hand, no legible numerals, on the wall above a low shelf beside the door. Restful personal room such as low bookshelves, cushions with a folded knitted blanket and a steaming enamel mug. The main subject is exactly the colossal old humpback Docker from the FIRST reference, navy slate-gray knobbly face, cream deeply pleated throat, exact recognizable open warm brown eye and wry gentle smile, same chunky dark navy cable-knit pullover and ochre mustard beanie, relaxing in three-quarter view near the giant round porthole, only anatomically coherent broad natural two flippers including one by his model but no other limbs or human hands. A small wooden model container ship sits in front of him on a solid low side table, no ambiguous scale. Cozy amber indoor lamplight, subdued sunrise through porthole, knitted threads, illustrated wood grain, diffused candle shadows, enough clarity to recognize captain and house layout. Home portrait, no elaborate boat controls, logos, text, watermark, digits, banner, collage or borders.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/whale/portrait-transparent.webp",
+          "sha256": "85490b2a05edc3499846b1789678cd8feebe56a8745933300511c397012af92f"
+        },
+        {
+          "path": "web/wwwroot/images/characters/whale/scenes/kommandobroen.webp",
+          "sha256": "020968fbf79a46ceed1dec81b9882d72d9227fcc4e3a1670d6c4e6829a8e53ac"
+        },
+        {
+          "path": "web/wwwroot/images/characters/whale/home/outside.png",
+          "sha256": "4068c4c71da534298a689506b125077770ae2c6d2057466826a2ec94edd0337d"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/whale/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3365415,
+        "sha256": "5265121741549bf59177bf8bf2d7b02f15fd70608f89400f27baf47585a299b0"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/whale/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 167848,
+        "sha256": "fd762dc0225bbb9b7c52c1eac9367c1b6a91c4a73adc085cf55a47241c430c79"
+      }
+    }
+  ]
+}
