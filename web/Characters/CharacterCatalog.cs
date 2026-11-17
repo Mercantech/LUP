@@ -335,6 +335,7 @@ public static class CharacterCatalog
              new("Derricks sparse-checkout-bidrag", "https://github.com/git/git/commit/94c0956b60969bbbb3ead19638d52591a59d713c", true, false),
              new("Julia og Marie Claires vejledning", "https://github.com/git/git/commit/8f0635da918be894dab8381735c0a50ef4ce66bb", true, false)])
         {
+            Portrait = new("Gitmejsen", "/images/characters/gitmejsen/portrait-transparent.webp", "Gitmejsen med sort-hvid fjertop og koboltblåt tørklæde"),
             Illustrations = GitmejsenMaterials.Illustrations,
             IllustrationsLabel = "øvelser",
             IllustrationsDescription = "Lav dit første commit, flet en branch, og løs en konflikt i tegningerne til et fuglehus. Du kan køre alle øvelserne i det samme lokale Git-repository.",
