@@ -1,0 +1,68 @@
+/* Hallmark v2.0.0 | LUP design system | Image-led gallery | Existing portraits and teaching scenes */
+/* Keep the first image row close to the heading and let the artwork carry the page. */
+
+.collaboration-intro {
+    max-width: 68ch;
+}
+
+.collaboration-intro h1 {
+    min-width: 0;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+}
+
+.collaboration-intro p {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.collaboration-page .collaboration-collection {
+    padding-top: 16px;
+    margin-top: 24px;
+}
+
+.collaboration-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    color: var(--ink);
+    font-size: 13px;
+}
+
+.collaboration-toolbar select {
+    max-width: 100%;
+    min-height: 40px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--muted);
+    background: var(--paper);
+    color: inherit;
+    font: inherit;
+}
+
+.collaboration-toolbar select:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+}
+
+.collaboration-toolbar select:active {
+    border-color: var(--ink);
+}
+
+.collaboration-collection ::deep .character-collaboration-exercise code {
+    font-size: 12px;
+}
+
+.collaboration-toolbar [role="status"] {
+    margin-inline-start: auto;
+    color: var(--muted);
+}
+
+@media (max-width: 540px) {
+    .collaboration-toolbar label {
+        flex-basis: 100%;
+    }
+}

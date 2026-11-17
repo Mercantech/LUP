@@ -75,3 +75,14 @@
         font-size: 18px;
     }
 }
+.character-collaboration-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+
+.character-collaboration-header a {
+    font-size: 13px;
+}

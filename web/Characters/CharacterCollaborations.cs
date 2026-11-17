@@ -2,7 +2,9 @@ namespace Mercantec.Tech.Web.Characters;
 
 internal static class CharacterCollaborations
 {
-    private static readonly CharacterCollaboration[] Scenes =
+    public const string Path = "/characters/collaborations";
+
+    public static IReadOnlyList<CharacterCollaboration> All { get; } =
     [
         new("bilbo-raymond", "bilbo", "raymond", "Bilbo og Raymond · Fra C# til SQL",
             "Bilbo vil finde alle bestillinger på brombærsyltetøj. Han skriver forespørgslen i LINQ, og Raymond kigger på den SQL, EF Core og databaseprovideren oversætter den til. Databasen udfører forespørgslen, og EF Core omsætter resultatet til de typer, Bilbo bruger i C#.",
@@ -100,7 +102,7 @@ internal static class CharacterCollaborations
     ];
 
     public static IReadOnlyList<CharacterCollaboration> For(string slug) =>
-        Scenes.Where(scene => scene.FirstSlug == slug || scene.SecondSlug == slug).ToArray();
+        All.Where(scene => scene.FirstSlug == slug || scene.SecondSlug == slug).ToArray();
 }
 
 public sealed record CharacterCollaboration(string Id, string FirstSlug, string SecondSlug, string Title, string Description, string Alt)

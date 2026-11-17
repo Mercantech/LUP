@@ -136,43 +136,14 @@ else
         @if (character.Collaborations.Count > 0)
         {
             <section class="character-collaborations" aria-labelledby="@CharacterCollaboration.SectionId">
-                <header><h2 id="@CharacterCollaboration.SectionId">Når fagene mødes</h2></header>
+                <header class="character-collaboration-header">
+                    <h2 id="@CharacterCollaboration.SectionId">Når fagene mødes</h2>
+                    <a href="@CharacterCollaborations.Path">Se alle fællesbilleder</a>
+                </header>
                 <div class="character-gallery-grid">
                     @foreach (var scene in character.Collaborations)
                     {
-                        var partner = CharacterCatalog.Find(scene.PartnerSlug(character.Slug));
-                        <figure id="@scene.Anchor" @key="scene.Id">
-                            <a href="@scene.Image" target="_blank" rel="noopener noreferrer" aria-label="@($"Åbn {scene.Title} i fuld størrelse")">
-                                <img src="@scene.Preview" alt="@scene.Alt" width="768" height="512" loading="lazy" decoding="async" />
-                            </a>
-                            <figcaption>
-                                <div class="character-collaboration-caption">
-                                    <strong>@scene.Title</strong>
-                                    <a href="@scene.Image" download="@($"{scene.Id}.png")" aria-label="@($"Hent {scene.Title} som PNG")">Hent PNG <span aria-hidden="true">↓</span></a>
-                                </div>
-                                <p>@scene.Description</p>
-                                @if (scene.Exercise is { } exercise)
-                                {
-                                    <div class="character-collaboration-exercise">
-                                        <h3>Prøv selv</h3>
-                                        <p class="character-collaboration-topic">@exercise.Topic</p>
-                                        <p>@exercise.Task</p>
-                                        @if (exercise.StarterCode is { } starterCode)
-                                        {
-                                            <pre><code>@starterCode</code></pre>
-                                        }
-                                        <details>
-                                            <summary>Vis forventet resultat</summary>
-                                            <p>@exercise.ExpectedResult</p>
-                                        </details>
-                                    </div>
-                                }
-                                @if (partner is not null)
-                                {
-                                    <a href="@($"{partner.Path}#{scene.Anchor}")">Se billedet hos @partner.Name <span aria-hidden="true">↗</span></a>
-                                }
-                            </figcaption>
-                        </figure>
+                        <CharacterCollaborationCard Scene="@scene" ProfileSlug="@character.Slug" @key="scene.Id" />
                     }
                 </div>
             </section>
