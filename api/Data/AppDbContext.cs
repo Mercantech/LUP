@@ -34,6 +34,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         ConfigureElectives(modelBuilder);
         ConfigureQuestAudience(modelBuilder);
         ConfigureNotion(modelBuilder);
+        ConfigureLiveCourse(modelBuilder);
         ConfigureNotionMcp(modelBuilder);
         ConfigureEditorAi(modelBuilder);
         ConfigureEditorAiContext(modelBuilder);

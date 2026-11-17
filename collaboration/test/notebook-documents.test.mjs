@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as Y from 'yjs';
-import { cloneNotebookDocument, defaultNotebookTemplate, notebookStateProjection, projectNotebookDocument, projectNotionContext } from '../src/notebook-documents.mjs';
+import { cloneNotebookDocument, defaultNotebookTemplate, notebookStateProjection, projectLivePresentation, projectNotebookDocument, projectNotionContext } from '../src/notebook-documents.mjs';
 
 const id = '11111111-2222-4333-8444-555555555555';
 const targetId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
@@ -16,6 +16,45 @@ const element = (name, attrs, children = []) => {
   node.insert(0, children);
   return node;
 };
+
+test('live projection preserves correct slide indexes for multiple and nested activities', () => {
+  const doc = new Y.Doc();
+  const block = (blockId, type, attrs = {}, children = []) => element('blockContainer', { id: blockId }, [
+    element(type, attrs), ...(children.length ? [element('blockGroup', {}, children)] : [])
+  ]);
+  doc.getXmlFragment('document-store').insert(0, [element('blockGroup', {}, [
+    block('blank', 'paragraph'),
+    block('split-1', 'slideBreak'),
+    block('first', 'liveCourseActivity', { moduleId: id.toUpperCase(), kind: 'poll', prompt: 'Kladdeindhold' }),
+    block('with-child', 'paragraph', {}, [block('second', 'liveCourseActivity', { moduleId: targetId, kind: 'brainstorm' })]),
+    block('split-2', 'slideBreak'),
+    block('hidden', 'classRoster', {}, [block('excluded', 'liveCourseActivity', { moduleId: targetId, kind: 'brainstorm' })]),
+    block('split-3', 'slideBreak'),
+    block('standalone', 'holdPoll', { pollId: oldAsset }),
+    block('third', 'liveCourseActivity', { moduleId: newAsset, kind: 'quiz' })
+  ])]);
+  try {
+    assert.deepEqual(projectLivePresentation({ stateBase64: encode(doc) }), {
+      slideCount: 2,
+      bindings: [
+        { blockId: 'first', moduleId: id, slideIndex: 0 },
+        { blockId: 'second', moduleId: targetId, slideIndex: 0 },
+        { blockId: 'third', moduleId: newAsset, slideIndex: 1 }
+      ]
+    });
+  } finally { doc.destroy(); }
+});
+
+test('live projection rejects ambiguous published bindings', () => {
+  const doc = new Y.Doc();
+  const activity = () => element('blockContainer', { id: 'duplicate' }, [
+    element('liveCourseActivity', { kind: 'qa', moduleId: id })
+  ]);
+  doc.getXmlFragment('document-store').insert(0, [element('blockGroup', {}, [activity(), activity()])]);
+  try {
+    assert.throws(() => projectLivePresentation({ stateBase64: encode(doc) }), /Invalid live activity block/);
+  } finally { doc.destroy(); }
+});
 
 test('knowledge check bindings derive only from the live teaching document and retain block IDs', () => {
   const doc = new Y.Doc({ gc: false });

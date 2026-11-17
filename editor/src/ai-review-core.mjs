@@ -27,6 +27,15 @@ export function aiSelectionSliceMatches(doc, from, to, slice) {
   return Number.isInteger(from) && Number.isInteger(to) && from >= 0 && to > from && to <= doc.content.size && canonicalAiJson(doc.slice(from, to).toJSON()) === canonicalAiJson(slice);
 }
 
+export function assertAiRangePreservesLiveActivities(doc, from, to) {
+  if (from >= to) return;
+  doc.nodesBetween(from, to, node => {
+    if (node.type.name === 'liveCourseActivity') {
+      throw new Error('Brug editorens blokmenu til at ændre eller fjerne liveaktiviteter.');
+    }
+  });
+}
+
 /** Construct every step before committing. A conflict or invalid structure leaves the live document untouched. */
 export function buildAiReviewTransaction(state, changes) {
   const ordered = [...changes].sort((a, b) => b.from - a.from || b.to - a.to || (b.order || 0) - (a.order || 0));
@@ -37,6 +46,7 @@ export function buildAiReviewTransaction(state, changes) {
   }
   const tr = state.tr;
   for (const change of ordered) {
+    assertAiRangePreservesLiveActivities(state.doc, change.from, change.to);
     if (change.selection) {
       // Open paragraph edges merge with the surrounding marked text. Structured edges stay closed.
       const nodes = change.nodes;

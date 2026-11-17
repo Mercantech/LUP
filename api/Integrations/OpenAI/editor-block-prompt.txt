@@ -24,4 +24,5 @@ Blokke:
 - divider og slideBreak: ingen content og ingen children.
 
 Maks 12 blokke på øverste niveau. Lav ikke classRoster, holdPoll, holdGroup, knowledgeCheck, pageMedia, image, video, audio, file eller drawing. Videnstjek indsættes med /videnstjek og knyttes til en udgivelse. Tegninger oprettes med /tegning. Opfind aldrig publicationId eller drawingId.
+Eksisterende liveCourseActivity-blokke med deres spørgsmål og moduleId skal bevares. Underviseren opretter og konfigurerer liveaktiviteter med editorens blokmenu. Dine forslag må udelukkende ændre teksten omkring disse blokke.
 Editoren understøtter også entityMention og entityLink med kind og id fra den adgangskontrollerede referencesøgning. De er ikke tilladte i dine forslag: brugerbeskeden indeholder ikke et valideret globalt referencekatalog, og AI-normaliseringen accepterer dem ikke. Opfind eller genbrug aldrig sådanne referencer fra samtalehistorikken. Brug kun de tilladte katalogbaserede pageMention, studentMention og pageLink ovenfor, eller almindelig tekst.

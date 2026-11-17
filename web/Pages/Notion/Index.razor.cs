@@ -15,6 +15,7 @@ namespace Mercantec.Tech.Web.Pages.Notion;
 public partial class Index
 {
     [Inject] private AuthService Auth { get; set; } = default!;
+    [Inject] private AuthRedirect Redirect { get; set; } = default!;
     [Inject] private ViewAsStudentContext ViewAs { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
     [Inject] private NotionClient Client { get; set; } = default!;
@@ -75,6 +76,7 @@ public partial class Index
     private Task<bool>? _titleSaveTask;
     private bool CanUse => Auth.IsAuthenticated;
     private bool ForceReadOnly => PublishedPreview || ViewAs.IsActive;
+    private bool IsLivePreview => ViewAs.IsActive || PublishedPreview && (CanManageHold || Redirect.ShowsTeacherChrome);
     private bool CanManageHold => !ViewAs.IsActive && (_current?.CanEdit == true || _collection?.CanManage == true || _holds.Any(h => h.Id == _holdId && h.CanManage));
     private bool IsEditing => _current?.CanEdit == true && !ForceReadOnly;
     private bool Authoring => CanManageHold && !ForceReadOnly;
@@ -247,16 +249,25 @@ public partial class Index
         RebuildPageRows();
     }
     private string? ParentTitle(NotionPageSummary page) => page.ParentPageId is Guid parent && _pagesById.TryGetValue(parent, out var value) ? value.Title : null;
-    private object EditorContext() => new
+    private object EditorContext()
     {
-        pageId = _current!.PageId, holdId = _current.HoldId, collectionId = _current.CollectionId, title = _current.Title,
-        workspaceId = _returnContext?.WorkspaceId, courseId = _returnContext?.CourseId,
-        canEdit = IsEditing, lifecycleVersion = _current.LifecycleVersion, members = _current.Members, polls = _current.Polls,
-        pages = _current.Pages ?? [], groups = _groups, resourcesLoaded = _resourcesLoaded, publishedStateBase64 = _current.PublishedStateBase64,
-        publishedAtUtc = _current.PublishedAtUtc, updatedAtUtc = _current.UpdatedAtUtc,
-        userName = Auth.DisplayName ?? "Bruger", userSub = Auth.Subject, drawings = _current.Drawings,
-        isStudentPreview = ViewAs.IsActive || PublishedPreview && CanManageHold
-    };
+        var page = _current!;
+        var isStudentPreview = ViewAs.IsActive || PublishedPreview && CanManageHold;
+        var isHoldPage = page.HoldId is Guid holdId && holdId != Guid.Empty;
+        return new
+        {
+            pageId = page.PageId, holdId = page.HoldId, collectionId = page.CollectionId, title = page.Title,
+            workspaceId = _returnContext?.WorkspaceId, courseId = _returnContext?.CourseId,
+            canEdit = IsEditing, lifecycleVersion = page.LifecycleVersion, members = page.Members, polls = page.Polls,
+            pages = page.Pages ?? [], groups = _groups, resourcesLoaded = _resourcesLoaded, publishedStateBase64 = page.PublishedStateBase64,
+            publishedAtUtc = page.PublishedAtUtc, updatedAtUtc = page.UpdatedAtUtc,
+            userName = Auth.DisplayName ?? "Bruger", userSub = Auth.Subject, drawings = page.Drawings,
+            isStudentPreview,
+            liveHost = isHoldPage && IsEditing,
+            liveParticipant = isHoldPage && !IsEditing && !IsLivePreview && page.PublishedAtUtc is not null,
+            publishedRevision = page.PublishedRevision, draftRevision = page.DraftRevision, publishedTitle = page.PublishedTitle
+        };
+    }
     private void AccountChanged() => _ = InvokeAsync(SyncAccount);
     private async Task SyncAccount()
     {
@@ -593,6 +604,8 @@ public partial class Index
     [JSInvokable] public Task<string?> GetNotionKnowledgeCheckToken(string? rejectedAccess) => !Auth.IsAuthenticated || ViewAs.IsActive
         ? Task.FromResult<string?>(null)
         : string.IsNullOrEmpty(rejectedAccess) ? Auth.GetValidAccessTokenAsync() : Auth.RefreshAfterUnauthorizedAsync(rejectedAccess);
+    [JSInvokable] public Task<string?> GetNotionLiveToken(string? rejectedAccess) => !Auth.IsAuthenticated || IsLivePreview
+        ? Task.FromResult<string?>(null) : GetNotionKnowledgeCheckToken(rejectedAccess);
     [JSInvokable] public Task OnNotionStatus(string status, string detail) => InvokeAsync(() => { if (_disposed) return; _status = status; _statusDetail = detail; StateHasChanged(); });
     [JSInvokable] public Task OnNotionCreateGroup(string membershipIdsJson) => InvokeAsync(async () =>
     {

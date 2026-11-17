@@ -38,6 +38,8 @@ import { NotionKnowledgeCheck } from './notion-knowledge-check';
 import { ensureEditorResources } from './editor-resources.mjs';
 import { ReferenceProvider, ReferenceView, ReferencePicker, useReferenceSearch, mentionStatusLabel, type EntityReference, type ResolvedReference } from './entity-reference-components';
 import { legacyReference, entityReference, referenceKindLabel } from './entity-references.mjs';
+import { createLiveClient, liveKinds } from './live-course-api';
+import { LiveActivity, LiveCourseProvider, LivePageBanner, LivePresenterHeader, LiveSessionHistory, useLiveCourse } from './live-course';
 
 export interface EditorContext {
   domain?: 'notion' | 'notebook';
@@ -55,6 +57,11 @@ export interface EditorContext {
   courseId?: string | null;
   title: string;
   canEdit: boolean;
+  liveHost?: boolean;
+  liveParticipant?: boolean;
+  draftRevision?: number | null;
+  publishedRevision?: number | null;
+  publishedTitle?: string | null;
   members: { id: string; displayName: string }[];
   polls: { id: string; title: string; state: string }[];
   updatedAtUtc: string;
@@ -73,6 +80,7 @@ type Status = 'connecting' | 'synced' | 'saving' | 'saved' | 'offline' | 'error'
 const Context = createContext<EditorContext | null>(null);
 const useData = () => useContext(Context);
 const Runtime = createContext<Session | null>(null);
+const LiveDeck = createContext<{ active: boolean } | null>(null);
 function useNotionResources(required=true) {
   const session=useContext(Runtime);
   const context=useData();
@@ -140,6 +148,31 @@ const createKnowledgeCheck = createReactBlockSpec({
   render: ({ block, editor }) => <KnowledgeCheckBlock publicationId={block.props.publicationId} blockId={block.id}
     onChange={editor.isEditable ? id => editor.updateBlock(block, { props: { publicationId: id } }) : undefined} />,
   toExternalHTML: () => <p>Videnstjek</p>,
+});
+
+const createLiveActivity = createReactBlockSpec({
+  type: 'liveCourseActivity',
+  propSchema: { moduleId: { default: '' }, kind: { default: 'poll' }, prompt: { default: '' } },
+  content: 'none',
+}, {
+  render: ({ block, editor }) => {
+    const context = useData();
+    const session = useContext(Runtime);
+    const deck = useContext(LiveDeck);
+    const kind = liveKinds.find(item => item.kind === block.props.kind)?.kind ?? 'poll';
+    if (!context || !session || context.domain === 'notebook') return null;
+    return <LiveActivity blockId={block.id} moduleId={block.props.moduleId} kind={kind} prompt={block.props.prompt}
+      editable={Boolean(!deck && context.holdId && canEdit(session) && editor.isEditable)}
+      presenting={Boolean(deck)} activePresentation={deck?.active === true}
+      participant={context.liveParticipant === true && session.readOnly && !context.isStudentPreview}
+      publishedRevision={context.publishedRevision ?? undefined}
+      onSave={module => {
+        if (session.destroyed || !canEdit(session) || editor.getBlock(block.id)?.type !== 'liveCourseActivity') return;
+        // Persist only this version reference and public prompt, never the quiz facit.
+        editor.updateBlock(block.id, { props: { moduleId: module.id, kind: module.kind, prompt: module.prompt } });
+      }} />;
+  },
+  toExternalHTML: ({ block }) => <p>{block.props.prompt || 'Liveaktivitet'}</p>,
 });
 
 function KnowledgeCheckBlock({ publicationId, blockId, onChange }:
@@ -333,7 +366,7 @@ const createMedia=createReactBlockSpec({type:'pageMedia',propSchema:{schemaVersi
   toExternalHTML:()=> <p>Vedhæftet undervisningsfil</p>,
 });
 const schema = BlockNoteSchema.create({
-  blockSpecs: {...defaultBlockSpecs, codeBlock:createNotionCodeBlock(), classRoster:createRoster(),holdPoll:createPoll(),knowledgeCheck:createKnowledgeCheck(),slideBreak:createSlideBreak(),learningGoal:createLearningGoal(),pageLink:createPageLink(),entityLink:createEntityLink(),holdGroup:createGroup(),pageMedia:createMedia(),mermaidDiagram:createMermaidDiagram(),callout:createCallout(),drawing:createDrawing()},
+  blockSpecs: {...defaultBlockSpecs, codeBlock:createNotionCodeBlock(), classRoster:createRoster(),holdPoll:createPoll(),knowledgeCheck:createKnowledgeCheck(),liveCourseActivity:createLiveActivity(),slideBreak:createSlideBreak(),learningGoal:createLearningGoal(),pageLink:createPageLink(),entityLink:createEntityLink(),holdGroup:createGroup(),pageMedia:createMedia(),mermaidDiagram:createMermaidDiagram(),callout:createCallout(),drawing:createDrawing()},
   inlineContentSpecs:{...defaultInlineContentSpecs,pageMention,studentMention,entityMention,customEmoji},
 });
 type Editor = BlockNoteEditor<typeof schema.blockSchema, typeof schema.inlineContentSchema, typeof schema.styleSchema>;
@@ -354,6 +387,13 @@ function notify(session: Session, status: Status, detail: string) {
   void session.callbacks?.invokeMethodAsync('OnNotionStatus',status,detail).catch(() => {});
 }
 function canEdit(session: Session) { return !session.readOnly && session.context.canEdit && session.connected && session.inSync && !session.presenting; }
+function canUseLiveDraft(session: Session) {
+  const context = session.context;
+  return context.liveHost === true && !session.readOnly && session.inSync && !session.dirty
+    && !session.drawingDirty && !session.pendingUploads && context.publishedRevision != null
+    && context.publishedRevision === context.draftRevision
+    && (!context.publishedTitle || context.publishedTitle === context.title);
+}
 function drawingEnvironment(session:Session):DrawingEnvironment {
   return {domain:session.context.domain==='notebook'?'notebook':'notion',documentId:session.context.pageId,
     published:session.context.domain!=='notebook' && session.readOnly,readOnly:session.readOnly,
@@ -559,7 +599,7 @@ function ConnectedEditor({session}:{session:Session}) {
       });
     },false);
   },[editor,emojis,session]);;
-  const insert=(type:'classRoster'|'holdPoll'|'knowledgeCheck'|'slideBreak'|'learningGoal'|'entityLink'|'holdGroup'|'pageMedia'|'mermaidDiagram'|'callout'|'codeBlock',kind='download') => {
+  const insert=(type:'classRoster'|'holdPoll'|'knowledgeCheck'|'liveCourseActivity'|'slideBreak'|'learningGoal'|'entityLink'|'holdGroup'|'pageMedia'|'mermaidDiagram'|'callout'|'codeBlock',kind='download') => {
     if(!enabled) return;
     editor.focus();
     const cursor=editor.getTextCursorPosition().block;
@@ -569,6 +609,7 @@ function ConnectedEditor({session}:{session:Session}) {
     };
     if(type==='classRoster') add({type,props:{holdId:session.context.holdId || ''}});
     else if(type==='holdPoll') add({type,props:{holdId:session.context.holdId || ''}});
+    else if(type==='liveCourseActivity') add({type,props:{kind}});
     else if(type==='learningGoal') add({type,content:'Efter aktiviteten kan du…'});
     else if(type==='holdGroup')add({type,props:{holdId:session.context.holdId || ''}});
     else if(type==='pageMedia')add({type,props:{pageId:session.context.pageId,kind}});
@@ -603,7 +644,11 @@ function ConnectedEditor({session}:{session:Session}) {
     {title:'Upload fil',subtext:'PDF, dokument, ZIP eller mediefil',aliases:['fil','vedhæftning','upload'],group:'Medier',onItemClick:()=>insert('pageMedia')},
     {title:'Emoji',subtext:'Vælg en emoji eller tilføj din egen',aliases:['emoji','emojis','smiley'],group:'Medier',onItemClick:openEmoji},
     {title:'Elever fra holdet',subtext:'Indsæt en levende elevliste',aliases:['elever','klasse','hold','students'],group:'Undervisning',icon:<span aria-hidden="true">◉</span>,onItemClick:()=>insert('classRoster')},
-    {title:'Afstemning',subtext:'Kobl en afstemning fra holdet på siden',aliases:['afstemning','poll','stemning'],group:'Undervisning',icon:<span aria-hidden="true">▥</span>,onItemClick:()=>insert('holdPoll')},
+    {title:'Afstemning fra holdet',subtext:'Kobl en eksisterende afstemning på siden',aliases:['afstemning','poll','stemning'],group:'Undervisning',icon:<span aria-hidden="true">▥</span>,onItemClick:()=>insert('holdPoll')},
+    ...(!notebook && session.context.holdId ? liveKinds.map(item => ({
+      title: item.title, subtext: item.description, aliases: ['live', item.kind], group: 'Liveaktiviteter',
+      icon: <span aria-hidden="true">{item.icon}</span>, onItemClick: () => insert('liveCourseActivity', item.kind),
+    })) : []),
     {title:'Videnstjek',subtext:'Lad eleven svare direkte på siden',aliases:['videnstjek','quiz','spørgsmål'],group:'Undervisning',onItemClick:()=>insert('knowledgeCheck')},
     {title:'Slidegrænse',subtext:'Start næste slide i præsentationen',aliases:['slide','slides','præsentation'],group:'Undervisning',icon:<span aria-hidden="true">▱</span>,onItemClick:()=>insert('slideBreak')},
     {title:'Læringsmål',subtext:'Fremhæv målet for aktiviteten',aliases:['læringsmål','mål','learning'],group:'Undervisning',icon:<span aria-hidden="true">◎</span>,onItemClick:()=>insert('learningGoal')},
@@ -612,7 +657,7 @@ function ConnectedEditor({session}:{session:Session}) {
     {title:'Callout',subtext:'Fremhæv info, tip, advarsel eller vigtigt',aliases:['callout','info','tip','advarsel','note'],group:'Undervisning',icon:<span aria-hidden="true">▣</span>,onItemClick:()=>insert('callout')},
     {title:'AI',subtext:'Generér blokke, omskriv tekst eller lav et diagram',aliases:['ai','openai','hjælp','assistent'],group:'Undervisning',icon:<span aria-hidden="true">✦</span>,onItemClick:()=>openAi()},
     {title:'Præsenter',subtext:'Vis dokumentet som slides',aliases:['præsenter','præsentation','slides','presentation'],group:'Visning',onItemClick:()=>openPresentation(session)},
-  ].filter(item=>(!notebook || !['Gemt gruppe','Elever fra holdet','Afstemning','Videnstjek','Slidegrænse','Emoji','AI','Præsenter'].includes(item.title)) && (session.context.holdId || !['Gemt gruppe','Elever fra holdet','Afstemning'].includes(item.title)));
+  ].filter(item=>(!notebook || !['Gemt gruppe','Elever fra holdet','Afstemning fra holdet','Videnstjek','Slidegrænse','Emoji','AI','Præsenter'].includes(item.title)) && (session.context.holdId || !['Gemt gruppe','Elever fra holdet','Afstemning fra holdet'].includes(item.title)));
   return <OpenAiOnBlockProvider openOnBlock={notebook?null:openAi}>
     {!session.readOnly && !notebook && enabled && createEmoji && <input ref={colonFileInput} className="notion-emoji-file notion-emoji-colon-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" aria-label="Vælg emoji-billede fra kolonmenu" onChange={chooseColonFile} tabIndex={-1} />}
     {emojiInsertError && <p className="notion-editor-persistence-error" role="alert">{emojiInsertError}</p>}
@@ -654,23 +699,61 @@ function SlideContent({blocks,theme}:{blocks:ReturnType<typeof splitSlides>[numb
   return <BlockNoteView editor={editor} editable={false} theme={theme} formattingToolbar={false} sideMenu={false} slashMenu={false} emojiPicker={false} />;
 }
 function SlideDeck({session}:{session:Session}) {
-  const [index,setIndex]=useState(0);
+  const [localIndex,setLocalIndex]=useState(0);
+  const [stopFailed,setStopFailed]=useState(false);
   const dialog=useRef<HTMLDialogElement>(null);
   const total=session.slides.length;
-  const close=()=>{session.presenting=false;session.render();};
+  const live=useLiveCourse();
+  const snapshot=live?.snapshot ?? null;
+  const liveActive=Boolean(live && snapshot?.mayManage && canUseLiveDraft(session) && snapshot.publishedRevision===session.context.publishedRevision);
+  const index=Math.max(0,Math.min(total-1,liveActive ? snapshot!.slideIndex : localIndex));
+  const move=(direction:number)=>{
+    const slideIndex=Math.max(0,Math.min(total-1,index+direction));
+    if(slideIndex===index)return;
+    if(liveActive && live && snapshot){
+      if(!live.offline && !live.busy)void live.command([snapshot.id,'slide'],{slideIndex});
+      return;
+    }
+    setLocalIndex(slideIndex);
+  };
+  useEffect(()=>{if(liveActive)setLocalIndex(index);},[liveActive,index]);
+  const closeLocal=()=>{session.presenting=false;session.render();};
+  const close=async()=>{
+    if(live && snapshot?.mayManage && !await live.command([snapshot.id,'stop'])){
+      setStopFailed(true);
+      return;
+    }
+    closeLocal();
+  };
+  const moderatorRound=snapshot?.round;
+  const canModerate=Boolean(liveActive && moderatorRound &&
+    (['brainstorm','word-cloud','qa'].includes(moderatorRound.kind) || moderatorRound.pollType==='text'));
   useEffect(()=>{
     const element=dialog.current!;
     element.showModal();
     const previous=document.body.style.overflow; document.body.style.overflow='hidden';
     return ()=>{element.close();document.body.style.overflow=previous;};
   },[]);
-  return <dialog ref={dialog} className="notion-slide-deck" aria-label="Præsentation" onCancel={event=>{event.preventDefault();close();}} onKeyDown={event=>{
-    if(event.key==='ArrowRight' || event.key==='PageDown'){event.preventDefault();setIndex(value=>Math.min(total-1,value+1));}
-    if(event.key==='ArrowLeft' || event.key==='PageUp'){event.preventDefault();setIndex(value=>Math.max(0,value-1));}
+  return <dialog ref={dialog} className="notion-slide-deck" aria-label="Præsentation" onCancel={event=>{event.preventDefault();void close();}} onKeyDown={event=>{
+    if(event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey ||
+      event.target instanceof HTMLElement && event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+    if(event.key==='ArrowRight' || event.key==='PageDown'){event.preventDefault();move(1);}
+    if(event.key==='ArrowLeft' || event.key==='PageUp'){event.preventDefault();move(-1);}
   }}>
-    <header className="notion-slide-header"><strong><EmojiText text={session.context.title} /></strong><span>{index+1} / {total}</span><button type="button" autoFocus onClick={close}>Luk præsentation</button></header>
-    <article className="notion-slide-paper"><SlideContent key={index} blocks={session.slides[index]} theme={session.theme} /></article>
-    <nav className="notion-slide-controls" aria-label="Skift slide"><button type="button" disabled={index===0} onClick={()=>setIndex(index-1)}>‹ Forrige</button><span>Brug piletasterne til at skifte slide</span><button type="button" disabled={index===total-1} onClick={()=>setIndex(index+1)}>Næste ›</button></nav>
+    <header className="notion-slide-header"><strong><EmojiText text={session.context.title} /></strong><span>{index+1} / {total}</span>
+      <LivePresenterHeader revision={session.context.publishedRevision ?? undefined} courseId={session.context.courseId}
+        canStart={canUseLiveDraft(session)} allowHost={Boolean(session.context.canEdit && session.context.holdId && !session.context.isStudentPreview)} />
+      {canModerate && <button type="button" onClick={closeLocal} title="Sessionen fortsætter, mens du godkender svar">Moderér i editor</button>}
+      {snapshot?.mayManage && (live?.offline || stopFailed) && <button type="button" onClick={closeLocal}>
+        Gå til editor for at afslutte live
+      </button>}
+      <button type="button" autoFocus disabled={Boolean(snapshot?.mayManage && live?.busy)} onClick={()=>{void close();}}>
+        {snapshot?.mayManage ? 'Afslut live og luk' : 'Luk præsentation'}
+      </button></header>
+    <article className="notion-slide-paper"><LiveDeck.Provider value={{active:liveActive}}>
+      <SlideContent key={index} blocks={session.slides[index]} theme={session.theme} />
+    </LiveDeck.Provider></article>
+    <nav className="notion-slide-controls" aria-label="Skift slide"><button type="button" disabled={index===0 || liveActive && (live?.busy || live?.offline)} onClick={()=>move(-1)}>‹ Forrige</button><span>Brug piletasterne til at skifte slide</span><button type="button" disabled={index===total-1 || liveActive && (live?.busy || live?.offline)} onClick={()=>move(1)}>Næste ›</button></nav>
   </dialog>;
 }
 class EditorBoundary extends React.Component<{session:Session;children:React.ReactNode},{failed:boolean}> {
@@ -716,9 +799,26 @@ function App({session}:{session:Session}) {
   useEffect(()=>{void loadRef.current();},[session]);
   const drawingEnv=useMemo(()=>drawingEnvironment(session),[session,session.context,session.theme,session.presenting]);
   const referenceEnv={sourceKind:session.context.domain==='notebook'?'notebook-page':'notion-page',sourceId:session.context.pageId,holdId:session.context.holdId,publishedOnly:session.context.domain!=='notebook' && session.readOnly,apiBase:session.context.apiBase || '/api',getToken:()=>validToken(session),revision:session.context.revision ?? session.context.updatedAtUtc,canEdit:canEdit(session)};
+  const liveTeacher=Boolean(session.context.canEdit && session.context.holdId && !session.context.isStudentPreview && session.context.domain!=='notebook');
+  const liveParticipant=Boolean(session.context.liveParticipant && session.readOnly && !session.context.isStudentPreview && session.context.domain!=='notebook');
+  const liveClient=useMemo(()=>createLiveClient({
+    apiBase:session.context.apiBase || '/api', pageId:session.context.pageId,
+    getToken:async rejected=>{
+      if(session.destroyed || session.context.isStudentPreview)throw new Error('Livevisningen er ikke tilgængelig i forhåndsvisning.');
+      if(!session.callbacks)return validToken(session);
+      const token=await session.callbacks.invokeMethodAsync('GetNotionLiveToken',rejected ?? '');
+      if(typeof token!=='string' || !token)throw new Error('Log ind igen for at bruge livevisningen.');
+      return token;
+    },
+  }),[session,session.context.apiBase,session.context.pageId]);
   return <Runtime.Provider value={session}><Context.Provider value={session.context}><EmojiCatalog.Provider value={emojis}><EmojiReload.Provider value={()=>{void loadRef.current();}}><EmojiCreate.Provider value={session.context.domain==='notebook' ? undefined : createEmoji}><EmojiAnalyze.Provider value={session.context.domain==='notebook' ? undefined : analyzeEmoji}><div className="notion-blocknote-host" data-notion-theme={session.theme}>
     {session.status==='error' && <p className="notion-editor-persistence-error" role="alert">{session.detail}</p>}
-    <ReferenceProvider environment={referenceEnv}><DrawingEnvironmentProvider value={drawingEnv}><EditorBoundary session={session}>{session.ready ? <ConnectedEditor session={session} /> : <div className="notion-editor-loading" role="status">Forbinder til dokumentet…</div>}{session.presenting && <SlideDeck session={session}/>}</EditorBoundary></DrawingEnvironmentProvider></ReferenceProvider>
+    <LiveCourseProvider client={liveClient} enabled={liveTeacher || liveParticipant}>
+      {liveTeacher || liveParticipant ? <LivePageBanner participant={liveParticipant} publishedRevision={session.context.publishedRevision ?? undefined}
+        onResume={liveTeacher && session.ready ? ()=>openPresentation(session) : undefined} /> : null}
+      <ReferenceProvider environment={referenceEnv}><DrawingEnvironmentProvider value={drawingEnv}><EditorBoundary session={session}>{session.ready ? <ConnectedEditor session={session} /> : <div className="notion-editor-loading" role="status">Forbinder til dokumentet…</div>}{session.presenting && <SlideDeck session={session}/>}</EditorBoundary></DrawingEnvironmentProvider></ReferenceProvider>
+      {liveTeacher && session.ready && <LiveSessionHistory />}
+    </LiveCourseProvider>
   </div></EmojiAnalyze.Provider></EmojiCreate.Provider></EmojiReload.Provider></EmojiCatalog.Provider></Context.Provider></Runtime.Provider>;
 }
 

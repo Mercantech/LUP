@@ -114,6 +114,63 @@ export function projectNotionContext({ stateBase64 } = {}) {
   } finally { doc.destroy(); }
 }
 
+/** Only stable interactive block IDs and slide indexes leave the published Yjs state. */
+export function projectLivePresentation({ stateBase64 } = {}) {
+  const doc = decode(stateBase64);
+  try {
+    // Match the editor's splitSlides rules: top-level breaks split, rosters and empty slides disappear.
+    const slides = [[]];
+    const kinds = new Set(['poll', 'brainstorm', 'word-cloud', 'qa', 'quiz']);
+    const seen = new Set();
+    let visited = 0;
+
+    function readBlock(container, depth = 0) {
+      if (++visited > 250000 || depth > 256) throw new Error('Notion document is too complex');
+      if (!(container instanceof Y.XmlElement) || container.nodeName !== 'blockContainer') return null;
+      const nodes = container.toArray().filter(node => node instanceof Y.XmlElement);
+      const content = nodes.find(node => node.nodeName !== 'blockGroup');
+      if (!content || content.nodeName === 'classRoster') return null;
+
+      const type = content.nodeName;
+      const children = nodes.filter(node => node.nodeName === 'blockGroup')
+        .flatMap(group => group.toArray().map(node => readBlock(node, depth + 1)).filter(Boolean));
+      const blockId = container.getAttribute('id');
+      const moduleId = type === 'liveCourseActivity' ? content.getAttribute('moduleId') : undefined;
+      let binding;
+      if (moduleId) {
+        if (typeof moduleId !== 'string' || !guid.test(moduleId) || !kinds.has(content.getAttribute('kind'))
+          || typeof blockId !== 'string' || !/^[a-z0-9_-]{1,128}$/i.test(blockId) || seen.has(blockId))
+          throw new Error('Invalid live activity block');
+        seen.add(blockId);
+        binding = { blockId, moduleId: moduleId.toLowerCase() };
+      }
+
+      const hasContent = type !== 'paragraph' || content.toArray().some(child =>
+        child instanceof Y.XmlText ? child.toDelta().some(part => typeof part.insert === 'string' && part.insert.trim()) : true);
+      return {
+        type,
+        visible: hasContent || children.some(child => child.visible),
+        activities: [...(binding ? [binding] : []), ...children.flatMap(child => child.activities)]
+      };
+    }
+
+    for (const node of doc.getXmlFragment('document-store').toArray()) {
+      const containers = node instanceof Y.XmlElement && node.nodeName === 'blockGroup' ? node.toArray() : [node];
+      for (const container of containers) {
+        const block = readBlock(container);
+        if (block?.type === 'slideBreak') slides.push([]);
+        else if (block) slides.at(-1).push(block);
+      }
+    }
+    const visible = slides.filter(slide => slide.some(block => block.visible));
+    return {
+      slideCount: Math.max(1, visible.length),
+      bindings: visible.flatMap((slide, slideIndex) =>
+        slide.flatMap(block => block.activities.map(activity => ({ ...activity, slideIndex }))))
+    };
+  } finally { doc.destroy(); }
+}
+
 function appendDefaultBlock(group, type, content = '', level) {
   const container = new Y.XmlElement('blockContainer');
   container.setAttribute('id', randomUUID());
