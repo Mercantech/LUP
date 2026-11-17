@@ -97,6 +97,9 @@ public class PrivacyController(AppDbContext db) : ControllerBase
         object? giftProfile = null;
         object? avatarProfile = null;
         object[] pollResponses = [];
+        object[] liveCourseAnswers = [];
+        object[] liveCourseVotes = [];
+        object[] liveCourseReactions = [];
         object[] electiveEnrollments = [];
         object[] actionReadReceipts = [];
         object[] uploadedGames = [];
@@ -166,6 +169,13 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 .Select(r => (object)new { r.UserSub, r.Kind, r.ResourceId, r.ReadAtUtc }).ToArrayAsync(ct);
             pollResponses = await db.PollResponses.AsNoTracking().Where(r => r.UserSub == giftSub)
                 .Select(r => (object)new { r.PollId, r.Poll.Question, r.Choice, r.Text, r.UpdatedAtUtc }).ToArrayAsync(ct);
+            liveCourseAnswers = await db.LiveCourseEntries.AsNoTracking().Where(answer => answer.UserSub == giftSub)
+                .Select(answer => (object)new { answer.Id, answer.RoundId, answer.Choice, answer.Text, answer.Approved, answer.UpdatedAtUtc })
+                .ToArrayAsync(ct);
+            liveCourseVotes = await db.LiveCourseVotes.AsNoTracking().Where(vote => vote.UserSub == giftSub)
+                .Select(vote => (object)new { vote.EntryId }).ToArrayAsync(ct);
+            liveCourseReactions = await db.LiveCourseReactions.AsNoTracking().Where(reaction => reaction.UserSub == giftSub)
+                .Select(reaction => (object)new { reaction.SessionId, reaction.Emoji, reaction.UpdatedAtUtc }).ToArrayAsync(ct);
             var attempts = await db.KnowledgeCheckAttempts.AsNoTracking().Where(attempt => attempt.UserSub == giftSub)
                 .OrderBy(attempt => attempt.StartedAtUtc)
                 .Select(attempt => new
@@ -211,6 +221,9 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 dailyGamePlays,
                 dailyRankingVisible,
                 pollResponses,
+                liveCourseAnswers,
+                liveCourseVotes,
+                liveCourseReactions,
                 knowledgeCheckAttempts,
                 electiveEnrollments,
                 actionReadReceipts,

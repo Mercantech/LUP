@@ -174,6 +174,11 @@ test('internal AI projection requires service authentication, rejects browser or
   const projection = await accepted.json();
   assert.equal(projection.plainText, 'Intern læsekontekst');
   assert.deepEqual(projection.blocks, [{ id: 'test-block', type: 'paragraph', text: 'Intern læsekontekst', heading: null }]);
+  const livePayload = JSON.stringify({ ...JSON.parse(body), mode: 'live-presentation' });
+  assert.equal((await send({}, livePayload)).status, 401);
+  const live = await send({ 'X-Notion-Service-Key': secret }, livePayload);
+  assert.equal(live.status, 200);
+  assert.deepEqual(await live.json(), { slideCount: 1, bindings: [] });
   assert.equal((await send({ 'X-Notion-Service-Key': secret }, '{"stateBase64":"bad!"}')).status, 400);
   doc.destroy();
 });

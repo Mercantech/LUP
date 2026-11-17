@@ -121,6 +121,53 @@ public sealed class NotionLazyLoadingTests
         Assert.DoesNotContain(api.Requests, r => IsResourceRequest(r.Path));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Editable_documents_pass_publication_metadata_and_enable_live_host_only_for_hold_pages(bool theoryPage)
+    {
+        using var api = new LazyApi { TheoryPage = theoryPage };
+        using var context = await CreateContext(api);
+        var editor = context.Services.GetRequiredService<LazyJavascript>().Editor;
+        var page = context.Render<NotionPage>(p => p.Add(x => x.PageId, api.FirstId));
+
+        page.WaitForAssertion(() => Assert.Single(editor.Mounts), Timeout);
+        var mount = Assert.Single(editor.Mounts);
+        Assert.False(mount.ReadOnly);
+        Assert.Equal(!theoryPage, mount.LiveHost);
+        Assert.False(mount.LiveParticipant);
+        Assert.Equal(7L, mount.PublishedRevision);
+        Assert.Equal(9L, mount.DraftRevision);
+        Assert.Equal("Udgivet side", mount.PublishedTitle);
+    }
+
+    [Theory]
+    [InlineData("student", true)]
+    [InlineData("published-preview", false)]
+    [InlineData("view-as-student", false)]
+    public async Task Published_documents_only_enable_live_participation_for_students(string audience, bool mayParticipate)
+    {
+        using var api = new LazyApi { MetadataGate = Gate() };
+        using var context = await CreateContext(api, teacher: audience != "student", preview: audience == "view-as-student");
+        var editor = context.Services.GetRequiredService<LazyJavascript>().Editor;
+        if (audience != "view-as-student")
+            context.Services.GetRequiredService<NavigationManager>().NavigateTo($"/notion/{api.FirstId}?published=true");
+        try
+        {
+            var page = context.Render<NotionPage>(p => p.Add(x => x.PageId, api.FirstId));
+            page.WaitForAssertion(() => Assert.Single(editor.Mounts), Timeout);
+
+            var mount = Assert.Single(editor.Mounts);
+            Assert.True(mount.ReadOnly);
+            Assert.False(mount.LiveHost);
+            Assert.Equal(mayParticipate, mount.LiveParticipant);
+            Assert.Equal(7L, mount.PublishedRevision);
+            Assert.Equal(7L, mount.DraftRevision);
+            Assert.Contains(api.Requests, r => r.Path == api.ContextPath(api.FirstId, published: true));
+        }
+        finally { api.MetadataGate.TrySetResult(true); }
+    }
+
     [Fact]
     public async Task Overlapping_resource_requests_share_one_load_and_update_without_remounting()
     {
@@ -250,8 +297,8 @@ public sealed class NotionLazyLoadingTests
         || path.EndsWith("/editor-resources", StringComparison.Ordinal);
     private static TaskCompletionSource<bool> Gate() => new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    private static Task<LearningUiTestContext> CreateContext(LazyApi api)
-        => LearningUiTestContext.CreateAsync(api, teacher: true, configure: services =>
+    private static Task<LearningUiTestContext> CreateContext(LazyApi api, bool teacher = true, bool preview = false)
+        => LearningUiTestContext.CreateAsync(api, teacher, preview, configure: services =>
         {
             var original = (IJSRuntime)services.Last(s => s.ServiceType == typeof(IJSRuntime)).ImplementationInstance!;
             var javascript = new LazyJavascript(original, api);
@@ -260,7 +307,8 @@ public sealed class NotionLazyLoadingTests
             services.AddSingleton<NotionClient>();
         });
 
-    private sealed record EditorSnapshot(Guid PageId, bool ReadOnly, int Members, int Polls, int Groups, int Pages);
+    private sealed record EditorSnapshot(Guid PageId, bool ReadOnly, int Members, int Polls, int Groups, int Pages,
+        bool LiveHost, bool LiveParticipant, long PublishedRevision, long DraftRevision, string? PublishedTitle);
     private sealed class LazyJavascript(IJSRuntime original, LazyApi api) : IJSRuntime
     {
         public EditorModule Editor { get; } = new(api);
@@ -304,7 +352,9 @@ public sealed class NotionLazyLoadingTests
                 var json = JsonSerializer.SerializeToElement(args![1]);
                 var snapshot = new EditorSnapshot(json.GetProperty("pageId").GetGuid(), id == "mountReadOnly",
                     json.GetProperty("members").GetArrayLength(), json.GetProperty("polls").GetArrayLength(), json.GetProperty("groups").GetArrayLength(),
-                    json.GetProperty("pages").GetArrayLength());
+                    json.GetProperty("pages").GetArrayLength(), json.GetProperty("liveHost").GetBoolean(),
+                    json.GetProperty("liveParticipant").GetBoolean(), json.GetProperty("publishedRevision").GetInt64(),
+                    json.GetProperty("draftRevision").GetInt64(), json.GetProperty("publishedTitle").GetString());
                 if (id == "setContext") ContextUpdates.Enqueue(snapshot);
                 else { Mounts.Enqueue(snapshot); api.Events.Enqueue($"mount:{snapshot.PageId}"); }
             }
@@ -326,6 +376,7 @@ public sealed class NotionLazyLoadingTests
         public TaskCompletionSource<bool>? ResourceGate { get; init; }
         public TaskCompletionSource<bool> FirstContextReturned { get; } = Gate();
         public bool FailMetadata { get; init; }
+        public bool TheoryPage { get; init; }
         public bool FailResources { get; set; }
         public int AdditionalPages { get; init; }
         public volatile bool FirstContextCancelled;
@@ -351,9 +402,10 @@ public sealed class NotionLazyLoadingTests
                     await FirstContextGate.Task;
                     FirstContextReturned.TrySetResult(true);
                 }
-                return Json(new NotionPageContext(id, HoldId, id == FirstId ? "Første side" : "Anden side", true,
-                    [], [], DateTimeOffset.UtcNow, PublishedAtUtc: DateTimeOffset.UtcNow,
-                    PublishedStateBase64: path.EndsWith("/published-context", StringComparison.Ordinal) ? "AAA=" : null));
+                var published = path.EndsWith("/published-context", StringComparison.Ordinal);
+                return Json(new NotionPageContext(id, TheoryPage ? null : HoldId, id == FirstId ? "Første side" : "Anden side", !published,
+                    [], [], DateTimeOffset.UtcNow, PublishedAtUtc: DateTimeOffset.UtcNow, DraftRevision: published ? 7 : 9,
+                    PublishedRevision: 7, PublishedStateBase64: published ? "AAA=" : null, PublishedTitle: "Udgivet side"));
             }
             if (path == "/api/notion/holds" || path == "/api/notion/pages")
             {

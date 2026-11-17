@@ -2,6 +2,7 @@ using System.Text.Json;
 using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
+using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +13,6 @@ namespace Mercantec.Tech.Api.Controllers;
 [ApiController, Authorize, Route("api/polls")]
 public sealed class PollsController(AppDbContext db) : ControllerBase
 {
-    private static readonly string[] Moods = ["Glad", "Klar", "Midt imellem", "Træt", "Presset"];
-
     private IQueryable<Hold> AccessibleHolds(Guid sub, bool manageOnly = false)
     {
         var teacher = UserClaims.IsTeacher(User);
@@ -70,14 +69,8 @@ public sealed class PollsController(AppDbContext db) : ControllerBase
             || request.State is not ("draft" or "open")
             || request.ResultsMode is not ("after-vote" or "closed" or "teacher"))
             return BadRequest(new { error = "invalid_poll" });
-        var options = request.Kind switch
-        {
-            "mood" => Moods, "scale" => ["1", "2", "3", "4", "5"], "text" => [],
-            _ => (request.Options ?? []).Select(s => s?.Trim() ?? "").ToArray()
-        };
-        if (request.Kind == "choice" && (options.Length is < 2 or > 6
-            || options.Any(s => s.Length is < 1 or > 100)
-            || options.Distinct(StringComparer.OrdinalIgnoreCase).Count() != options.Length))
+        var options = PollRules.Options(request.Kind, request.Options);
+        if (request.Kind == "choice" && !PollRules.ValidChoices(options))
             return BadRequest(new { error = "invalid_options" });
         var round = new PollRound
         {
@@ -113,8 +106,7 @@ public sealed class PollsController(AppDbContext db) : ControllerBase
         if (!await db.Memberships.AnyAsync(m => m.HoldId == round.HoldId && m.UserSub == sub, ct)) return Forbid();
         var options = JsonSerializer.Deserialize<string[]>(round.OptionsJson)!;
         var text = request.Text?.Trim();
-        if (round.Kind == "text" ? string.IsNullOrWhiteSpace(text) || text.Length > 280 || request.Choice is not null
-            : request.Choice is not int index || index < 0 || index >= options.Length || !string.IsNullOrEmpty(text))
+        if (!PollRules.ValidAnswer(round.Kind, options.Length, request.Choice, text))
             return BadRequest(new { error = "invalid_answer" });
 
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
@@ -143,7 +135,7 @@ public sealed class PollsController(AppDbContext db) : ControllerBase
         return new(round.Id, round.HoldId, round.Hold.Name, round.Question, round.Kind, options, round.State,
             round.ResultsMode, manage, round.Hold.Memberships.Count, own is not null, own?.Choice, own?.Text,
             visible ? round.Responses.Count : null,
-            visible ? options.Select((_, i) => round.Responses.Count(r => r.Choice == i)).ToArray() : null,
+            visible ? PollRules.Counts(options.Length, round.Responses.Select(r => r.Choice)) : null,
             manage && round.Kind == "text" ? round.Responses.OrderBy(r => r.UpdatedAtUtc).Take(100).Select(r => r.Text ?? "").ToArray() : null,
             round.CreatedAtUtc);
     }
