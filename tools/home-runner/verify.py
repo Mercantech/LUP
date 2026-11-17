@@ -278,7 +278,7 @@ class DeployedRunnerTests(SDKAssertions, unittest.TestCase):
                                for index, values in enumerate(READINGS)]
                     self.verify_batches(batches, language != "arduino")
                 finally:
-                    self.request("DELETE", "/sessions/" + session_id)
+                    self.assertEqual(self.request("DELETE", "/sessions/" + session_id)["status"], "closed")
 
     def test_missing_bearer(self):
         with self.assertRaises(urllib.error.HTTPError) as error:

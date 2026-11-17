@@ -58,6 +58,13 @@ build_images() {
     done
 }
 
+install_gateway() {
+    install -d -m 0755 /opt/lup-home-runner
+    install -m 0644 "$src/worker.py" /opt/lup-home-runner/worker.py
+    install -m 0644 "$src/lup-home-runner.service" /etc/systemd/system/lup-home-runner.service
+    systemctl daemon-reload
+}
+
 verify_runner() {
     local token fingerprint envelope results test_status diagnostic
     stage=deployed-tests
@@ -86,14 +93,21 @@ verify_runner() {
     signal "LUP_HOME_WORKER_READY $fingerprint"
 }
 
-if [[ "${1:-}" == --verify-only || "${1:-}" == --rebuild-images ]]; then
-    stage=verification-source
-    signal "LUP_HOME_WORKER_STAGE $stage"
-    sync_source
-    if [[ "$1" == --rebuild-images ]]; then build_images; fi
-    verify_runner
-    exit 0
-fi
+case "${1:-}" in
+    --verify-only|--rebuild-images|--update-gateway)
+        stage=verification-source
+        signal "LUP_HOME_WORKER_STAGE $stage"
+        sync_source
+        if [[ "$1" == --rebuild-images ]]; then build_images; fi
+        if [[ "$1" == --update-gateway ]]; then
+            stage=update-gateway
+            install_gateway
+            systemctl restart lup-home-runner
+        fi
+        verify_runner
+        exit 0
+        ;;
+esac
 
 signal "LUP_HOME_WORKER_STAGE $stage"
 export DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=l UCF_FORCE_CONFFOLD=1
@@ -146,9 +160,7 @@ signal "LUP_HOME_WORKER_STAGE $stage"
 if ! id lup-home-runner >/dev/null 2>&1; then
     useradd --system --no-create-home --shell /usr/sbin/nologin lup-home-runner
 fi
-install -d -m 0755 /opt/lup-home-runner
-install -m 0644 "$src/worker.py" /opt/lup-home-runner/worker.py
-install -m 0644 "$src/lup-home-runner.service" /etc/systemd/system/lup-home-runner.service
+install_gateway
 
 if [[ -s "$runner_env" ]]; then
     runner_token=$(sed -n 's/^HOME_RUNNER_TOKEN=//p' "$runner_env")
@@ -159,7 +171,6 @@ fi
 printf 'HOME_RUNNER_TOKEN=%s\nHOME_RUNNER_CAPACITY=%s\nHOME_RUNNER_BIND=127.0.0.1\nHOME_RUNNER_PORT=8096\n' \
     "$runner_token" "$slots" >"$runner_env"
 chmod 0600 "$runner_env"
-systemctl daemon-reload
 systemctl enable lup-home-runner
 systemctl restart lup-home-runner
 

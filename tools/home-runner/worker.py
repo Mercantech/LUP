@@ -110,8 +110,9 @@ class Session:
 
     def start(self, request):
         cpu, memory, pids, work = PROFILES[self.language]
+        # The gateway removes the container before releasing its slot.
         command = [
-            "docker", "create", "--rm", "--pull=never", "--runtime=runsc",
+            "docker", "create", "--pull=never", "--runtime=runsc",
             "--name", self.container, "--label", CONTAINER_LABEL,
             "--network=none", "--read-only", "--cap-drop=ALL", "--user=65532:65532",
             "--security-opt=no-new-privileges", "--log-driver=none",
