@@ -1,0 +1,61 @@
+{
+  "generator": "ImageGen",
+  "reference": "web/wwwroot/images/characters/gitmejsen/portrait.png",
+  "referenceSha256": "cd1d21dec5e179cb063b806adee081e104df2975a709627e92530ffc204120b0",
+  "previewSettings": "WebP; Lanczos, 768 px bred, kvalitet 86",
+  "entries": [
+    {
+      "id": "portrait",
+      "title": "Gitmejsen",
+      "alt": "Gitmejsen sidder på en grankvist med sit koboltblå tørklæde, spidse plettede fjertop og en lille messingklemme ved siden af sig.",
+      "png": "web/wwwroot/images/characters/gitmejsen/portrait.png",
+      "preview": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "cd1d21dec5e179cb063b806adee081e104df2975a709627e92530ffc204120b0",
+      "previewSha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814",
+      "source": "exec-4e4e76c0-80ef-433c-8e3f-118e74706a8b.png",
+      "prompt": "Godkendt 3D-portræt af topmejsen med blåt tørklæde og grankvist. Gitmejsens akvarelportræt bestemmer figuren, og Kamæleonens portræt er reference for dybde, lys og materialer."
+    },
+    {
+      "id": "vinter",
+      "title": "På vintergrenen",
+      "alt": "Gitmejsen har pustet fjerene op og sidder med sit blå tørklæde på en snepudret grankvist.",
+      "png": "web/wwwroot/images/characters/gitmejsen/vinter.png",
+      "preview": "web/wwwroot/images/characters/gitmejsen/vinter.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "b7c3ddca8b9c578c590e691774484671ec422714e810c6eb8df5ab9c470b8b6e",
+      "previewSha256": "acbf610cb8d6b1c80335e43e5edf029d43c60f51926b85a2f79acc0338484313",
+      "source": "exec-4001238e-45a6-4994-9408-22ee2b96aff4.png",
+      "prompt": "Make one square full-body character portrait of the same bird, nestled in her signature cobalt scarf at first snow. Use reference image as the exact identity of the original female crested tit teacher. Preserve her tall tapered black-speckled cream feather crest, curved dark cheek marking, cream belly, small dark bib and short pointed bill, taupe wings, gentle expressive amber-brown eyes, two natural bird feet, and her one signature woven cobalt-blue scarf with exactly two short ends at its knot. She is a proper bird throughout with two wings, two tiny clawed feet, no hands, no human arms or additional limbs. Same softly sculpted matte, tactile, subtly stylized Nordic 3D stop-motion storybook render, natural scale, warm materials. No logos, text, labels, signatures or fake typography. Winter variant: slightly fluffed down, a few snow crystals on the upper bark of the short spruce twig and a softly falling dusting around her. She wears a very small pale tan knitted earwarmer band lower around the back of her head beneath the crest if it can fit naturally; the classic clear pointed crest remains entirely visible; keep the costume restrained. Quiet winter wonder and warm diffuse daylight. Pale warm ivory through cold blue paper-like studio ground, no forest clutter, full unclipped bird and branch with space around them."
+    },
+    {
+      "id": "arkivaren",
+      "title": "Arkivaren",
+      "alt": "Gitmejsen med blåt tørklæde og runde messingbriller undersøger en ring på sin siddegren.",
+      "png": "web/wwwroot/images/characters/gitmejsen/arkivaren.png",
+      "preview": "web/wwwroot/images/characters/gitmejsen/arkivaren.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "16b8c9e80d25c8edd8791ba359beed42201bb5d0e4c4ef975fb9dfe165339970",
+      "previewSha256": "6db4bcd429d131c6a3a9f238c3ae6baf8e4b8b99a79e2a9194da9892c51f2d85",
+      "source": "exec-24bcf190-ec5e-4454-9938-4fb9dc7cdc63.png",
+      "prompt": "One square full-body studio character portrait of the same bird in her archive outfit. Use reference image as the exact identity of the original female crested tit teacher. Preserve her tall tapered black-speckled cream feather crest, curved dark cheek marking, cream belly, small dark bib and short pointed bill, taupe wings, gentle expressive amber-brown eyes, two natural bird feet, and her one signature woven cobalt-blue scarf with exactly two short ends at its knot. She is a proper bird throughout with two wings, two tiny clawed feet, no hands, no human arms or additional limbs. Same softly sculpted matte, tactile, subtly stylized Nordic 3D stop-motion storybook render, natural scale, warm materials. No logos, text, labels, signatures or fake typography. She adds tiny antique round brass spectacles perched plausibly on her upper beak, with her amber eyes readable, and wears her cobalt neck scarf. She tilts her head inquisitively toward a single small brass ring-tag affixed to the end of a birch twig used as her perch. Clean character silhouette, softly sculpted feathers and tactile blue wool; spare warm ivory backdrop, affinity to Finnish storybooks, no extra objects. Full body, twig, crest and feet within the frame."
+    },
+    {
+      "id": "portrait-transparent",
+      "title": "Gitmejsen",
+      "alt": "Gitmejsen sidder på en grankvist med sit koboltblå tørklæde, spidse plettede fjertop og en lille messingklemme ved siden af sig.",
+      "png": "web/wwwroot/images/characters/gitmejsen/portrait-transparent.png",
+      "preview": "web/wwwroot/images/characters/gitmejsen/portrait-transparent.webp",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "2145a0fac672a9afd156f37cfe6846bcdcaa486d751b2676e286019539caaecc",
+      "previewSha256": "2d6828c391f0744aa2a948e6be367eb3a87bc33c4fd132317d46cf74cfa5b6aa",
+      "source": "exec-82c56efd-89b9-4ff9-875c-cdecd10cde4c.png",
+      "prompt": "Use case: background-extraction. Do an exact background-only removal on the attached approved square 1254×1254 original portrait of the blue-scarf crested tit. Deliver a true alpha transparent PNG cutout, matching the source's subject pixels, position, scale and square dimensions as exactly as possible. Preserve the original whole single female crested tit including the black-and-cream tapering feather crest, the curved cheek stripes, face expression, eye, pointed bill, bib, cream down, wing feather pattern, tail, cobalt scarf with its original single knot and exact two hanging ends, and the two real feet with their original grip. Preserve the entire original short branch with all of its original fine spruce needles and the little brass ring. Remove the cream and pale blue wash behind the bird and the diffuse oval ground shadow under the branch. Make all space outside the tight outline of the bird and perch truly transparent including the areas between needles and between her feet and body. Preserve soft feather micro-edges and decontaminate pale backdrop fringes so it works on both an ivory and a very dark page. This is a faithful cutout of the input image, not a new render, no pose or material or lighting changes. Keep the entire subject centered with a clean edge, appropriate space around it, no drop shadow, bold outline, added color, objects, background or simulated checkerboard.",
+      "transparentBackground": true
+    }
+  ]
+}

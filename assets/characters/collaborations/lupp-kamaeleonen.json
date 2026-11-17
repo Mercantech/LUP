@@ -1,0 +1,30 @@
+{
+  "id": "lupp-kamaeleonen",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/chameleon/portrait.webp",
+      "sha256": "b8bc0d4b6f959a3464514d3ecf180d51eceef963f31d43362a257d27e25f654f"
+    }
+  ],
+  "prompt": "Create one original 3:2 1536x1024 landscape storybook illustration matching two exact provided character references in a jointly lit scene. LUPP is an unmistakable simple legless and mouthless rounded purple clay cube with two huge white round eyes and his chunky bright yellow pencil alongside. Kamæleonen is the gentle green scaled chameleon with an orange-edged crest, two chameleon eyes, curled tail, oatmeal rolled shirt and old brown leather luthier apron. Set in a bright attic game-design workshop with a wooden game board, a blue path and yellow path, small toy tokens. They are both focused on a game prototype that sorts shapes. Two shallow trays of examples with blue circular tokens and yellow triangular tokens, and a single held-out unfamiliar striped triangular token that the chameleon holds up with one hand, LUPP's pupils turned toward it with curious surprise. Spare notebook with small abstract dots, banjo resting in far background. No labels, no text, no graphics resembling branding. Both characters clear and actively sharing the same space. Warm editorial hand-painted textures with recognizable clay and scales, medium-wide angle, realistic simple proportions.",
+  "alt": "LUPP og Kamæleonen ser på spilbrikker med forskellige former. Kamæleonen holder en ny brik op, mens LUPP har sin store gule blyant ved siden af sig.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-kamaeleonen.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3184324,
+    "sha256": "d2144f063f07e37d859124b86b424db3407b1f22f72ba1f55e64d913fe999567"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-kamaeleonen.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 152070,
+    "sha256": "86abccdf7c6763b1e6454209d7c15fbe885247e74ca81a02f31b0bb638c682b1"
+  }
+}

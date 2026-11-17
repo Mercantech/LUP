@@ -26,6 +26,7 @@ public static class ActionCenterPresentation
         if (item.HoldId is not Guid hold || hold == Guid.Empty || item.WorkspaceId is not Guid workspace || workspace == Guid.Empty) return "/notifications";
         return item.Kind switch
         {
+            "calendar-change" => WorkspaceNavigation.View(workspace, "calendar", eventId: item.State == "moved" ? item.TargetId : null),
             "poll" => WorkspaceNavigation.Poll(item.ResourceId, workspace, item.CourseId, hold),
             "review" => WorkspaceNavigation.View(workspace, "submissions", item.CourseId, questId: item.ResourceId, status: "submitted"),
             "feedback" when item.TargetId is Guid quest => WorkspaceNavigation.Quest(quest, workspace, item.CourseId, hold, item.SubmissionId) + $"&notice={item.ResourceId:D}",
@@ -40,11 +41,12 @@ public static class ActionCenterPresentation
         "notebook-comment" => "Kommentar i notesbogen",
         "notebook-share" => "Delt med dig",
         "mention" => "Du er nævnt i denne side",
+        "calendar-change" => item.State == "cancelled" ? "Aktiviteten er aflyst" : "Aktiviteten er flyttet",
         "quest" => item.State switch { "daily" => "Daily quest", "side" => "Side quest", "changes-requested" => "Feedback på en valgfri quest", _ => "Valgfri quest" },
         "review" => item.Count == 1 ? "1 aflevering til vurdering" : $"{item.Count} afleveringer til vurdering",
         _ => item.State == "changes-requested" ? "Ret din aflevering" : item.State == "overdue" ? "Afleveringsfristen er overskredet" : "Du mangler at aflevere"
     };
-    public static string Icon(ActionCenterItem item) => item.Kind switch { "poll" => "chart", "review" => "check", "gift" => "gift", "feedback" or "notebook-comment" or "mention" => "message", "notebook-share" => "book", _ => "target" };
+    public static string Icon(ActionCenterItem item) => item.Kind switch { "poll" => "chart", "review" => "check", "gift" => "gift", "feedback" or "notebook-comment" or "mention" => "message", "notebook-share" => "book", "calendar-change" => "calendar", _ => "target" };
     public static bool SafeMentionHref(string? href) => href is not null && !href.Any(char.IsControl) && !href.Contains('\\') &&
         (href.StartsWith("/notion/", StringComparison.Ordinal) || href.StartsWith("/notebook/", StringComparison.Ordinal));
     public static string DateLabel(DateTimeOffset deadline) => TimeZoneInfo.ConvertTime(deadline, Copenhagen).ToString("d. MMM yyyy 'kl.' HH:mm", Danish);

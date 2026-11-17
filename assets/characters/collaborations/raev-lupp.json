@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "raev-lupp",
+  "alt": "Ræv følger genvejen med et papirspøgelse, mens LUPP sammenligner to testkort. Lanternen lyser efter hovedruten, men forbliver slukket efter genvejen.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-a25d9d53-4fe7-4774-b70d-58df169e987c.png",
+  "prompt": "Create ONE finished original wide 3:2 1536×1024 storybook illustration for LUP's 'Spøgelset i genvejen' paper-theater playtest. Render no words. The first input is Ræv, a recognizable anthropomorphic auburn fox teacher with slender bright face, upright ears, cream muzzle and neck, tailored russet-red jacket and waistcoat over cream rolled-sleeve shirt, brown trousers, boots and one bushy white-tipped tail. Preserve exactly that fine painterly character design. The second input is LUPP, a much smaller clay character whose entire body is a simple vivid violet rounded square, two large white eyes with black pupils and an attached large diagonal yellow pencil with coral eraser. Match the icon character perfectly: no arms, hands, legs, hat, hair, or mouth. Both are actively testing a handcrafted spooky game prototype on a wooden worktable. Show Ræv leaning in, finger or narrow pointer tracing the secret path in the paper model with one natural hand, notes sketched in an open unlabeled notebook to the side. LUPP opposite, large pupils turned toward the checkpoint lamp and pencil lowering toward the paper outcome cards, animated only by gaze and natural tilt. Both complete faces distinct and fully lit. The tabletop prototype fills the foreground and center as a dramatic layered paper theater handmade from finely cut folded cardstock, pointed castle window frame, paper forest and crooked miniature arch, one miniature crescent moon suspended with a thread, subtle pumpkin silhouettes, warm amber and cool teal paper lit against magenta/back-purple curtains. Show one tiny white friendly paper ghost player pawn, visibly a paper cutout mounted on a small tab, near the hidden passage. Clearly show TWO paths from one fork both converging at one welcoming arched checkpoint landmark with a small glass lantern: the easy open track has amber dotted paper footprints, the tucked-away passage has narrow teal dotted paper footprints leading through a secret cutout tunnel and then out to THE SAME arch. Both tracks must be independently traceable with no missing middle or separate destination. Directly in the foreground beside that one model, show two large unlabeled flat cardstock outcome tiles standing side by side: tile with amber footprints visibly paired with drawn bright golden lantern and rays; tile with teal footprints visibly paired with an identical lantern drawing dark with no glow. These are paired paper results for each path. Use only those pictograms, no question marks, letters, numbers, overlays, computer screens, coded panels, logos, watermarks, blood, gore, or additional characters other than the single white cardboard play piece. Backlit cut paper edge textures, handmade folds and shadows, expressive attentive fox and purple character, clean composition with generous crop safety and clear silhouettes, ambient workshop depth, finely painted warm tactile storybook style.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    },
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/raev-lupp.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3069021,
+    "sha256": "8a28477a44e8acb24bbe884ef25c2ca8c6c5f2cc1a3c973eb64fe66bc9a90374"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/raev-lupp.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 110334,
+    "sha256": "e3b577635eb8e3d4cf29d83834db865db95a7583a39e9eea6d9aae9547c6a16d"
+  }
+}

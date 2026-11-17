@@ -9,9 +9,18 @@ public partial class AppDbContext
     public DbSet<KnowledgeCheckVersion> KnowledgeCheckVersions => Set<KnowledgeCheckVersion>();
     public DbSet<KnowledgeCheckPublication> KnowledgeCheckPublications => Set<KnowledgeCheckPublication>();
     public DbSet<KnowledgeCheckAttempt> KnowledgeCheckAttempts => Set<KnowledgeCheckAttempt>();
+    public DbSet<LiveKnowledgeCheck> LiveKnowledgeChecks => Set<LiveKnowledgeCheck>();
 
     private static void ConfigureKnowledgeChecks(ModelBuilder model)
     {
+        model.Entity<LiveKnowledgeCheck>(entity =>
+        {
+            entity.ToTable("live_knowledge_checks");
+            entity.Property(x => x.Code).HasMaxLength(6);
+            entity.Property(x => x.Title).HasMaxLength(160);
+            entity.HasIndex(x => x.Code).IsUnique();
+            entity.HasIndex(x => x.ExpiresAtUtc);
+        });
         model.Entity<KnowledgeCheckQuiz>(entity =>
         {
             entity.ToTable("knowledge_check_quizzes");

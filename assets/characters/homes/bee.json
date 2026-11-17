@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "slug": "bee",
+  "name": "Ravkuben",
+  "description": "Cyberbien bor i Ravkuben, et sekskantet træhus med en rund ravgul dør på en blomstrende bakke. Indenfor har han sit kontrolhjørne og en honninghylde, hvor han prøver at brygge den samme kop te på så mange måder som muligt.",
+  "generator": "Indbygget ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Cyberbien står på blomsterbakken foran sit sekskantede træhus med en rund, ravgul dør og en række små sekskantede vinduer.",
+      "prompt": "Create one polished opaque 1536×1024 landscape 3:2 storybook scene in the cohesive painted LUP character family. It is a quiet distinctive character home, with an environment strongly in focus AND exactly one recognizable character actively using that place at roughly one third of composition. Use the FIRST attached portrait for exact recognizable anatomy and costume, not its isolated pose. Create a totally new composition. Rich handmade materials, careful expressive anatomy, natural shadows, subtle paper grain, unified mature painterly look. No lettering, numbers, invented brand marks, symbols unrelated to the scene, watermark, extraneous animals or people, landscape borders or title cards. Make key architectural landmarks clear and with gentle visual hierarchy at 768px. Keep complete face/ears and hand count correct. No photorealism. No comic panels, opaque and full bleed.\n\nCharacter identity: Cyberbien is the same friendly small golden yellow bee with big brown eyes and dark curly eyebrows, two yellow-ended dark antennae, exact cyan pictogram goggles on his forehead above the eyes, same navy hoodie with honey-yellow drawstrings and small shield and lock patch, dark gloves and big dark boots with gold soles, black and gold abdomen, two pairs of luminous pale veined wings. His material is smooth and tactile in a coherent softly painted world. Preserve the two forehead goggle symbols from the character only.\n\nExterior environment: Ravkuben is a humanly plausible small SIX-SIDED pale golden wood cottage with broad low hipped six-sided slate-teal roof and a slightly off-center chimney, not a hive bunker. The central face has a distinct circular AMBER-GOLD front door with a round divided-glass fanlight set in its upper half and distinctive circular glowing copper surround. On the adjacent left face a low horizontal band of exactly three individual small hexagonal panes, copper rims and turquoise glass glints. These architectural features will be visible from the inside later. Side sun, grassy hillside densely sprinkled with small flowering meadow plants, winding pale gravel approach, tidy planters, a single bench and brass kettle laid out for afternoon tea. Cyberbien stands on the foreground path near the door with a small friendly wave or carries a small teal mug with one paw, relaxed and at home. Show all the front and two side faces, large enough for architecture, and the cohesive recognizable character at foreground scale. Home lives in a real flowering hillside, no giant insect swarm, no logos or text anywhere.",
+      "generation": "exec-f6fcfd58-2a59-43e4-bb5e-cc968f4e2015.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/bee/portrait.webp",
+          "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/bee/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3369384,
+        "sha256": "44dd22cbb050b19f20004d48b471ee8bf07fd953846f6e12810dc9ddbfa49fbb"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/bee/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 147698,
+        "sha256": "dce05c019ecf31a6485265775e97a7f0e398fd24e61162825be7864e2d2bb39a"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Cyberbien brygger te ved sin sekskantede honninghylde. Den runde, ravgule dør og de små sekskantede vinduer ses bag ham.",
+      "prompt": "Create one polished opaque 1536×1024 landscape 3:2 storybook scene in the cohesive painted LUP character family. It is a quiet distinctive character home, with an environment strongly in focus AND exactly one recognizable character actively using that place at roughly one third of composition. Use the FIRST attached portrait for exact recognizable anatomy and costume, not its isolated pose. Create a totally new composition. Rich handmade materials, careful expressive anatomy, natural shadows, subtle paper grain, unified mature painterly look. No lettering, numbers, invented brand marks, symbols unrelated to the scene, watermark, extraneous animals or people, landscape borders or title cards. Make key architectural landmarks clear and with gentle visual hierarchy at 768px. Keep complete face/ears and hand count correct. No photorealism. No comic panels, opaque and full bleed.\n\nCharacter identity: Cyberbien is the same friendly small golden yellow bee with big brown eyes and dark curly eyebrows, two yellow-ended dark antennae, exact cyan pictogram goggles on his forehead above the eyes, same navy hoodie with honey-yellow drawstrings and small shield and lock patch, dark gloves and big dark boots with gold soles, black and gold abdomen, two pairs of luminous pale veined wings. His material is smooth and tactile in a coherent softly painted world. Preserve the two forehead goggle symbols from the character only.\n\nThe SECOND reference is the exterior of this exact same home. Now move the eye INSIDE it and compose the scene from the inside looking at the interior side of the entrance and adjacent windows. Use second reference to preserve its material, geometry, distinctive door and glazing and exact shared exterior scenery. The first reference remains canonical for the character. No cutaway or wide outside view.\n\nInterior environment: Warm domestic interior of the exact same small pale-wood hexagonal house, readable walls gently angled at 120 degrees, ring pattern wood ceiling. Include the same highly distinctive ROUND amber wooden door with its upper divided-glass circular fanlight, circular copper surround and band of three actual small copper-rimmed hexagonal windows on adjacent left wall, with view of flowering hillside. Foreground Cyberbien is actively brewing a deliberately tiny sample cup of tea from a delightful elaborate set of mismatched harmless teapots and cone tea strainers, comparing one tiny turquoise cup with a tiny honey spoon, wearing full original navy hoodie and original cyan goggles. On the wall, a cozy hex-shaped wooden shelf of honey jars at domestic scale without labels. Beside this is his cozy private command corner with an angled tiny monitor showing one low wave and two dots, a small desk lamp, books and cushioned chair. Ordinary lived-in friendly home with knit rug, book, two steaming mugs. No threatening lab lights, no scene clutter, no logo, no rendered writing or terminal. Make the simultaneous portrait and the distinctive home glazing visible with natural grounding and sunny gold light.",
+      "generation": "exec-e2adda8b-0001-42d4-95d0-33f36579ce36.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/bee/portrait.webp",
+          "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+        },
+        {
+          "path": "web/wwwroot/images/characters/bee/home/outside.png",
+          "sha256": "44dd22cbb050b19f20004d48b471ee8bf07fd953846f6e12810dc9ddbfa49fbb"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/bee/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3190846,
+        "sha256": "33bc57f581705985941e82471036bf615a6f939507c65ae2148b7880b04d0a37"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/bee/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 136394,
+        "sha256": "05c60a8fe37805663c206ec38cf7dab8c883dadeb8b9c068d03fb9733b19f1e7"
+      }
+    }
+  ]
+}

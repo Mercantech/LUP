@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "slug": "gummianden",
+  "name": "Emaljehuset",
+  "description": "Gummianden bor i et lille emaljehus i en gård med fliser. Indenfor har anden en blød lytteplads med te og notesbøger til fejlfinding.",
+  "generator": "Indbygget ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Gummianden står i den flisebelagte gård foran Emaljehusets ovale dør med orange håndtag.",
+      "prompt": "One finished standalone widescreen landscape illustration at 1536 by 1024 pixels, 3:2 aspect ratio. Create a very beautiful, tactile, painterly and premium hand-painted storybook environment in the recognizable LUP character world. Quietly imaginative architecture, clear identifiable doors and windows, tactile contrasting materials, inviting details, interior/exterior continuity will matter. No text, lettering, numbers, signatures, watermarks or brands. One true scene filling the frame. Show a whimsical small enamel wash-basin-shaped house sized for the attached exact Gummianden character, in a sunlit tiled sheltered courtyard. Architecture is beautiful, usable and very recognizable from exterior to interior: a deep rounded low cream enamel wall, thick rounded teal enamel rolled rim at top under one shallow curved cream roof, polished dark teal square tile plinth, one OVALLy rounded cream raised front door with one prominent small orange loop handle (center-left), and a circular porthole with teal frame and cross-muntins (right of the door), reflected soft greenery. Low ivory and muted teal checkerboard courtyard tiles, pots of sage and warm rust nasturtiums, clean cozy sheets drying gently at one side, stone boundaries under soft peach sky, no other residents. Original canon duck in terracotta chunky knit cardigan steps out cheerfully, round yellow rubber surface, soft flat orange bill, two black oval eyes, one unmistakable simple tuft and flat orange webbed feet, yellow rounded flipper-wings only, no human arms or fingers, geometric friendly compact posture. Structure is the central focus. Warm terracotta, turquoise and ivory material palette, beautifully painted soft scale and distinct glossy ceramic edges. One adorable stool beside entrance, no literal bathroom clutter and no toilet. The actual home should feel like a softly curved small cottage imagined from a treasured enameled basin.",
+      "generation": "exec-1f5575c7-9588-419a-9517-988234445105.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/gummianden/lyttemakkeren.webp",
+          "sha256": "2d1ca675308757ce35cd3127270ea5762d1936975fed9bcb97fa6518e59cca92"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/gummianden/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2987531,
+        "sha256": "3e8264c5f664cf17a4449a9b8c463712b4eded3f544cc0fea0f4b7120a193179"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/gummianden/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 119358,
+        "sha256": "0ef583efa44ad99bcff6f64989479d73b7d8f98ef41d5a84f380920f1ea5da5c"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Gummianden sidder med en kop te i en blød lænestol, omgivet af turkise fliser og notesbøger.",
+      "prompt": "One beautiful finished widescreen landscape image at native 1536x1024 in the painterly storytelling style of the attachments. Attached 1 is an EXACT identity reference and attached 2 is the actual exterior of THIS EXACT HOME to match in trim materials, window or door construction, architecture and color, seen from indoors. Make a separate three-quarter interior view of the home, never show facade again, carefully establish shape and domestic coziness, coherent materials and correct character anatomy. No words, logos, watermarks, text or letters, no border. Show inside the very same small cozy round Emaljehuset from reference 2. Preserve its softly curved bowl-like cream enamel walls, teal glazed tile plinth and unmistakable matching actual architectural portals: a low oval cream entry door with one orange ring pull and a separately circular porthole with rounded cross muntins and a deep teal rim. The room glows with warm light, porthole shows the same nasturtium blossoms and courtyard apron glimpsed outside. A wool braided cream rug, high back armchair in moss cotton with cream pillows, knitted rust blanket partly folded, low steam-warmed tea tabletop and stack of several plain bound debugging notebooks with a yellow pencil lying on them and one open page showing only three small hand-ruled boxes (no letters or numbers). Slightly sloping low rounded ceiling evokes the cream porcelain wash basin, no sink or bathroom fittings. Place the exact original Gummianden character at the center in the chair, rock comfortably at home and quietly listens: round yellow rubber character with orange duck bill, oval black eyes and little tuft, short orange webbed feet that peek over seat cushion, two natural short yellow flipper wings, one near his head listening and the other resting on rounded armrest. The character wears the thick original terracotta cardigan, knit weave and one wooden button. A small teal ceramic teacup and steam on the side table immediately near the duck, not gripped by human fingers. Calm, playful domestic scale, warm yellow glow and leaf shadows on ivory glaze, rich tile color and subtle textile tactile detail. Entire grand cozy house interior visible with enough breathing room and signature architectural features.",
+      "generation": "exec-45f67226-4d6f-447b-b42d-d4d6f69e2e69.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/gummianden/lyttemakkeren.webp",
+          "sha256": "2d1ca675308757ce35cd3127270ea5762d1936975fed9bcb97fa6518e59cca92"
+        },
+        {
+          "path": "web/wwwroot/images/characters/gummianden/home/outside.png",
+          "sha256": "3e8264c5f664cf17a4449a9b8c463712b4eded3f544cc0fea0f4b7120a193179"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/gummianden/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2934506,
+        "sha256": "b8784c79b79bde3869eb74d4edbc80f4899d50fb0e890231cbce7fead746d142"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/gummianden/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 108068,
+        "sha256": "3d6c06605305f6688525258456dad7c7c7fa04f1c0c783aa21564326c7e4e39d"
+      }
+    }
+  ]
+}

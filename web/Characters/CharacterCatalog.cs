@@ -293,11 +293,11 @@ public static class CharacterCatalog
             "Næsebladet sender et signal ud og kræver bevis for, at det rigtige svar kom tilbage. Følg målingen fra sensor og firmware til netværk og Linux.",
             "Næsebladet er en teatralsk lyddesigner med et hak i øret, brede skuldre og meget lidt tålmodighed med upræcise målinger. Han går ned i tomme parkeringskældre for at optage ekkoer. Hans første album består af lyden af den samme teske, der rammer gulvet forskellige steder. I laboratoriet spørger han med samme myndighed: «Jeg hørte et svar. Hvordan ved du, hvad der svarede?»",
             ["IoT", "Sensorer og ekkolokalisering", "Firmware", "MQTT", "Embedded Linux", "Fejlfinding"],
-            [new("Næsebladet", "/images/characters/bat/portrait.webp", "Oprejst rødbrun flagermus med brede skuldre, kantede violette vingefolder, bredt næseblad og et strengt blik"),
-             new("Lyddesigneren", "/images/characters/bat/lyddesigner.webp", "Næsebladet lytter efter ekkoer med sit optageudstyr"),
-             new("Kalibrering", "/images/characters/bat/kalibrering.webp", "Næsebladet undersøger en sensor ved målebænken"),
-             new("Dirigenten", "/images/characters/bat/dirigenten.webp", "Næsebladet dirigerer med sin teske og holder øje med forsøget"),
-             new("Natoptagelse", "/images/characters/bat/natoptagelse.webp", "Næsebladet holder en tændt lommelygte, mens han gør klar til natoptagelsen")],
+            [new("Næsebladet", "/images/characters/bat/portrait.webp?v=5c15516e", "Rødbrun flagermus i blommefarvet fløjlsfrakke og brokadevest med en teske i vingekloen"),
+             new("Lyddesigneren", "/images/characters/bat/lyddesigner.webp?v=5c15516e", "Næsebladet lytter efter ekkoer med sit optageudstyr"),
+             new("Kalibrering", "/images/characters/bat/kalibrering.webp?v=5c15516e", "Næsebladet undersøger en sensor ved målebænken"),
+             new("Dirigenten", "/images/characters/bat/dirigenten.webp?v=5c15516e", "Næsebladet dirigerer med sin teske og holder øje med forsøget"),
+             new("Natoptagelse", "/images/characters/bat/natoptagelse.webp?v=5c15516e", "Næsebladet holder en tændt lommelygte, mens han gør klar til natoptagelsen")],
             [new("Den samme ske, tre forskellige rum", "Gentag forsøget med den samme ske og sammenlign optagelserne. Vægge, afstand og baggrundsstøj ændrer det, mikrofonen opfanger. Brug forskellene til at diskutere, hvilke dele af målingen du kan stole på."),
              new("Mål turen frem og tilbage", "En ultralydssensor sender en puls og måler tiden frem til ekkoet. Afstanden er lydens hastighed ganget med tiden og delt med to, fordi pulsen rejser begge veje. Hvis ekkoet udebliver, registrerer programmet et timeout, så manglende svar ikke bliver læst som nul centimeter."),
              new("Fra sensor til handling", "Vælg sensor og måleinterval, læs signalet med en mikrocontroller, og lad resten af programmet arbejde videre, mens du venter. Send værdien med enhed og tidspunkt via MQTT, eller reagér lokalt, hvis netværket forsvinder."),
@@ -320,6 +320,34 @@ public static class CharacterCatalog
             Scenes = [..BatMotionMaterials.Scenes, ..OutfitScenes("bat",
                 "Næsebladet i brokadevest og butterfly står på et dirigentpodie i et tomt teater og løfter en teske som taktstok.",
                 "Næsebladet i grøn hawaiiskjorte med orange blomster holder øje med en optager, en teske og et glas lemonade på en terrasse ved havet.")]
+        },
+        new("gitmejsen", "Gitmejsen", "Underviser i Git og versionsstyring", "Git · Historik og samarbejde", false,
+            "Følg Gitmejsen gennem dit første commit, se hvor branches deler sig, og flet to kollegers arbejde.",
+            "Gitmejsen er en topmejse med koboltblåt tørklæde og værksted i en finsk granlund. Hun gemmer frø i barkens sprækker og mærker sine forsøg med små skilte. Når et projekt knækker, finder hun den sidste version, der virkede, og læser ændringen sammen med eleven. »Hvad ændrede vi, og hvad skal den næste kunne forstå?«",
+            ["Git", "Versionsstyring", "Topmejse", "Commit", "Branches", "Mergekonflikter", "Stash"],
+            GitmejsenMaterials.Appearances,
+            [new("Find en tidligere ændring", "Brug git log --oneline -- README.md til at se de commits, der ændrede filen. Vælg et commit-id og brug git show efterfulgt af id’et for at læse, hvad der ændrede sig."),
+             new("Gem en kladde under barken", "Med git stash lægger hun lokale, ufærdige ændringer til side, mens hun hjælper med noget andet. Når hun er tilbage, læser hun sin liste med git stash list og henter kladden frem igen med git stash apply."),
+             new("Git er bygget i fællesskab", "Linus Torvalds lavede det første Git-commit i 2005 til arbejdet med Linux. Junio C Hamano tog over som vedligeholder. Siden har mange bidraget. Derrick Stolee lagde grunden til kommandoen git sparse-checkout, og Julia Evans og Marie Claire LeBlanc Flanagan skrev en ny begyndervejledning.")],
+            [new("Prøv øvelserne", "/characters/gitmejsen#character-gallery-title", false, false),
+             new("Linus’ første Git-commit", "https://github.com/git/git/commit/e83c5163316f89bfbde7d9ab23ca2e25604af290", true, false),
+             new("Junio om at overtage Git", "https://github.blog/open-source/git/celebrating-15-years-of-git-an-interview-with-git-maintainer-junio-hamano/", true, false),
+             new("Derricks sparse-checkout-bidrag", "https://github.com/git/git/commit/94c0956b60969bbbb3ead19638d52591a59d713c", true, false),
+             new("Julia og Marie Claires vejledning", "https://github.com/git/git/commit/8f0635da918be894dab8381735c0a50ef4ce66bb", true, false)])
+        {
+            Portrait = new("Gitmejsen", "/images/characters/gitmejsen/portrait-transparent.webp", "Gitmejsen med sort-hvid fjertop og koboltblåt tørklæde"),
+            Illustrations = GitmejsenMaterials.Illustrations,
+            IllustrationsLabel = "øvelser",
+            IllustrationsDescription = "Prøv elleve Git-øvelser i lokale øvemapper. Begynd med dit første commit, og brug tegninger, kladder og syltetøj fra Mumi-universet til at øve historik, samarbejde og fejlfinding.",
+            AnimationSubject = "Git og versionsstyring",
+            Animations = GitmejsenMaterials.Animations,
+            Reactions = ReactionsFor("gitmejsen"),
+            LargeReactionPreviews = true,
+            ReactionsDescription = "Brug Gitmejsens reaktioner i en notesbog, eller hent dem som transparente PNG’er.",
+            Scenes = [..GitmejsenMaterials.Scenes, ..OutfitScenes("gitmejsen",
+                "Gitmejsen i grøn fløjlskappe og blåt tørklæde ved hvide blomster og en messinglampe i et træhus ved søen.",
+                "Gitmejsen med blåt tørklæde og en koralfarvet blomsterkrans ved en picnic med kurv og ananas ved søen.")],
+            ScenesDescription = "Kig ind i Gitmejsens værksted, og tag med til Mumihuset, Snusmumrikkens lejr og fyret på øen. Der gemmer sig også fire små hilsner fra Mumi-universet."
         },
         new("beaver", "Bæver", "Underviser i Sikkerhed og test · Blå team", "Sikkerhed og test", false,
             "Den rolige systembygger på blåt team: sikker kode, adgangskontrol, logs og tests, der holder løsningen robust.",
@@ -417,6 +445,8 @@ public sealed record CharacterProfile(string Slug, string Name, string Role, str
     public IReadOnlyList<CharacterIllustration> Scenes { get; init; } = [];
     public string ScenesDescription { get; init; } = "Små fortællinger med karakteren. Åbn et billede i fuld størrelse, eller hent en PNG.";
     public IReadOnlyList<CharacterAnimation> Animations { get; init; } = [];
+    public IReadOnlyList<CharacterCollaboration> Collaborations { get; } = CharacterCollaborations.For(Slug);
+    public CharacterHome? Residence => CharacterHomes.For(Slug);
     public string AnimationSubject { get; init; } = "databaser";
     public IEnumerable<CharacterMaterialGroup> Materials
     {
@@ -426,10 +456,15 @@ public sealed record CharacterProfile(string Slug, string Name, string Role, str
                 yield return new("emojis", Reactions.Count, "character-reactions-title", reaction.Preview, reaction.Alt);
             if (Scenes.FirstOrDefault() is { } scene)
                 yield return new("miljøer", Scenes.Count, "character-scenes-title", scene.Preview, scene.Alt);
+            if (Collaborations.FirstOrDefault() is { } collaboration)
+                yield return new(Collaborations.Count == 1 ? "fælles billede" : "fælles billeder",
+                    Collaborations.Count, CharacterCollaboration.SectionId, collaboration.Preview, collaboration.Alt);
             if (Illustrations.FirstOrDefault() is { } illustration)
                 yield return new(IllustrationsLabel, Illustrations.Count, "character-gallery-title", illustration.Preview, illustration.Alt);
             if (Animations.FirstOrDefault() is { } animation)
                 yield return new("GIF-animationer", Animations.Count, "character-animations-title", animation.Poster, animation.Alt);
+            if (Residence is { } home)
+                yield return new("billeder af hjemmet", home.Views.Count, CharacterHome.SectionId, home.Views[0].Preview, home.Views[0].Alt);
         }
     }
 }

@@ -116,7 +116,7 @@ public sealed class ActionCenterService : IAsyncDisposable
     public async Task<bool> MarkReadAsync(IEnumerable<ActionCenterReadItem> requested)
     {
         if (_disposed || !_auth.IsInitialized || !_auth.IsAuthenticated || _viewAs.IsActive) return false;
-        var items = requested.Where(i => i.ResourceId != Guid.Empty && i.Kind is "feedback" or "notebook-comment" or "notebook-share" or "mention").Distinct().ToArray();
+        var items = requested.Where(i => i.ResourceId != Guid.Empty && i.Kind is "feedback" or "notebook-comment" or "notebook-share" or "mention" or "calendar-change").Distinct().ToArray();
         if (items.Length == 0) return true;
         var identity = Identity;
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_life.Token);
@@ -145,7 +145,8 @@ public sealed class ActionCenterService : IAsyncDisposable
             return item.Kind == "gift" ? item.State == "unopened" && item.TargetId is null : item.TargetId is Guid target && target != Guid.Empty;
         }
         if (item.Kind == "feedback" && (item.TargetId is not Guid quest || quest == Guid.Empty || item.SubmissionId is not Guid submission || submission == Guid.Empty)) return false;
-        return item.Kind is "poll" or "submission" or "review" or "quest" or "feedback"
+        if (item.Kind == "calendar-change" && (item.State is not ("moved" or "cancelled") || item.TargetId is not Guid activity || activity == Guid.Empty)) return false;
+        return item.Kind is "poll" or "submission" or "review" or "quest" or "feedback" or "calendar-change"
             && item.HoldId is Guid hold && hold != Guid.Empty && item.WorkspaceId is Guid workspace && workspace != Guid.Empty;
     }
     private async Task PollAsync()

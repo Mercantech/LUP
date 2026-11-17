@@ -1,0 +1,27 @@
+@using QRCoder
+@inject NavigationManager Navigation
+
+@if (_image is not null)
+{
+    <img class="live-game-qr" src="@_image" width="168" height="168" alt="Scan QR-koden for at åbne spillet" />
+}
+
+@code {
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    private string? _renderedCode, _image;
+
+    protected override void OnParametersSet()
+    {
+        if (_renderedCode == Code) return;
+
+        _renderedCode = Code;
+        _image = null;
+        if (!LiveQuiz.IsCode(Code)) return;
+
+        var address = Navigation.ToAbsoluteUri($"spil/{Code}").AbsoluteUri;
+        using var data = QRCodeGenerator.GenerateQrCode(address, QRCodeGenerator.ECCLevel.M);
+        using var png = new PngByteQRCode(data);
+        _image = $"data:image/png;base64,{Convert.ToBase64String(png.GetGraphic(6))}";
+    }
+}

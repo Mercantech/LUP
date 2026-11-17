@@ -691,7 +691,15 @@ const applyTheme = (theme, persist = true) => {
   if (themeSelect) themeSelect.value = chosen;
 };
 
-applyTheme(currentTheme(), false);
+let teacherLinks = isTeacher();
+const updateSession = () => {
+  applyTheme(currentTheme(), false);
+  const teacher = isTeacher();
+  if (teacher === teacherLinks) return;
+  teacherLinks = teacher;
+  platformBuilt = !platformView.hidden;
+  if (platformBuilt) platformGroups.innerHTML = renderPlatform();
+};
 
 themeSelect?.addEventListener("change", () => {
   applyTheme(themeSelect.value);
@@ -700,6 +708,13 @@ themeSelect?.addEventListener("change", () => {
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
   if (signedIn() && storedTheme() === "system") applyTheme("system", false);
 });
+
+try {
+  await window.mercantecAuth?.getTokens(updateSession);
+} catch {
+  // The public course overview also works when browser storage is disabled.
+}
+updateSession();
 
 if (!location.hash || location.hash === "#") {
   location.replace("#/");

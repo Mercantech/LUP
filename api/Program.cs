@@ -41,6 +41,7 @@ if (builder.Configuration.GetValue<bool>("PreviewConverter:Only"))
 }
 
 builder.Services.AddControllers();
+builder.Services.AddLiveQuiz();
 builder.Services.AddWordle();
 builder.Services.AddSingleton<Mercantec.Tech.Api.Updates.PlatformUpdatesFeed>();
 builder.Services.Configure<Mercantec.Tech.Api.Updates.Automation.PlatformUpdatesAutomationOptions>(
@@ -112,7 +113,7 @@ builder.Services.Configure<AzureGraphOptions>(builder.Configuration.GetSection(A
 builder.Services.AddHttpClient("azure-graph", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(45);
-});
+}).RemoveAllLoggers();
 builder.Services.AddSingleton<AzureGraphCalendarClient>();
 
 builder.Services.Configure<OpenAiOptions>(builder.Configuration.GetSection(OpenAiOptions.SectionName));
@@ -286,6 +287,7 @@ app.UseCors("Spa");
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(15), KeepAliveTimeout = TimeSpan.FromSeconds(30) });
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 if (!builder.Configuration.GetValue<bool>("PreviewWorker:Only"))
 {
     app.MapControllers();

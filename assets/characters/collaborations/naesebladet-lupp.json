@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "naesebladet-lupp",
+  "alt": "Næsebladet holder en klods foran en afstandssensor, og LUPP ser en lilla spilfigur hoppe på skærmen ved siden af sin baneskitse.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-41910591-aee8-476d-9318-cc708bb98bfa.png",
+  "prompt": "Create ONE standalone landscape 3:2 LUP collaboration story illustration, native 1536×1024, luminous hand-painted gouache and soft colored-pencil detail, atmospheric but precise. Attached reference 1 shows the exact hero Næsebladet. Preserve his very broad low compact leaf-nosed bat anatomy, plush dark plum and rust-orange fur, narrow warm amber eyes and slightly skeptical focused face, huge rust ears with the small notch high on the viewer-right ear, veined pink upright triangular leaf nose and tiny clawed feet. He wears the canonical deep plum velvet jacket with gold piping and gold buttons, red brocade waistcoat, cream ruffled cravat with amber brooch and matching ruffled cuffs. Both actual wings are visibly intact, with thin burgundy membranes fanning from the real wrist claws. Tailcoat sleeves cover the shoulder-side portion of each wing and end at these same wrists. Two continuous folded wings and their two small wrist claws only; NO independent human arms/hands or extra limbs. No spoon needed. Use the second reference as the exact identity for the other character. Natural sizes, full or three-quarter figures, faces and props clear, both collaborating toward one goal. No signs, letters, numbers, readable text, logos, captions, grids, panels or watermarks. No neon sci-fi effects or overlaid diagrams; only real objects in one believable inhabited setting. Set this in a cozy lively Game Design studio at late blue hour, polished walnut table, wall with pinned color swatches and different small unlabeled illustrated cardboard mockups, contrasting daylight indigo through the window and soft amber desk lamp. Keep this scene clearly different from a technical classroom. LUPP at left is EXACTLY one single rounded compact PURPLE clay rectangular cuboid with two huge cream eyeballs and dark black pupils. MOUTHLESS, NO nose, NO arms, NO hands, NO legs, NO feet, NO antenna. Give him his unmistakable large yellow wooden pencil with pink eraser, pencil resting at the corner of his open storyboard in front of him; visible hand-drawn path made of three simple horizontal platforms and a little square player, no lettering. His eyes turn toward the playtest on screen. Næsebladet at right with canonical plum velvet costume uses the tiny natural claw of his nearest actual wing wrist to hold the edge of a small pale wooden target upright in the air at a modest, controlled near distance in front of ONE fixed twin round-disc ultrasonic PCB on a little stand. This wood slat stands in for a player's hand. Keep the gap visibly clear, sensor mounted solidly, both discs point toward the wooden target, never touch it. Very subtle ghosted secondary outline of the target is NOT needed: only one actual block, single clear pose. A short connecting cable to the laptop at center rear clearly supplies input. The laptop screen shows an actual small playable side-view platformer with a single bright purple-square avatar with tiny eyes mid-jump directly above one green ledge, a simple thin curved trajectory and a small golden jump-feedback star next to the avatar. The same basic ledge shapes and avatar are drawn by the oversized pencil on the storyboard. Calm stable test, no extra controller, no magic or rays. Keep the viewer's eye following LUPP's clean purple shape, the deliberate short physical distance test, and visible lit game feedback. Both figures same visual weight and unobscured, wings anatomically complete.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.png",
+      "sha256": "005fcf6f22d69cc23e4d323cb7896395403ead245ef30961ab5939f9bc7cc8af"
+    },
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-lupp.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3343454,
+    "sha256": "9c125aba88cdf98f94245b2b77074a0d3b459f8a27d5c7a99970b7f64a6353cd"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-lupp.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 137012,
+    "sha256": "dd6b9bdfe6af87e38e8809564233b01dff9309735c2e1980929509940d4a06a9"
+  }
+}

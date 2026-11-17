@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-raev-confusion",
+  "alt": "Ræv peger på et æble i pærekassen, mens Kamæleonen betjener sorteringen. Fire kort viser, hvordan æbler og pærer kan blive sorteret rigtigt eller forkert.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-83395c1c-e19e-4771-8e5b-68d726274c77.png",
+  "prompt": "Create ONE cohesive native 1536×1024 landscape 3:2 finished LUP character storytelling illustration, warm painterly gouache and fine colored-pencil surfaces. Reference 1 is the exact identity of Kamæleonen: friendly olive and yellow-green luthier chameleon with orange-edged crest, brown expressive turret eyes, natural small green hands, rolled cream sleeves, intricately stitched copper-brown leather apron, curled tail. Reference 2 is the exact identity of Ræv: young adult inquisitive russet red fox, big upright ears, intelligent amber-brown eyes, pale cream muzzle and neck, rust-red rolled-sleeve blazer/vest over cream shirt, brown trousers, one natural bushy pale-tipped tail. Preserve their references' anatomy, body shape and wardrobe. Both recognizably expressive, warmly collaborating in a seasonal outdoor orchard produce fair in late autumn sunlight, spiced amber leaves and long orchard rows, graceful pale canvas canopy, tactile wooden portable stall. Warm ivory, ochre and chestnut palette, scattered leaves, moderate background detail. A clear fun learning story about checking classifications with a known answer. Kamæleonen LEFT actively holds a single small emerald mechanical sorting control under his own hand, looking thoughtfully toward the TESTING mistake Ræv discovers at RIGHT. Ræv leans in pointing one paw at ONE round red apple sitting unmistakably in a shallow pear collection bin. The bin's front carries ONE big yellow-green pear pictogram on a small wooden plaque. A few actual green pears sit beneath the apple so the error is visually emphatic. LEFT of this pear bin is a separate apple bin with a carved red apple badge and actual apples, both bins physically separate. No more collection bins. A single quiet central fruit sorting chute with simple rollers and small sensor window next to the control provides believable setup, no excessive machinery and no computer. In a clear, secondary prop on the counter between them, prominently readable but lower importance than the fruit, EASEL bearing four cream square comparison cards in an exact 2×2 grid. Each of four cards contains exactly two bold hand-painted fruit pictograms with a tiny simple arrow between them, LEFT pictogram = known actual fruit, RIGHT pictogram = prediction. Top left apple to apple; top right apple to pear with a thin soft amber outline, matching the visible mistaken routing; bottom left pear to apple; bottom right pear to pear. Make apples round scarlet red with short leaf and pears tall tapered moss green. NO counts, words, letters, numbers, column headings, check marks, error marks or extra text. Four cards are examples of four types, not item counts. The whole picture should read as one friendly natural moment of functional testing, NOT an infographic, presentation or cartoon montage. Eyes of people and gestures point to the misplaced apple; their silhouettes and faces both visible, don't block the fruit badges or board; show both characters' expressive hands and natural anatomy. No printed text, logo, watermark, computer screen, coding motif, signs or speech bubbles. Rich paper-like brush finish, grounded natural materials, beautiful soft sun and cozy school-fair wonder.",
+  "references": [
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raev-confusion.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3538839,
+    "sha256": "70f1119f8c29fcedb5d178c9afce9581e05be404d170172c03216a25347a899b"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raev-confusion.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 156954,
+    "sha256": "8a9916a9a9f22c887a57e7f4458f45f57e34eb99ac7ff7b3578292e49f5fcd5c"
+  }
+}

@@ -1,0 +1,50 @@
+.character-residence {
+    border-top: 1px solid var(--rule);
+    margin-top: 32px;
+    padding-top: 24px;
+}
+
+.character-residence h2 {
+    font-size: 24px;
+    letter-spacing: -.5px;
+    scroll-margin-top: 90px;
+}
+
+.character-residence header p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.65;
+    margin: 8px 0 0;
+    max-width: 75ch;
+}
+
+.character-residence figure {
+    margin: 0;
+    min-width: 0;
+}
+
+.character-residence figure > a {
+    display: block;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.character-residence figure > a:hover {
+    border-color: var(--blue);
+}
+
+.character-residence figure > a:focus-visible {
+    outline-offset: 3px;
+}
+
+.character-residence img {
+    display: block;
+    height: auto;
+    width: 100%;
+}
+
+.character-residence figcaption {
+    font-size: 12px;
+    margin-top: 9px;
+}

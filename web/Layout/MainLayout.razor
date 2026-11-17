@@ -33,7 +33,6 @@
                     <a href="/valgfag" class="@(ElectivesIsCurrent ? "active" : null)" aria-current="@(ElectivesIsCurrent ? "page" : null)">Valgfag</a>
                     <a href="/library" class="@(LibraryIsCurrent ? "active" : null)" aria-current="@(LibraryIsCurrent ? "true" : null)">Oversigt</a>
                     <a href="/notion" class="@(NotebookIsCurrent ? "active" : null)" aria-current="@(NotebookIsCurrent ? "true" : null)">Notesbøger</a>
-                    @if (IsTeacher) { <NavLink href="/teacher/planner">Min kalender</NavLink> }
                 </nav>
                 <details class="lup-mobile-nav">
                     <summary>Menu</summary>
@@ -43,7 +42,6 @@
                         <a href="/library">Oversigt</a>
                         <a href="/notion">Notesbøger</a>
                         @foreach (var link in NotebookLinks) { <NavLink href="@link.Href">@link.Label</NavLink> }
-                        @if (IsTeacher) { <NavLink href="/teacher/planner">Min kalender</NavLink> }
                     </nav>
                 </details>
                 <div class="lup-tools">
@@ -54,25 +52,45 @@
                         <div class="v3-menu">
                             <p class="lup-account-name">@AccountDisplayName</p>
                             <p class="lup-account-sub">@(IsTeacher ? "Underviser" : ViewAs.IsActive ? "Elevvisning" : "Elev") · LUP</p>
-                            @if (ViewAs.IsActive)
-                            {
-                                <button type="button" class="action" @onclick="ExitViewAs">Afslut elev-visning</button>
-                            }
-                            else
-                            {
-                                <NavLink href="/profile" Match="NavLinkMatch.All">Min profil</NavLink>
-                            }
-                            @foreach (var link in NotebookLinks.Skip(1)) { <NavLink href="@link.Href">@link.Label</NavLink> }
-                            <NavLink href="/arena">LUP Arena</NavLink>
-                            @if (!ViewAs.IsActive) { <NavLink href="/spil/hjem">@(IsTeacher ? "Prøv Hjem.exe" : "Hjem.exe")</NavLink> }
-                            <NavLink href="/games">Spil</NavLink>
-                            <NavLink href="/characters">Karakterer</NavLink>
+                            <section class="lup-account-section" aria-label="Konto">
+                                <h2>Konto</h2>
+                                @if (ViewAs.IsActive)
+                                {
+                                    <button type="button" class="secondary" @onclick="ExitViewAs">Afslut elev-visning</button>
+                                }
+                                else
+                                {
+                                    <NavLink href="/profile" Match="NavLinkMatch.All">Min profil</NavLink>
+                                }
+                                <NavLink href="/help" Match="NavLinkMatch.All">Hjælp</NavLink>
+                            </section>
+                            <section class="lup-account-section" aria-label="Genveje">
+                                <h2>Genveje</h2>
+                                @if (!IsTeacher)
+                                {
+                                    <NavLink href="/student/calendar" Match="NavLinkMatch.All">Min kalender</NavLink>
+                                    @foreach (var link in NotebookLinks.Skip(1)) { <NavLink href="@link.Href">@link.Label</NavLink> }
+                                }
+                                <NavLink href="/arena">LUP Arena</NavLink>
+                                @if (!ViewAs.IsActive)
+                                {
+                                    <NavLink href="/spil/hjem">@(IsTeacher ? "Prøv Hjem.exe" : "Hjem.exe")</NavLink>
+                                }
+                                <NavLink href="/games">Spil</NavLink>
+                            </section>
                             @if (IsTeacher)
                             {
-                                <NavLink href="/teacher/updates">Nyt i LUP</NavLink>
-                                <NavLink href="/teacher/tools">Underviserværktøjer</NavLink>
+                                <section class="lup-account-section" aria-label="Undervisning">
+                                    <h2>Undervisning</h2>
+                                    <NavLink href="/teacher/planner" Match="NavLinkMatch.All">Min kalender</NavLink>
+                                    @foreach (var link in NotebookLinks.Skip(1)) { <NavLink href="@link.Href">@link.Label</NavLink> }
+                                    <NavLink href="/teacher/tools">Underviserværktøjer</NavLink>
+                                    <NavLink href="/teacher/updates">Nyt i LUP</NavLink>
+                                </section>
                             }
-                            <button type="button" class="secondary" @onclick="Logout">Log ud</button>
+                            <div class="lup-account-section">
+                                <button type="button" class="secondary" @onclick="Logout">Log ud</button>
+                            </div>
                         </div>
                     </details>
                 </div>
@@ -194,7 +212,24 @@
     private async Task Logout() { ViewAs.Exit(); await Auth.LogoutLocalAsync(); Nav.NavigateTo("/"); }
     private void ExitViewAs() { var returnUrl = ViewAs.ReturnUrl ?? "/lectio"; ViewAs.Exit(); Nav.NavigateTo(returnUrl); }
     private void EnforceViewAsRoutes() { if (ViewAs.IsActive && ViewAsStudentContext.IsTeacherOnlyPath(CurrentPath)) Nav.NavigateTo("/student"); }
-    private void OnAuthChanged() => InvokeAsync(async () => { if (Auth.IsAuthenticated) { await World.EnsureAsync(); await World.BindAvatarProfileAsync(Auth.Subject); await RegisterNotebookProfile(); } else { _notebookProfileAccount = null; await World.BindAvatarProfileAsync(null); } EnforceViewAsRoutes(); StateHasChanged(); });
+    private void OnAuthChanged() => InvokeAsync(async () =>
+    {
+        if (Auth.IsAuthenticated)
+        {
+            await World.EnsureAsync();
+            await World.BindAvatarProfileAsync(Auth.Subject);
+            await RegisterNotebookProfile();
+        }
+        else
+        {
+            if (ViewAs.IsActive) ViewAs.Exit();
+            _notebookProfileAccount = null;
+            await World.BindAvatarProfileAsync(null);
+        }
+
+        EnforceViewAsRoutes();
+        StateHasChanged();
+    });
     private void OnViewChanged() => InvokeAsync(() => { EnforceViewAsRoutes(); StateHasChanged(); });
     private void OnPersonalDataChanged() => InvokeAsync(StateHasChanged);
     private async Task RegisterNotebookProfile()

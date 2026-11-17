@@ -1,0 +1,34 @@
+{
+  "id": "gitmejsen-naesebladet",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+      "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.webp",
+      "sha256": "5c15516ee9e4755d31081e62a9b62e09aa6c99b3af15a2f537991568107941fc"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bat/scenes/teskeens-natudsendelse.webp",
+      "sha256": "810a931c22d68d01aa57fb8593b02c705f9bfa1d8b586ba5b386ce3fd93f21bf"
+    }
+  ],
+  "alt": "Gitmejsen og Næsebladet lytter til vokscylinderen i midten, mens grønne og røde markører viser yderpunkterne i rækken.",
+  "prompt": "Make one complete 1536×1024 original storybook LUP mascot collaboration image, full-bleed horizontal 3:2. Use the three provided local pictures to match identity and painted world exactly. A whimsical detective scene titled by context only, \"Mysteriet om den forsvundne tone\" (do not paint this title or any other text). In the secret little archive beneath a Victorian echo theatre, Gitmejsen and Næsebladet are investigating which firmware revision made one tone disappear. They're performing a binary search through the revisions. Compose a low three-quarter angle across smoked-oak workbench. In the near field a long narrow walnut tray is nearly parallel to bottom edge and reads as a chronological line left to right. At least two and at most three removable short wax phonograph cylinders occupy evenly spaced cradles to left, and an equal number to right. The leftmost wax cylinder is known working and has an emerald glass marker on its tabletop cradle, the rightmost has a warm red glass marker, neutral middle entries are muted. In the exact central cradle the wax cylinder is being tested now on a little period phonograph, slightly elevated, illuminated by a candle and cool moonlight. Read the central location and left/right endpoints at a glance. A recording waveform drawn as a single simple gold ripple near the antique brass horn may appear if tasteful, with no floating labels. Nearby sit his distinctive silver teaspoon and small stone striker, implying one consistent echo test on each revision. Deep ultramarine shadows and soft blue moonbeams, amber candlelight down the sequence of wax cylinders, plum velvet curtains, soft warm face lighting, brass filigree and dusty blue archive shelves with more unlabeled cylinders. Deeply detailed yet readable at thumbnail. Næsebladet on left is precisely the canonical warm russet round bat with emphatic angular shoulders, large round pink ears (one distinctive crescent notch), broad leaf nose, dark mischievous eyes, plum velvet Victorian frock coat with gold piping, red patterned brocade waistcoat and ecru cravat; he bends forward inquisitively behind the bench, his two compact folded wings and their only two wing wrists integrated into the cuffs. His near natural wing thumb claw is attached at the wrist where the burgundy membranous wing folds, resting on the workbench by his loose silver spoon, and his far claw is concealed by the worktop. No extraneous arms, separate human hands, or additional appendages. Gitmejsen on the right is precisely the real organically shaped tiny crested tit from reference one with creamy feather face, pointy black-speckled pale crest, black cheek chevron, fine small dark beak, black bib, folded tan wings and cobalt blue wool scarf, with two normal small gray bird feet hooked around a twig platform. She tilts her head toward the middle phonograph, keenly following the test. Both faces seen and distinct, accurate feather and velvet textures. Mood: secret adventure for clever young detectives, thoughtful rather than threatening. No readable labels, typography, text, numbers, software mockups, logos, or watermark. No panels, diagram overlays, sound text, split images or borders.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/gitmejsen-naesebladet.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2876895,
+    "sha256": "994d19d3cb1631f5a98f74240fe2f65644ad72ff504cf79c76c1b91d8bc792d2"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/gitmejsen-naesebladet.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 128108,
+    "sha256": "d3885c9a9d5bf78be94af2045af408a484783985343a765ed8d17b785948927d"
+  }
+}

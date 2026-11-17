@@ -81,6 +81,28 @@ public sealed class ActionCenterCoverageTests
         Assert.Single(service.Items);
     }
 
+    [Theory]
+    [InlineData("moved", "Aktiviteten er flyttet")]
+    [InlineData("cancelled", "Aktiviteten er aflyst")]
+    public async Task Calendar_changes_route_to_the_hold_calendar_and_acknowledge_the_change(string state, string label)
+    {
+        var activity = Guid.NewGuid();
+        var change = CourseItem("calendar-change", "important", activity) with { State = state, CourseId = null };
+        using var api = new Api { Items = [change] };
+        await using var context = await LearningUiTestContext.CreateAsync(api);
+        var service = context.Services.GetRequiredService<ActionCenterService>();
+        await service.EnsureAsync();
+
+        var item = Assert.Single(service.Items);
+        var path = $"/courses/{Workspace}?view=calendar" + (state == "moved" ? $"&event={activity}" : "");
+        Assert.Equal(path, ActionCenterPresentation.Href(item));
+        Assert.Equal(label, ActionCenterPresentation.KindLabel(item));
+        Assert.Equal("calendar", ActionCenterPresentation.Icon(item));
+        Assert.True(await service.MarkReadAsync(item.Kind, item.ResourceId));
+        Assert.Equal(new ActionCenterReadItem(change.Kind, change.ResourceId), Assert.Single(Assert.Single(api.Acknowledgements).Items));
+        Assert.Empty(service.Items);
+    }
+
     [Fact]
     public async Task Failed_receipt_keeps_the_news_pending_and_does_not_claim_it_was_read()
     {

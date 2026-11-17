@@ -1,0 +1,63 @@
+{
+  "slug": "raymond",
+  "name": "Katalogvillaen",
+  "description": "Raymond bor i en rødstensvilla med blå dør og et rundt vindue i rav, creme og blå. Han fører kartotek over sine bøger i stuen og bruger presset rosmarin fra haven som bogmærke.",
+  "scenes": [
+    {
+      "id": "outside",
+      "generator": "Built-in ImageGen",
+      "alt": "Raymond åbner den blå dør til sin rødstensvilla med en bog under armen. Det runde vindue er delt i tre farvede felter.",
+      "prompt": "3:2 1536x1024 landscape illustration in the LUP mascot collection. Use the first provided image for exact mascot identity. Grounded handcrafted storybook illustration, lush tactile paint, full home in frame, one easily recognized character in front of the doorway with ample detail at 768px, natural expressive pose, no other mascot, no lettering or watermark. Raymond lives in Katalogvillaen, a snug Danish red-brick villa on a cobbled street with an indigo-blue front door, a single round stained-glass window of three horizontal bands (amber over cream over blue), and low sage beds of lavender and rosemary. Blue elephant professor with curled trunk, round bronze glasses, warm brown eyes, cream cable-knit cardigan and blue shirt, outdoors on his two front steps gently opens the door and holds one well-worn closed blue book. Keep both characters' wings? Raymond is the only character, he has two arms and a trunk. House is a real small private residence with stone sill, a narrow lighted side window, and an old brass key, no ornate institutional columns. Painted Nordic golden-hour exterior, richly illustrated textures. Include the exact unique round window clearly, above the door side so it can be recognized indoors.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/raymond/professor.webp",
+          "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/raymond/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3605186,
+        "sha256": "c80c050758d7f59e37d13e041faae05fbd7f440001e40d0d85eaaa3dea51ab06"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/raymond/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 162910,
+        "sha256": "1b46364623e2ee85b62ab0f6ca65ceff658c0156220d84075564a0ce9d581c71"
+      }
+    },
+    {
+      "id": "inside",
+      "generator": "Built-in ImageGen",
+      "alt": "Raymond sætter et kort i egetræskartoteket under det runde, stribede vindue. En kop te og en rosmarinkvist ligger ved lænestolen.",
+      "prompt": "Create an interior landscape LUP character illustration, 3:2 1536x1024. Use source 1 as exact mascot identity and source 2 as the exterior of this exact house. This is a different camera shot, entirely from inside, with recognizable door or window materials from the exterior carried into the interior at the correct analogous scale. Strong storytelling and handmade painterly materials, one mascot visible and unoccluded, clean anatomy, no logos, rendered text or second character. Inside Katalogvillaen, Raymond sits sideways in the corner of his private lounge at a polished oak card catalog by the exact round window with horizontal amber, cream, and blue bands, amidst warm red brick and deep indigo painted interior door trim. The blue elephant with round bronze glasses, curled trunk, blue shirt and cream cable cardigan slides one index card into the open low wooden cabinet and keeps his other arm relaxed. He likes to keep pressed rosemary sprigs in his books. Show one comforting knitted chair beside a reading lamp, tea table and a book with a rosemary twig, softly warm domestic sunset with stained light, not a public library or classroom. The same red bricks, exact color order of glass, and navy door as source 2.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/raymond/professor.webp",
+          "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+        },
+        {
+          "path": "web/wwwroot/images/characters/raymond/home/outside.png",
+          "sha256": "c80c050758d7f59e37d13e041faae05fbd7f440001e40d0d85eaaa3dea51ab06"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/raymond/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3316164,
+        "sha256": "26810390d398ae55d843e5ee02f04a9b46ec4aaedb16ed99ca17a822589952ef"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/raymond/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 149812,
+        "sha256": "2cc88f2bd8e9cc3c3275f42bb7568e97560f71e58eaf35afd0db142b4b42c742"
+      }
+    }
+  ]
+}

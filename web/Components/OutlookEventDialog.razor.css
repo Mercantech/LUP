@@ -1,0 +1,44 @@
+.outlook-event-dialog {
+    width: min(640px, calc(100% - 24px));
+    max-height: calc(100dvh - 24px);
+    padding: clamp(16px, 4vw, 28px);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    background: var(--paper);
+    color: var(--ink);
+    overflow-wrap: anywhere;
+    overscroll-behavior: contain;
+}
+
+.outlook-event-dialog::backdrop { background: color-mix(in srgb, var(--bg) 72%, transparent); }
+.outlook-event-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.outlook-event-header h2 { margin: 0; font-size: clamp(1.25rem, 2.5vw, 1.625rem); }
+.outlook-event-header button { flex-shrink: 0; }
+
+.outlook-event-facts {
+    display: grid;
+    grid-template-columns: minmax(5rem, auto) minmax(0, 1fr);
+    gap: 8px 16px;
+    margin: 16px 0 0;
+}
+
+.outlook-event-facts dt, .outlook-person-address, .outlook-attendee-status, .outlook-event-muted { color: var(--muted); }
+.outlook-event-facts dd { margin: 0; }
+.outlook-event-section { border-top: 1px solid var(--rule); margin-top: 16px; padding-top: 16px; }
+.outlook-event-section h3 { margin: 0 0 8px; font-size: 1rem; }
+.outlook-event-section p { margin: 0; }
+.outlook-event-description { white-space: pre-wrap; }
+.outlook-attendees { list-style: none; padding: 0; margin: 0; }
+
+.outlook-attendees li {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 8px 0;
+}
+
+.outlook-attendees li + li { border-top: 1px solid var(--rule); }
+.outlook-person-address { display: block; font-size: .875rem; }
+.outlook-attendee-status { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .875rem; }
+.outlook-event-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 16px; }

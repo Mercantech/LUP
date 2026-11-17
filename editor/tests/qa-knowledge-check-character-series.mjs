@@ -10,23 +10,35 @@ const fixture = 'http://127.0.0.1:8088';
 const health = await (await fetch(fixture + '/_qa/health')).json();
 assert.equal(health.fixture, 'fictional-notebook-browser-qa');
 const { drafts } = JSON.parse(await readFile(new URL('../../api/KnowledgeChecks/CharacterTemplates.json', import.meta.url)));
-const raymond = drafts.find(item => item.characterSlug === 'raymond');
-assert.equal(drafts.length, 11);
-assert.ok(raymond);
+const hosts = Map.groupBy(drafts, item => item.characterSlug);
+const raymond = drafts.find(item => item.key === 'raymond-manglende-raekke');
+const raymondJoin = drafts.find(item => item.key === 'raymond-forbind-tabeller');
+assert.ok(raymond && raymondJoin);
+assert.equal(hosts.get('raymond').length, 2);
 
-let rayId;
-for (const { characterSlug, draft, difficulty } of drafts) {
+const publicationIds = new Map();
+for (const [characterSlug, templates] of hosts) {
   const response = await fetch(fixture + '/api/knowledge-checks/characters/' + characterSlug);
   assert.ok(response.ok, characterSlug + ' returned ' + response.status);
   const summaries = await response.json();
-  assert.equal(summaries.length, 1, characterSlug);
-  const [quiz] = summaries;
-  assert.deepEqual(Object.keys(quiz).sort(), ['difficulty', 'estimatedMinutes', 'id', 'questionCount', 'title', 'topic']);
-  assert.equal(quiz.title, draft.title);
-  assert.equal(quiz.questionCount, 6);
-  assert.equal(quiz.difficulty, difficulty);
-  if (characterSlug === 'raymond') rayId = quiz.id;
+  assert.equal(summaries.length, templates.length, characterSlug);
+  for (const { key, draft, difficulty } of templates) {
+    const matching = summaries.filter(quiz => quiz.title === draft.title);
+    assert.equal(matching.length, 1, draft.title);
+    const [quiz] = matching;
+    assert.deepEqual(quiz, {
+      id: quiz.id,
+      title: draft.title,
+      topic: draft.topic,
+      difficulty,
+      questionCount: draft.questions.length,
+      estimatedMinutes: draft.estimatedMinutes
+    });
+    publicationIds.set(key, quiz.id);
+  }
 }
+assert.equal(new Set(publicationIds.values()).size, drafts.length);
+const rayId = publicationIds.get(raymond.key);
 assert.equal((await fetch(fixture + '/api/knowledge-checks/publications/' + rayId)).status, 401);
 assert.deepEqual(await (await fetch(fixture + '/api/knowledge-checks/characters/not-a-character')).json(), []);
 
@@ -37,10 +49,13 @@ try {
   const guest = await openPage({ width: 375, height: 800 });
   await guest.goto(origin + '/characters/raymond');
   const quizzes = guest.getByRole('region', { name: 'Videnstjek med Raymond' });
-  await quizzes.getByRole('heading', { name: raymond.draft.title, exact: true }).waitFor();
-  const login = new URL(await quizzes.getByRole('link', { name: /^Log ind og åbn quiz/ }).getAttribute('href'), origin);
+  const loginLink = quizCard(guest, raymond.draft.title, quizzes).getByRole('link', { name: /^Log ind og åbn quiz/ });
+  const login = new URL(await loginLink.getAttribute('href'), origin);
   assert.equal(login.pathname, '/login');
   assert.equal(login.searchParams.get('returnUrl'), '/videnstjek/' + rayId + '?karakter=raymond');
+  const joinLoginLink = quizCard(guest, raymondJoin.draft.title, quizzes).getByRole('link', { name: /^Log ind og åbn quiz/ });
+  const joinLogin = new URL(await joinLoginLink.getAttribute('href'), origin);
+  assert.equal(joinLogin.searchParams.get('returnUrl'), '/videnstjek/' + publicationIds.get(raymondJoin.key) + '?karakter=raymond');
   assert.ok(await quizzes.evaluate(el => el.getBoundingClientRect().right <= window.innerWidth));
 
   const learner = await openPage({ width: 1280, height: 800 });
@@ -55,15 +70,19 @@ try {
   assert.match(await portrait.getAttribute('src'), /^\/images\/characters\/raymond\//);
 
   await learner.goto(origin + '/characters/raymond');
-  const openQuiz = learner.getByRole('region', { name: 'Videnstjek med Raymond' }).getByRole('link', { name: /^Åbn quiz/ });
+  const hostedQuizzes = learner.getByRole('region', { name: 'Videnstjek med Raymond' });
+  const openQuiz = quizCard(learner, raymond.draft.title, hostedQuizzes).getByRole('link', { name: /^Åbn quiz/ });
   await openQuiz.waitFor();
   assert.equal(await openQuiz.getAttribute('href'), login.searchParams.get('returnUrl'));
   await learner.goto(origin + '/videnstjek');
-  await learner.getByText('37 quizzer', { exact: true }).waitFor();
+  await learner.getByText(`${drafts.length + 26} quizzer`, { exact: true }).waitFor();
   const hostFilter = learner.getByRole('combobox', { name: 'Vært' });
-  assert.equal(await hostFilter.locator('option').count(), 12);
+  assert.equal(await hostFilter.locator('option').count(), hosts.size + 1);
   await hostFilter.selectOption('raymond');
   await learner.waitForURL(url => url.searchParams.get('karakter') === 'raymond');
+  await learner.getByText('2 quizzer', { exact: true }).waitFor();
+  await learner.getByRole('heading', { name: raymond.draft.title, exact: true }).waitFor();
+  await learner.getByRole('heading', { name: raymondJoin.draft.title, exact: true }).waitFor();
   const topics = learner.getByRole('navigation', { name: 'Emne', exact: true });
   await topics.getByRole('link', { name: raymond.draft.topic, exact: true }).click();
   await learner.waitForURL(url => url.searchParams.get('emne') === raymond.draft.topic);
@@ -71,7 +90,7 @@ try {
   await learner.waitForURL(url => url.searchParams.get('niveau') === raymond.difficulty);
   await learner.getByLabel('Søg i øvelser').fill('manglende række');
   await learner.getByText('1 quiz', { exact: true }).waitFor();
-  const card = learner.getByRole('article').filter({ has: learner.getByRole('heading', { name: raymond.draft.title, exact: true }) });
+  const card = quizCard(learner, raymond.draft.title);
   await card.getByRole('link', { name: /Med Raymond/ }).waitFor();
   await card.getByRole('button', { name: /^Start quiz/ }).click();
   await learner.waitForURL(url => url.pathname === '/videnstjek/' + rayId && url.searchParams.has('forsog'));
@@ -92,9 +111,13 @@ try {
   await card.getByRole('link', { name: /^Fortsæt/ }).waitFor();
   assert.equal(await hostFilter.inputValue(), 'raymond');
   assert.equal(await learner.getByLabel('Søg i øvelser').inputValue(), 'manglende række');
-  console.log('Alle 11 offentlige quizopslag, gæstens loginretur, værtsfilter og feedback bestod i browserprøven.');
+  console.log(`Alle ${drafts.length} offentlige quizopslag, gæstens loginretur, værtsfilter og feedback bestod i browserprøven.`);
 } finally {
   await browser.close();
+}
+
+function quizCard(page, title, container = page) {
+  return container.getByRole('article').filter({ has: page.getByRole('heading', { name: title, exact: true }) });
 }
 
 async function openPage(viewport) {

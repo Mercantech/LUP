@@ -78,9 +78,20 @@ public sealed class MainLayoutEditorShellTests
     {
         using var api = new LayoutApi();
         using var context = await CreateContext(api, teacher);
+        var navigation = context.Services.GetRequiredService<NavigationManager>();
+        navigation.NavigateTo(home + "?from=overview#main-content");
         var layout = context.Render<MainLayout>();
         Assert.Equal(home, layout.Find("a.brand").GetAttribute("href"));
+        Assert.Equal("page", layout.Find("a.brand").GetAttribute("aria-current"));
         Assert.All(layout.FindAll("header nav a[href='/library']"), link => Assert.Equal("Oversigt", link.TextContent));
+        var calendar = Assert.Single(layout.FindAll(".lup-account a"), link => link.TextContent.Trim() == "Min kalender");
+        Assert.Equal(teacher ? "/teacher/planner" : "/student/calendar", calendar.GetAttribute("href"));
+        Assert.Equal(teacher ? "Undervisning" : "Genveje", calendar.ParentElement!.GetAttribute("aria-label"));
+        Assert.Empty(layout.FindAll("header nav a[href='/teacher/planner'], header nav a[href='/student/calendar']"));
+        Assert.Empty(layout.FindAll(".lup-account a[href='/characters']"));
+        Assert.NotNull(layout.Find("footer a[href='/characters']"));
+        navigation.NavigateTo("/courses");
+        layout.WaitForAssertion(() => Assert.False(layout.Find("a.brand").HasAttribute("aria-current")));
         Assert.Equal("Min profil", Assert.Single(layout.FindAll(".lup-account a[href='/profile']")).TextContent.Trim());
         Assert.Empty(layout.FindAll(".lup-account a[href='/universe'], .lup-account a[href='/settings']"));
         Assert.Empty(layout.FindComponents<Stub<ThemePicker>>());
@@ -92,8 +103,12 @@ public sealed class MainLayoutEditorShellTests
         using var api = new LayoutApi();
         using var context = await CreateContext(api);
         context.ViewAs.Enter("preview-student", null);
+        context.Services.GetRequiredService<NavigationManager>().NavigateTo("/student");
         var layout = context.Render<MainLayout>();
 
+        Assert.Equal("page", layout.Find("a.brand").GetAttribute("aria-current"));
+        Assert.NotNull(layout.Find(".lup-account a[href='/student/calendar']"));
+        Assert.Empty(layout.FindAll(".lup-account a[href='/teacher/planner']"));
         Assert.Equal("Elev", layout.Find(".lup-account-name").TextContent.Trim());
         Assert.Equal("E", layout.Find(".lup-account .avatar").TextContent.Trim());
         Assert.Empty(layout.FindAll(".lup-account a[href='/profile'], .lup-account a[href='/universe'], .lup-account a[href='/settings']"));

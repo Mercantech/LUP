@@ -81,6 +81,11 @@ else
             </div>
         </section>
 
+        @if (character.Residence is { } residence)
+        {
+            <CharacterHomeGallery Home="@residence" CharacterSlug="@character.Slug" />
+        }
+
         <CharacterQuizSection @key="character.Slug" Character="character" />
 
         <div class="character-features">
@@ -133,6 +138,22 @@ else
                                       Description="@character.IllustrationsDescription" KindLabel="@character.IllustrationsLabel"
                                       Items="@character.Illustrations" />
 
+        @if (character.Collaborations.Count > 0)
+        {
+            <section class="character-collaborations" aria-labelledby="@CharacterCollaboration.SectionId">
+                <header class="character-collaboration-header">
+                    <h2 id="@CharacterCollaboration.SectionId">Når fagene mødes</h2>
+                    <a href="@CharacterCollaborations.Path">Se alle fællesbilleder</a>
+                </header>
+                <div class="character-gallery-grid">
+                    @foreach (var scene in character.Collaborations)
+                    {
+                        <CharacterCollaborationCard Scene="@scene" ProfileSlug="@character.Slug" @key="scene.Id" />
+                    }
+                </div>
+            </section>
+        }
+
         <nav class="character-other-profiles" aria-label="Mød de andre karakterer">
             <span>Mød også</span>
             @foreach (var other in CharacterCatalog.All.Where(item => item.Slug != character.Slug))
@@ -183,7 +204,8 @@ else
         _handledLocation = location;
         var fragment = Uri.UnescapeDataString(uri.Fragment.TrimStart('#'));
         var hasTarget = character.Materials.Any(material => material.SectionId == fragment)
-            || character.Animations.Any(animation => $"animation-{animation.Id}" == fragment);
+            || character.Animations.Any(animation => $"animation-{animation.Id}" == fragment)
+            || character.Collaborations.Any(scene => scene.Anchor == fragment);
         _pendingSection = hasTarget ? (fragment, location) : null;
         return _pendingSection.HasValue;
     }

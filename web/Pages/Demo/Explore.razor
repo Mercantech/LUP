@@ -5,6 +5,8 @@
 @using Mercantec.Tech.Web.Demo
 @inject NavigationManager Nav
 @inject AuthService Auth
+@inject AuthRedirect Redirect
+@inject ViewAsStudentContext ViewAs
 @implements IDisposable
 
 <PageTitle>@Title</PageTitle>
@@ -33,14 +35,38 @@ else if (PathKey == "badges")
 }
 else if (PathKey == "help")
 {
-    <header class="page-title"><div><h1>Hjælp</h1><p>Sådan hænger LUP sammen.</p></div></header>
+    <header class="page-title"><div><h1>Hjælp</h1><p>Find det, du skal bruge i LUP.</p></div></header>
     <article class="article">
-        <h2>Din læring</h2>
-        <p>Overblikket samler dine hold og giver dig genveje til forløbsplaner, fag og materialer. Åbn et forløb for at finde uger, dage og emner.</p>
-        <h2>Status</h2>
-        <p>Rød betyder vigtigt, orange er noget, du kan gøre, og grøn betyder, at intet mangler. Grøn, blå og gul i kalenderen viser fremmøde, online fremmøde og arbejde hjemme.</p>
-        <h2>Profil</h2>
-        <p>Navnet kommer fra din konto. Temaet gemmes kun i denne browser. Det giver ikke adgang.</p>
+        @if (Auth.IsAuthenticated)
+        {
+            <h2>Find dine hold og opgaver</h2>
+            <p>Vælg LUP-logoet for at komme til dit <a href="@(Redirect.ShowsTeacherChrome ? "/teacher" : "/student")">overblik</a>. Under <a href="/courses">Mine hold</a> kan du åbne et hold og vælge <strong>Undervisning</strong>, <strong>Opgaver</strong> eller <strong>Kalender</strong>.</p>
+
+            <h2>Se din kalender</h2>
+            @if (Redirect.ShowsTeacherChrome)
+            {
+                <p>Åbn avatarmenuen og vælg <a href="/teacher/planner">Min kalender</a> under <strong>Undervisning</strong>. Her kan du se og ændre holdenes plan sammen med dine egne Outlook-aftaler.</p>
+                <h2>Underviserens værktøjer</h2>
+                <p>I samme menu ligger <a href="/teacher/tools">Underviserværktøjer</a> med genveje til holdenes værktøjer. Brug <a href="/notifications">Til opfølgning</a> til at finde afleveringer, der venter på feedback.</p>
+            }
+            else
+            {
+                <p>Åbn avatarmenuen og vælg <a href="/student/calendar">Min kalender</a> under <strong>Genveje</strong>. Her ser du dagens plan og kommende frister for dine hold.</p>
+            }
+
+            <h2>Find noter og materialer</h2>
+            <p>Vælg <a href="/notion">Notesbøger</a> for at finde noter og logbøger. Brug <a href="/search">Søg</a> til at finde indhold, eller se undervisningsplaner, fag og projekter under <a href="/library">Oversigt</a>.</p>
+            @if (!ViewAs.IsActive)
+            {
+                <h2>Din konto</h2>
+                <p>Under avatarmenuens <a href="/profile">Min profil</a> finder du dine indstillinger. LUP-klokken viser dine notifikationer.</p>
+            }
+        }
+        else
+        {
+            <h2>Udforsk LUP</h2>
+            <p>Under <a href="/library">Oversigt</a> finder du offentlige undervisningsplaner, fag og projekter. <a href="@Auth.LoginPath()">Log ind</a> for at se dine hold, opgaver og din kalender.</p>
+        }
     </article>
 }
 else
@@ -70,8 +96,18 @@ else
         _ => "Om LUP"
     };
 
-    protected override void OnInitialized() { Auth.AuthStateChanged += OnAuth; Nav.LocationChanged += OnLocation; }
+    protected override void OnInitialized()
+    {
+        Auth.AuthStateChanged += OnAuth;
+        ViewAs.Changed += OnAuth;
+        Nav.LocationChanged += OnLocation;
+    }
     private void OnAuth() => InvokeAsync(StateHasChanged);
     private void OnLocation(object? sender, LocationChangedEventArgs e) => InvokeAsync(StateHasChanged);
-    public void Dispose() { Auth.AuthStateChanged -= OnAuth; Nav.LocationChanged -= OnLocation; }
+    public void Dispose()
+    {
+        Auth.AuthStateChanged -= OnAuth;
+        ViewAs.Changed -= OnAuth;
+        Nav.LocationChanged -= OnLocation;
+    }
 }

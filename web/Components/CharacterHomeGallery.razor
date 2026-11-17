@@ -1,0 +1,28 @@
+@using Mercantec.Tech.Web.Characters
+
+<section class="character-residence" aria-labelledby="@CharacterHome.SectionId">
+    <header>
+        <h2 id="@CharacterHome.SectionId">@Home.Name</h2>
+        <p>@Home.Description</p>
+    </header>
+    <div class="character-gallery-grid">
+        @foreach (var view in Home.Views)
+        {
+            <figure @key="view.Image">
+                <a href="@view.Image" target="_blank" rel="noopener noreferrer" aria-label="@($"Åbn billedet {view.Title.ToLowerInvariant()} i fuld størrelse")">
+                    <img src="@view.Preview" alt="@view.Alt" width="@view.Width" height="@view.Height" loading="lazy" decoding="async" />
+                </a>
+                <figcaption class="character-collaboration-caption">
+                    <strong>@view.Title</strong>
+                    <a href="@view.Image" download="@($"{CharacterSlug}-home-{System.IO.Path.GetFileName(view.Image)}")"
+                       aria-label="@($"Hent billedet {view.Title.ToLowerInvariant()} som PNG")">Hent PNG</a>
+                </figcaption>
+            </figure>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public CharacterHome Home { get; set; } = default!;
+    [Parameter, EditorRequired] public string CharacterSlug { get; set; } = "";
+}

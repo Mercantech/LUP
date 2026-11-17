@@ -17,6 +17,13 @@ public partial class Notifications : IDisposable
     private static string KindLabel(ActionCenterItem item) => ActionCenterPresentation.KindLabel(item);
     private static string Icon(ActionCenterItem item) => ActionCenterPresentation.Icon(item);
     private static string DateLabel(DateTimeOffset deadline) => ActionCenterPresentation.DateLabel(deadline);
+    private static string OpenLabel(ActionCenterItem item) => item.Kind switch
+    {
+        "poll" => "Svar", "review" => "Giv feedback", "gift" => "Åbn gave", "feedback" => "Læs feedback",
+        "notebook-comment" or "notebook-share" or "mention" => "Åbn notesbog", "calendar-change" => "Åbn kalender",
+        _ => "Åbn opgave"
+    };
+    private Task Open(ActionCenterItem item) => item.Kind == "calendar-change" ? Actions.MarkReadAsync(item.Kind, item.ResourceId) : Task.CompletedTask;
     protected override void OnInitialized() { Actions.Changed += StatusChanged; }
     protected override Task OnAfterRenderAsync(bool firstRender) => firstRender ? Actions.EnsureAsync() : Task.CompletedTask;
     private Task Refresh() => Actions.RefreshAsync(force: true);

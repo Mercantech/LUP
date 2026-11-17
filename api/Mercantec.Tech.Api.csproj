@@ -34,6 +34,8 @@
     <Compile Include="../web/Demo/DemoCatalog.cs" Link="References/Catalog/DemoCatalog.cs" />
     <Compile Include="../web/Demo/LearningContent.cs" Link="References/Catalog/LearningContent.cs" />
     <Compile Include="../web/Characters/CharacterCatalog.cs" Link="References/Catalog/CharacterCatalog.cs" />
+    <Compile Include="../web/Characters/CharacterHomes.cs" Link="References/Catalog/CharacterHomes.cs" />
+    <Compile Include="../web/Characters/CharacterCollaborations.cs" Link="References/Catalog/CharacterCollaborations.cs" />
     <Compile Include="../web/Characters/VatsonEmojiCatalog.cs" Link="References/Catalog/VatsonEmojiCatalog.cs" />
     <Compile Include="../web/Characters/WhaleMaterials.cs" Link="References/Catalog/WhaleMaterials.cs" />
     <Compile Include="../web/Characters/DuckTeachingMaterials.cs" Link="References/Catalog/DuckTeachingMaterials.cs" />
@@ -44,9 +46,11 @@
     <Compile Include="../web/Characters/BatMotionMaterials.cs" Link="References/Catalog/BatMotionMaterials.cs" />
     <Compile Include="../web/Characters/BilboTeachingMaterials.cs" Link="References/Catalog/BilboTeachingMaterials.cs" />
     <Compile Include="../web/Characters/BilboMotionMaterials.cs" Link="References/Catalog/BilboMotionMaterials.cs" />
+    <Compile Include="../web/Characters/GitmejsenMaterials.cs" Link="References/Catalog/GitmejsenMaterials.cs" />
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.4.0" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     <ProjectReference Include="../shared/Mercantec.Tech.Contracts.csproj" />
+    <PackageReference Include="AngleSharp" Version="1.10.0" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.511.8" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">

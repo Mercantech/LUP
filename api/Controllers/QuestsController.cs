@@ -30,15 +30,18 @@ public sealed class QuestsController(AppDbContext db, CourseAccess access) : Con
     }
 
     [HttpGet]
-    public async Task<IActionResult> List(Guid holdId, CancellationToken ct)
+    public async Task<IActionResult> List(Guid holdId, CancellationToken ct, [FromQuery] Guid? asUser = null)
     {
         if (UserClaims.GetSub(User) is not Guid sub) return Unauthorized();
+        if (asUser.HasValue && !UserClaims.IsTeacher(User)) return Forbid();
+        if (asUser == Guid.Empty) return BadRequest(new { error = "invalid_user" });
         if (!await access.CanAccessAsync(holdId, User, ct)) return NotFound();
-        var manage = await access.CanManageAsync(holdId, User, ct);
+        if (asUser is Guid pupil && !await db.Memberships.AnyAsync(m => m.HoldId == holdId && m.UserSub == pupil, ct)) return NotFound();
+        var manage = !asUser.HasValue && await access.CanManageAsync(holdId, User, ct);
         var query = db.LearningQuests.AsNoTracking().Where(q => q.HoldId == holdId);
-        if (!manage) query = new QuestAudienceAccess(db).Readable(query, sub);
+        if (!manage) query = new QuestAudienceAccess(db).Readable(query, asUser ?? sub);
         var quests = await query.ToListAsync(ct);
-        return Ok(await Views(quests.OrderBy(q => q.OccurrenceDate).ThenBy(q => q.CreatedAtUtc).ToArray(), manage, ct));
+        return Ok(await Views(quests.OrderBy(q => q.OccurrenceDate).ThenBy(q => q.CreatedAtUtc).ToArray(), manage, ct, asUser));
     }
 
     [HttpGet("{id:guid}")]
@@ -202,12 +205,12 @@ public sealed class QuestsController(AppDbContext db, CourseAccess access) : Con
     private async Task<QuestAudienceSettings> Settings(LearningQuest quest, CancellationToken ct) => new(quest.AudienceMode,
         await db.QuestAudienceMemberships.Where(a => a.QuestId == quest.Id).Select(a => a.MembershipId).ToArrayAsync(ct),
         await db.QuestAudienceGroups.Where(a => a.QuestId == quest.Id).Select(a => a.GroupId).ToArrayAsync(ct));
-    private async Task<QuestView[]> Views(LearningQuest[] quests, bool manage, CancellationToken ct)
+    private async Task<QuestView[]> Views(LearningQuest[] quests, bool manage, CancellationToken ct, Guid? asUser = null)
     {
         var ids = quests.Select(q => q.Id).ToArray();
         var members = await db.QuestAudienceMemberships.AsNoTracking().Where(a => ids.Contains(a.QuestId)).ToArrayAsync(ct);
         var groups = await db.QuestAudienceGroups.AsNoTracking().Where(a => ids.Contains(a.QuestId)).ToArrayAsync(ct);
-        var sub = UserClaims.GetSub(User);
+        var sub = asUser ?? UserClaims.GetSub(User);
         var holdIds = quests.Select(q => q.HoldId).Distinct().ToArray();
         var ownGroups = !manage && sub is Guid subject ? await db.LearningGroups.AsNoTracking().Include(g => g.Members)
             .Where(g => holdIds.Contains(g.HoldId) && g.Members.Any(m => m.Membership.UserSub == subject)

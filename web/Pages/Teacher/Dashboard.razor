@@ -11,18 +11,29 @@
 {
     <p>Indlæser…</p>
 }
-else
+else if (Auth.IsAuthenticated && Redirect.ShowsTeacherChrome)
 {
-    <header class="page-title"><div><h1>Goddag@(string.IsNullOrEmpty(Auth.DisplayName) ? "" : $", {Auth.DisplayName.Split(' ')[0]}")</h1><p>Dit overblik over undervisning, elever og det næste, der skal ske.</p></div></header>
-    <div class="tiles">
-        <a class="tile" href="/courses"><UiIcon Name="book" /><h2>Mine hold</h2><p>Undervisning, opgaver og afstemninger på hvert hold.</p></a>
-        <a class="tile" href="/lectio"><UiIcon Name="calendar" /><h2>Lectio</h2><p>Elever, hold, Auth-kobling og «se som elev».</p></a>
-        <a class="tile" href="/notifications"><UiIcon Name="check" /><h2>Til opfølgning</h2><p>Se holdenes afleveringer, der venter på feedback.</p></a>
-        <a class="tile" href="/library"><UiIcon Name="book" /><h2>Oversigt</h2><p>Undervisningsplaner, fag, projekter og badgekrav.</p></a>
-        <a class="tile" href="/teacher/notebooks"><UiIcon Name="book" /><h2>Elevnotesbøger</h2><p>Følg noter og logbog og giv kommentarer.</p></a>
-        <a class="tile" href="/teacher/notebook-templates"><UiIcon Name="book" /><h2>Logbogsskabeloner</h2><p>Fælles skabeloner til daglige, ugentlige og frie refleksioner.</p></a>
-    </div>
-    <div class="headrow"><h2>Planen for klassen</h2><a href="/teacher/planner">Åbn planlægningen</a></div><WeekCalendar CourseId="h3" />
+    <header class="page-title">
+        <div>
+            <h1>Goddag@(string.IsNullOrEmpty(Auth.DisplayName) ? "" : $", {Auth.DisplayName.Split(' ')[0]}")</h1>
+            <p>Dit overblik over undervisning, elever og det næste, der skal ske.</p>
+        </div>
+    </header>
+    <nav class="teacher-home-shortcuts" aria-label="Genveje for undervisere">
+        <NavigationCard Href="/courses" Title="Mine hold" Description="Undervisning, opgaver og afstemninger." Icon="people" />
+        <NavigationCard Href="/lectio" Title="Lectio" Description="Elever, hold og Auth-kobling." Icon="calendar" />
+        <NavigationCard Href="/notifications" Title="Til opfølgning" Description="Afleveringer, der venter på feedback." Icon="check" />
+        <NavigationCard Href="/library" Title="Oversigt" Description="Undervisningsplaner, fag og projekter." Icon="folder" />
+        <NavigationCard Href="/teacher/notebooks" Title="Elevnotesbøger" Description="Læs og kommentér elevernes noter." Icon="book" />
+        <NavigationCard Href="/teacher/notebook-templates" Title="Logbogsskabeloner" Description="Fælles skabeloner til logbøger." Icon="file" />
+    </nav>
+    <section aria-labelledby="teacher-home-calendar">
+        <div class="headrow">
+            <h2 id="teacher-home-calendar">Min kalender</h2>
+            <a href="/teacher/planner">Åbn kalenderen</a>
+        </div>
+        <PersonalCalendar Teacher="true" />
+    </section>
 }
 
 @code {

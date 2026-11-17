@@ -39,7 +39,7 @@
                             <div class="notification-preview-group @severity"><h3><span class="notification-row-dot" aria-hidden="true"></span>@(severity == "important" ? "Vigtigt" : "Det kan du gøre")</h3>
                                 @foreach (var item in rows)
                                 {
-                                    <a class="notification-preview-link" href="@ActionCenterPresentation.Href(item)" @onclick="FollowLink"><span class="notification-preview-icon"><UiIcon Name="@ActionCenterPresentation.Icon(item)" /></span><span class="notification-preview-copy"><small>@item.HoldName</small><strong>@item.Title</strong><span>@ActionCenterPresentation.KindLabel(item)</span>@if (item.DeadlineUtc is DateTimeOffset deadline) { <time datetime="@deadline.ToString("O")">Frist @ActionCenterPresentation.DateLabel(deadline)</time> }</span><span class="notification-preview-arrow" aria-hidden="true">›</span></a>
+                                    <a class="notification-preview-link" href="@ActionCenterPresentation.Href(item)" @onclick="() => FollowLink(item)"><span class="notification-preview-icon"><UiIcon Name="@ActionCenterPresentation.Icon(item)" /></span><span class="notification-preview-copy"><small>@item.HoldName</small><strong>@item.Title</strong><span>@ActionCenterPresentation.KindLabel(item)</span>@if (item.DeadlineUtc is DateTimeOffset deadline) { <time datetime="@deadline.ToString("O")">Frist @ActionCenterPresentation.DateLabel(deadline)</time> }</span><span class="notification-preview-arrow" aria-hidden="true">›</span></a>
                                 }
                             </div>
                         }
@@ -102,6 +102,11 @@
     }
     private Task Refresh() => Actions.RefreshAsync(force: true);
     private void FollowLink() => _open = false;
+    private async Task FollowLink(ActionCenterItem item)
+    {
+        FollowLink();
+        if (item.Kind == "calendar-change") await Actions.MarkReadAsync(item.Kind, item.ResourceId);
+    }
     private async Task Close(bool returnFocus)
     {
         _open = false;

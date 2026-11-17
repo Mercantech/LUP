@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "baever-raev",
+  "alt": "Bæver og Ræv tester adgang til to journaler. Kundens egen journal har et grønt flueben, og den anden er låst.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-337dad43-e6c6-4452-8c88-7da5511eab66.png",
+  "prompt": "Create ONE finished large landscape 1536×1024 3:2 original LUP storybook illustration. The two attached transparent reference artworks establish the exact characters Bæver and Ræv (the friendly blue-team beaver and curious russet fox) and their tactile warmly painted style. Retain their features and canonical clothes: Bæver has broad rounded head and small ears, warm rectangular glasses, two square incisors, blue tailored work jacket over cream shirt and a conspicuous flattened brown paddle tail with diagonal crosshatch. Ræv is the exact original russet fox with slender inquisitive face, high pointed ears, light cream muzzle and neck, rust red blazer/waistcoat over cream shirt, and one bushy white-tipped tail; reference expression and clothing proportions. Place them shoulder to shoulder in an inviting detailed timber security teaching workshop. Bæver is at left, Ræv at right, visibly communicating face to face over an angled uncluttered oak workbench, before a single tablet with a nonverbal test result. Both are trustworthy teachers. Beaver holds a generic harmless blue badge up to the bench; the two generic record cards on the cutaway tabletop are a clearly visible blue matching record with small green check, and an independent muted orange record with a conspicuous closed lock (a different record denied). Fox is jotting the result down with one pencil in an open sketch notebook. Make the only screen symbols a border, one blank single-person badge silhouette, checked blue record and locked orange record; no written words, usernames, readable data or code now anywhere. The green check is next to blue card and the locked padlock visibly attached to orange card. Distinct readable shapes, correct hands/paws, room at edges, tidy proportions, equal importance, full or 3/4 bodies including both tails visible, natural warm afternoon sidelight and paper texture. Opaque wide finished scene. No letters, digits, signage, logos, watermarks, cyberpunk, threats, intrusion imagery, or tools other than a pencil and a tablet.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/baever-raev.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3371705,
+    "sha256": "1e12e8b85b1776fc4058cf5d733a6625ecbbc6123346c4e5e4c3ca7ca1813824"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/baever-raev.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 130998,
+    "sha256": "aa6ecbf21d3be775f956cefbd45d11e298846abd5696272a1f746c07c8055769"
+  }
+}

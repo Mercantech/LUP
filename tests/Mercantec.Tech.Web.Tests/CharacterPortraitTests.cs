@@ -38,14 +38,18 @@ public sealed class CharacterPortraitTests
     [InlineData("gummianden")]
     [InlineData("chameleon")]
     [InlineData("whale")]
+    [InlineData("gitmejsen")]
     public async Task Profiles_use_the_same_transparent_default_portrait_as_the_catalogue(string slug)
     {
         using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var profile = CharacterCatalog.Find(slug)!;
         var page = context.Render<CharacterDetail>(p => p.Add(x => x.Slug, slug));
+        var card = context.Render<CharacterCard>(p => p.Add(x => x.Character, profile));
         Assert.EndsWith("/portrait-transparent.webp", profile.DisplayPortrait!.Image);
         Assert.Equal(profile.DisplayPortrait.Image, page.Find(".character-main-art img").GetAttribute("src"));
+        Assert.Equal(profile.DisplayPortrait.Image, card.Find(".character-art img").GetAttribute("src"));
+        Assert.Equal(profile.Appearances[0].Image, page.FindAll(".character-appearance-picker img")[0].GetAttribute("src"));
         page.FindAll(".character-appearance-picker button")[1].Click();
         Assert.Equal(profile.Appearances[1].Image, page.Find(".character-main-art img").GetAttribute("src"));
         page.FindAll(".character-appearance-picker button")[0].Click();

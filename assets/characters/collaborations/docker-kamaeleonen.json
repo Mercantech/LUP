@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "docker-kamaeleonen",
+  "alt": "Kamæleonen afspiller en banjooptagelse i det flydende toldhus. Docker peger på den grønne lampe ved noden, efter at signalet er ført gennem de to sammenkoblede moduler.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-ee26b31f-e65d-455b-b821-92db24633b3b.png",
+  "prompt": "Create ONE coherent wide 3:2 1536×1024 landscape illustration, in the exact premium warm hand-painted gouache, oil and fine colored pencil character style of the references. Story \"Banjoen ved tolden\": an absurdly serious tiny floating music customs booth in moonlit water. The enormous old humpback sea captain Docker from reference 1 floats naturally alongside the booth on the LEFT, properly whale-sized with navy-gray knobby rostrum and forehead, soft knowing eye, broad cream pleated humpback throat, mustard-yellow knitted cap, dark navy heavy cable-knit sweater following his whale body and flippers. Show his wet whale body breaking the gentle sea surface and one big flipper draping on the wooden counter as he calmly gestures to the one result indicator. His tail is visible further out in the bay if composition naturally permits, no human arms or legs. On the RIGHT, on the dry floating pontoon beside the wood customs counter stands the luthier Kamæleonen from ref 2: exact olive and warm yellow-green scale pattern, fine orange-edged crest, large warm brown turret eyes, small patient smile, cream rolled sleeves, copper-brown leather apron with brass fasteners, curling tail, two green hands and tiny clawed feet. Near him stands ONE genuine five-string banjo with circular ivory head and long fretted bridge-and-neck assembly, and he uses his closest hand to press a single ivory playback button on a compact analog tape recorder sitting on the counter, sending a short recorded banjo sound. He raises one eyebrow at the banjo being inspected, tongue not visible. No violin in scene. CENTER: small open shipping crate with subtle parallel shipping container ridges and warm oak lining. Inside, exactly TWO essential palm-sized modules physically plugged together edge-to-edge, protruding brass connectors seated into sockets, clearly distinct side-by-side. The left tangible beautiful blue-green module has a SINGLE amber waveform trace in a little glass analog window (audio processing). Right module is muted burgundy, its ceramic top shows a few grouped round indigo dots and ochre square dots as a small engraved visual symbol for a trained classifier, no fake technical UI. A single soft braided cable from recorder enters the left module; right module feeds a single discreet green check lamp with a small brass musical eighth-note cutout on the crate's right front lip, both clearly readable. Only this green check and note communicate a successful quick first test. No extra modules, charts, dashboard panels or other monitors. The characters' eyes and gestures converge on the successful result. Strong cinematic separation: old buoyant iron pontoon and tiny wooden toll booth with peaked timber roof at right; a brass oil lamp casts a warm pool on the sill; calm luminous full moon in the indigo sky reflected in the dark blue-black sea, distant light of a single lighthouse and soft starry maritime mist. Suggest playful official ceremony via a small unlabeled wooden rubber stamp on the booth counter. Moody, charming, comforting fable, readable hands, enchanting finely woven and painted textures, quiet highlights, no printed words, numbers, text, logos or watermark, no collage. Capture the moment when the two parts dock snugly and the green checked musical note lights up. Strong scale contrast and two complete recognizable faces; keep the image unified and composition uncluttered.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    },
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-kamaeleonen.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3658366,
+    "sha256": "eae0948dd2a53e90f868b6231391befbec3b6ac953041bc77ed018601047ecf8"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-kamaeleonen.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 154622,
+    "sha256": "c298c32108a51f5cf11cb434e0f83f562b244c1afcdded99efb1d60079e8a618"
+  }
+}

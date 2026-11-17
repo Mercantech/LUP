@@ -1,0 +1,60 @@
+{
+  "generator": "Pillow",
+  "mascot": "/images/characters/gitmejsen/reactions/idea.png",
+  "animations": [
+    {
+      "id": "foerste-commit",
+      "title": "Første commit",
+      "topic": "Arbejdsmappe, staging og historik",
+      "alt": "README.md føjes til staging med git add. Git commit gemmer det valgte indhold som commit A.",
+      "width": 640,
+      "height": 480,
+      "frameCount": 3,
+      "frameDurationsMs": [
+        2600,
+        3300,
+        4500
+      ],
+      "gif": "/images/characters/gitmejsen/animations/foerste-commit.gif",
+      "poster": "/images/characters/gitmejsen/animations/foerste-commit.webp",
+      "gifSha256": "60565d54c23d9a2432ae2b36c2caf40ba854af73383bb7127cb177e26e0c99e3",
+      "posterSha256": "60cebe40a43a351d5befdee491785111e987f32af27c99a191615e28a3362aef"
+    },
+    {
+      "id": "ny-branch",
+      "title": "Opret en branch",
+      "topic": "Samme udgangspunkt, eget spor",
+      "alt": "main og forsog peger først på B. Et nyt commit C flytter kun forsog videre.",
+      "width": 640,
+      "height": 480,
+      "frameCount": 3,
+      "frameDurationsMs": [
+        2600,
+        3300,
+        4500
+      ],
+      "gif": "/images/characters/gitmejsen/animations/ny-branch.gif",
+      "poster": "/images/characters/gitmejsen/animations/ny-branch.webp",
+      "gifSha256": "a1034f2e6357d342301bbd352baee0e797ee13337bddaf6359f0f7ab0ed257a8",
+      "posterSha256": "c2ea3c9348f594be21f4dade240d93791ba769c483b7473bb29c1c1ce9b51ce5"
+    },
+    {
+      "id": "flet-branches",
+      "title": "Flet branches",
+      "topic": "Et merge med to forældre",
+      "alt": "Commit B og C har fælles forælder A. Merge-commit M får B og C som forældre, og main flytter til M.",
+      "width": 640,
+      "height": 480,
+      "frameCount": 3,
+      "frameDurationsMs": [
+        2600,
+        3300,
+        4500
+      ],
+      "gif": "/images/characters/gitmejsen/animations/flet-branches.gif",
+      "poster": "/images/characters/gitmejsen/animations/flet-branches.webp",
+      "gifSha256": "1b5e3f097c42ed5294ddc6b79d72751a12a9a3d816a29b2b4c5e8b2361bf507f",
+      "posterSha256": "fc3e230dba2964be55848d55fbf4e71d9cda0d0574b01839813d2600d727d8ac"
+    }
+  ]
+}

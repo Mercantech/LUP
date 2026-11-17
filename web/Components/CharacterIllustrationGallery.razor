@@ -36,7 +36,7 @@
                     <figcaption>
                         <div class="character-illustration-caption">
                             <strong>@item.Title</strong>
-                            <a class="character-illustration-download" href="@item.Image" download="@($"{CharacterSlug}-{System.IO.Path.GetFileName(item.Image)}")" aria-label="@($"Hent illustration {item.Title} som PNG")">Hent PNG <span aria-hidden="true">↓</span></a>
+                            <a class="character-illustration-download" href="@item.Image" download="@($"{CharacterSlug}-{System.IO.Path.GetFileName(item.Image.Split('?')[0])}")" aria-label="@($"Hent illustration {item.Title} som PNG")">Hent PNG <span aria-hidden="true">↓</span></a>
                         </div>
                         @if (item.Stage is not null)
                         {

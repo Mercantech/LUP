@@ -1,0 +1,38 @@
+{
+  "id": "gitmejsen-bilbo",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+      "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/scenes/branches-vaerksted.webp",
+      "sha256": "c00faba0b8e91cd23ea4399c418b29961045c0a8ea0e7af9cca082086d82a776"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/scenes/marmeladeordren.webp",
+      "sha256": "d4e03ac9af080c83efef778779009572b31308fb23ee522735a12037556ab8e7"
+    }
+  ],
+  "alt": "Gitmejsen følger med, mens Bilbo tjekker to regler for syltetøjsordrer ved siden af et diagram, hvor to grene mødes.",
+  "prompt": "One full-bleed 1536×1024 landscape, 3:2, warm painterly detailed gouache and oil-on-paper LUP character illustration. Exact canonical likenesses from four input references. Gitmejsen is the small crested tit from refs one and two, naturally bird-scale, tufted cream-and-speckled crest, black cheek arcs, bib and fine dark beak, warm tan-gray feathers, distinct cobalt wool scarf, perched on a twig stand on the workbench. Bilbo Backend is the same short round adult hobbit as refs three and four, chestnut curls, red cheeks, pointed ears and small chin tuft, moss-green velvet vest with brass buttons, beige shirt with rolled sleeves, russet cuffed trousers, large naturally hairy bare feet seen on the planked floor. Preserve their exact characteristic sizes and outlines. The episode takes place at Gitmejsen's sun-dappled Finnish pine workshop overlooking a forest lake, finished wooden bench and pine cones. A blackberry jam jar with cream cloth and a fruit motif anchors the subject. Working together, Bilbo quietly adjusts the paperback test notebook with one hand and follows the two slips with a pencil in his other hand; exactly two human arms and hands. Gitmejsen looks attentively at the same work. A pair of simple test cases has been laid out as two contrasting paper slips on the tabletop, with one slip showing three tiny jar silhouettes under a horizontal cap line for a maximum, and the other showing a single jar on a shelf for availability. Behind the jar an ordinary open laptop screen shows a deliberate simplified branching diagram: two distinct softly colored input paths converge into one outlet. The two safeguards will both be kept in one combined order rule, and the test is being adjusted. Communicate through the paper props and a single clean two-into-one branch diagram. Existing test notebook has sparse graphic square checkboxes and a single green mark, no lettering. The laptop display contains diagram lines and dots only. Keep the large faces expressive, Bilbo seated in three-quarter view with the lower foreground unobstructed so his feet are visible, and the naturally sized Gitmejsen raised on the small workbench perch to be recognizable at thumbnail size. Exact iconic sharp crest, not a cardinal or owl, real talons, natural wings. One coherent image with warm honey light on wood and velvety olive, indigo and leaf-green accents. Strong visual separation around the characters and central action. No text, captions, readable labels, digits, markup, logo, or watermark, no montage, chart sheet, or UI overlay.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/gitmejsen-bilbo.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3550966,
+    "sha256": "8c11c86eba9ceede36a6966d7a8689f6afae0f3ee69e4f333fe48e56863ca43f"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/gitmejsen-bilbo.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 187252,
+    "sha256": "8c30a901a072cf4bcbbdd5d25a4bd7b4ffa8e33cecd6d75abc3297f7129f55ba"
+  }
+}

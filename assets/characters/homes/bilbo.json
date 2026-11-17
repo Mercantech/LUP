@@ -1,0 +1,63 @@
+{
+  "slug": "bilbo",
+  "name": "Brombærbo",
+  "description": "Bilbo bor under en græsklædt bakke bag en rund grøn dør, omgivet af brombærbuske. Han koger syltetøj ved ildstedet og sætter glassene på række i spisekammeret.",
+  "scenes": [
+    {
+      "id": "outside",
+      "generator": "Built-in ImageGen",
+      "alt": "Bilbo står barfodet med et glas brombærsyltetøj foran Brombærbos runde grønne dør og buede jordtag.",
+      "prompt": "3:2 1536x1024 landscape illustration in the LUP mascot collection. Use the first provided image for exact mascot identity. Grounded handcrafted storybook illustration, lush tactile paint, full home in frame, one easily recognized character in front of the doorway with ample detail at 768px, natural expressive pose, no other mascot, no lettering or watermark. Bilbo Backend lives in Brombærbo, a close cozy hillside home built under tall grass. Show a moss-green perfectly round wooden front door with a central brass knob set in a cream sandstone ring, a round amber-glazed side window and a three-bulb brass porch lantern. Bushes with clusters of ripe blackberries flank the stepping-stone path. Canonical Bilbo stands on the low porch welcoming us, brown curls, rosy face, pointy ears, moss-green velvet vest, rolled cream shirt, russet breeches, two visible naturally shaped bare hairy feet, no shoes or socks, holding a small glass berry preserves jar in one hand. Warm sunshine, grass and earthen-timber textures, intimate domestic storybook composition. Keep the full green door and wall silhouette readable, no logo or text.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+          "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/bilbo/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3739803,
+        "sha256": "c7bf9ef6df524d021693eedaf0fcd5c5b96ce4bcebf9c01bb6a7ccdcd188f714"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/bilbo/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 182246,
+        "sha256": "c65ae6dea8f91de54fb951c255e76126a14feb796e871cafe36f5b0dc296f543"
+      }
+    },
+    {
+      "id": "inside",
+      "generator": "Built-in ImageGen",
+      "alt": "Bilbo fylder et syltetøjsglas ved ildstedet, tæt på den grønne runddør og hylderne med brombærsyltetøj.",
+      "prompt": "Create an interior landscape LUP character illustration, 3:2 1536x1024. Use source 1 as exact mascot identity and source 2 as the exterior of this exact house. This is a different camera shot, entirely from inside, with recognizable door or window materials from the exterior carried into the interior at the correct analogous scale. Strong storytelling and handmade painterly materials, one mascot visible and unoccluded, clean anatomy, no logos, rendered text or second character. Enter Brombærbo from the side, looking back towards the slightly ajar moss-green circular door with centered brass knob in a cream sandstone ring and the round amber four-pane side window. The rear glimpse of berry leaves in the garden through the round window and brass details establish continuity. Hearth and sitting-room kitchen with wood curved beams, cosy quilted chair, row of brombær jars leading into a short kitchen pantry and a small entrance hatch to his downstairs pantry. Bilbo is in front of the hearth on flagstones with both large bare hairy natural feet clearly visible, cream rolled shirt, moss-green vest, curls and pointed ears, ladling jam into a glass jar using an anatomically clear single spoon hand. Cozy home where he actually lives, a loaf and teacup, glowing embers, blue dusk outside, painterly amber and green rather than a software classroom.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+          "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+        },
+        {
+          "path": "web/wwwroot/images/characters/bilbo/home/outside.png",
+          "sha256": "c7bf9ef6df524d021693eedaf0fcd5c5b96ce4bcebf9c01bb6a7ccdcd188f714"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/bilbo/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3507939,
+        "sha256": "d3821e1ab57b3e6351008b965a0956872568ab31f2ce3d298d19ade757cc6839"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/bilbo/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 169388,
+        "sha256": "aa93d22eef74a623569e63707b7b4b6dff59fae92cf0de2dae31ff48869213cb"
+      }
+    }
+  ]
+}

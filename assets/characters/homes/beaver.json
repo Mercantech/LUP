@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "slug": "beaver",
+  "name": "Blåbækhuset",
+  "description": "Bæver bor i Blåbækhuset, et træhus ved bækken med blå skodder og et vandhjul tæt på den lave dæmning. På inspektionsvæggen hænger hans reservedele og målinger, og ved siden af står lænestolen til tepausen.",
+  "generator": "Indbygget ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Bæver står med sin tablet foran et træhus med blå skodder. Ved huset drejer et vandhjul i bækken tæt på en lav dæmning.",
+      "prompt": "Create one polished opaque 1536×1024 landscape 3:2 storybook scene in the cohesive painted LUP character family. It is a quiet distinctive character home, with an environment strongly in focus AND exactly one recognizable character actively using that place at roughly one third of composition. Use the FIRST attached portrait for exact recognizable anatomy and costume, not its isolated pose. Create a totally new composition. Rich handmade materials, careful expressive anatomy, natural shadows, subtle paper grain, unified mature painterly look. No lettering, numbers, invented brand marks, symbols unrelated to the scene, watermark, extraneous animals or people, landscape borders or title cards. Make key architectural landmarks clear and with gentle visual hierarchy at 768px. Keep complete face/ears and hand count correct. No photorealism. No comic panels, opaque and full bleed.\n\nCharacter identity: Bæver is the same round friendly anthropomorphic brown beaver as reference, with a broad round muzzle, short rounded ears, two square incisors, warm brown rectangular glasses, cobalt blue tailored instructor jacket over cream shirt, brown trousers and sturdy brown shoes. His one broad flat brown paddle tail with crosshatches is visible. Keep his canonical tablet and generic shield/check patch if visible.\n\nExterior environment: A small sturdy amber-toned vertical-timber cottage on short stone piers next to a gently flowing brook, foreground at slight three-quarter angle, with slate-grey steep gable roof, wide deep BLUE-painted plank shutters framing the main square four-pane window, and a simple wooden front door with a small square upper pane. Visible pegged joints and individual repairable planks. A small roofed extension to a clearly functional turning wood waterwheel catches water beside the house, not covering front. A shallow low beaver dam of twigs and stones lies upstream and visibly separates low levels without flooding the home. Local reeds, moss and reflections, clean small plank footbridge across the narrow stream. Bæver stands in foreground on the reachable front porch or footbridge, holding his protective blue tablet in both natural paws, looking at the moving waterwheel in satisfaction. Show whole recognizable basic exterior, including blue shutters, front door and waterwheel. No technical labels. Afternoon filtered sun, genuine home sheltered from water.",
+      "generation": "exec-1df1f222-03e1-4d29-a610-a5965c107ca6.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/beaver/portrait.png",
+          "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/beaver/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3601686,
+        "sha256": "6dc6d8c3a79c0130d1946bbd253b968dd1b4ddad93dd6e75a65c908fa1233759"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/beaver/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 160240,
+        "sha256": "91bc1383cc372401c407e288013479c32c63edf90d7e63b621bbe0698379f4e3"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Bæver sidder med te og sin tablet i lænestolen. På inspektionsvæggen hænger et logpanel og håndskårne træstykker under en lampe.",
+      "prompt": "Create one polished opaque 1536×1024 landscape 3:2 storybook scene in the cohesive painted LUP character family. It is a quiet distinctive character home, with an environment strongly in focus AND exactly one recognizable character actively using that place at roughly one third of composition. Use the FIRST attached portrait for exact recognizable anatomy and costume, not its isolated pose. Create a totally new composition. Rich handmade materials, careful expressive anatomy, natural shadows, subtle paper grain, unified mature painterly look. No lettering, numbers, invented brand marks, symbols unrelated to the scene, watermark, extraneous animals or people, landscape borders or title cards. Make key architectural landmarks clear and with gentle visual hierarchy at 768px. Keep complete face/ears and hand count correct. No photorealism. No comic panels, opaque and full bleed.\n\nCharacter identity: Bæver is the same round friendly anthropomorphic brown beaver as reference, with a broad round muzzle, short rounded ears, two square incisors, warm brown rectangular glasses, cobalt blue tailored instructor jacket over cream shirt, brown trousers and sturdy brown shoes. His one broad flat brown paddle tail with crosshatches is visible. Keep his canonical tablet and generic shield/check patch if visible.\n\nThe SECOND reference is the exterior of this exact same home. Now move the eye INSIDE it and compose the scene from the inside looking at the interior side of the entrance and adjacent windows. Use second reference to preserve its material, geometry, distinctive door and glazing and exact shared exterior scenery. The first reference remains canonical for the character. No cutaway or wide outside view.\n\nInterior environment: Show the same cottage from inside, at seated beaver height. Looking across the entrance wall from inside, the same square four-pane window with the same deep-blue frame and grey-green stream glimpses and simple wood door with the same square high pane are recognizable. Warm amber timber, visible pegged repairs, rounded smooth replaceable planks and carpentry. His affectionate nickname inspection wall is represented visually by a small orderly domestic wall storage area with a rugged blue-edged waterproof tablet showing only log dots and thin graphic rows, dividers for hand-cut wooden offcuts and wooden pegs, one small amber reading lamp. The foreground action is Bæver settling into an indigo knitted reading chair with a small teacup in one correct paw, paddle tail rests on the floor beside the chair, clearly relaxed with his blue instructor jacket on. Small folded blanket, slippers or a book are domestic touches, one shelf in natural light. No labels and no busy workshop; make it visibly his lived-in home, not a showcase.",
+      "generation": "exec-d998b9f4-a5df-4677-8415-0bef8ebe36b3.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/beaver/portrait.png",
+          "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+        },
+        {
+          "path": "web/wwwroot/images/characters/beaver/home/outside.png",
+          "sha256": "6dc6d8c3a79c0130d1946bbd253b968dd1b4ddad93dd6e75a65c908fa1233759"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/beaver/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3444436,
+        "sha256": "61ef14b2a7846aaab247b8ff0da20c232878919338357a28cfe854b17c3dd05c"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/beaver/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 138980,
+        "sha256": "c77895773326515d4271af7e36876bf296b34c459250785b951718cfe8d398cc"
+      }
+    }
+  ]
+}

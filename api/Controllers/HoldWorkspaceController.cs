@@ -40,7 +40,8 @@ public sealed class HoldWorkspaceController(AppDbContext db, CourseAccess access
             .Select(s => new { s.QuestId, s.Quest.Title }).ToListAsync(ct) : [];
         var now = DateTimeOffset.UtcNow;
         // Sorting in memory also keeps the read model portable to SQLite tests.
-        var events = await db.HoldCalendarEvents.AsNoTracking().Where(e => e.HoldId == hold.Id).ToListAsync(ct);
+        var events = await new HoldCalendarAccess(db).Visible(db.HoldCalendarEvents.AsNoTracking().Where(e => e.HoldId == hold.Id),
+            sub, manage ? [hold.Id] : []).ToListAsync(ct);
         var agenda = events.Where(e => e.EndUtc >= now)
             .Select(e => new WorkspaceAgendaItem(e.Id, e.Title, e.StartUtc, "event", e.Location))
             .Concat(quests.Where(q => q.Published && q.DeadlineUtc >= now)

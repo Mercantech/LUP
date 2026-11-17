@@ -143,7 +143,8 @@ public sealed class TeachingCoursesController(AppDbContext db, CourseAccess acce
             quests = quests.Where(q => readableIds.Contains(q.Id)).ToList();
         }
         var materials = await db.CourseMaterials.AsNoTracking().Where(m => m.HoldId == holdId && (manage || m.Published)).ToListAsync(ct);
-        var events = await db.HoldCalendarEvents.AsNoTracking().Where(e => e.HoldId == holdId).ToListAsync(ct);
+        var events = await new HoldCalendarAccess(db).Visible(db.HoldCalendarEvents.AsNoTracking().Where(e => e.HoldId == holdId),
+            UserClaims.GetSub(User) ?? Guid.Empty, manage ? [holdId] : []).ToListAsync(ct);
         return pages.Select(p => new TeachingCourseResourceView(p.Id, "page", manage ? p.Title : p.PublishedTitle ?? p.Title,
                 p.PublishedAtUtc != null, p.ParentPageId, LinkedCourseId: Owner("page", p.Id)))
             .Concat(quests.Select(q => new TeachingCourseResourceView(q.Id, "quest", q.Title, q.Published, LinkedCourseId: Owner("quest", q.Id))))

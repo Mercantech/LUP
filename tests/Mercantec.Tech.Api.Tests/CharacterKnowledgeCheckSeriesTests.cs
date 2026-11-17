@@ -18,11 +18,12 @@ namespace Mercantec.Tech.Api.Tests;
 public sealed class CharacterKnowledgeCheckSeriesTests
 {
     [Fact]
-    public void FirstSeriesUsesElevenDifferentCharacterProfilesAndSixQuestionsEach()
+    public void SeriesCoversEveryCharacterProfileAndUsesSixQuestionsPerQuiz()
     {
         var entries = CharacterKnowledgeCheckCatalog.All.Values;
-        Assert.Equal(11, entries.Count());
-        Assert.Equal(11, entries.Select(template => template.CharacterSlug).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(CharacterCatalog.All.Select(character => character.Slug).Order(StringComparer.Ordinal),
+            entries.Select(template => template.CharacterSlug).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal));
+        Assert.Single(entries, template => template.CharacterSlug == "gitmejsen");
         Assert.All(entries, template =>
         {
             Assert.NotNull(CharacterCatalog.Find(template.CharacterSlug));
@@ -54,16 +55,17 @@ public sealed class CharacterKnowledgeCheckSeriesTests
         await db.SaveChangesAsync();
 
         var dryRun = await KnowledgeCheckSeriesPublisher.RunCharacterSeriesAsync(db, owner, dryRun: true);
+        var seriesCount = CharacterKnowledgeCheckCatalog.All.Count;
         Assert.Empty(dryRun.Issues);
-        Assert.Equal(11, dryRun.DraftsToAdd);
-        Assert.Equal(11, dryRun.PublicationsToAdd);
+        Assert.Equal(seriesCount, dryRun.DraftsToAdd);
+        Assert.Equal(seriesCount, dryRun.PublicationsToAdd);
         Assert.Empty(await db.KnowledgeCheckQuizzes.ToListAsync());
 
         var first = await KnowledgeCheckSeriesPublisher.RunCharacterSeriesAsync(db, owner, dryRun: false);
         Assert.Empty(first.Issues);
-        Assert.Equal(11, first.FinalActive);
-        Assert.Equal(11, first.Published);
-        var quizId = Assert.Single(CharacterKnowledgeCheckCatalog.QuizIds("raymond"));
+        Assert.Equal(seriesCount, first.FinalActive);
+        Assert.Equal(seriesCount, first.Published);
+        var quizId = QuizId("raymond-manglende-raekke");
         var publication = await db.KnowledgeCheckPublications.AsNoTracking().SingleAsync(row => row.Version.QuizId == quizId);
         var teacher = Controller(db, owner, "Underviser");
         var original = Value<KnowledgeCheckDraftView>(await teacher.GetDraft(quizId, default));
@@ -77,14 +79,14 @@ public sealed class CharacterKnowledgeCheckSeriesTests
         Assert.Empty(repeated.Issues);
         Assert.Equal(0, repeated.Published);
         Assert.Equal(1, repeated.PreviouslyClosed);
-        Assert.Equal(10, repeated.FinalActive);
-        Assert.Equal(11, await db.KnowledgeCheckPublications.CountAsync());
+        Assert.Equal(seriesCount - 1, repeated.FinalActive);
+        Assert.Equal(seriesCount, await db.KnowledgeCheckPublications.CountAsync());
         Assert.Equal(changed.Title, Value<KnowledgeCheckDraftView>(await teacher.GetDraft(quizId, default)).Title);
 
         var other = await KnowledgeCheckSeriesPublisher.RunCharacterSeriesAsync(db, otherTeacher, dryRun: false);
         Assert.All(other.Issues, issue => Assert.Equal("draft_owned_by_another_teacher", issue.Code));
-        Assert.Equal(11, other.Issues.Length);
-        Assert.Equal(11, await db.KnowledgeCheckQuizzes.CountAsync());
+        Assert.Equal(seriesCount, other.Issues.Length);
+        Assert.Equal(seriesCount, await db.KnowledgeCheckQuizzes.CountAsync());
     }
 
     [Fact]
@@ -103,7 +105,15 @@ public sealed class CharacterKnowledgeCheckSeriesTests
         Assert.Empty((await KnowledgeCheckSeriesPublisher.RunCharacterSeriesAsync(db, owner, dryRun: false)).Issues);
 
         var guest = Controller(db);
-        var profile = Assert.Single(await guest.CharacterExercises("raymond", default));
+        var quizId = QuizId("raymond-manglende-raekke");
+        var joinQuizId = QuizId("raymond-forbind-tabeller");
+        var profiles = await guest.CharacterExercises("raymond", default);
+        Assert.Equal(2, profiles.Length);
+        var profile = Assert.Single(profiles, row => row.Title == CharacterKnowledgeCheckCatalog.All[quizId].Draft.Title);
+        var joinProfile = Assert.Single(profiles, row => row.Title == CharacterKnowledgeCheckCatalog.All[joinQuizId].Draft.Title);
+        var gitmejsen = Assert.Single(await guest.CharacterExercises("gitmejsen", default));
+        Assert.Equal("Fra første commit til et merge", gitmejsen.Title);
+        Assert.Equal(6, gitmejsen.QuestionCount);
         Assert.Empty(await guest.CharacterExercises("unknown", default));
         Assert.NotNull(typeof(KnowledgeChecksController).GetMethod(nameof(KnowledgeChecksController.CharacterExercises))!
             .GetCustomAttributes(typeof(AllowAnonymousAttribute), inherit: false).SingleOrDefault());
@@ -115,7 +125,6 @@ public sealed class CharacterKnowledgeCheckSeriesTests
         var student = Controller(db, Guid.NewGuid(), "Elev");
         var attempt = Value<KnowledgeCheckAttemptView>(await student.StartAttempt(profile.Id, new(), null, null, default));
         var teacher = Controller(db, owner, "Underviser");
-        var quizId = Assert.Single(CharacterKnowledgeCheckCatalog.QuizIds("raymond"));
         var draft = Value<KnowledgeCheckDraftView>(await teacher.GetDraft(quizId, default));
         await teacher.Update(quizId, new("Raymond undersøger caféen", draft.Description, draft.Topic,
             draft.EstimatedMinutes, draft.Questions, draft.Revision), default);
@@ -123,12 +132,14 @@ public sealed class CharacterKnowledgeCheckSeriesTests
         Assert.NotEqual(profile.Id, next.Id);
         Assert.Equal("raymond", next.CharacterHost?.Slug);
         Assert.True(next.IsCurrentPractice);
-        Assert.Equal(next.Id, Assert.Single(await guest.CharacterExercises("raymond", default)).Id);
+        Assert.Equal(new[] { next.Id, joinProfile.Id }.Order(),
+            (await guest.CharacterExercises("raymond", default)).Select(row => row.Id).Order());
 
         var index = Value<KnowledgeCheckIndex>(await student.List(default));
         var hosted = index.Publications.Where(row => row.CharacterHost?.Slug == "raymond").ToArray();
-        Assert.Equal(2, hosted.Length);
-        Assert.Equal(next.Id, Assert.Single(hosted, row => row.IsCurrentPractice).Id);
+        Assert.Equal(3, hosted.Length);
+        Assert.Equal(new[] { next.Id, joinProfile.Id }.Order(),
+            hosted.Where(row => row.IsCurrentPractice).Select(row => row.Id).Order());
         Assert.Contains(index.History, entry => entry.AttemptId == attempt.Id && entry.CanOpen);
         var previous = Value<KnowledgeCheckPublicationView>(await student.GetPublication(profile.Id, null, null, default));
         Assert.False(previous.IsCurrentPractice);
@@ -145,13 +156,18 @@ public sealed class CharacterKnowledgeCheckSeriesTests
         var assigned = Value<KnowledgeCheckPublicationView>(await teacher.Publish(quizId, new(hold.Id, 1, "manual"), default));
         Assert.Null(assigned.CharacterHost);
         Assert.IsType<NotFoundResult>(await student.GetPublication(assigned.Id, null, null, default));
-        Assert.Equal(next.Id, Assert.Single(await guest.CharacterExercises("raymond", default)).Id);
+        Assert.Equal(new[] { next.Id, joinProfile.Id }.Order(),
+            (await guest.CharacterExercises("raymond", default)).Select(row => row.Id).Order());
 
         await teacher.ClosePublication(next.Id, default);
-        Assert.Equal(profile.Id, Assert.Single(await guest.CharacterExercises("raymond", default)).Id);
+        Assert.Equal(new[] { profile.Id, joinProfile.Id }.Order(),
+            (await guest.CharacterExercises("raymond", default)).Select(row => row.Id).Order());
         await teacher.ClosePublication(profile.Id, default);
-        Assert.Empty(await guest.CharacterExercises("raymond", default));
+        Assert.Equal(joinProfile.Id, Assert.Single(await guest.CharacterExercises("raymond", default)).Id);
     }
+
+    private static Guid QuizId(string key) =>
+        CharacterKnowledgeCheckCatalog.All.Single(item => item.Value.Key == key).Key;
 
     private static KnowledgeChecksController Controller(AppDbContext db, Guid? sub = null, string role = "Elev") =>
         new(db, new CourseAccess(db))

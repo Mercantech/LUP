@@ -442,21 +442,50 @@ public sealed class CharacterDetailTests
     }
 
     [Fact]
-    public async Task OverviewIncludesAllElevenCharactersAndUsesStableRoutes()
+    public async Task OverviewIncludesAllCharactersAndUsesStableRoutes()
     {
         using var api = new CharacterQuizTestApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
         var page = context.Render<CharacterIndex>();
 
-        Assert.Equal(11, page.FindAll(".character-card").Count);
-        Assert.Equal(11, CharacterCatalog.All.Select(character => character.Path).Distinct().Count());
+        Assert.Equal(CharacterCatalog.All.Count, page.FindAll(".character-card").Count);
+        Assert.Equal(CharacterCatalog.All.Count, CharacterCatalog.All.Select(character => character.Path).Distinct().Count());
         Assert.Equal("Bilbo Backend", page.Find("a[href='/characters/bilbo'] h2").TextContent);
+        Assert.Equal("Gitmejsen", page.Find("a[href='/characters/gitmejsen'] h2").TextContent);
         Assert.Equal("Bæver", page.Find("a[href='/characters/beaver'] h2").TextContent);
         Assert.Equal("Ræv", page.Find("a[href='/characters/fox'] h2").TextContent);
         Assert.Equal("Docker", page.Find("a[href='/characters/whale'] h2").TextContent);
         Assert.Equal("Gummianden", page.Find("a[href='/characters/gummianden'] h2").TextContent);
         Assert.Equal("Cyberbien", page.Find("a[href='/characters/bee'] h2").TextContent);
         Assert.Equal("Næsebladet", page.Find("a[href='/characters/bat'] h2").TextContent);
+    }
+
+    [Fact]
+    public async Task GitmejsenProfileShowsGitExercisesAndSearchableReactions()
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await LearningUiTestContext.CreateAsync(api);
+        var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "gitmejsen"));
+
+        Assert.Equal("Gitmejsen", page.Find("h1").TextContent);
+        Assert.Equal(3, page.FindAll(".character-appearance-picker button").Count);
+        Assert.Equal(14, page.FindAll(".character-scenes figure").Count);
+        Assert.Contains("fire små hilsner fra Mumi-universet", page.Find(".character-scenes header").TextContent);
+        Assert.Equal(30, page.FindAll(".character-reactions figure").Count);
+        Assert.Equal(3, page.FindAll(".character-animation-card").Count);
+        var exercises = page.FindAll(".character-gallery figure");
+        Assert.Equal(11, exercises.Count);
+        Assert.Contains("git diff --cached", exercises[0].QuerySelector("code")!.TextContent);
+        Assert.Contains("git log --graph", exercises[1].QuerySelector("code")!.TextContent);
+        Assert.Contains("i en udskiftelig, firkantet frontplade.", exercises[2].QuerySelector("code")!.TextContent);
+        Assert.Contains(exercises, exercise => exercise.QuerySelector("code")!.TextContent.Contains("git fetch origin", StringComparison.Ordinal));
+        Assert.Contains(exercises, exercise => exercise.QuerySelector("code")!.TextContent.Contains("git bisect reset", StringComparison.Ordinal));
+        Assert.All(exercises, exercise => Assert.EndsWith(".png", exercise.QuerySelector("a[download]")!.GetAttribute("href")));
+
+        page.FindAll(".character-appearance-picker button")[1].Click();
+        page.Find("#character-reactions-title-search").Input("stash");
+        Assert.Single(page.FindAll(".character-reactions figure"));
+        Assert.EndsWith("/vinter.webp", page.Find(".character-main-art img").GetAttribute("src"));
     }
 
     [Fact]

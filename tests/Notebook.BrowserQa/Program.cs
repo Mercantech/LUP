@@ -26,9 +26,18 @@ if (Environment.GetEnvironmentVariable("NOTEBOOK_BROWSER_QA") != "1")
 
 SQLitePCL.Batteries_V2.Init();
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://127.0.0.1:8088");
+var apiPort = QaPort("NOTEBOOK_BROWSER_QA_API_PORT", 8088);
+var collaborationPort = QaPort("NOTEBOOK_BROWSER_QA_COLLAB_PORT", 9099);
+builder.WebHost.UseUrls($"http://127.0.0.1:{apiPort}");
 builder.Configuration["Notion:ServiceSecret"] = QaIdentities.ServiceKey;
-builder.Configuration["Notebook:CollaborationBaseUrl"] = "http://127.0.0.1:9099";
+builder.Configuration["Notebook:CollaborationBaseUrl"] = $"http://127.0.0.1:{collaborationPort}";
+
+static int QaPort(string key, int fallback) => Environment.GetEnvironmentVariable(key) switch
+{
+    null => fallback,
+    { } value when int.TryParse(value, out var port) && port is >= 1024 and <= 65535 => port,
+    _ => throw new InvalidOperationException($"{key} must be a loopback test port.")
+};
 var connectionString = $"Data Source=notebook-browser-qa-{Guid.NewGuid():N};Mode=Memory;Cache=Shared";
 await using var keepAlive = new SqliteConnection(connectionString);
 await keepAlive.OpenAsync();
@@ -41,6 +50,7 @@ builder.Services.AddScoped<FileAuthorization>();
 builder.Configuration["Wordle:ScheduleKey"] = QaIdentities.ServiceKey;
 builder.Configuration["DailyGames:ScheduleKey"] = QaIdentities.ServiceKey;
 builder.Services.AddWordle();
+builder.Services.AddLiveQuiz();
 builder.Services.AddSingleton<NotebookServiceKey>();
 builder.Services.AddHttpClient<NotebookEngineClient>(client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddSingleton<IObjectStorage, QaMemoryStorage>();
@@ -58,6 +68,7 @@ app.Use(async (context, next) =>
     { context.Response.StatusCode = 403; return; }
     await next();
 });
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapGet("/_qa/health", () => Results.Json(new { status = "ok", fixture = "fictional-notebook-browser-qa" }));
@@ -85,6 +96,50 @@ using (var scope = app.Services.CreateScope())
     foreach (var key in new[] { "pupil", "peer" })
         db.Memberships.Add(new Membership { Id = Guid.NewGuid(), Hold = hold, UserSub = QaIdentities.All[key].Sub,
             DisplayName = QaIdentities.All[key].Name, CreatedAtUtc = now });
+    if (Environment.GetEnvironmentVariable("NOTEBOOK_BROWSER_QA_CALENDAR") == "1")
+    {
+        var otherCourse = new Forloeb
+        {
+            Id = new("44444444-aaaa-4444-8444-444444444444"), Name = "QA Netværk",
+            CreatedBySub = course.CreatedBySub, CreatedAtUtc = now
+        };
+        var otherHold = new Hold
+        {
+            Id = new("55555555-aaaa-4555-8555-555555555555"), Name = "QA Netværkshold", Forloeb = otherCourse,
+            CreatedAtUtc = now
+        };
+        db.Hold.Add(otherHold);
+        db.Memberships.Add(new Membership
+        {
+            Id = Guid.NewGuid(), Hold = otherHold, UserSub = QaIdentities.All["pupil"].Sub,
+            DisplayName = QaIdentities.All["pupil"].Name, CreatedAtUtc = now
+        });
+
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Copenhagen");
+        var today = TimeZoneInfo.ConvertTime(now, zone).Date;
+        DateTimeOffset At(int hour, int days = 0)
+        {
+            var local = today.AddDays(days).AddHours(hour);
+            return new DateTimeOffset(local, zone.GetUtcOffset(local)).ToUniversalTime();
+        }
+
+        db.LearningQuests.Add(new LearningQuest
+        {
+            Id = new("88888888-aaaa-4888-8888-888888888888"), HoldId = otherHold.Id,
+            Title = "QA Quest om routere", Published = true, DeadlineUtc = At(15, days: 1), CreatedAtUtc = now
+        });
+        db.HoldCalendarEvents.AddRange(
+            new HoldCalendarEvent
+            {
+                Id = new("66666666-aaaa-4666-8666-666666666666"), HoldId = hold.Id,
+                Title = "QA Kalender · Programmering", StartUtc = At(10), EndUtc = At(11), Location = "Lokale 12"
+            },
+            new HoldCalendarEvent
+            {
+                Id = new("77777777-aaaa-4777-8777-777777777777"), HoldId = otherHold.Id,
+                Title = "QA Kalender · Netværk", StartUtc = At(14), EndUtc = At(15), Location = "Lokale 15"
+            });
+    }
     // Use the real embedded standard graphics and real emoji/content controllers; no AI provider is registered.
     foreach (var key in typeof(StandardEmojiAssets).Assembly.GetManifestResourceNames().Where(StandardEmojiAssets.IsStandard).Order())
     {

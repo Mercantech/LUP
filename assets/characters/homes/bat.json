@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "slug": "bat",
+  "name": "Ekkoloftet",
+  "description": "Næsebladet bor på loftet over et gammelt teater, hvor den ravfarvede rude lyser ud over tagene. Her lytter han til sine optagelser og gemmer sin yndlingsteske.",
+  "generator": "Indbygget ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Næsebladet står ved messingklokken på trappen til Ekkoloftet over det gamle teater. Den ravfarvede halvroset lyser i gavlen.",
+      "prompt": "One finished standalone widescreen landscape illustration at 1536 by 1024 pixels, 3:2 aspect ratio. Create a very beautiful, tactile, painterly and premium hand-painted storybook environment in the recognizable LUP character world. Quietly imaginative architecture, clear identifiable doors and windows, tactile contrasting materials, inviting details, interior/exterior continuity will matter. No text, lettering, numbers, signatures, watermarks or brands. One true scene filling the frame. Show the exterior of the sought-after small attic dwelling above a historic Danish echo theater, a slightly mysterious peaceful dusk in a historic old town. Warm illuminated rich deep red velvet curtains visible at the two grand hall windows beneath the home. The modest steep gabled slate roof centers a narrow high AMBER HALF-ROSE window in the attic gable: a distinct little curved semicircle of intricate radial brass muntins, with straight bottom edge, deep honey glowing panes, set at eye-level with the attic living area, one unmistakable window rather than a church facade. Ivy climbs one side of the brick; a narrow external blackened iron stair and landing lead to the wooden private loft entrance NEXT TO that high attic window, with ONE small decorative brass bell emblem fixed to stair entry rail. Intimate late violet dusk, old dark oxblood bricks, wood, blue-slate shingling and honest aged brass. Avoid Gothic exaggerations or obvious haunted architecture. Character matching the attached exact bat portrait stands visible on the landing, below and adjacent to the window, full silhouette against lighter masonry; rust and plum fur, broad compact shoulders, pink veined leaf nose, notch at high viewer-right ear, amber eyes, deep aubergine velvet tailcoat gold piping, wine brocade waistcoat and cream ruffled cravat, two distinct real folded wings and natural wing-wrist claws, no independent human arms, no spoon in hand in this image. He places one real wing wrist claw on rail, gently. Architecture is the hero; frame the dwelling and essential floor arrangement clearly. Crisp flame-shaped indoor highlights, slight mist and fallen leaves, tactile warmth.",
+      "generation": "exec-90e9218c-4b73-48fc-958e-cc259348e42c.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/bat/portrait.png",
+          "sha256": "005fcf6f22d69cc23e4d323cb7896395403ead245ef30961ab5939f9bc7cc8af"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/bat/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3240033,
+        "sha256": "51cc9e2d2703389348caa1e0f42d56f376f4e5d7b16dbb6a86aa21677c162a95"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/bat/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 136892,
+        "sha256": "b593fe7cc51907fdc7fff71a3e5daae7e8a4843c6100053fb30f71cd3b2b0dc1"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Næsebladet står ved grammofonen på Ekkoloftet. Vokscylindre og en teske ligger under den ravfarvede halvroset.",
+      "prompt": "One beautiful finished widescreen landscape image at native 1536x1024 in the painterly storytelling style of the attachments. Attached 1 is an EXACT identity reference and attached 2 is the actual exterior of THIS EXACT HOME to match in trim materials, window or door construction, architecture and color, seen from indoors. Make a separate three-quarter interior view of the home, never show facade again, carefully establish shape and domestic coziness, coherent materials and correct character anatomy. No words, logos, watermarks, text or letters, no border. Show inside the exact private Ekkoloftet attic dwelling just behind the architectural facade in reference 2. Place on back wall the SAME warm amber glass semicircular narrow half-rose window with thin radial ornate brass fan muntins and a straight horizontal sill beside the SAME wooden loft entry door, reverse side of that door and tan wood internal frame to the interior's right as viewed from inside, warm exposed red brick gable and dark timber roof trusses sloping into the edges. Glimpse dusk rooftops and riverside purple light through amber glass. Small private listening room and humanly cozy home above the theater, not a public performance stage. A few panels of dark red velvet curtain fabric repurposed as cushions on an old mohair tufted settee, handwoven aubergine rug, black iron jacket hook on back door. At left, warmly lit antique wood acoustic gramophone with flared brass horn. A modest cabinet has brown Edison-type wax cylinders in cubbies, cases marked with individual simple leaf or circle pictograms and entirely no text. On the low table right beside the gramophone sits ONE cherished old silver teaspoon, visible lying neatly on dark red protective cloth, no pile of spoons. Small soft lamp lighting. The same Næsebladet in reference 1 stands at the gramophone table, peering calmly out at us, with exactly two organic bat wings, two tiny actual wing-wrist claws and brown clawed feet. Plum velvet tailcoat with gold piping, red brocade waistcoat, pale cream cravat and matching cuffs precisely match both references. One claw of the actual nearer folded wing-wrist may touch the wooden top. Both natural wing membranes remain legible, no independent humans' arms or hands. His large ears include the notch at outer viewer-right. Natural materials rich aubergine, dark brick and amber. Comfortable room air around the character, gramophone, small table and back window.",
+      "generation": "exec-1ad1e85d-a9a6-4324-b9af-a2d6d23e04dc.png",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/bat/portrait.png",
+          "sha256": "005fcf6f22d69cc23e4d323cb7896395403ead245ef30961ab5939f9bc7cc8af"
+        },
+        {
+          "path": "web/wwwroot/images/characters/bat/home/outside.png",
+          "sha256": "51cc9e2d2703389348caa1e0f42d56f376f4e5d7b16dbb6a86aa21677c162a95"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/bat/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3329524,
+        "sha256": "23f4e895a6db677bf158c70cdb9e176fc7a292eb7b66773e2317495815780560"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/bat/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 146226,
+        "sha256": "4b2fa337c2dfa35f5dd66f3539ddf2ca0bce6db17e2a2b8e7e30b4ca8cdbf7cd"
+      }
+    }
+  ]
+}

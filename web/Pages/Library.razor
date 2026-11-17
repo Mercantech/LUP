@@ -112,7 +112,13 @@
         }
         else if (_category == "characters")
         {
-            <div class="library-section-heading"><div><h2>Mød karaktererne</h2><p>Find din underviser eller hjælper. Åbn profilen, eller gå direkte til karakterens billeder, emojis og animationer.</p></div><a href="/characters">Alle karakterer</a></div>
+            <div class="library-section-heading">
+                <div><h2>Mød karaktererne</h2><p>Find din underviser eller hjælper. Åbn profilen, eller gå direkte til karakterens billeder, emojis og animationer.</p></div>
+                <div class="library-character-links">
+                    <a href="@CharacterCollaborations.Path">Se alle fællesbilleder</a>
+                    <a href="/characters">Alle karakterer</a>
+                </div>
+            </div>
             <div class="character-grid library-characters">
                 @foreach (var character in CharacterCatalog.All)
                 {

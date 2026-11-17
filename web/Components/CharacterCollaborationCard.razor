@@ -1,0 +1,48 @@
+@using Mercantec.Tech.Web.Characters
+
+<figure id="@Scene.Anchor">
+    <a href="@Scene.Image" target="_blank" rel="noopener noreferrer" aria-label="@($"Åbn {Scene.Title} i fuld størrelse")">
+        <img src="@Scene.Preview" alt="@Scene.Alt" width="768" height="512" loading="lazy" decoding="async" />
+    </a>
+    <figcaption>
+        <div class="character-collaboration-caption">
+            <strong>@Scene.Title</strong>
+            <a href="@Scene.Image" download="@($"{Scene.Id}.png")" aria-label="@($"Hent {Scene.Title} som PNG")">Hent PNG <span aria-hidden="true">↓</span></a>
+        </div>
+        <p>@Scene.Description</p>
+        @if (Scene.Exercise is { } exercise)
+        {
+            <div class="character-collaboration-exercise">
+                <h3>Prøv selv</h3>
+                <p class="character-collaboration-topic">@exercise.Topic</p>
+                <p>@exercise.Task</p>
+                @if (exercise.StarterCode is { } starterCode)
+                {
+                    <pre><code>@starterCode</code></pre>
+                }
+                <details>
+                    <summary>Vis forventet resultat</summary>
+                    <p>@exercise.ExpectedResult</p>
+                </details>
+            </div>
+        }
+        <div class="character-collaboration-links">
+            @foreach (var slug in LinkedSlugs)
+            {
+                @if (CharacterCatalog.Find(slug) is { } participant)
+                {
+                    <a href="@($"{participant.Path}#{Scene.Anchor}")">Se billedet hos @participant.Name</a>
+                }
+            }
+        </div>
+    </figcaption>
+</figure>
+
+@code {
+    [Parameter, EditorRequired] public CharacterCollaboration Scene { get; set; } = default!;
+    [Parameter] public string? ProfileSlug { get; set; }
+
+    private string[] LinkedSlugs => ProfileSlug is { } slug
+        ? [Scene.PartnerSlug(slug)]
+        : [Scene.FirstSlug, Scene.SecondSlug];
+}

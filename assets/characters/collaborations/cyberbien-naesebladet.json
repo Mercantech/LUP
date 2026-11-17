@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "cyberbien-naesebladet",
+  "alt": "Cyberbien og Næsebladet tjekker en afstandssensor i ekkostudiet. Gatewayen modtager målingen fra sensoren med et matchende mærke og afviser det fremmede mærke.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-bba894f7-4b75-4033-9d75-3c9160aae5af.png",
+  "prompt": "Create one finished landscape 1536×1024 3:2 LUP mascot storybook scene based on the two exact character portraits. First reference is Cyberbien, a small rounded golden-yellow bee with friendly brown eyes, exactly two yellow-tipped dark antennae, chunky dark cyan-symbol goggles sitting on the forehead with eyes visible, cream translucent veined wings, striped abdomen, navy hoodie with yellow drawstrings and small generic shield-and-lock patch, dark shoes with yellow soles. Retain his signature smooth and tactile look. Second reference is Næsebladet, a broader heavyset auburn bat with plum underfur, wide shoulders and huge round ears with a notch on the viewer's right, leaf-shaped nose, skeptical amber eyes, dark burgundy Victorian velvet coat with fine gold piping, red brocade vest, cream cravat with amber pin. Preserve his correct anatomy, exactly two foot paws and two folded bat wings with claws at the wrist, no separate humanoid arms emerging from his sides. One natural wrist claw can gently indicate a component, with the folded wing tracing that movement. At Næsebladet's old theatrical echo studio, the two colleagues lean over one large wooden test bench, warm amber stage spotlights, dark red curtains, acoustic panels, modest echo props and the bat's small field recorder and teaspoon. Focus in well-lit foreground: a small electronic distance-sensor board with two recognizable round ultrasonic transducers points sideways toward a pale concrete target block. In front of the known sensor is one teardrop brass tag cut with a simple distinctive diamond hole; show a clearly matching tag tucked beside the small dark physically separate receiving gateway in the center of the bench. A single clearly visible cyan pulse line with a right-pointing arrow connects the trusted sensor toward the gateway, with a small green check at the receiving end and a local status LED glow that is visible but subtle. At the far right, on a separate shallower tray outside the accepted route, one example alternate tag is square and has a round hole, visually incompatible, with one muted red crossed-circle rejection symbol beside it and no cable/arrow connecting to the gateway. Bee looking at the gateway indicator and pointing with one gloved hand, bat looking wryly at the matched tag rather than at camera. Arrange characters on opposite sides of bench with enough physical separation, recognizable complete heads and natural silhouettes, no clutter blocking the elements. Coherent tactile painterly picture-book style, finely painted wood and clothing, distinct shadows and depth, adapted from both references. No rendered words, letters, fake UI, screens, terminal, counts, electrical wiring diagram, scary hacking imagery, code, watermarks, or real branding. Only the canonical simple cyan icon doodles on goggles are permissible. Clear readable visual comparison, wide framing, opaque background.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bee/portrait.webp",
+      "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.webp",
+      "sha256": "5c15516ee9e4755d31081e62a9b62e09aa6c99b3af15a2f537991568107941fc"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/cyberbien-naesebladet.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2876073,
+    "sha256": "002dce2466df8024959803a45f4f1682610975a8450cccc29ed50a2e63375169"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/cyberbien-naesebladet.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 104502,
+    "sha256": "401da519983f223ef5ab62169e8c76209557b85f2792c091503eeed3fa456e65"
+  }
+}

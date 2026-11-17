@@ -11,7 +11,7 @@ public static class PublicPageAccess
         if (path is "" or "login" or "auth/callback" or "privacy" or "help" or "sources" or "extension"
             or "arena" or "games" or "games/arena" or "games/wordle" or "games/avatar-demo" or "games/mine" or "games/upload"
             or "games/dagens-ord" or "games/taljagt" or "games/fremskridt"
-            or "library" or "search" or "explore/modules" or "subjects" or "badges" or "explore/projects" or "courses/template" or "lup" or "characters")
+            or "spil" or "library" or "search" or "explore/modules" or "subjects" or "badges" or "explore/projects" or "courses/template" or "lup" or "characters")
             return true;
 
         if (GamesCatalog.IsPublicClassicPath(path)) return true;
@@ -23,7 +23,7 @@ public static class PublicPageAccess
             ["subjects", _] or ["subjects", _, _] => true,
             ["badges", _] => true,
             ["explore", "projects", _] => true,
-            ["characters", _] => true,
+            ["characters", _] or ["spil", _] => true,
             _ => false
         };
     }

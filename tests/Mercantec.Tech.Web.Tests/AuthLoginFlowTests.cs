@@ -120,8 +120,26 @@ public sealed class AuthLoginFlowTests
         Assert.Null(context.Browser.ReturnPath);
         Assert.Null(context.Browser.Verifier);
         Assert.Null(context.Browser.AccessToken);
+        Assert.True(context.Browser.SharedLogout);
         Assert.False(context.Auth.IsAuthenticated);
         Assert.Equal("http://localhost" + Target, context.Navigation.Uri);
+    }
+
+    [Fact]
+    public async Task Shared_logout_clears_the_current_identity_and_notifies_the_ui()
+    {
+        using var context = new LoginContext(authenticated: true);
+        await context.Auth.InitializeAsync();
+        var notified = false;
+        context.Auth.AuthStateChanged += () => notified = true;
+
+        context.Browser.AccessToken = null;
+        await context.Auth.OnSharedSessionChanged();
+
+        Assert.True(notified);
+        Assert.False(context.Auth.IsAuthenticated);
+        Assert.Null(context.Auth.Subject);
+        Assert.Null(context.Auth.AccessToken);
     }
 
     [Fact]
@@ -171,6 +189,7 @@ public sealed class AuthLoginFlowTests
         public string? ReturnPath { get; set; }
         public string? Verifier { get; set; }
         public string? State { get; set; }
+        public bool SharedLogout { get; private set; }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
             => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
@@ -189,7 +208,10 @@ public sealed class AuthLoginFlowTests
                 case "mercantecAuth.setPkce":
                     Verifier = (string?)args![0]; State = (string?)args[1]; break;
                 case "mercantecAuth.clearPkce": Verifier = State = null; break;
-                case "mercantecAuth.clearTokens": AccessToken = null; break;
+                case "mercantecAuth.clearTokens":
+                    AccessToken = null;
+                    SharedLogout = args?[0] is true;
+                    break;
                 case "mercantecAuth.setLoginReturnPath": ReturnPath = (string?)args![0]; break;
                 case "mercantecAuth.consumeLoginReturnPath": result = ReturnPath; ReturnPath = null; break;
                 case "mercantecAuth.clearLoginReturnPath": ReturnPath = null; break;

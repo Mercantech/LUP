@@ -23,6 +23,8 @@ COPY web/Games/GamesCatalog.cs web/Games/
 COPY web/Demo/DemoCatalog.cs web/Demo/
 COPY web/Demo/LearningContent.cs web/Demo/
 COPY web/Characters/CharacterCatalog.cs web/Characters/
+COPY web/Characters/CharacterHomes.cs web/Characters/
+COPY web/Characters/CharacterCollaborations.cs web/Characters/
 COPY web/Characters/VatsonEmojiCatalog.cs web/Characters/
 COPY web/Characters/WhaleMaterials.cs web/Characters/
 COPY web/Characters/DuckTeachingMaterials.cs web/Characters/
@@ -33,6 +35,7 @@ COPY web/Characters/BatTeachingMaterials.cs web/Characters/
 COPY web/Characters/BatMotionMaterials.cs web/Characters/
 COPY web/Characters/BilboTeachingMaterials.cs web/Characters/
 COPY web/Characters/BilboMotionMaterials.cs web/Characters/
+COPY web/Characters/GitmejsenMaterials.cs web/Characters/
 WORKDIR /src/api
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 

@@ -24,7 +24,7 @@ public sealed class LibraryCharactersTests
 
         Assert.Contains(page.FindAll(".library-categories button[aria-pressed='true']"),
             button => button.TextContent.Contains("Karakterer", StringComparison.Ordinal));
-        Assert.Equal(11, page.FindAll("article.character-card").Count);
+        Assert.Equal(CharacterCatalog.All.Count, page.FindAll("article.character-card").Count);
         foreach (var character in CharacterCatalog.All)
         {
             var card = page.Find($".character-card.character-{character.Slug}");
@@ -82,7 +82,11 @@ public sealed class LibraryCharactersTests
             ("bilbo", "character-reactions-title", "48 emojis"),
             ("bilbo", "character-scenes-title", "6 miljøer"),
             ("bilbo", "character-animations-title", "3 GIF-animationer"),
-            ("bilbo", "character-gallery-title", "16 infografikker")
+            ("bilbo", "character-gallery-title", "16 infografikker"),
+            ("gitmejsen", "character-reactions-title", "30 emojis"),
+            ("gitmejsen", "character-scenes-title", "14 miljøer"),
+            ("gitmejsen", "character-animations-title", "3 GIF-animationer"),
+            ("gitmejsen", "character-gallery-title", "11 øvelser")
         };
         foreach (var (slug, section, label) in expected)
         {
@@ -124,7 +128,7 @@ public sealed class LibraryCharactersTests
 
         page.Find("#library-search").Input("emojis");
         var results = page.FindAll(".library-search-character");
-        Assert.Equal(11, results.Count);
+        Assert.Equal(CharacterCatalog.All.Count, results.Count);
         Assert.All(results, result =>
         {
             var path = result.GetAttribute("href");
@@ -132,14 +136,14 @@ public sealed class LibraryCharactersTests
             Assert.Equal(character.DisplayPortrait!.Image, result.QuerySelector("img")!.GetAttribute("src"));
         });
         page.FindAll(".library-categories button").Single(button => button.TextContent.Contains("Karakterer", StringComparison.Ordinal)).Click();
-        Assert.Equal(11, page.FindAll(".library-search-character").Count);
+        Assert.Equal(CharacterCatalog.All.Count, page.FindAll(".library-search-character").Count);
         Assert.Contains("i Karakterer", page.Find(".library-section-heading [role='status']").TextContent);
 
         page.Find(".library-search button").Click();
 
         Assert.Equal("", page.Find("#library-search").GetAttribute("value"));
         Assert.Empty(page.FindAll(".library-search-results"));
-        Assert.Equal(11, page.FindAll(".character-card").Count);
+        Assert.Equal(CharacterCatalog.All.Count, page.FindAll(".character-card").Count);
         Assert.Contains(page.FindAll(".library-categories button[aria-pressed='true']"),
             button => button.TextContent.Contains("Karakterer", StringComparison.Ordinal));
     }
@@ -169,11 +173,104 @@ public sealed class LibraryCharactersTests
     [InlineData("Næsebladet MQTT", "/characters/bat")]
     [InlineData("Bilbo Backend EF Core", "/characters/bilbo")]
     [InlineData("Bilbo Backend idempotens", "/characters/bilbo")]
+    [InlineData("Gitmejsen mergekonflikt", "/characters/gitmejsen")]
+    [InlineData("topmejse versionsstyring", "/characters/gitmejsen")]
+    [InlineData("Gitmejsen bisect", "/characters/gitmejsen")]
+    [InlineData("Mumihuset", "/characters/gitmejsen")]
     public void Public_search_finds_media_types_and_named_motifs(string query, string expectedPath)
     {
         var hit = Assert.Single(PublicCatalog.Search(query), hit => hit.Href == expectedPath);
         Assert.Equal("Karakter", hit.Kind);
         Assert.True(Mercantec.Tech.Web.Auth.PublicPageAccess.Allows(hit.Href));
+    }
+
+    [Theory]
+    [InlineData("bilbo-raymond", "Bilbo Raymond EF Core", "bilbo", "raymond")]
+    [InlineData("gitmejsen-bilbo", "Gitmejsen Bilbo mergekonflikt", "gitmejsen", "bilbo")]
+    [InlineData("raymond-vatson", "Raymond Vatson nattoget UTC", "raymond", "vatson")]
+    [InlineData("raymond-bilbo-left-join", "Raymond Bilbo LEFT JOIN", "raymond", "bilbo")]
+    public async Task Collaboration_uses_one_image_and_links_to_the_partner_on_both_profiles(
+        string id, string query, string first, string second)
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await CreateContext(api);
+        var library = RenderCharacters(context);
+        var sharedImage = $"/images/characters/collaborations/{id}.png";
+        var sceneId = $"collaboration-{id}";
+        var hits = PublicCatalog.Search(query).Where(hit => hit.Kind == "Karakter").ToArray();
+
+        foreach (var (slug, partner) in new[] { (first, second), (second, first) })
+        {
+            var path = $"/characters/{slug}";
+            Assert.Contains(hits, hit => hit.Href == path);
+            Assert.Single(library.FindAll($".character-card-materials a[href='{path}#character-collaborations-title']"));
+
+            var profile = context.Render<CharacterDetail>(parameters => parameters.Add(page => page.Slug, slug));
+            var scene = profile.Find("#" + sceneId);
+            Assert.Equal(sharedImage, scene.QuerySelector("a[download]")!.GetAttribute("href"));
+            Assert.Equal($"{id}.png", scene.QuerySelector("a[download]")!.GetAttribute("download"));
+            Assert.NotNull(scene.QuerySelector($"a[href='/characters/{partner}#{sceneId}']"));
+        }
+    }
+
+    [Theory]
+    [InlineData("raymond", "raymond-bilbo-left-join", "COUNT(*)", "Alma får 2", "WITH customers")]
+    [InlineData("gummianden", "naesebladet-gummianden-timeout", "Intet ekko", "18 cm", "INTET_EKKO")]
+    [InlineData("fox", "kamaeleonen-raev-confusion", "2 × 2-matrix", "80 %", null)]
+    [InlineData("gitmejsen", "docker-gitmejsen-ci", "assertion", "stopper kommandoen", "dotnet test && docker build")]
+    public async Task Collaboration_exercises_show_the_task_and_allow_revealing_the_result(
+        string slug, string sceneId, string task, string result, string? starter)
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await CreateContext(api);
+        var profile = context.Render<CharacterDetail>(parameters => parameters.Add(page => page.Slug, slug));
+        var exercise = profile.Find($"#collaboration-{sceneId} .character-collaboration-exercise");
+        var details = exercise.QuerySelector("details")!;
+
+        Assert.Contains(task, exercise.TextContent);
+        Assert.Equal("Vis forventet resultat", details.QuerySelector("summary")!.TextContent);
+        Assert.Contains(result, details.TextContent);
+        Assert.False(details.HasAttribute("open"));
+        var code = exercise.QuerySelector("pre code");
+        if (starter is null)
+            Assert.Null(code);
+        else
+            Assert.Contains(starter, code!.TextContent);
+    }
+
+    [Fact]
+    public async Task Each_character_has_two_public_home_views_and_a_library_link()
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await CreateContext(api);
+        var library = RenderCharacters(context);
+
+        foreach (var character in CharacterCatalog.All)
+        {
+            var home = Assert.IsType<CharacterHome>(character.Residence);
+            Assert.Equal(2, home.Views.Count);
+            Assert.False(string.IsNullOrWhiteSpace(home.Description));
+            var href = $"{character.Path}#{CharacterHome.SectionId}";
+            var link = Assert.Single(library.FindAll($".character-card-materials a[href='{href}']"));
+            Assert.Contains("2 billeder af hjemmet", link.TextContent);
+            Assert.Contains(PublicCatalog.Search(home.Name), result => result.Href == character.Path);
+
+            var profile = context.Render<CharacterDetail>(p => p.Add(page => page.Slug, character.Slug));
+            var section = profile.Find(".character-residence");
+            Assert.Equal(home.Name, section.QuerySelector($"#{CharacterHome.SectionId}")!.TextContent);
+            var figures = section.QuerySelectorAll("figure");
+            Assert.Equal(2, figures.Length);
+
+            for (var index = 0; index < home.Views.Count; index++)
+            {
+                var view = home.Views[index];
+                var image = figures[index].QuerySelector("img")!;
+                var download = figures[index].QuerySelector("a[download]")!;
+                Assert.Equal(view.Preview, image.GetAttribute("src"));
+                Assert.Equal(view.Alt, image.GetAttribute("alt"));
+                Assert.Equal(view.Image, download.GetAttribute("href"));
+            }
+        }
     }
 
     [Fact]
@@ -191,6 +288,7 @@ public sealed class LibraryCharactersTests
     }
 
     [Theory]
+    [InlineData("raymond", "character-home-title")]
     [InlineData("raymond", "character-animations-title")]
     [InlineData("raymond", "animation-find-row")]
     [InlineData("raymond", "animation-sort-rows")]
@@ -201,6 +299,8 @@ public sealed class LibraryCharactersTests
     [InlineData("lupp", "character-reactions-title")]
     [InlineData("lupp", "character-gallery-title")]
     [InlineData("bee", "character-gallery-title")]
+    [InlineData("bilbo", "collaboration-bilbo-raymond")]
+    [InlineData("raymond", "character-collaborations-title")]
     public async Task Gallery_deep_links_scroll_after_render_without_repeating_on_profile_interactions(string slug, string section)
     {
         using var api = new CharacterQuizTestApi();

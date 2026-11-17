@@ -1,0 +1,34 @@
+@using System.Text.RegularExpressions
+
+<span class="live-quiz-text">
+    @for (var block = 0; block < Blocks.Length; block++)
+    {
+        if (block % 2 == 1)
+        {
+            <code class="live-quiz-code is-block">@Blocks[block].TrimEnd()</code>
+            continue;
+        }
+        var pieces = InlineCode.Split(Blocks[block]);
+        @for (var part = 0; part < pieces.Length; part++)
+        {
+            if (part % 2 == 1)
+            {
+                <code class="live-quiz-code">@pieces[part]</code>
+            }
+            else
+            {
+                @pieces[part]
+            }
+        }
+    }
+</span>
+
+@code {
+    [Parameter] public string Text { get; set; } = "";
+
+    private static readonly Regex BlockCode = new(@"```[^\r\n`]*\r?\n([\s\S]*?)```", RegexOptions.NonBacktracking);
+    private static readonly Regex InlineCode = new(@"`([^`\r\n]+)`", RegexOptions.NonBacktracking);
+    private string[] Blocks = [];
+
+    protected override void OnParametersSet() => Blocks = BlockCode.Split(Text);
+}

@@ -9,9 +9,19 @@
             <h1>Videnstjek</h1>
             <p>Prøv det, du har lært, og se, hvad du vil øve dig på igen.</p>
         </div>
-        @if (CanManage && View == "administrer")
+        @if (!ViewAs.IsActive)
         {
-            <a class="action" href="/videnstjek/rediger/ny"><UiIcon Name="plus" /> Opret videnstjek</a>
+            <div class="actions">
+                <a class="secondary" href="/spil">Indtast spilkode</a>
+                @if (CanManage)
+                {
+                    <a class="action" href="/videnstjek/live">Start klassespil</a>
+                    @if (View == "administrer")
+                    {
+                        <a class="secondary" href="/videnstjek/rediger/ny"><UiIcon Name="plus" /> Opret videnstjek</a>
+                    }
+                }
+            </div>
         }
     </header>
 
@@ -96,7 +106,13 @@
                                     <h3>@draft.Title</h3>
                                     <p class="knowledge-row-meta"><span>@draft.Topic</span><span>@QuestionLabel(draft.QuestionCount)</span></p>
                                 </div>
-                                <a class="secondary" href="/videnstjek/rediger/@draft.Id">Rediger<span class="visually-hidden"> @draft.Title</span></a>
+                                <div class="actions">
+                                    @if (draft.QuestionCount > 0)
+                                    {
+                                        <a class="secondary" href="@($"/videnstjek/live?sourceId={draft.Id}&fromDraft=true")">Spil live<span class="visually-hidden"> med @draft.Title</span></a>
+                                    }
+                                    <a class="secondary" href="/videnstjek/rediger/@draft.Id">Rediger<span class="visually-hidden"> @draft.Title</span></a>
+                                </div>
                             </article>
                         }
                     </div>
@@ -324,6 +340,10 @@
                                             {
                                                 <a class="knowledge-history-link" href="@AttemptUrl(publication.Id, previous)">Se seneste forsøg<span class="visually-hidden"> for @publication.Title</span></a>
                                             }
+                                        }
+                                        @if (CanManage)
+                                        {
+                                            <a class="knowledge-history-link" href="@($"/videnstjek/live?sourceId={publication.Id}")">Spil live<span class="visually-hidden"> med @publication.Title</span></a>
                                         }
                                     </div>
                                 </div>

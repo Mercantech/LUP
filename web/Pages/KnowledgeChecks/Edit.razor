@@ -12,6 +12,10 @@
     <nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/videnstjek?vis=administrer">Videnstjek</a><span>›</span><span aria-current="page">@(Id is null ? "Opret" : "Rediger")</span></nav>
     <header class="page-title">
         <div><h1>@(Id is null ? "Opret videnstjek" : "Rediger videnstjek")</h1><p>Byg spørgsmål med forklaringer, som eleverne kan bruge efter aflevering.</p></div>
+        @if (CanManage && _ready && Id is Guid savedId)
+        {
+            <a class="secondary" href="@($"/videnstjek/live?sourceId={savedId}&fromDraft=true")">Spil gemt kladde live</a>
+        }
     </header>
     @if (!CanManage)
     {

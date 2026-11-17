@@ -9,7 +9,15 @@ import { createCollaborationServer } from '../../collaboration/src/server.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const webRoot = resolve(root, process.argv[2] ?? '.tools/notebook-qa-web/wwwroot');
-const port = 9098, collaborationPort = 9099, apiPort = 8088;
+const port = portFromEnv('NOTEBOOK_BROWSER_QA_WEB_PORT', 9098);
+const collaborationPort = portFromEnv('NOTEBOOK_BROWSER_QA_COLLAB_PORT', 9099);
+const apiPort = portFromEnv('NOTEBOOK_BROWSER_QA_API_PORT', 8088);
+
+function portFromEnv(name, defaultPort) {
+  const port = Number(process.env[name] ?? defaultPort);
+  if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error(name + ' must be a loopback test port.');
+  return port;
+}
 const serviceKey = 'qa-notebooks-only-service-key-32-characters';
 await stat(resolve(webRoot, 'index.html')).catch(() => {
   throw new Error('Publish the real web app first: dotnet publish web -c Release -o .tools/notebook-qa-web');

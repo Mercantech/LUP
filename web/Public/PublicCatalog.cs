@@ -72,10 +72,14 @@ public static class PublicCatalog
     private static string CharacterSearchTerms(CharacterProfile character) => string.Join(" ",
         character.Tags.Concat(character.Slug == "chameleon" ? new[] { "chameleon", "kamæleon", "kameleon", "maskinlæring", "machinelearning", "ML" } : Array.Empty<string>())
             .Concat(character.Materials.Select(group => group.Label))
+            .Append(character.Residence is { } home ? $"{home.Name} {home.Description}" : "")
             .Concat(character.Reactions.Concat(character.Scenes).Concat(character.Illustrations)
                 .Select(image => image.Title + " " + image.Alt + " " + image.Summary + " " + image.Stage
                     + " " + string.Join(" ", image.Explanation)))
-            .Concat(character.Animations.Select(animation => animation.Title + " " + animation.Topic + " " + animation.Alt)));
+            .Concat(character.Animations.Select(animation => animation.Title + " " + animation.Topic + " " + animation.Alt))
+            .Concat(character.Collaborations.Select(scene => scene.Exercise is { } exercise
+                ? $"{scene.Title} {scene.Description} {exercise.Topic} {exercise.Task}"
+                : $"{scene.Title} {scene.Description}")));
 }
 
 public sealed record PublicCourse(string Slug, string Name, string Subject, string Icon, string Cover)
