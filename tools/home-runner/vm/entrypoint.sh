@@ -40,12 +40,14 @@ fi
 
 rm -f /vm/qmp.sock
 network_restriction=on
+set --
 if [ "${LUP_VM_BOOTSTRAP:-0}" = 1 ]; then
     network_restriction=off
+    set -- -serial file:/vm/bootstrap-console.log
 fi
 
 exec qemu-system-x86_64 \
-    -nodefaults -no-user-config -display none -serial stdio -monitor none \
+    -nodefaults -no-user-config -display none -serial stdio "$@" -monitor none \
     -machine q35,accel=kvm -cpu host -smp 2 -m 4096 \
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
     -drive if=pflash,format=raw,file=/vm/ovmf-vars.fd \

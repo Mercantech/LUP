@@ -1,5 +1,6 @@
 FROM python:3.13-slim-bookworm AS python
 COPY sandbox.py home.py /opt/home-sdk/
+RUN chmod -R a+rX /opt/home-sdk
 ENV PYTHONDONTWRITEBYTECODE=1 HOME=/work TMPDIR=/tmp
 WORKDIR /work
 USER 65532:65532
@@ -13,7 +14,8 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1 \
 COPY sandbox.py /opt/home-sdk/
 COPY csharp/ /opt/home-sdk/csharp/
 RUN dotnet build /opt/home-sdk/csharp/sdk/HomeRunner.csproj -c Release -o /opt/home-sdk/bootstrap \
-    --configfile /opt/home-sdk/csharp/NuGet.Config
+    --configfile /opt/home-sdk/csharp/NuGet.Config \
+    && chmod -R a+rX /opt/home-sdk
 WORKDIR /work
 USER 65532:65532
 ENTRYPOINT ["timeout", "--foreground", "--signal=KILL", "905", "python3", "/opt/home-sdk/sandbox.py", "csharp"]
@@ -22,7 +24,8 @@ FROM python:3.13-slim-bookworm AS arduino
 RUN apt-get update && apt-get install -y --no-install-recommends g++ nlohmann-json3-dev && rm -rf /var/lib/apt/lists/*
 COPY sandbox.py /opt/home-sdk/
 COPY arduino/ /opt/home-sdk/arduino/
-RUN g++ -std=c++17 -O1 -c /opt/home-sdk/arduino/VirtualHome.cpp -o /opt/home-sdk/VirtualHome.o
+RUN g++ -std=c++17 -O1 -c /opt/home-sdk/arduino/VirtualHome.cpp -o /opt/home-sdk/VirtualHome.o \
+    && chmod -R a+rX /opt/home-sdk
 ENV PYTHONDONTWRITEBYTECODE=1 HOME=/work TMPDIR=/tmp
 WORKDIR /work
 USER 65532:65532
