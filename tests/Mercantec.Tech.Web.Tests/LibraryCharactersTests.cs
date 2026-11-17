@@ -177,6 +177,30 @@ public sealed class LibraryCharactersTests
     }
 
     [Fact]
+    public async Task Collaboration_uses_one_image_and_links_to_the_partner_on_both_profiles()
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await CreateContext(api);
+        var library = RenderCharacters(context);
+        const string sharedImage = "/images/characters/collaborations/bilbo-raymond.png";
+        const string sceneId = "collaboration-bilbo-raymond";
+        var hits = PublicCatalog.Search("Bilbo Raymond EF Core").Where(hit => hit.Kind == "Karakter").ToArray();
+
+        foreach (var (slug, partner) in new[] { ("bilbo", "raymond"), ("raymond", "bilbo") })
+        {
+            var path = $"/characters/{slug}";
+            Assert.Contains(hits, hit => hit.Href == path);
+            Assert.Single(library.FindAll($".character-card-materials a[href='{path}#character-collaborations-title']"));
+
+            var profile = context.Render<CharacterDetail>(parameters => parameters.Add(page => page.Slug, slug));
+            var scene = profile.Find("#" + sceneId);
+            Assert.Equal(sharedImage, scene.QuerySelector("a[download]")!.GetAttribute("href"));
+            Assert.Equal("bilbo-raymond.png", scene.QuerySelector("a[download]")!.GetAttribute("download"));
+            Assert.NotNull(scene.QuerySelector($"a[href='/characters/{partner}#{sceneId}']"));
+        }
+    }
+
+    [Fact]
     public async Task Character_overview_and_each_profile_link_back_to_the_library_category()
     {
         using var api = new CharacterQuizTestApi();
@@ -201,6 +225,8 @@ public sealed class LibraryCharactersTests
     [InlineData("lupp", "character-reactions-title")]
     [InlineData("lupp", "character-gallery-title")]
     [InlineData("bee", "character-gallery-title")]
+    [InlineData("bilbo", "collaboration-bilbo-raymond")]
+    [InlineData("raymond", "character-collaborations-title")]
     public async Task Gallery_deep_links_scroll_after_render_without_repeating_on_profile_interactions(string slug, string section)
     {
         using var api = new CharacterQuizTestApi();

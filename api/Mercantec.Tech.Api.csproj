@@ -34,6 +34,7 @@
     <Compile Include="../web/Demo/DemoCatalog.cs" Link="References/Catalog/DemoCatalog.cs" />
     <Compile Include="../web/Demo/LearningContent.cs" Link="References/Catalog/LearningContent.cs" />
     <Compile Include="../web/Characters/CharacterCatalog.cs" Link="References/Catalog/CharacterCatalog.cs" />
+    <Compile Include="../web/Characters/CharacterCollaborations.cs" Link="References/Catalog/CharacterCollaborations.cs" />
     <Compile Include="../web/Characters/VatsonEmojiCatalog.cs" Link="References/Catalog/VatsonEmojiCatalog.cs" />
     <Compile Include="../web/Characters/WhaleMaterials.cs" Link="References/Catalog/WhaleMaterials.cs" />
     <Compile Include="../web/Characters/DuckTeachingMaterials.cs" Link="References/Catalog/DuckTeachingMaterials.cs" />

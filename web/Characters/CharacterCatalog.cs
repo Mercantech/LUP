@@ -417,6 +417,7 @@ public sealed record CharacterProfile(string Slug, string Name, string Role, str
     public IReadOnlyList<CharacterIllustration> Scenes { get; init; } = [];
     public string ScenesDescription { get; init; } = "Små fortællinger med karakteren. Åbn et billede i fuld størrelse, eller hent en PNG.";
     public IReadOnlyList<CharacterAnimation> Animations { get; init; } = [];
+    public IReadOnlyList<CharacterCollaboration> Collaborations { get; } = CharacterCollaborations.For(Slug);
     public string AnimationSubject { get; init; } = "databaser";
     public IEnumerable<CharacterMaterialGroup> Materials
     {
@@ -426,6 +427,9 @@ public sealed record CharacterProfile(string Slug, string Name, string Role, str
                 yield return new("emojis", Reactions.Count, "character-reactions-title", reaction.Preview, reaction.Alt);
             if (Scenes.FirstOrDefault() is { } scene)
                 yield return new("miljøer", Scenes.Count, "character-scenes-title", scene.Preview, scene.Alt);
+            if (Collaborations.FirstOrDefault() is { } collaboration)
+                yield return new(Collaborations.Count == 1 ? "fælles billede" : "fælles billeder",
+                    Collaborations.Count, CharacterCollaboration.SectionId, collaboration.Preview, collaboration.Alt);
             if (Illustrations.FirstOrDefault() is { } illustration)
                 yield return new(IllustrationsLabel, Illustrations.Count, "character-gallery-title", illustration.Preview, illustration.Alt);
             if (Animations.FirstOrDefault() is { } animation)

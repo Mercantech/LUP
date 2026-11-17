@@ -1,0 +1,30 @@
+{
+  "id": "bilbo-raymond",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    }
+  ],
+  "prompt": "Create an original 3:2 1536x1024 warm hand-painted LUP teaching illustration. Use exact two character identity references: Bilbo Backend the friendly short curly-haired hobbit in moss green velvet vest over rolled cream shirt, rosy cheeks, paired hairy bare feet when visible; Raymond the taller blue elephant professor with round bronze glasses, curled trunk, cream cable-knit cardigan, blue shirt. Both face each other and interact clearly in Bilbo's cosy amber-lit jam cellar with round doorway and jam jars. Bilbo holds one blackberry order card and gestures toward a slate, Raymond points at a clearly recognizable database table with a pointer while he looks at Bilbo. On slate, a simple, unmistakable left-to-right data flow with exactly three nodes, exactly readable concise labels 'C#' → 'EF Core' → 'SQL', pictograms of order card to mapping bridge to neatly organized table rows. EF Core is clearly central and between the two endpoints. No other words or code. Both characters strongly identifiable, neither cropped at the head, medium-wide storybook gouache, warm generous composition, no branding, no watermarks. This is a discussion between teammates, lively interaction, not two characters posed for camera.",
+  "alt": "Bilbo holder en bestillingsseddel, mens Raymond peger på en tabel. En tavle viser vejen fra C# gennem EF Core til SQL.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-raymond.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3401249,
+    "sha256": "a12bf7c3f06ada898eaab1ec15145299fa6a814fc83cc8ee95b8cf32e7e3bd09"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-raymond.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 170626,
+    "sha256": "9e4faf2878960002480bd9132b37c3b9b07828884931ea6b786cbb5be90b1789"
+  }
+}

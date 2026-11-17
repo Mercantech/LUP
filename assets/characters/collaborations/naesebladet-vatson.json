@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "naesebladet-vatson",
+  "alt": "Næsebladet holder en træklods foran afstandssensoren, og Vatson viser den tændte lampe ved siden af styringen.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-0ad93b72-98bf-4d81-877f-c1b07e0fac87.png",
+  "prompt": "Create ONE standalone landscape 3:2 LUP collaboration story illustration, native 1536×1024, luminous hand-painted gouache and soft colored-pencil detail, atmospheric but precise. Attached reference 1 shows the exact hero Næsebladet. Preserve his very broad low compact leaf-nosed bat anatomy, plush dark plum and rust-orange fur, narrow warm amber eyes and slightly skeptical focused face, huge rust ears with the small notch high on the viewer-right ear, veined pink upright triangular leaf nose and tiny clawed feet. He wears the canonical deep plum velvet jacket with gold piping and gold buttons, red brocade waistcoat, cream ruffled cravat with amber brooch and matching ruffled cuffs. Both actual wings are visibly intact, with thin burgundy membranes fanning from the real wrist claws. Tailcoat sleeves cover the shoulder-side portion of each wing and end at these same wrists. Two continuous folded wings and their two small wrist claws only; NO independent human arms/hands or extra limbs. No spoon needed. Use the second reference as the exact identity for the other character. Natural sizes, full or three-quarter figures, faces and props clear, both collaborating toward one goal. No signs, letters, numbers, readable text, logos, captions, grids, panels or watermarks. No neon sci-fi effects or overlaid diagrams; only real objects in one believable inhabited setting. Set this in Vatson's bright and orderly automation classroom, morning light, tall workshop windows, teal pegboard with only a few shapes, birch workbench, peg-mounted low-voltage components in the background, warm wood and softly colored mint shadows. Næsebladet stands at left, carefully pushing a small simple upright oak block along the birch workbench with the small visible claw of his RIGHT bat wing wrist; his other wing stays naturally folded. Vatson floats at right: authentic white enamel compact hovering robot, rounded rectangular white-framed screen with black background, exactly its pixel turquoise happy crescent eyes and smile, black spring antenna with white sphere, black ribbed flexible arms and little white grippers, tapered white hovering body without legs, modest blue light at the bottom. His recognizable open teal 3-ring binder with icon-only pages rests to his own right or in one gripper. He points toward the LIT amber tabletop indicator lamp with one gripper, following their successful sensor-to-actuator test. Keep their different forms the same as exact portraits, and both visible. Stage the hardware clearly in the foreground: ONE plain wooden block between the bat and the two-disc ultrasonic PCB on a small fixed mount, almost facing each other with an unmistakable clear small air gap. Immediately behind the PCB, one short tidy cable leads to a small low-voltage controller box, another cable leads to the single illuminated amber indicator lamp on the RIGHT, separate from the sensor. It is the lamp that is on, not the sensor. Two round sensor discs readable while angled across bench toward block. Table-level diagonal view so visually the block, front-facing side of sensor, controller and physically connected lamp read as a chain without arrows, and eyes focus on the working rig. Professional safe test with housed components, no sparks, no soldering iron, no camera, no unrelated meters or cables. Use softly painted tactile surfaces and strong silhouette contrast for Vatson and wing wrists.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.png",
+      "sha256": "005fcf6f22d69cc23e4d323cb7896395403ead245ef30961ab5939f9bc7cc8af"
+    },
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-vatson.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3228913,
+    "sha256": "dc5e132eb14f7eebac68293b192a2a087b74d383df44ca07faa88423ff1f34ca"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-vatson.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 133380,
+    "sha256": "51edabcf15f0645c300a845ac2c9cd4b446471d634119d1b95241a036ab834d1"
+  }
+}

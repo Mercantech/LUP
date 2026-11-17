@@ -62,15 +62,19 @@
 .lup .character-features { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:36px; border-top:1px solid var(--rule); padding-top:30px; margin-top:40px; }
 .lup .character-features h2 { font-size:20px; letter-spacing:-.5px; }
 .lup .character-features p { color:var(--muted); font-size:13px; line-height:1.85; margin-top:10px; }
-.lup .character-gallery { border-top:1px solid var(--rule); padding-top:30px; margin-top:32px; }
-.lup .character-gallery h2 { font-size:24px; letter-spacing:-.5px; }
+.lup :is(.character-gallery,.character-collaborations) { border-top:1px solid var(--rule); padding-top:30px; margin-top:32px; }
+.lup :is(.character-gallery,.character-collaborations) h2 { font-size:24px; letter-spacing:-.5px; }
 .lup .character-gallery header>p { color:var(--muted); font-size:13px; margin-top:9px; }
 .lup .character-gallery-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; margin-top:22px; }
-.lup .character-gallery figure { min-width:0; margin:0; }
-.lup .character-gallery figure>a { display:block; border:1px solid var(--rule); border-radius:12px; overflow:hidden; background:var(--paper); }
-.lup .character-gallery figure>a:hover { border-color:var(--blue); }
-.lup .character-gallery img { display:block; width:100%; height:auto; }
-.lup .character-gallery figcaption { font-size:12px; color:var(--muted); margin-top:9px; }
+.lup :is(.character-gallery,.character-collaborations) figure { min-width:0; margin:0; }
+.lup :is(.character-gallery,.character-collaborations) figure>a { display:block; border:1px solid var(--rule); border-radius:12px; overflow:hidden; background:var(--paper); }
+.lup :is(.character-gallery,.character-collaborations) figure>a:hover { border-color:var(--blue); }
+.lup :is(.character-gallery,.character-collaborations) img { display:block; width:100%; height:auto; }
+.lup :is(.character-gallery,.character-collaborations) figcaption { font-size:12px; color:var(--muted); margin-top:9px; }
+.lup .character-collaborations :is(h2, figure) { scroll-margin-top:90px; }
+.lup .character-collaborations figcaption>p { margin:7px 0; line-height:1.65; }
+.lup .character-collaboration-caption { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:5px 12px; }
+.lup .character-collaboration-caption strong { color:var(--ink); font-size:14px; }
 .lup .character-artwork-gallery { border-top:1px solid var(--rule); padding-top:30px; margin-top:32px; }
 .lup .character-artwork-gallery h2 { font-size:24px; letter-spacing:-.5px; }
 .lup .character-artwork-gallery header>p { color:var(--muted); font-size:13px; line-height:1.75; margin-top:9px; max-width:75ch; }

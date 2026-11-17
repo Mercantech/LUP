@@ -1,0 +1,26 @@
+{
+  "id": "bilbo-gummianden",
+  "generator": "ImageGen",
+  "references": [
+    "web/wwwroot/images/characters/bilbo/portrait.webp",
+    "web/wwwroot/images/characters/bilbo/scenes/marmeladeordren.webp",
+    "web/wwwroot/images/characters/gummianden/portrait-transparent.webp"
+  ],
+  "alt": "Bilbo Backend viser Gummianden to ens bestillingssedler ved siden af ét glas brombærsyltetøj i sin kælder.",
+  "prompt": "Create one complete standalone landscape 3:2 illustration, 1536×1024. Premium hand-painted gouache and oil on paper, friendly children's storybook texture with the exact established LUP character designs. Render Bilbo Backend exactly as in references 1 and 2: the same short stout hobbit-like body, round rosy face, strong dark brows, little chin tuft, pointed ears, dense chestnut curls and sideburns, moss-green velvet vest with brass buttons, rolled cream sleeves, rust-brown cropped breeches and large hairy bare feet. Gummianden is precisely reference 3, a literal shiny molded yellow rubber duck with smooth egg-shaped head, two glossy black ovals for eyes, a bright broad orange rubber bill, small molded top tuft, terracotta knitted cardigan with the round wooden button. Model him at ordinary small rubber duck scale, up on one small book atop the workbench so both mascots can make eye contact. Preserve the same expressive wing lifted toward his ear as he listens. He has smooth shiny rubber, never feathers, no drawn pupils, no beak nostrils. A clear central story inside Bilbo's partly underground barrel-vaulted stone pantry and programming nook. At a long low oak bench under an amber lamp, barefoot Bilbo bends to the left of the duck at eye level and holds up precisely two separate small pale paper order slips side-by-side, identical blueberry-or-blackberry stamp shape on each and identical pair of tiny checkbox marks. He squints at the matching slips with a mildly embarrassed, questioning expression. A single blackberry jam jar on the worktop immediately beneath both slips makes the duplicate order visible. Background shelves are subdued, with ceramic crocks, neatly folded linen and a few dim indistinct preserves. The duck looks at Bilbo, listening. The order slips and single jar occupy the upper-middle area of the tabletop, enough illustrated negative space to read their simple visual relationship. An open developer laptop farther along the bench may show a very subtle pair of simple matching abstract request arrows if visible, with no legible code or UI text. No server hardware, no external logos, no alphanumerics, no typography, no captions, no watermark. Use smoky olive and plum shadows, honey-colored wood, green velvet and true yellow rubber with beautiful local reflected light. No borders or montage, one coherent environment, preserve both recognizable faces.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-gummianden.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2903891,
+    "sha256": "65452a0b703b79f62e8ecc071b8a37af83d8886c5f4d70ea3c384322092767f4"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-gummianden.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 161140,
+    "sha256": "3fa0d869e35a4edda0c5233b80b167fbd6f95a39f25cd8b498b9832d0936ec88"
+  },
+  "revisionPrompt": "Careful localized anatomy correction on the supplied 1536×1024 landscape. Preserve the exact original composition, detailed painterly treatment, camera, stone pantry, rubber duck with terracotta cardigan, single blackberry jam jar in front, the two identical order slips, facial expression, green vest, clothing and both hairy bare feet. Remove only Bilbo’s extra third arm and hand on the left next to his hair, and replace that removed section naturally with the original warm cellar background behind his head and the left side of his vest. Exactly two arms in total both clearly connected to his body from separate shoulders, both reaching toward the center where they show two matching order slips to the duck, one natural hand per slip. A character never touches his hair in this scene, so there is no hand or forearm at the back of his head. Keep his head and hair the same. No new objects, text, lettering or watermarks. Return one clean anatomically correct 3:2 illustration."
+}

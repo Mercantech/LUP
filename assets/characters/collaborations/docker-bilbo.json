@@ -1,0 +1,26 @@
+{
+  "id": "docker-bilbo",
+  "generator": "ImageGen",
+  "references": [
+    "web/wwwroot/images/characters/whale/portrait.webp",
+    "web/wwwroot/images/characters/whale/scenes/kommandobroen.webp",
+    "web/wwwroot/images/characters/bilbo/portrait.webp",
+    "web/wwwroot/images/characters/bilbo/scenes/marmeladeordren.webp"
+  ],
+  "alt": "Havnekaptajnen Docker og Bilbo Backend ser på et advarselsikon og den tidligere grønne version på en bærbar computer ved kajens syltetøjsbod.",
+  "prompt": "Create one complete standalone landscape 3:2 illustration, 1536×1024. Warm detailed hand-painted gouache and oil on paper, the exact LUP mascot world in the supplied references. This episode brings the same old Docker (1st and 2nd references), an unmistakably enormous navy-gray humpback whale with cream pleated throat, humpback bumps and tail, mustard-yellow knitted cap and dark navy cable-knit sweater, and the same tiny Bilbo Backend (3rd and 4th references), a round kind face, rich dark chestnut curls and sideburns, small beard tuft, pointed ears, moss-green velvet vest with brass buttons, cream rolled-sleeve shirt, rust-brown cuffed trousers, both large hairy bare feet, together at the jetty. Do not change the designs or the relative scale. At a low outdoor timber shipping counter extending into the dusk harbor, Bilbo stands on the quay left of a single recognizable tied blackberry jam jar and the captain, rising alongside the dock, leans down at right with his flipper directed toward their open ordinary laptop between them. A moored cargo boat with a few muted unmarked shipping containers is visible in the distance. The screen uses exactly a simple flat two-row software health check: an upper release tile has an amber triangle/exclamation, a lower earlier release tile has a green check, a short curved rollback arrow leads from upper to lower. This is a status readout during software deployment; no server racks, glowing hardware, ports, or circuit decor. Bilbo's concerned raised eyebrow, Docker's patient cautious face and the two contrasting symbols tell the story. Character proportions and eyes closely adhere to references. Keep everyone in a single believable scene, natural props, digital screen deep bluish slate with reflected light, late golden lamp lighting and misty indigo sea, real wharf depth. Keep both subjects recognizable and unobscured; aim for clearly separated silhouettes, one laptop, one foreground jam jar, two personalities examining the same issue. No readable text, letters, numerals, captions, logos, or watermarks. Do not create a sheet, border, collage, or empty space for typography.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-bilbo.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3504983,
+    "sha256": "1dfc95ec09e8de7fecf04b033afc3f44fb61a8bccb25091a5e10037ccb76c817"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-bilbo.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 173830,
+    "sha256": "fbfd5cf66adeb29f4ab178568379bab447be33e92b125a29d01fe551ec82eee5"
+  }
+}

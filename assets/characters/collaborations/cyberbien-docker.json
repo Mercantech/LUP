@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "cyberbien-docker",
+  "alt": "Cyberbien følger målinger på en skærm, mens havnekaptajnen Docker viser vejen tilbage til den tidligere version i sin logbog.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-048ecaab-9237-4143-af27-4b503dfcc513.png",
+  "prompt": "Create ONE finished 1536×1024 3:2 landscape original LUP character crossover storybook scene. Use the two reference images for exact identity. Cyberbien (first input) is the small sunny golden bee with same stumpy stylized figure and friendly eyes, exactly two yellow-ended dark antennae, flat dark cyan-symbol goggles on forehead above the eyes, same navy hoodie with yellow drawstrings, subtle padlock-and-shield embroidered icon and dark yellow-accented shoes, yellow-black tail stripes and two pairs of softly cream veined wings. Docker (second input) is the old humpback whale captain with an anatomical dark blue-gray knobbly humpback head, pale strongly pleated throat, wise kind brown eye and reserved wry smile, heavy navy cable knit sweater, small mustard wool knit cap, genuine broad pectoral flippers, ungulate-free dark tail in the water, radio in knit pocket and tide log. No human hands, human legs or feet on the whale, no toy proportions or human body. Dock control station on a timber harbor quay with an open ocean-facing window, sea-worn handrail, brass light, parked small cargo vessel with unbranded sea-green containers in soft background. Angle the dock control desk across lower middle. The larger whale stays naturally afloat alongside the quay at the right and leans his foreflipper on a book edge to share the view with his small bee colleague standing on the left at the desk; heads at similar enough height to discuss the plan, both distinctly visible. The bee checks a small monitor showing an unmistakable healthy green tick and a simple tiny pulse line. The captain shows an open cargo log, visually depicting two versions as plain large tiny cargo crate sketches with one prominent U-shaped return arrow pointing toward the older crate, symbolizing a rollback plan if the release health changes. The bee and whale actively collaborate in the moment, warmly reflective expression, not posing for camera. One coherent sun-burnished hand-painted world and soft rendering, with the bee's original smooth character form and the captain's tactile brush texture intact. Distinct silhouettes, no overlapping eyes, generous safe cropping and calm surroundings. No words, labels, numbers, branded logos (in particular no real Docker logo), watermarks, terminal screens, red angry alarms or security attacks. Only retain Cyberbien's existing tiny cyan symbols as pictograms on the goggles.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bee/portrait.webp",
+      "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+    },
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/cyberbien-docker.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3012337,
+    "sha256": "c8590371aed155a1836a1ca789c7c7f3ffc9a7f9e09030746136c2ad448cfcba"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/cyberbien-docker.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 126960,
+    "sha256": "cc39b332da8a46584dd237eb45ce50a80144a5e056e8be3ee6882a5c644b9fad"
+  }
+}
