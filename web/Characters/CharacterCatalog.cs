@@ -293,7 +293,7 @@ public static class CharacterCatalog
             "Næsebladet sender et signal ud og kræver bevis for, at det rigtige svar kom tilbage. Følg målingen fra sensor og firmware til netværk og Linux.",
             "Næsebladet er en teatralsk lyddesigner med et hak i øret, brede skuldre og meget lidt tålmodighed med upræcise målinger. Han går ned i tomme parkeringskældre for at optage ekkoer. Hans første album består af lyden af den samme teske, der rammer gulvet forskellige steder. I laboratoriet spørger han med samme myndighed: «Jeg hørte et svar. Hvordan ved du, hvad der svarede?»",
             ["IoT", "Sensorer og ekkolokalisering", "Firmware", "MQTT", "Embedded Linux", "Fejlfinding"],
-            [new("Næsebladet", "/images/characters/bat/portrait.webp", "Oprejst rødbrun flagermus med brede skuldre, kantede violette vingefolder, bredt næseblad og et strengt blik"),
+            [new("Næsebladet", "/images/characters/bat/portrait.webp", "Rødbrun flagermus i blommefarvet fløjlsfrakke og brokadevest med en teske i vingekloen"),
              new("Lyddesigneren", "/images/characters/bat/lyddesigner.webp", "Næsebladet lytter efter ekkoer med sit optageudstyr"),
              new("Kalibrering", "/images/characters/bat/kalibrering.webp", "Næsebladet undersøger en sensor ved målebænken"),
              new("Dirigenten", "/images/characters/bat/dirigenten.webp", "Næsebladet dirigerer med sin teske og holder øje med forsøget"),
