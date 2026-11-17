@@ -469,7 +469,8 @@ public sealed class CharacterDetailTests
 
         Assert.Equal("Gitmejsen", page.Find("h1").TextContent);
         Assert.Equal(3, page.FindAll(".character-appearance-picker button").Count);
-        Assert.Equal(6, page.FindAll(".character-scenes figure").Count);
+        Assert.Equal(10, page.FindAll(".character-scenes figure").Count);
+        Assert.Contains("fire små hilsner fra Mumi-universet", page.Find(".character-scenes header").TextContent);
         Assert.Equal(30, page.FindAll(".character-reactions figure").Count);
         Assert.Equal(3, page.FindAll(".character-animation-card").Count);
         var exercises = page.FindAll(".character-gallery figure");

@@ -16,7 +16,11 @@ internal static class GitmejsenMaterials
         Scene("branches-vaerksted", "Værkstedet i trækronen", "Gitmejsen sidder ved en Y-formet gren med træperler og to messingklemmer i sit værksted i trækronen."),
         Scene("kladden-under-barken", "Kladden under barken", "Gitmejsen skubber en sammenrullet kladde ind under løs fyrrebark i aftensolen."),
         Scene("soeen-ved-daggry", "Søen ved daggry", "Gitmejsen flyver over en stille sø med morgensol, tåge og nåletræer langs bredden."),
-        Scene("udgivelseshylden", "Udgivelseshylden", "Gitmejsen holder et messingmærke over en pakke papirer i et loftsarkiv med mærkede papirpakker.")
+        Scene("udgivelseshylden", "Udgivelseshylden", "Gitmejsen holder et messingmærke over en pakke papirer i et loftsarkiv med mærkede papirpakker."),
+        Scene("broen-efter-regnen", "Broen efter regnen", "Gitmejsen sidder på en regnvåd træbro over et brusende vandløb mellem birk og gran."),
+        Scene("badehuset-ved-skumring", "Badehuset ved skumring", "Gitmejsen sidder på en brostolpe foran et træbadehus, mens lampelyset spejler sig i søen."),
+        Scene("vinterhaven", "Vinterhaven", "Gitmejsen undersøger små grønne spirer på kanten af en lerpotte i et varmt drivhus med sne uden for ruderne."),
+        Scene("kometaften-paa-klippen", "Kometaften på klippen", "Gitmejsen sidder ved en kikkert på en klippe, mens en komet lyser over søens øer i skumringen.")
     ];
 
     public static IReadOnlyList<CharacterAnimation> Animations { get; } =

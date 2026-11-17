@@ -84,7 +84,7 @@ public sealed class LibraryCharactersTests
             ("bilbo", "character-animations-title", "3 GIF-animationer"),
             ("bilbo", "character-gallery-title", "16 infografikker"),
             ("gitmejsen", "character-reactions-title", "30 emojis"),
-            ("gitmejsen", "character-scenes-title", "6 miljøer"),
+            ("gitmejsen", "character-scenes-title", "10 miljøer"),
             ("gitmejsen", "character-animations-title", "3 GIF-animationer"),
             ("gitmejsen", "character-gallery-title", "3 øvelser")
         };

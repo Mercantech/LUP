@@ -346,7 +346,7 @@ public static class CharacterCatalog
             Scenes = [..GitmejsenMaterials.Scenes, ..OutfitScenes("gitmejsen",
                 "Gitmejsen i grøn fløjlskappe og blåt tørklæde ved hvide blomster og en messinglampe i et træhus ved søen.",
                 "Gitmejsen med blåt tørklæde og en koralfarvet blomsterkrans ved en picnic med kurv og ananas ved søen.")],
-            ScenesDescription = "Kig ind i værkstedet, find hendes kladde under barken, og tag med hende til søen."
+            ScenesDescription = "Kig ind i værkstedet, find hendes kladde under barken, og tag med hende til søen. Der gemmer sig fire små hilsner fra Mumi-universet."
         },
         new("beaver", "Bæver", "Underviser i Sikkerhed og test · Blå team", "Sikkerhed og test", false,
             "Den rolige systembygger på blåt team: sikker kode, adgangskontrol, logs og tests, der holder løsningen robust.",
