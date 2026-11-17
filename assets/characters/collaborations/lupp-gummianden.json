@@ -1,0 +1,30 @@
+{
+  "id": "lupp-gummianden",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    }
+  ],
+  "prompt": "Use case: illustration-story. Create a new original 3:2 landscape 1536x1024 LUP collaboration teaching scene with exactly two mascot characters and a single readable visual debugging mystery. Reference 1 is the exact identity of LUPP, a purple rounded-square clay block with two huge expressive ivory eyes and its oversized golden yellow pencil. Keep the actual block silhouette; no head or separate human body. Reference 2 is the exact identity of Gummianden, a round yellow rubber duck with matte vinyl smooth skin, orange bill, small curl, black button eyes and one-button terracotta cable-knit cardigan; two tidy small wing flippers and orange feet, never human hands. Scene: in a cozy game prototype studio at an autumn window, LUPP on the left beside its pencil looks from a controller's big PAUSE symbol (two upright amber bars on a button) to a monitor in surprise. The listening duck on the right leans in and gestures with one wing toward the misplaced lift, while the other wing rests intact against its cardigan. The monitor shows a simple clay diorama side-view platformer: a gold round hero stands still, a strong small pause symbol in the upper left, and one teal moving platform on a clear vertical rail with a readable ghosted old position and a short arrow up to the new platform, so the mystery is that the platform keeps rising during pause. On the desk two thumbnail sketch cards with matching rail shapes at different heights suggest comparing the exact same frame. Strong silhouettes, close three-quarter wide framing with both faces visible and the monitor centered, inviting painterly light, tactile clay and worn timber, warmly illustrated LUP storybook, slightly whimsical, thoughtful acting. Only two characters besides tiny in-game character. No English, labels, logos, fake text, watermarks, swirls of UI, floating thought bubbles, or unnecessary controls.",
+  "alt": "LUPP og Gummianden ser på en turkis platform, der fortsætter opad på skærmen, mens spillets pausesymbol lyser.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-gummianden.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2703835,
+    "sha256": "d6d35481672a63cdaf25e699dd19557935000534c7df122034fb605e86e5df91"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-gummianden.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 92718,
+    "sha256": "ff88584e12599f2818b7f4cfb5df707d050c70611683cd2995e7e81d7f77c29f"
+  }
+}

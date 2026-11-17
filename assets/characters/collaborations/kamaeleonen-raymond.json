@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-raymond",
+  "alt": "Raymond peger på kartoteket, mens Kamæleonen lægger tre kort fra den samme blåmærkede violin i én bakke.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-b33e8d39-142f-4bdd-bde7-3937cdf06d50.png",
+  "prompt": "Create ONE finished landscape illustration, 3:2 at native 1536×1024, for LUP's warm distinctive hand-painted character series. The two attached references give exact character identities (not poses). LEFT: Raymond is the same friendly blue elephant professor, large broad softly scalloped blue ears, round bronze eyeglasses, swept blue tuft, large intelligent brown eyes, naturally curled elephant trunk, clear blue elephant hands, cream cable-knit cardigan, blue collared shirt, brown trousers. RIGHT: Kamæleonen is the same friendly yellow-green chameleon and Italian-trained luthier, orange-edged green crest, large warm brown round turret eyes, natural scaly hands, rolled cream linen sleeves, brown hand-stitched leather apron with brass fasteners, gently curled green tail. Both are seen clearly in three-quarter figures with complete ears, head and character silhouettes. One coherent, warm sunlit traditional violin maker's workshop, golden side light from stone arch window, carefully selected violin molds and gouges on distant wall, a few tiny curls of wood on a tidy oak workbench. An unfinished pale violin hangs naturally behind the chameleon with a small indigo circular tag tied to its neck. Painterly and tactile, unhurried concentration and kind collaboration, crafted visual story with warm amber cream colors and cool teal accents. Concepts: SQL rows, grouping observations by instrument, and keeping entire instruments out of one set. On Raymond's side of the table an open physical wooden card index next to a flat simple paper relational grid with three visible rows and subtle ruled columns, no text or digits. Raymond gently indicates the index with a small wooden pointer. View from a slightly elevated three-quarter angle, so the paper and sorting trays clearly read. On chameleon's side, in the foreground, TWO small wooden trays separated by obvious air space. The RIGHT tray has deep blue felt lining; chameleon holds and gently slides as one visibly fanned bundle EXACTLY THREE pale sample cards into this one blue tray using his two natural green hands. Each of these three cards bears the SAME tiny natural wood-colored violin silhouette with the SAME rich round indigo dot immediately next to it (the instrument mark). The three sample cards have subtly different grain and tiny horizontal pencil dashes to suggest three recordings of the same instrument. These are clearly a single group being placed together. Keep the receiving tray's rim low so all three cards and three identical indigo marks are visible together near the inside of this one blue tray. The distinct LEFT tray has muted ochre felt lining and holds only two separate violin sample cards already sorted, one with a large rust-red triangular mark and one with a teal square mark, NO indigo dots in this tray. The three identical indigo-marked samples must be ONLY in the blue RIGHT tray. Other group marks must be different in both shape and color. Do not add mystery cards on bench, additional paper, cut off wrists, add labels or invent numbers. The grouping must be visible at half-size, but keep it materially believable rather than a poster. No rendered text, letters, digits, brand symbols, diagrams floating in air, neon, computers, synthetic UI, framing borders, or collages. Clear focus on two colleagues and the simple physical grouping activity, with their faces and hands easy to read without looking crowded.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3345722,
+    "sha256": "4176fd63e4848321f6f8d4d2a16814a6fa34429cc743f409abc36bbf234166c3"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 139964,
+    "sha256": "bf76ba0a005b76938cc10d96be497edd00f12c80b4393898d345618ca8121820"
+  }
+}

@@ -182,17 +182,20 @@ public sealed class LibraryCharactersTests
         Assert.True(Mercantec.Tech.Web.Auth.PublicPageAccess.Allows(hit.Href));
     }
 
-    [Fact]
-    public async Task Collaboration_uses_one_image_and_links_to_the_partner_on_both_profiles()
+    [Theory]
+    [InlineData("bilbo-raymond", "Bilbo Raymond EF Core", "bilbo", "raymond")]
+    [InlineData("gitmejsen-bilbo", "Gitmejsen Bilbo mergekonflikt", "gitmejsen", "bilbo")]
+    public async Task Collaboration_uses_one_image_and_links_to_the_partner_on_both_profiles(
+        string id, string query, string first, string second)
     {
         using var api = new CharacterQuizTestApi();
         using var context = await CreateContext(api);
         var library = RenderCharacters(context);
-        const string sharedImage = "/images/characters/collaborations/bilbo-raymond.png";
-        const string sceneId = "collaboration-bilbo-raymond";
-        var hits = PublicCatalog.Search("Bilbo Raymond EF Core").Where(hit => hit.Kind == "Karakter").ToArray();
+        var sharedImage = $"/images/characters/collaborations/{id}.png";
+        var sceneId = $"collaboration-{id}";
+        var hits = PublicCatalog.Search(query).Where(hit => hit.Kind == "Karakter").ToArray();
 
-        foreach (var (slug, partner) in new[] { ("bilbo", "raymond"), ("raymond", "bilbo") })
+        foreach (var (slug, partner) in new[] { (first, second), (second, first) })
         {
             var path = $"/characters/{slug}";
             Assert.Contains(hits, hit => hit.Href == path);
@@ -201,7 +204,7 @@ public sealed class LibraryCharactersTests
             var profile = context.Render<CharacterDetail>(parameters => parameters.Add(page => page.Slug, slug));
             var scene = profile.Find("#" + sceneId);
             Assert.Equal(sharedImage, scene.QuerySelector("a[download]")!.GetAttribute("href"));
-            Assert.Equal("bilbo-raymond.png", scene.QuerySelector("a[download]")!.GetAttribute("download"));
+            Assert.Equal($"{id}.png", scene.QuerySelector("a[download]")!.GetAttribute("download"));
             Assert.NotNull(scene.QuerySelector($"a[href='/characters/{partner}#{sceneId}']"));
         }
     }
