@@ -317,9 +317,9 @@ internal static class BatTeachingMaterials
 
     private static CharacterIllustration Card(string file, string title, string alt, string stage, string summary,
         IReadOnlyList<string> explanation, string? code, params CharacterLink[] sources) =>
-        new(title, ImageFolder + file + ".png", alt, 1536, 1024)
+        new(title, ImageFolder + file + ".png?v=5c15516e", alt, 1536, 1024)
         {
-            Preview = ImageFolder + file + ".webp",
+            Preview = ImageFolder + file + ".webp?v=5c15516e",
             Stage = stage,
             Summary = summary,
             Explanation = explanation,
