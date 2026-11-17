@@ -49,6 +49,15 @@ sync_source() {
     test "$(git -C "$source_dir" rev-parse HEAD)" = "$source_ref"
 }
 
+build_images() {
+    local runtime
+    for runtime in python csharp arduino; do
+        stage="build-$runtime"
+        signal "LUP_HOME_WORKER_STAGE $stage"
+        docker build --target "$runtime" --tag "lup-home-$runtime:sdk1" "$src"
+    done
+}
+
 verify_runner() {
     local token fingerprint envelope results test_status diagnostic
     stage=deployed-tests
@@ -64,7 +73,7 @@ verify_runner() {
     cat "$results"
     while IFS= read -r diagnostic; do signal "LUP_HOME_WORKER_TEST $diagnostic"; done < <(
         sed -nE 's/^((ERROR|FAIL): test_[a-z_]+).*/\1/p; s/^Ran ([0-9]+) tests? in .*/Ran \1 tests/p' "$results"
-        grep -oE 'HTTP Error [0-9]{3}|CERTIFICATE_VERIFY_FAILED|Connection refused|Connection reset by peer|Name or service not known|Temporary failure in name resolution|TimeoutError|KeyError|JSONDecodeError|COMPILE_ERROR|RUN_TIMEOUT|RUN_EXPIRED|RUN_CANCELLED|RUN_INVALID|WORKER_BUSY|WORKER_UNAVAILABLE|CONTAINER_EXITED' "$results" | sort -u
+        grep -oE 'HTTP Error [0-9]{3}|CERTIFICATE_VERIFY_FAILED|Connection refused|Connection reset by peer|Name or service not known|Temporary failure in name resolution|TimeoutError|KeyError|JSONDecodeError|COMPILE_ERROR|COMPILE_TIMEOUT|RUN_TIMEOUT|RUN_EXPIRED|RUN_CANCELLED|RUNNER_BUSY|RUNNER_UNAVAILABLE|RUNNER_PROTOCOL|RUNTIME_ERROR|INVALID_ACTIVATION' "$results" | sort -u
     )
     rm -f "$results"
     if ((test_status != 0)); then return "$test_status"; fi
@@ -77,10 +86,11 @@ verify_runner() {
     signal "LUP_HOME_WORKER_READY $fingerprint"
 }
 
-if [[ "${1:-}" == --verify-only ]]; then
+if [[ "${1:-}" == --verify-only || "${1:-}" == --rebuild-images ]]; then
     stage=verification-source
     signal "LUP_HOME_WORKER_STAGE $stage"
     sync_source
+    if [[ "$1" == --rebuild-images ]]; then build_images; fi
     verify_runner
     exit 0
 fi
@@ -129,10 +139,7 @@ docker info --format '{{json .Runtimes}}' | grep -q '"runsc"'
 stage=images
 signal "LUP_HOME_WORKER_STAGE $stage"
 sync_source
-for runtime in python csharp arduino; do
-    signal "LUP_HOME_WORKER_STAGE build-$runtime"
-    docker build --target "$runtime" --tag "lup-home-$runtime:sdk1" "$src"
-done
+build_images
 
 stage=services
 signal "LUP_HOME_WORKER_STAGE $stage"
