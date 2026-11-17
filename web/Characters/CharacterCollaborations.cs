@@ -39,7 +39,19 @@ internal static class CharacterCollaborations
             "Cyberbien og Næsebladet tjekker en afstandssensor i ekkostudiet. Gatewayen modtager målingen fra sensoren med et matchende mærke og afviser det fremmede mærke."),
         new("lupp-gummianden", "lupp", "gummianden", "LUPP og Gummianden · Platformen glemte at holde pause",
             "LUPP sætter spillet på pause. Spilleren står stille, men platformen kører videre. Gummianden får LUPP til at vise fejlen trin for trin. De sammenligner platformens position lige før og efter pausen og finder den opdatering, der stadig kører.",
-            "LUPP og Gummianden ser på en turkis platform, der fortsætter opad på skærmen, mens spillets pausesymbol lyser.")
+            "LUPP og Gummianden ser på en turkis platform, der fortsætter opad på skærmen, mens spillets pausesymbol lyser."),
+        new("gitmejsen-naesebladet", "gitmejsen", "bat", "Gitmejsen og Næsebladet · Mysteriet om den forsvundne tone",
+            "En ændring i firmwaren har fået ekkotesten til at miste en tone. Næsebladet kører den samme test på en version midt mellem en, der virker, og en, der fejler. Gitmejsen bruger git bisect til at indsnævre feltet, indtil de står med den første ændring, hvor tonen forsvandt.",
+            "Gitmejsen og Næsebladet lytter til vokscylinderen i midten, mens grønne og røde markører viser yderpunkterne i rækken."),
+        new("docker-kamaeleonen", "whale", "chameleon", "Docker og Kamæleonen · Banjoen ved tolden",
+            "Kamæleonen har trænet en model til at skelne instrumenter på deres lyd. Docker pakker modellen sammen med den forbehandling, den skal bruge. Ved toldboden sender de en kendt banjooptagelse gennem containeren og tjekker resultatet, før de ruller den ud.",
+            "Kamæleonen afspiller en banjooptagelse i det flydende toldhus. Docker peger på den grønne lampe ved noden, efter at signalet er ført gennem de to sammenkoblede moduler."),
+        new("raev-lupp", "fox", "lupp", "Ræv og LUPP · Spøgelset i genvejen",
+            "LUPP har bygget to veje til samme checkpoint. På hovedruten tænder lanternen, og spillet gemmer spillerens fremskridt. Ræv tager genvejen med spøgelset og opdager, at checkpointet springes over. De prøver begge ruter igen efter rettelsen.",
+            "Ræv følger genvejen med et papirspøgelse, mens LUPP sammenligner to testkort. Lanternen lyser efter hovedruten, men forbliver slukket efter genvejen."),
+        new("raymond-vatson", "raymond", "vatson", "Raymond og Vatson · Nattoget klokken halv tre",
+            "Da uret stilles tilbage ved skiftet til vintertid, kan stationen registrere to afgange med det samme lokale klokkeslæt. Vatson finder afgangene i loggen, og Raymond sorterer dem efter UTC i databasen. Billetten med 00:30 UTC kom en time før den med 01:30 UTC.",
+            "På en togstation med et ur på 02.30 peger Raymond på billetten mærket 00:30 UTC. Vatson holder en strimmel fra loggen ved siden af.")
     ];
 
     public static IReadOnlyList<CharacterCollaboration> For(string slug) =>

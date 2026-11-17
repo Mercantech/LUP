@@ -185,6 +185,7 @@ public sealed class LibraryCharactersTests
     [Theory]
     [InlineData("bilbo-raymond", "Bilbo Raymond EF Core", "bilbo", "raymond")]
     [InlineData("gitmejsen-bilbo", "Gitmejsen Bilbo mergekonflikt", "gitmejsen", "bilbo")]
+    [InlineData("raymond-vatson", "Raymond Vatson nattoget UTC", "raymond", "vatson")]
     public async Task Collaboration_uses_one_image_and_links_to_the_partner_on_both_profiles(
         string id, string query, string first, string second)
     {

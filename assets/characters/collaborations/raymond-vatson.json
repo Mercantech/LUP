@@ -1,0 +1,30 @@
+{
+  "id": "raymond-vatson",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    }
+  ],
+  "prompt": "Use case: illustration-story. Create original LUP mascot illustration, 1536×1024 landscape, 3:2. Mystery in a fantastical vintage Danish railway station at night, during the clock change. Left: Vatson, follow source 2 exactly: small white hovering robot, black rounded rectangular screen in an ivory bezel with turquoise LED smiling eyes, single spring antenna, two rubber accordion arms ending in modest two-pronged robot grippers, large teal ring binder. He is holding a long cream ledger slip. Right: Raymond exactly source 1, full cheeky blue elephant with round bronze spectacles, curly blue trunk, warm wool cardigan and blue shirt, flat footed, leans at a single wooden dispatch counter in surprise and puts his finger onto the earlier of two large railway tickets on the counter to place them in chronological order. Facing one another, lively competent detectives. The two oversized railway tickets in the immediate foreground, readable and facing reader, each bear exactly one short UTC stamp, left '00:30 UTC' right '01:30 UTC'. Each stamp appears ONCE on a clean cream surface. A single large vintage station clock above and behind the figures shows 2:30 (long minute hand points straight down at 6, short hour hand halfway from 2 to 3); simple hour tick marks only, no numbers or letters on clock. Through curved arch behind, an old teal night train with a luminous front lamp and white steam, layered indigo mountains and stars. Polished hand-painted storybook gouache, bronze lamps, deep indigo, gold light, clear objects with painterly detail, autumn leaves on the platform, crisp foreground, warm dynamic expressions. Study work surface clear, no other ticket text, only the two exact stamps on tickets. No watermark, logos, graphics panels, brand signage, place names, numbers elsewhere or third mascot. A slightly magical moment but characters from references must be recognizable.",
+  "alt": "På en togstation med et ur på 02.30 peger Raymond på billetten mærket 00:30 UTC. Vatson holder en strimmel fra loggen ved siden af.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-vatson.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3166690,
+    "sha256": "8bdf524c5e861a75b80d1185e092cd0e5964be7e55f8442771a12d1d8955a51f"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-vatson.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 137046,
+    "sha256": "f370b663ad43015b816f4aa1e583adb55bb9ad52375b35f32cb58a11f3bf5aae"
+  }
+}
