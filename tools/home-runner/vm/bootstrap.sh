@@ -67,6 +67,7 @@ install_gateway() {
 
 verify_runner() {
     local token fingerprint envelope results test_status diagnostic
+    local failure_codes='HTTP Error [0-9]{3}|CERTIFICATE_VERIFY_FAILED|Connection refused|Connection reset by peer|Name or service not known|Temporary failure in name resolution|TimeoutError|KeyError|JSONDecodeError|COMPILE_ERROR|COMPILE_TIMEOUT|RUN_TIMEOUT|RUN_EXPIRED|RUN_CANCELLED|RUNNER_BUSY|RUNNER_UNAVAILABLE|RUNNER_PROTOCOL|RUNTIME_ERROR|INVALID_ACTIVATION'
     stage=deployed-tests
     signal "LUP_HOME_WORKER_STAGE $stage"
     token=$(sed -n 's/^HOME_RUNNER_TOKEN=//p' "$runner_env")
@@ -80,10 +81,13 @@ verify_runner() {
     cat "$results"
     while IFS= read -r diagnostic; do signal "LUP_HOME_WORKER_TEST $diagnostic"; done < <(
         sed -nE 's/^((ERROR|FAIL): test_[a-z_]+).*/\1/p; s/^Ran ([0-9]+) tests? in .*/Ran \1 tests/p' "$results"
-        grep -oE 'HTTP Error [0-9]{3}|CERTIFICATE_VERIFY_FAILED|Connection refused|Connection reset by peer|Name or service not known|Temporary failure in name resolution|TimeoutError|KeyError|JSONDecodeError|COMPILE_ERROR|COMPILE_TIMEOUT|RUN_TIMEOUT|RUN_EXPIRED|RUN_CANCELLED|RUNNER_BUSY|RUNNER_UNAVAILABLE|RUNNER_PROTOCOL|RUNTIME_ERROR|INVALID_ACTIVATION' "$results" | sort -u
+        if ((test_status != 0)); then
+            { grep -oE "$failure_codes" "$results" || [[ $? == 1 ]]; } | sort -u
+        fi
     )
     rm -f "$results"
     if ((test_status != 0)); then return "$test_status"; fi
+    signal 'LUP_HOME_WORKER_TEST Passed'
 
     fingerprint=$(openssl x509 -in "$tls/cert.pem" -noout -fingerprint -sha256 | cut -d= -f2 | tr -d ':')
     [[ "$fingerprint" =~ ^[0-9A-F]{64}$ ]]
@@ -101,6 +105,7 @@ case "${1:-}" in
         if [[ "$1" == --rebuild-images ]]; then build_images; fi
         if [[ "$1" == --update-gateway ]]; then
             stage=update-gateway
+            signal "LUP_HOME_WORKER_STAGE $stage"
             install_gateway
             systemctl restart lup-home-runner
         fi
