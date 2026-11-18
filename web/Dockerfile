@@ -36,7 +36,10 @@ COPY api/Arena/ArenaSimulation.cs api/Arena/
 COPY --from=editor-build /src/web/wwwroot/notion-editor/ web/wwwroot/notion-editor/
 COPY --from=image-tools-build /src/web/wwwroot/image-tools/ web/wwwroot/image-tools/
 WORKDIR /src/web
-RUN dotnet publish -c Release -o /app/publish
+# Static assets can inherit owner-only modes from the source checkout.
+# The nginx worker must be able to traverse and read the published web root.
+RUN dotnet publish -c Release -o /app/publish \
+    && chmod -R a+rX /app/publish/wwwroot
 
 FROM nginx:1.27-alpine AS final
 COPY web/nginx.conf /etc/nginx/conf.d/default.conf

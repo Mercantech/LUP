@@ -31,6 +31,8 @@ if [ "$qa_table_count" != "0" ]; then
     exit 2
 fi
 compose up -d api web
+compose exec -T --user nginx web sh -ec \
+    'test -r /usr/share/nginx/html/appsettings.json && test -r /usr/share/nginx/html/js/home-game.js'
 printf '%s\n' 'Only the private synthetic stage-hjem-20261118 project was started.'
 compose run --rm browser
 compose exec -T db psql -U lup_home_qa -d lup_home_qa_20261118 -v ON_ERROR_STOP=1 -t -A -c \

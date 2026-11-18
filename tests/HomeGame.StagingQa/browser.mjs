@@ -60,12 +60,13 @@ async function contextFor(identity) {
             return route.continue();
         return route.abort('blockedbyclient');
     });
-    await context.addInitScript(user => {
+    await context.addInitScript(({ user, expectedOrigin }) => {
+        if (location.origin !== expectedOrigin) return;
         sessionStorage.setItem('mt_access_token', user.token);
         sessionStorage.setItem('mt_refresh_token', '');
         sessionStorage.setItem('mt_expires_at', String(user.expiresAt));
         localStorage.setItem('lup-theme', 'light');
-    }, identity);
+    }, { user: identity, expectedOrigin: origin });
     return context;
 }
 const build = (identity, home, action, operationId = crypto.randomUUID(), expected) =>
