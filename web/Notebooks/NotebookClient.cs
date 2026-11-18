@@ -43,7 +43,6 @@ public sealed class NotebookClient(HttpClient http)
         using var response = await http.PostAsJsonAsync($"notebooks/pages/{id}/restore", new { }, ct);
         await Ensure(response, ct);
     }
-    public Task<NotebookPageSummary[]> Backlinks(Guid page, CancellationToken ct) => Get<NotebookPageSummary[]>($"notebooks/pages/{page}/backlinks", ct);
     public Task<NotebookGraph> Graph(Guid notebook, CancellationToken ct) => Get<NotebookGraph>($"notebooks/{notebook}/graph", ct);
     public Task<NotebookCommentView[]> Comments(Guid page, CancellationToken ct) => Get<NotebookCommentView[]>($"notebooks/pages/{page}/comments", ct);
     public Task<NotebookCommentView> Comment(Guid page, string text, CancellationToken ct) => Post<NotebookCommentView>($"notebooks/pages/{page}/comments", new AddNotebookComment(text), ct);

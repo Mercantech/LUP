@@ -70,6 +70,9 @@ public sealed class NotebookUiTests
         Assert.Equal("Min titel under redigering", page.Find(".nb-title-input").GetAttribute("value"));
         Assert.Equal(1, javascript!.Editor.Mounts);
         Assert.Equal(0, javascript.Editor.Destroys);
+        await page.Instance.OnNotionStatus("saved", "");
+        Assert.Equal("Gemt i skyen", page.Find(".nb-save").TextContent);
+        Assert.Empty(page.FindAll("section[aria-label='Tilbagelinks']"));
         Assert.Empty(api.Unexpected);
     }
 
@@ -88,6 +91,7 @@ public sealed class NotebookUiTests
         var page = context.Render<NotebookPage>(p => p.Add(x => x.PageId, api.Page.Id));
         page.WaitForAssertion(() => Assert.Equal(1, javascript!.Editor.ReadOnlyMounts));
         Assert.Empty(page.FindAll(".nb-title-input"));
+        Assert.Empty(page.FindAll("section[aria-label='Tilbagelinks']"));
         Assert.DoesNotContain(page.FindAll("button"), b => b.TextContent.Trim() is "Kommentarer" or "Del");
         Assert.DoesNotContain(api.Requests, p => p.EndsWith("/comments", StringComparison.Ordinal));
 
@@ -158,11 +162,9 @@ public sealed class NotebookUiTests
                 "/api/notebooks/templates" => Array.Empty<NotebookTemplateView>(),
                 "/api/notebooks/today" => new DateOnly(2026, 11, 7),
                 "/api/notion/holds" => Array.Empty<NotionHold>(),
-                "/api/references/backlinks" => Array.Empty<ResolvedReference>(),
                 var p when p == $"/api/notebooks/{notebook}/pages" => new NotebookPageList([page], 1),
                 var p when p == $"/api/notebooks/{notebook}/shares" => Array.Empty<NotebookShareView>(),
                 var p when p == $"/api/notebooks/pages/{Page.Id}/context" => new NotebookDocumentContext(Page.Id, notebook, Page.Title, "note", true, !Reader, !Reader, !Reader, request.RequestUri.Query.Contains("knownRevision=", StringComparison.Ordinal) ? null : "AA==", DateTimeOffset.UtcNow, 1, null, [new(Page.Id, Page.Title, null)], ["sql"]),
-                var p when p == $"/api/notebooks/pages/{Page.Id}/backlinks" => Array.Empty<NotebookPageSummary>(),
                 _ => null
             };
             if (path.EndsWith("/context", StringComparison.Ordinal) && Revoked) return new(HttpStatusCode.NotFound);
