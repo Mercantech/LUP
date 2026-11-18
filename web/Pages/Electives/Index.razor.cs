@@ -21,11 +21,22 @@ public partial class Index
 
     private string ActiveView => View switch
     {
-        "katalog" or "historik" => View,
+        "aktuelle" or "katalog" or "historik" => View,
         "mine" when !Redirect.ShowsTeacherChrome && !ViewAs.IsActive => View,
         "administrer" when _canManage => View,
-        _ => "aktuelle"
+        _ => "katalog"
     };
+
+    private bool IsPackageIndex => ActiveView == "katalog" && SearchItem is null;
+    private ElectivePackage? SelectedPackage => ActiveView == "katalog" && SearchItem.HasValue
+        ? ElectivePackage.Catalogue.FirstOrDefault(p => p.Id == SearchItem) : null;
+
+    private IEnumerable<ElectivePackage> AvailablePackages =>
+        ElectivePackage.Catalogue.Where(p => FindTemplate(p.Id) is not null);
+
+    private ElectiveView[] UpcomingFor(Guid templateId) =>
+        _items.Where(e => e.TemplateId == templateId && IsOffering(e) && !ElectiveDisplay.IsPast(e))
+            .OrderBy(e => e.StartsOn ?? DateOnly.MaxValue).ThenBy(e => e.Title).ToArray();
 
     private ElectiveView? SelectedTemplate => Guid.TryParse(Template, out var id) ? FindTemplate(id) : null;
 
@@ -45,8 +56,10 @@ public partial class Index
         get
         {
             var search = _search.Trim();
-            return VisibleItems.Where(e => SearchItem is null || e.Id == SearchItem)
-                .Where(e => e.Title.Contains(search, StringComparison.CurrentCultureIgnoreCase)
+            if (SearchItem is { } id)
+                return VisibleItems.Where(e => e.Id == id);
+
+            return VisibleItems.Where(e => e.Title.Contains(search, StringComparison.CurrentCultureIgnoreCase)
                 || e.Description.Contains(search, StringComparison.CurrentCultureIgnoreCase)
                 || e.Schedule.Contains(search, StringComparison.CurrentCultureIgnoreCase));
         }

@@ -1,0 +1,146 @@
+.package-detail {
+    color: var(--ink);
+}
+
+.package-back,
+.package-source,
+.package-create {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: 650;
+}
+
+.package-back,
+.package-source {
+    text-underline-offset: .22em;
+}
+
+.package-back {
+    min-height: 44px;
+    color: var(--muted);
+}
+
+.package-back:hover {
+    color: var(--ink);
+}
+
+.package-back ::deep .ui-icon {
+    transform: rotate(180deg);
+}
+
+.package-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(1.25rem, 5vw, 4.5rem);
+    padding-block: clamp(1.25rem, 3vw, 2.5rem);
+    border-block-end: 1px solid var(--rule);
+}
+
+.package-intro h1 {
+    margin: 0;
+    font-size: clamp(2.5rem, 5.7vw, 5rem);
+    font-weight: 750;
+    line-height: 1.02;
+    letter-spacing: -.045em;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+}
+
+.package-intro p {
+    max-width: 46ch;
+    margin: 1rem 0 0;
+    color: var(--muted);
+    font-size: clamp(1.05rem, 1.35vw, 1.28rem);
+    line-height: 1.5;
+}
+
+.package-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 25rem;
+    object-fit: contain;
+}
+
+.package-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(1.5rem, 5vw, 4.5rem);
+    padding-block: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.package-content h2 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+    line-height: 1.18;
+    letter-spacing: -.03em;
+}
+
+.package-offerings > p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.package-offering-list {
+    display: grid;
+    gap: .75rem;
+}
+
+.package-create {
+    margin-top: 1rem;
+}
+
+.package-description {
+    border-block: 1px solid var(--rule);
+    margin-block: 1rem 0;
+}
+
+.package-description summary {
+    padding-block: .85rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.package-prose {
+    margin: 0;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+.package-description .package-prose {
+    margin-bottom: 1rem;
+}
+
+.package-source {
+    min-height: 44px;
+    margin-top: .45rem;
+    color: var(--blue);
+}
+
+.package-source ::deep .ui-icon,
+.package-create ::deep .ui-icon,
+.package-back ::deep .ui-icon {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+}
+
+@media (max-width: 700px) {
+    .package-intro,
+    .package-content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .package-image {
+        max-height: 19rem;
+    }
+
+    .package-information {
+        border-block-start: 1px solid var(--rule);
+        padding-block-start: 1.4rem;
+    }
+}

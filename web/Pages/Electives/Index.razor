@@ -8,25 +8,29 @@
 @inject NavigationManager Nav
 @implements IDisposable
 
-<PageTitle>Valgfag · LUP</PageTitle>
+<PageTitle>@(SelectedPackage?.Title ?? "Valgfag") · LUP</PageTitle>
 
 <div class="electives-page">
-    <header class="electives-heading">
-        <span class="electives-heading-mark"><UiIcon Name="book" /></span>
-        <div>
-            <h1>Valgfag</h1>
-            <p>Find et fag, der passer til din uddannelse, og se, hvornår du kan tilmelde dig.</p>
-        </div>
-    </header>
+    @if (IsPackageIndex)
+    {
+        <header class="electives-cover" data-scheme="orbit">
+            <img class="electives-orbit" src="/images/valgfag/valgfag-overblik.webp" alt="" width="1000" height="1000" fetchpriority="high" />
+            <div class="electives-intro">
+                <h1>Valgfag</h1>
+                <p>Udforsk de tre fagpakker, og se, hvornår næste hold starter.</p>
+                <a class="electives-cover-link" href="/valgfag?vis=aktuelle"><UiIcon Name="calendar" /> Se aktuelle hold</a>
+            </div>
+        </header>
+    }
 
     <nav class="electives-nav" aria-label="Valgfagsoversigt">
-        <a href="/valgfag" aria-current="@CurrentLink("aktuelle")">Aktuelle hold</a>
-        <a href="/valgfag?vis=katalog" aria-current="@CurrentLink("katalog")">Fagkatalog</a>
-        <a href="/valgfag?vis=historik" aria-current="@CurrentLink("historik")">Tidligere hold</a>
+        <a href="/valgfag" aria-current="@CurrentLink("katalog")">Fagpakker</a>
+        <a href="/valgfag?vis=aktuelle" aria-current="@CurrentLink("aktuelle")">Aktuelle hold</a>
         @if (!Redirect.ShowsTeacherChrome && !ViewAs.IsActive)
         {
             <a href="/valgfag?vis=mine" aria-current="@CurrentLink("mine")">Mine tilmeldinger</a>
         }
+        <a href="/valgfag?vis=historik" aria-current="@CurrentLink("historik")">Tidligere hold</a>
         @if (_canManage)
         {
             <a href="/valgfag?vis=administrer" aria-current="@CurrentLink("administrer")">Administrér</a>
@@ -40,14 +44,48 @@
 
     @if (_loading)
     {
-        <p role="status">Henter valgfag…</p>
+        <p class="electives-feedback" role="status">Henter valgfag…</p>
     }
     else if (_error is not null)
     {
-        <div class="panel" role="alert">
+        <div class="electives-feedback" role="alert">
             <p>@_error</p>
             <button class="secondary" type="button" @onclick="Load">Prøv igen</button>
         </div>
+    }
+    else if (IsPackageIndex)
+    {
+        <section aria-labelledby="packages-title">
+            <h2 class="electives-section-title" id="packages-title">Vælg din fagpakke</h2>
+            <div class="electives-packages">
+                @foreach (var package in AvailablePackages)
+                {
+                    var next = UpcomingFor(package.Id).FirstOrDefault();
+                    <a class="package" href="@package.Href" aria-labelledby="@($"package-{package.Id:N}")">
+                        <img src="@package.ImageUrl" alt="" width="600" height="400" />
+                        <div class="package-copy">
+                            <h3 id="@($"package-{package.Id:N}")">@package.Title</h3>
+                            <p>@package.Summary</p>
+                            <div class="package-meta">
+                                <UiIcon Name="calendar" />
+                                <span>@ElectiveDisplay.StartLabel(next)</span>
+                            </div>
+                            <span class="package-action">Se fagpakke <UiIcon Name="arrow" /></span>
+                        </div>
+                    </a>
+                }
+            </div>
+            @if (!AvailablePackages.Any())
+            {
+                <p class="electives-feedback">Der er endnu ingen fagpakker i kataloget.</p>
+            }
+        </section>
+        <ElectiveGuide />
+    }
+    else if (SelectedPackage is { } packageDetail && FindTemplate(packageDetail.Id) is { } template)
+    {
+        <ElectivePackageDetail Package="packageDetail" Template="template" Offerings="UpcomingFor(packageDetail.Id)"
+                               CanManage="_canManage" OnEnrollmentChanged="EnrollmentChanged" OnRefresh="Load" />
     }
     else if (ActiveView == "administrer")
     {
@@ -55,18 +93,13 @@
     }
     else
     {
-        @if (ActiveView is "aktuelle" or "katalog")
-        {
-            <ElectiveGuide />
-        }
-
         <section class="electives-list-section" aria-labelledby="electives-list-title">
             <div class="electives-list-header">
                 <div>
-                    <h2 id="electives-list-title">@ViewTitle</h2>
+                    <h1 id="electives-list-title">@ViewTitle</h1>
                     <p>@ViewDescription</p>
                 </div>
-                @if (VisibleItems.Any())
+                @if (VisibleItems.Any() && SearchItem is null)
                 {
                     <label class="field electives-search">
                         Find valgfag
@@ -77,11 +110,11 @@
 
             @if (!VisibleItems.Any())
             {
-                <div class="panel electives-empty"><p>@EmptyText</p></div>
+                <p class="electives-feedback">@EmptyText</p>
             }
             else if (!MatchingItems.Any())
             {
-                <div class="panel electives-empty"><p>Ingen valgfag matcher din søgning.</p></div>
+                <p class="electives-feedback">@(SearchItem is null ? "Ingen valgfag matcher din søgning." : "Valgfaget blev ikke fundet.")</p>
             }
             else
             {
@@ -89,7 +122,7 @@
                 {
                     @if (ActiveView == "historik")
                     {
-                        <h3 class="electives-archive-year">@(group.Key?.ToString() ?? "Uden dato")</h3>
+                        <h2 class="electives-archive-year">@(group.Key?.ToString() ?? "Uden dato")</h2>
                     }
                     <div class="electives-grid">
                         @foreach (var item in group)
@@ -104,6 +137,10 @@
         @if (ActiveView == "historik")
         {
             <ElectiveArchiveDocuments />
+        }
+        @if (ActiveView == "aktuelle")
+        {
+            <ElectiveGuide />
         }
     }
 </div>
