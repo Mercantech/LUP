@@ -33,13 +33,9 @@ public partial class Index
     private CancellationTokenSource? _navigationRequests;
     private IJSObjectReference? _module;
     private Task<IJSObjectReference>? _moduleTask;
-    private IJSObjectReference? _sidebarModule;
-    private Task<IJSObjectReference>? _sidebarModuleTask;
     private DotNetObjectReference<Index>? _callbacks;
     private ElementReference _editorElement;
     private ElementReference _mountedElement;
-    private ElementReference _workspaceElement;
-    private ElementReference _sidebarMountedElement;
     private NotionHold[] _holds = [];
     private NotionPageSummary[] _pages = [];
     private NotionGroupView[] _groups = [];
@@ -66,11 +62,10 @@ public partial class Index
     private Guid? _sidebarScope, _revealedPage;
     private bool _revealedWithMetadata, _sidebarPublishedOnly;
     private string _pageSearch = "";
-    private int _totalPages, _listVersion, _sidebarInteractions;
-    private bool _sidebarOpen = true, _sidebarMobile, _sidebarReady, _sidebarStarting, _sidebarNeedsSync, _workspaceFocused;
+    private int _totalPages, _listVersion;
     private string? _account, _loadedRoute, _error, _notice;
     private string _title = "", _newTitle = "", _status = "connecting", _statusDetail = "";
-    private bool _loading = true, _busy, _creating, _needsMount, _mounted, _disposed, _showGroups, _scrollCenterToTop;
+    private bool _loading = true, _busy, _creating, _needsMount, _mounted, _disposed, _showGroups;
     private bool _savingTitle;
     private Guid? _codexHistoryPageId;
     private Task<bool>? _titleSaveTask;
@@ -119,18 +114,7 @@ public partial class Index
         var sidebarSetup = InitializeSidebar();
         if (_needsMount && _current is not null && CanUse && !_disposed) await MountEditor();
         await sidebarSetup;
-        if (_sidebarNeedsSync && _sidebarModule is not null && !_disposed)
-        {
-            _sidebarNeedsSync = false;
-            try { await _sidebarModule.InvokeVoidAsync("setOpen", _sidebarMountedElement, _sidebarOpen); }
-            catch (JSException) { /* The visible toggle still works without browser enhancements. */ }
-        }
-        if (_scrollCenterToTop && _sidebarModule is not null && !_disposed)
-        {
-            _scrollCenterToTop = false;
-            try { await _sidebarModule.InvokeVoidAsync("scrollCenterTop", _sidebarMountedElement); }
-            catch (JSException) { /* The center remains scrollable without the enhanced shortcut. */ }
-        }
+        await SyncSidebarAfterRender();
     }
     private async Task MountEditor()
     {
@@ -164,78 +148,6 @@ public partial class Index
         }
         if (!_disposed) await InvokeAsync(StateHasChanged);
     }
-    private async Task InitializeSidebar()
-    {
-        if (_sidebarStarting || string.IsNullOrEmpty(_workspaceElement.Id) || _sidebarReady && _sidebarMountedElement.Id == _workspaceElement.Id) return;
-        _sidebarStarting = true;
-        var interactions = _sidebarInteractions;
-        var element = _workspaceElement;
-        try
-        {
-            _sidebarModuleTask ??= Js.InvokeAsync<IJSObjectReference>("import", "/js/notion-sidebar.js?v=notebook-tree-20261110").AsTask();
-            var module = await _sidebarModuleTask;
-            if (_disposed) return;
-            if (_sidebarModule is not null && !string.IsNullOrEmpty(_sidebarMountedElement.Id))
-                await _sidebarModule.InvokeVoidAsync("destroy", _sidebarMountedElement);
-            _sidebarModule = module;
-            _sidebarMountedElement = element;
-            _callbacks ??= DotNetObjectReference.Create(this);
-            var state = await module.InvokeAsync<SidebarPreferences?>("mount", element, _callbacks);
-            if (_disposed) return;
-            if (state is not null)
-            {
-                _sidebarMobile = state.Mobile;
-                if (interactions == _sidebarInteractions) _sidebarOpen = !state.Mobile && state.DesktopOpen;
-            }
-            _sidebarNeedsSync = true;
-        }
-        catch (JSException) { /* Storage restrictions must not prevent using the menu. */ }
-        finally
-        {
-            if (!_disposed) { _sidebarReady = true; _sidebarStarting = false; await InvokeAsync(StateHasChanged); }
-        }
-    }
-    private void SetSidebarOpen(bool open)
-    {
-        ++_sidebarInteractions;
-        if (open && _workspaceFocused) { _workspaceFocused = false; _ = SyncWorkspaceFocus(); }
-        if (_sidebarOpen == open) return;
-        _sidebarOpen = open; _sidebarNeedsSync = true;
-    }
-    private void ToggleSidebar() => SetSidebarOpen(_workspaceFocused || !_sidebarOpen);
-    private async Task ToggleWorkspaceFocus()
-    {
-        _workspaceFocused = !_workspaceFocused;
-        await SyncWorkspaceFocus();
-    }
-    private async Task SyncWorkspaceFocus()
-    {
-        if (_sidebarModule is null || _disposed) return;
-        try { await _sidebarModule.InvokeVoidAsync("setFocus", _sidebarMountedElement, _workspaceFocused); }
-        catch (JSException) { /* The document remains available without enhanced layout controls. */ }
-    }
-    private async Task UnmountSidebar()
-    {
-        if (_sidebarModule is not null && !string.IsNullOrEmpty(_sidebarMountedElement.Id))
-        {
-            try { await _sidebarModule.InvokeVoidAsync("destroy", _sidebarMountedElement); }
-            catch (JSException) { }
-        }
-        _sidebarMountedElement = default; _sidebarReady = false;
-    }
-    [JSInvokable] public Task CloseNotionSidebar() => InvokeAsync(() => { if (!_disposed) { SetSidebarOpen(false); StateHasChanged(); } });
-    [JSInvokable] public Task OnNotionFocusMode(bool focused) => InvokeAsync(() =>
-    {
-        if (_disposed || _workspaceFocused == focused) return;
-        _workspaceFocused = focused; StateHasChanged();
-    });
-    [JSInvokable] public Task OnNotionSidebarViewport(bool mobile, bool desktopOpen) => InvokeAsync(() =>
-    {
-        if (_disposed) return;
-        _sidebarMobile = mobile; ++_sidebarInteractions;
-        _sidebarOpen = !mobile && desktopOpen; _sidebarNeedsSync = true;
-        StateHasChanged();
-    });
     private void SearchPages(ChangeEventArgs args) { _pageSearch = args.Value?.ToString() ?? ""; ++_listVersion; RebuildPageRows(); }
     private void ClearPageSearch() { _pageSearch = ""; ++_listVersion; RebuildPageRows(); }
     private void SearchKeyDown(KeyboardEventArgs args)
@@ -679,14 +591,8 @@ public partial class Index
             else if (_module is not null) await _module.DisposeAsync();
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException) { }
-        try
-        {
-            await UnmountSidebar();
-            if (_sidebarModuleTask is not null) await (await _sidebarModuleTask).DisposeAsync();
-        }
-        catch (JSException) { }
+        await DisposeSidebar();
         _callbacks?.Dispose(); _life.Dispose();
     }
     private sealed record PublicationData(string ExpectedFingerprint, Guid[] AssetIds, DrawingPublicationRequest[]? Drawings = null);
-    private sealed record SidebarPreferences(bool Mobile, bool DesktopOpen);
 }

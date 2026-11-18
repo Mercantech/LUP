@@ -6,6 +6,7 @@ using Mercantec.Tech.Web.Notebooks;
 using Mercantec.Tech.Web.Notion;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace Mercantec.Tech.Web.Pages.Notebook;
@@ -55,7 +56,11 @@ public partial class Index
     private string _status = "connecting", _statusDetail = "", _ownerName = "";
     private int _total, _generation;
     private bool _busy, _loading = true, _mounted, _needsMount, _disposed, _refreshing;
-    private bool _creating, _showJournal, _showComments, _showShares, _showGraph, _sidebarOpen, _usersSearched;
+    private bool _creating, _showJournal, _showComments, _showShares, _showGraph, _usersSearched;
+    private string _templateSearch = "";
+    private CancellationTokenSource? _filterRequest;
+    private bool _filtering;
+    private IEnumerable<NotebookTemplateView> VisibleTemplates => _templates.Where(t => t.Title.Contains(_templateSearch.Trim(), StringComparison.OrdinalIgnoreCase));
     private bool TemplateMode => Nav.ToBaseRelativePath(Nav.Uri).StartsWith("teacher/notebook-templates", StringComparison.Ordinal);
     private bool IsTeacher => Redirect.CurrentAppRole() == AppRole.Underviser;
     private bool CanUse => Auth.IsAuthenticated && !ViewAs.IsActive;
@@ -89,6 +94,15 @@ public partial class Index
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender) { await SyncAccount(); return; }
+        if (_disposed) return;
+        if (!CanUse || _loading || (TemplateMode && !IsTeacher)) { await UnmountSidebar(); return; }
+        var sidebar = InitializeSidebar();
+        await MountDocument();
+        await sidebar;
+        await SyncSidebarAfterRender();
+    }
+    private async Task MountDocument()
+    {
         await ReadVisibleNotifications();
         if (!_needsMount || _current is null || !CanUse || _disposed) return;
         if (!Editing && string.IsNullOrEmpty(_current.StateBase64)) return;
@@ -131,6 +145,7 @@ public partial class Index
         await Unmount();
         _current = null; _mine = null; _notebookId = null; _pages = []; _shared = []; _comments = []; _shares = []; _users = []; _graph = null;
         _commentDrafts.Clear(); _comment = ""; _period = default;
+        _expandedPages.Clear(); _search = _templateSearch = _kind = _tag = "";
         _readNotifications.Clear(); _loadedNotebookAccess = null;
         if (CanUse) await Load(); else _loading = false;
         if (!_disposed) StateHasChanged();
@@ -142,7 +157,8 @@ public partial class Index
         var ct = _requests.Token;
         var generation = ++_generation;
         _route = RouteKey; var route = _route; _loading = true; _error = null; _notice = null; _current = null;
-        _treePages = []; _draggingPage = null;
+        _treePages = []; _pages = []; _total = 0; _draggingPage = null;
+        _shared = []; _templates = []; _notebookId = null; _mine = null; _ownerName = "";
         _loadedNotebookAccess = null; _readNotifications.Clear();
         _showComments = _showShares = _showGraph = false; _comments = []; _shares = []; _graph = null;
         try
@@ -246,8 +262,10 @@ public partial class Index
     private void Select(NotebookDocumentContext context)
     {
         _current = context;
+        _scrollCenterToTop = true;
         _comment = _commentDrafts.GetValueOrDefault(context.DocumentId, "");
-        if (Own) _treePages = context.Pages;
+        _treePages = context.Pages;
+        RevealAncestors(context.DocumentId);
         _title = context.Title; _tags = string.Join(", ", context.Tags);
         _cadence = CurrentTemplate?.Cadence ?? "daily";
         _status = "connecting"; _statusDetail = ""; _needsMount = true; _creating = false;
@@ -260,19 +278,66 @@ public partial class Index
         catch (Exception ex) when (Expected(ex)) { Report(ex); }
         finally { _busy = false; }
     }
-    private async Task Filter(bool more = false) => await Work(async ct =>
+    private Task SearchPages(ChangeEventArgs args)
     {
-        if (_notebookId is not Guid notebook) return;
-        var result = await Client.Pages(notebook, _search, _tag, _kind, more ? _pages.Length : 0, ct);
-        _pages = more ? _pages.Concat(result.Items).DistinctBy(p => p.Id).ToArray() : result.Items;
-        _total = result.Total;
-        if (Own && _current is null && _pages.Length > 0) _treePages = await Client.Tree(notebook, ct);
-    });
-    private Task ShowGraph() { _showGraph = true; return Task.CompletedTask; }
+        var term = args.Value?.ToString() ?? "";
+        if (TemplateMode) { _templateSearch = term; return Task.CompletedTask; }
+        _search = term;
+        return QueueFilter();
+    }
+    private async Task ClearSearch()
+    {
+        if (TemplateMode) { _templateSearch = ""; return; }
+        _search = "";
+        await Filter();
+    }
+    private async Task SearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key != "Escape") return;
+        if ((TemplateMode ? _templateSearch : _search).Length > 0) await ClearSearch();
+        else SetSidebarOpen(false);
+    }
+    private Task QueueFilter() => Filter(debounce: true);
+    private Task ApplyFilters() => Filter();
+    private async Task Filter(bool more = false, bool debounce = false)
+    {
+        if (_notebookId is not Guid notebook || _disposed) return;
+        _filterRequest?.Cancel();
+        using var request = CancellationTokenSource.CreateLinkedTokenSource(TreeToken);
+        _filterRequest = request;
+        _filtering = true;
+        var ct = request.Token;
+        try
+        {
+            if (debounce) await Task.Delay(180, ct);
+            var result = await Client.Pages(notebook, _search, _tag, _kind, more ? _pages.Length : 0, ct);
+            ct.ThrowIfCancellationRequested();
+            _pages = more ? _pages.Concat(result.Items).DistinctBy(p => p.Id).ToArray() : result.Items;
+            _total = result.Total;
+            if (Own && _current is null && _pages.Length > 0)
+            {
+                var tree = await Client.Tree(notebook, ct);
+                if (!ct.IsCancellationRequested) _treePages = tree;
+            }
+        }
+        catch (Exception ex) when (Expected(ex)) { if (!ct.IsCancellationRequested) Report(ex); }
+        finally { if (_filterRequest == request) { _filterRequest = null; _filtering = false; } }
+    }
+    private void ToggleJournal()
+    {
+        _showJournal = !_showJournal;
+        if (_sidebarMobile) SetSidebarOpen(false);
+    }
+    private void ShowGraph()
+    {
+        _showGraph = true;
+        if (_sidebarMobile) SetSidebarOpen(false);
+    }
     private void BeginCreate(bool child) => BeginCreateAt(child ? _current?.DocumentId : null);
     private void BeginCreateAt(Guid? parent)
     {
         if (!Own && !TemplateMode) return;
+        SetSidebarOpen(true);
         _newTitle = ""; _newParent = parent; _creating = true;
     }
     private async Task Create()
@@ -376,7 +441,12 @@ public partial class Index
     }
     private async Task Archive() => await Work(async ct => { if (TemplateId is Guid id) { var updated = await Client.Archive(id, ct); _templates = _templates.Select(t => t.Id == id ? updated : t).ToArray(); _notice = "Skabelonen er arkiveret. Eksisterende indlæg er bevaret."; } });
     private string PageHref(Guid id) => $"/notebook/{id}" + (NotebookId is Guid nb ? $"?owner={nb}" : "");
-    private async Task OpenPage(Guid id) { if (_current?.DocumentId != id && await CanLeave()) { _sidebarOpen = false; Nav.NavigateTo(PageHref(id)); } }
+    private async Task OpenPage(Guid id)
+    {
+        if (_current?.DocumentId != id && !await CanLeave()) return;
+        if (_sidebarMobile) SetSidebarOpen(false);
+        if (_current?.DocumentId != id) Nav.NavigateTo(PageHref(id));
+    }
     private async Task BeforeNavigation(LocationChangingContext context)
     {
         if (!await CanLeave()) { context.PreventNavigation(); return; }
@@ -387,6 +457,7 @@ public partial class Index
             _error = "Du har en usendt kommentar. Tilføj kommentaren eller kassér kommentarudkastet, før du forlader notesbogen.";
             context.PreventNavigation();
         }
+        else if (_sidebarMobile && staysInNotebook) SetSidebarOpen(false);
     }
     private void DiscardCommentDrafts() { _comment = ""; _commentDrafts.Clear(); _error = null; }
     private async Task<bool> CanLeave(bool metadata = true)
@@ -418,6 +489,7 @@ public partial class Index
             var changed = context.Revision != previous.Revision;
             if (!changed && context.StateBase64 is null) context = context with { StateBase64 = previous.StateBase64 };
             _current = context;
+            _treePages = context.Pages;
             if (_mounted && _editor is not null) await _editor.InvokeVoidAsync(changed ? "applyReadOnlyState" : "setContext", _editorElement, EditorContext());
             else if (!string.IsNullOrEmpty(context.StateBase64)) _needsMount = true;
             if (generation != _generation || _current?.DocumentId != page || _disposed) return;
@@ -445,6 +517,7 @@ public partial class Index
     }
     private async Task ClearRevoked(Guid page)
     {
+        _filterRequest?.Cancel(); _treePages = [];
         await Unmount(); _current = null; _pages = []; _total = 0; _comments = []; _graph = null;
         _shared = _shared.Where(p => p.Id != page).ToArray();
         _showComments = _showShares = _showGraph = false;
@@ -458,18 +531,6 @@ public partial class Index
         _status = status; _statusDetail = detail; StateHasChanged();
     });
     private async Task Reload() { if (await CanLeave()) { await Unmount(); await Load(); } }
-    private IEnumerable<(NotebookPageSummary Page, int Depth)> OrderedPages()
-    {
-        var visited = new HashSet<Guid>();
-        var ids = _pages.Select(p => p.Id).ToHashSet();
-        foreach (var item in Walk(null, 0)) yield return item;
-        foreach (var page in _pages.Where(p => !visited.Contains(p.Id))) yield return (page, 0);
-        IEnumerable<(NotebookPageSummary, int)> Walk(Guid? parent, int depth)
-        {
-            foreach (var p in _pages.Where(p => parent is null ? p.ParentPageId is null || !ids.Contains(p.ParentPageId.Value) : p.ParentPageId == parent).OrderBy(p => p.SortOrder ?? int.MaxValue).ThenByDescending(p => p.PeriodStart).ThenBy(p => p.Title).ThenBy(p => p.Id))
-            { if (!visited.Add(p.Id)) continue; yield return (p, Math.Min(depth, 5)); foreach (var c in Walk(p.Id, depth + 1)) yield return c; }
-        }
-    }
     private static string CadenceLabel(string cadence) => cadence switch { "daily" => "Daglig", "weekly" => "Ugentlig", _ => "Fri" };
     private static bool Expected(Exception ex) => ex is NotebookException or HttpRequestException or JSException or OperationCanceledException or System.Text.Json.JsonException;
     private void Report(Exception ex) { if (!_disposed && ex is not OperationCanceledException) _error = ex is NotebookException ? ex.Message : "Handlingen kunne ikke gennemføres. Kontrollér forbindelsen og prøv igen."; }
@@ -484,6 +545,7 @@ public partial class Index
     {
         _disposed = true; Auth.AuthStateChanged -= AccountChanged; ViewAs.Changed -= AccountChanged; Actions.Changed -= NotificationStateChanged;
         await _life.CancelAsync(); _requests?.Cancel();
+        await DisposeSidebar();
         try { if (_lifecycle is not null) { await _lifecycle.InvokeVoidAsync("unwatch"); await _lifecycle.DisposeAsync(); } await Unmount(); if (_editor is not null) await _editor.DisposeAsync(); } catch (JSDisconnectedException) { }
         _callbacks?.Dispose(); _requests?.Dispose(); _life.Dispose();
     }

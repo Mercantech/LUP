@@ -24,7 +24,13 @@ public sealed class MainLayoutEditorShellTests
     [InlineData("/notion", true, false)]
     [InlineData("/notion/connections", true, false)]
     [InlineData("/notion/holds/11111111-aaaa-4111-8111-111111111111", true, false)]
-    [InlineData("/notebook/11111111-aaaa-4111-8111-111111111111", true, false)]
+    [InlineData("/notion/collections/11111111-aaaa-4111-8111-111111111111", true, true)]
+    [InlineData("/notebook", true, true)]
+    [InlineData("/notebook/11111111-aaaa-4111-8111-111111111111", true, true)]
+    [InlineData("/journal", true, true)]
+    [InlineData("/teacher/notebook-templates", true, true)]
+    [InlineData("/teacher/notebook-templates/11111111-aaaa-4111-8111-111111111111", true, true)]
+    [InlineData("/teacher/notebooks", true, false)]
     [InlineData("/library", true, false)]
     [InlineData("/notion/11111111-aaaa-4111-8111-111111111111", false, false)]
     public async Task Only_authenticated_document_routes_use_the_edge_to_edge_editor_shell(string route, bool authenticated, bool expected)
@@ -94,7 +100,7 @@ public sealed class MainLayoutEditorShellTests
         layout.WaitForAssertion(() => Assert.False(layout.Find("a.brand").HasAttribute("aria-current")));
         Assert.Equal("Min profil", Assert.Single(layout.FindAll(".lup-account a[href='/profile']")).TextContent.Trim());
         Assert.Empty(layout.FindAll(".lup-account a[href='/universe'], .lup-account a[href='/settings']"));
-        Assert.Empty(layout.FindComponents<Stub<ThemePicker>>());
+        Assert.Single(layout.FindComponents<Stub<ThemePicker>>());
     }
 
     [Fact]
@@ -113,6 +119,7 @@ public sealed class MainLayoutEditorShellTests
         Assert.Equal("E", layout.Find(".lup-account .avatar").TextContent.Trim());
         Assert.Empty(layout.FindAll(".lup-account a[href='/profile'], .lup-account a[href='/universe'], .lup-account a[href='/settings']"));
         Assert.Contains(layout.FindAll(".lup-account button"), button => button.TextContent.Trim() == "Afslut elev-visning");
+        Assert.Single(layout.FindComponents<Stub<ThemePicker>>());
     }
 
     [Fact]
