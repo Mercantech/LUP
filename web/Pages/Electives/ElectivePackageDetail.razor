@@ -1,0 +1,79 @@
+@using Mercantec.Tech.Web.Electives
+
+<article class="package-detail" aria-labelledby="package-title">
+    <a class="package-back" href="/valgfag"><UiIcon Name="arrow" /> Alle fagpakker</a>
+
+    <header class="package-intro">
+        <div class="package-intro-copy">
+            <h1 id="package-title">@Package.Title</h1>
+            <p>@Package.Summary</p>
+        </div>
+        <img src="@Package.ImageUrl" alt="" class="package-image" width="600" height="400" />
+    </header>
+
+    <div class="package-content">
+        <section class="package-offerings" aria-labelledby="package-offerings-title">
+            <h2 id="package-offerings-title">Aktuelle hold</h2>
+            @if (Offerings.Length == 0)
+            {
+                <p>Der er ingen aktuelle hold for denne fagpakke.</p>
+            }
+            else
+            {
+                <div class="package-offering-list">
+                    @foreach (var offering in Offerings)
+                    {
+                        <ElectiveCard @key="offering.Id" Item="offering" Template="Template" CanManage="CanManage"
+                                     OnEnrollmentChanged="OnEnrollmentChanged" OnRefresh="OnRefresh" />
+                    }
+                </div>
+            }
+            @if (CanManage)
+            {
+                <a class="secondary package-create" href="@($"/valgfag?vis=administrer&fag={Template.Id:D}")"><UiIcon Name="plus" /> Opret hold</a>
+            }
+        </section>
+
+        <section class="package-information" aria-labelledby="package-information-title">
+            <h2 id="package-information-title">Om fagpakken</h2>
+            @if (!string.IsNullOrWhiteSpace(Template.Schedule))
+            {
+                @LinkedText(Template.Schedule)
+            }
+            @if (!string.IsNullOrWhiteSpace(Template.Description))
+            {
+                <details class="package-description">
+                    <summary>Læs fagbeskrivelsen</summary>
+                    @LinkedText(Template.Description)
+                </details>
+            }
+            @if (ElectiveDisplay.SafeSourceUrl(Template.SourceUrl) is { } source)
+            {
+                <a class="package-source" href="@source" target="_blank" rel="noopener noreferrer">Åbn den oprindelige fagbeskrivelse <UiIcon Name="external" /></a>
+            }
+        </section>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public ElectivePackage Package { get; set; } = null!;
+    [Parameter, EditorRequired] public ElectiveView Template { get; set; } = null!;
+    [Parameter] public ElectiveView[] Offerings { get; set; } = [];
+    [Parameter] public bool CanManage { get; set; }
+    [Parameter] public EventCallback<ElectiveView> OnEnrollmentChanged { get; set; }
+    [Parameter] public EventCallback OnRefresh { get; set; }
+
+    private static RenderFragment LinkedText(string text) => @<p class="package-prose">
+        @foreach (var (label, href) in ElectiveDisplay.TextLinks(text))
+        {
+            if (href is null)
+            {
+                @label
+            }
+            else
+            {
+                <a href="@href" target="_blank" rel="noopener noreferrer">@label</a>
+            }
+        }
+    </p>;
+}

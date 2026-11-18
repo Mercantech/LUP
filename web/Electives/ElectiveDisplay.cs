@@ -16,6 +16,13 @@ internal static partial class ElectiveDisplay
     public static string DateTime(DateTimeOffset value) =>
         TimeZoneInfo.ConvertTime(value, Copenhagen).ToString("d. MMM yyyy 'kl.' HH:mm", Danish);
 
+    public static string StartLabel(ElectiveView? offering) => offering switch
+    {
+        null => "Ingen aktuelle hold",
+        { StartsOn: { } start } => $"Holdstart {Date(start)}",
+        _ => "Startdato følger"
+    };
+
     public static string? Period(DateOnly? start, DateOnly? end) => (start, end) switch
     {
         ({ } first, { } last) when first != last => $"{Date(first)} – {Date(last)}",
