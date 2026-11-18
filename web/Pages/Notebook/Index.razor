@@ -83,10 +83,6 @@ else
                     }
                     <div class="nb-editor-root" @ref="_editorElement"></div>@if (NoticeKind == "mention" && !string.IsNullOrEmpty(NoticeQuery)) { <MentionReceipt SourceId="_current.DocumentId" Loaded="_mounted" Notice="@NoticeQuery" /> }
                     @if (!Editing && !_mounted) { <p class="nb-muted nb-waiting" role="status">Venter på sidens gemte indhold…</p> }
-                    @if (!TemplateMode)
-                    {
-                        <ReferenceBacklinks Kind="notebook-page" Id="@_current.DocumentId.ToString()" Revision="_current.Revision" />
-                    }
                     @if (_showComments && _current.CanComment)
                     {
                         <section class="nb-comments"><div class="nb-sidebar-title"><h2>Kommentarer</h2><button class="secondary" @onclick="() => _showComments = false">Luk</button></div><p class="nb-muted">Kommentarer deles mellem eleven og underviserne.</p>@foreach (var comment in _comments.OrderBy(c => c.CreatedAtUtc)) { <article class="nb-comment"><header><strong>@comment.AuthorName</strong><time datetime="@comment.CreatedAtUtc.ToString("O")">@comment.CreatedAtUtc.ToLocalTime().ToString("d. MMM HH:mm")</time></header><p>@comment.Text</p></article> }@if (_comments.Length == 0) { <p class="nb-muted">Der er ingen kommentarer endnu.</p> }<form @onsubmit="AddComment" @onsubmit:preventDefault><label>Skriv en kommentar<textarea @bind="_comment" @bind:event="oninput" maxlength="4000" rows="3"></textarea></label><button class="action" disabled="@(_busy || string.IsNullOrWhiteSpace(_comment))">Tilføj kommentar</button></form></section>

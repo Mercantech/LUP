@@ -38,7 +38,7 @@ public partial class Index
     private ElementReference _editorElement;
     private NotebookInfo? _mine;
     private NotebookDocumentContext? _current;
-    private NotebookPageSummary[] _pages = [], _shared = [], _backlinks = [];
+    private NotebookPageSummary[] _pages = [], _shared = [];
     private NotebookTemplateView[] _templates = [];
     private NotebookCommentView[] _comments = [];
     private NotebookShareView[] _shares = [];
@@ -144,7 +144,7 @@ public partial class Index
         _route = RouteKey; var route = _route; _loading = true; _error = null; _notice = null; _current = null;
         _treePages = []; _draggingPage = null;
         _loadedNotebookAccess = null; _readNotifications.Clear();
-        _showComments = _showShares = _showGraph = false; _comments = []; _shares = []; _backlinks = []; _graph = null;
+        _showComments = _showShares = _showGraph = false; _comments = []; _shares = []; _graph = null;
         try
         {
             await Client.Register(ct);
@@ -420,16 +420,10 @@ public partial class Index
             _current = context;
             if (_mounted && _editor is not null) await _editor.InvokeVoidAsync(changed ? "applyReadOnlyState" : "setContext", _editorElement, EditorContext());
             else if (!string.IsNullOrEmpty(context.StateBase64)) _needsMount = true;
+            if (generation != _generation || _current?.DocumentId != page || _disposed) return;
             var visibleIds = context.Pages.Select(p => p.Id).ToHashSet();
             _pages = _pages.Where(p => visibleIds.Contains(p.Id)).ToArray();
-            _backlinks = _backlinks.Where(p => visibleIds.Contains(p.Id)).ToArray();
             _shared = _shared.Where(p => p.NotebookId != context.NotebookId || visibleIds.Contains(p.Id)).ToArray();
-            if (changed)
-            {
-                var backlinks = Array.Empty<NotebookPageSummary>();
-                if (generation != _generation || _current?.DocumentId != page || _disposed) return;
-                _backlinks = backlinks;
-            }
             if (_showGraph && context.NotebookId is Guid notebook)
             {
                 var graph = await Client.Graph(notebook, ct);
@@ -451,28 +445,17 @@ public partial class Index
     }
     private async Task ClearRevoked(Guid page)
     {
-        await Unmount(); _current = null; _pages = []; _total = 0; _backlinks = []; _comments = []; _graph = null;
+        await Unmount(); _current = null; _pages = []; _total = 0; _comments = []; _graph = null;
         _shared = _shared.Where(p => p.Id != page).ToArray();
         _showComments = _showShares = _showGraph = false;
         _commentDrafts.Remove(page); _comment = "";
         _error = "Adgangen til siden er trukket tilbage. Indholdet er lukket.";
     }
     [JSInvokable] public Task<string?> GetNotionToken() => CanUse ? Auth.GetValidAccessTokenAsync() : Task.FromResult<string?>(null);
-    [JSInvokable] public Task OnNotionStatus(string status, string detail) => InvokeAsync(async () =>
+    [JSInvokable] public Task OnNotionStatus(string status, string detail) => InvokeAsync(() =>
     {
         if (_disposed) return;
-        var wasSaved = _status == "saved";
         _status = status; _statusDetail = detail; StateHasChanged();
-        if (status == "saved" && !wasSaved && !TemplateMode && _current is not null)
-        {
-            var id = _current.DocumentId; var generation = _generation;
-            try
-            {
-                var backlinks = await Client.Backlinks(id, _requests?.Token ?? _life.Token);
-                if (!_disposed && generation == _generation && id == _current?.DocumentId) { _backlinks = backlinks; StateHasChanged(); }
-            }
-            catch (Exception ex) when (Expected(ex)) { }
-        }
     });
     private async Task Reload() { if (await CanLeave()) { await Unmount(); await Load(); } }
     private IEnumerable<(NotebookPageSummary Page, int Depth)> OrderedPages()
