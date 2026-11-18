@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "vatson-kamaeleonen-lupp-reaktionstid",
+  "alt": "Vatson ordner den turkise del af perlekæden, Kamæleonen undersøger den lange ravfarvede del, og LUPP følger spillets reaktion på skærmen.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-d748142f-122d-400b-a347-d6d8dc52acc4.png",
+  "prompt": "Create ONE standalone finished landscape LUP story illustration at native1536x1024, exact3:2, richly hand-painted gouache with detailed colored-pencil textures and soft grounded cinematic lighting. The three attached portraits are exact character identity/wardrobe references. Exactly THREE canonical mascots, all faces and working gestures legible, calmly collaborating on a single concept through real props. Each has its proper distinct anatomy and scale. Warm storytelling focus, beautiful materials, space around silhouettes, no text, letters, numbers, logos, watermark, collage or poster. Do not copy the plain portrait backgrounds or poses. Kamæleonen is the same olive/yellow-green chameleon with finely detailed scales, orange-edged green crest, large warm brown turret eyes, cream rolled linen shirt and brown leather apron with brass hardware, one curled tail and two natural small hands. Vatson from ref1 exact hovering white tapered legless robot, white rounded rectangular monitor head with black screen, happy cyan pixel smile/crescent eyes, thin black spring antenna and white ball, two black ribbed arms and white grippers, teal ring binder resting nearby. LUPP from ref3 exact friendly compact PURPLE CLAY rounded cuboid with two huge creamy eyes/dark pupils and oversized YELLOW pencil pink eraser. NO mouth, nose, limbs, arms, hands, feet or legs for LUPP. Set in a paper game-design workshop with tall late-afternoon studio window, cardboard level terrain, a few paper stars and cloth swatches on pinboard, beautifully tactile, lively teal/amber/purple palette. One central physical colorful BEAD CHAIN laid left-to-right in a straight, shallow arc on work table as a duration metaphor. ALL beads have EXACTLY SAME size and width so length compares time. Chain has exactly THREE consecutive color segments physically touching: short turquoise input segment at LEFT, noticeably LONGER AMBER prediction segment in MIDDLE (at least2times length of turquoise), short violet response segment at RIGHT, no fourth color, no count labels or numerals. Vatson LEFT carefully arranges the short turquoise section with one true gripper, Chameleon CENTER leans with a small lens over the longest amber section and holds one amber bead with his other hand, LUPP RIGHT looks toward a modest laptop showing one purple square avatar over a green ledge with one small star burst for visible game feedback. His huge yellow pencil rests against an open small paper platformer sketch. The chain ends beside screen so stage-by-stage response is readable, but keep it an actual craft prop, no illuminated cables or computer code. Keep characters' three faces visually distinct, screen subordinate to characters and chain, lens unobscuring amber length, no hardcoded numbers or literal words.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    },
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-kamaeleonen-lupp-reaktionstid.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3631003,
+    "sha256": "3c3430052ca4a6262c83ffb506e67cbd546c9c1fce5c061d23f882820d7703f5"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-kamaeleonen-lupp-reaktionstid.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 149398,
+    "sha256": "476cbdd2a134f04a9bf5f661c53242e9700efef1f09c4d9341a37231f6878cc5"
+  }
+}

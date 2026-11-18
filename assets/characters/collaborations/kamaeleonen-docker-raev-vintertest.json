@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-docker-raev-vintertest",
+  "alt": "Ræv lægger vinterens røde og grønne æbler frem ved sorteringskassen. Kamæleonen sammenligner resultaterne, og Docker følger den ravfarvede statuslampe.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-a98238f8-fc45-4f5b-add5-6e14117b24e8.png",
+  "prompt": "Create ONE standalone finished landscape LUP story illustration at native1536x1024, exact3:2, richly hand-painted gouache with detailed colored-pencil textures and soft grounded cinematic lighting. The three attached portraits are exact character identity/wardrobe references. Exactly THREE canonical mascots, all faces and working gestures legible, calmly collaborating on a single concept through real props. Each has its proper distinct anatomy and scale. Warm storytelling focus, beautiful materials, space around silhouettes, no text, letters, numbers, logos, watermark, collage or poster. Do not copy the plain portrait backgrounds or poses. Kamæleonen is the same olive/yellow-green chameleon with finely detailed scales, orange-edged green crest, large warm brown turret eyes, cream rolled linen shirt and brown leather apron with brass hardware, one curled tail and two natural small hands. Docker is the exact enormous old navy-gray HUMPBACK sea captain from reference2 with knobbly rostrum, cream pleated lower throat, mustard knit bobble cap, dark navy cable-knit sweater, one gentle brown eye, true whale flippers, tail out in harbor. Whale body mostly in water alongside quay on LEFT, one flipper rests on dry quay edge to point toward an amber status lamp, no human hands/legs. Ræv from reference3 is exact curious russet red fox, pointy ears, pale cream muzzle, amber brown eyes, rust-red blazer/waistcoat over cream shirt, brown trousers and single white-tipped bushy tail. Distinct winter setting with dark freezing harbor behind, huge soft blue snowflakes, a covered wooden dock fruit-testing booth, golden lamps and snow-dusted ropes. Dry warm timber sorting crate at center has a SIMPLE lens and hand-cranked sample shelf, small unchanged leaf mark on case; one physically connected AMBER status beacon. At left under roof on rear bench, a modest separate archive box holds a few dry plain GREEN apples, safe from snow. At right-front Ræv deliberately lays out representative winter test fruit: one red and one green apple with visible thin patches of frost/snow on peel, plus slightly shaded red-green apple, all natural realistic fruit, distinct from dry green crate. Chameleon center holds two little cream result cards with leaf model mark on foot and broad fruit pictograms, comparing the current test with the old dry sample resting behind. Do not promise all examples pass: one small orange caution pictogram at rig, amber beacon active. Scene tells that seasons changed actual production conditions and their existing fruit model is being checked after deployment. Docker follows the indicator, fox provides new representative winter examples, chameleon evaluates actual outputs. No numbers, charts, exact probability, or automatic-retraining arrows. Characters protected by sensible canopy except whale naturally in sea; keep all faces, hands and fruit clearly visible with warm lamplight against snowfall.",
+  "references": [
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-docker-raev-vintertest.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3612144,
+    "sha256": "dd99f8ffff8d5d9696ccceb74fc03e4a6ee6fc7bf21e89dff54a640710ea7a90"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-docker-raev-vintertest.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 165968,
+    "sha256": "9fa0a84c0179767db84300734001d06c230cc3105baa1e2bc71ef98210087b14"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "gitmejsen-bilbo-docker-featureflag",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait-transparent.webp",
+      "sha256": "2d6828c391f0744aa2a948e6be367eb3a87bc33c4fd132317d46cf74cfa5b6aa"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait-transparent.webp",
+      "sha256": "85490b2a05edc3499846b1789678cd8feebe56a8745933300511c397012af92f"
+    }
+  ],
+  "alt": "Bilbo tænder lanternen ved den ene syltetøjsbod, mens nabobodens låge er lukket. Gitmejsen og Docker sammenligner to ens kasser med det samme brombærmærke.",
+  "prompt": "ONE full-bleed landscape illustration, 1536×1024 pixels, 3:2. LUP’s distinctive warm detailed hand-painted gouache and oil on textured paper storybook aesthetic. Match exactly the canonical characters from supplied references and keep THREE recognizable main characters, one coherent narrative setting, anatomically natural limbs, no duplicate hands, no lettering, captions, random pseudo-code, numerals, logos, watermark, panel montage or borders. Make the teaching objects large and semantically very clear. Teaching story: toggle one feature with a flag while running the same application version. Sunlit autumn pantry loading bay with red-gold leaves and open harbor door, cozy oak frame, warm terracotta pantry walls, wicker jars and rounded wooden doorway, distinct composition. At center middle are precisely TWO MATCHING SMALL wooden service kiosks or route booths side by side, same shape and material. LEFT kiosk has its little serving flap OPEN with one finished blackberry jam jar inside, and a warm glowing amber miniature lantern above; RIGHT kiosk's serving flap is closed/sealed, identical lantern above is unlit. A single very obvious plain lever switch mounted at lower left is wired visibly with a short brass cord to ONLY the left lantern. Bilbo from second reference, exact friendly short curly chestnut hobbit with green velvet waistcoat and brass buttons, rolled ivory sleeves, rusty cuffed trousers and large hairy bare feet, stands left operating lever with one hand and looking at now open left booth, only two arms. In foreground on one low packing bench are exactly TWO IDENTICAL deep blue APPLICATION CRATES, same size and identical embossed simple blackberry cluster medallion on each, no letters, symbols or differing colors, showing same code artifact on both sides. Docker from third reference, enormous exact slate-blue humpback with cream throat pleats, navy cable-knit pullover and mustard beanie, leans from water on right to compare the matching berry medallions with a natural flipper. Gitmejsen from first reference, exact natural little crested tit with pointed black speckled cream crest, black cheek lines and bib, fine beak, gray-tan feathers and cobalt-blue scarf, sits on crossbar centered above crates; she looks between them and has a tiny open paper card on stand beside her showing the SAME SINGLE blackberry cluster mark, no writing, documenting one shared code version. Keep lantern toggle, open and closed route, matching two crates unmistakable; bird and other faces unobstructed. No screens, fake code or lettering.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/gitmejsen-bilbo-docker-featureflag.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3668602,
+    "sha256": "ef12f1c5f4b65dc97412105821d834a6539ad22d53babaf90aee9e9ffd19d0d8"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/gitmejsen-bilbo-docker-featureflag.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 181060,
+    "sha256": "55c85df9ee35ecdbe514f60b0b7ff494e0ff5ea5506613c0d5841d548a709267"
+  }
+}

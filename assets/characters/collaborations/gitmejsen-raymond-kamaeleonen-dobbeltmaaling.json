@@ -1,0 +1,34 @@
+{
+  "id": "gitmejsen-raymond-kamaeleonen-dobbeltmaaling",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait-transparent.webp",
+      "sha256": "2d6828c391f0744aa2a948e6be367eb3a87bc33c4fd132317d46cf74cfa5b6aa"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/chameleon/portrait-transparent.webp",
+      "sha256": "325dcb76839f9e7aec388d388ce9e58d0296e10be1a8c0817e0498914db2d4af"
+    }
+  ],
+  "alt": "Gitmejsen lægger en gentaget leveringsseddel med samme bladsegl til side. Raymond og Kamæleonen beholder to enslydende prøver med forskellige røde og blå mærker.",
+  "prompt": "ONE full-bleed landscape illustration, 1536×1024 pixels, 3:2. LUP’s distinctive warm detailed hand-painted gouache and oil on textured paper storybook aesthetic. Match exactly the canonical characters from supplied references and keep THREE recognizable main characters, one coherent narrative setting, anatomically natural limbs, no duplicate hands, no lettering, captions, random pseudo-code, numerals, logos, watermark, panel montage or borders. Make the teaching objects large and semantically very clear. Teaching story: duplicated delivery record versus two distinct measurements with equal measured values. Outdoors in an acoustic harvesting stall beside an Italian violin orchard at early autumn sunset, warm gold cloth canopy, a partial unvarnished violin hangs at rear, swallows and distant fields softly rendered. On a huge unobstructed oak tabletop foreground, a small TWO-COMPARTMENT sample sorting box contains EXACTLY TWO identical-looking pale recording cylinders with same tiny waveform motif, same size and height. Left cylinder has a vivid RED THREAD with round red identifier badge, right cylinder a vivid BLUE THREAD with round blue identifier badge. Their measured waveforms look the same while identifiers are clearly distinct, one sample per shallow compartment. Raymond from second reference, exact blue elephant professor with cream knit cardigan, blue shirt, brown trousers, round bronze glasses, tuft and curled trunk, right of table, points calmly to both retained cylinders. Kamæleonen from third reference, friendly vivid leaf-green chameleon with ochre throat and orange edged green crest, brown eyes, coiled green tail, cream sleeves and brown leather apron, behind middle bench, holds a tuning fork in only one natural hand and rests other at table, attentively looks at the two equal waveforms. Gitmejsen from first reference, small organically natural crested tit with black-speckled pale sharp crest, black cheek arcs and bib, tan grey body and cobalt wool scarf, perches left on twig stand, using only beak tip to move one duplicated DELIVERY CARD to a shallow side tray, while original matching delivery card stays on main counter beside sample box. Exactly TWO cards: BOTH cream with EXACT same conspicuous emerald-green LEAF WAX SEAL and same simple blank ruled line, both visually identical identity; duplicate is being set aside, no shredding or trash. The matched green leaf seals should stand out from samples’ different red/blue thread badges. Keep three character faces clear in triangle, exact canonical designs, bird actual relative small size but readable. The scene centers paper cards at left and recording sample pair at center, concrete distinct objects. No text or arbitrary counts.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/gitmejsen-raymond-kamaeleonen-dobbeltmaaling.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3582204,
+    "sha256": "5e8c3b9c4ed29bfb4fcfabb84a7e6c572a835bc87ab36acf22acb172ef1b9596"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/gitmejsen-raymond-kamaeleonen-dobbeltmaaling.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 166400,
+    "sha256": "9027006a9ebd251c2dc0cbc84382131665fe30435c7af3efd037e1973accc321"
+  }
+}

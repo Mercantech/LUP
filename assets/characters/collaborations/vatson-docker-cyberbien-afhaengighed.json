@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "vatson-docker-cyberbien-afhaengighed",
+  "alt": "Vatson, Docker og Cyberbien sammenligner to næsten ens moduler ved kystværkstedet. Kun modulets stjerneformede segl matcher kortet i den gemte mappe.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-056093da-4a96-493f-9c17-8a6045b859d8.png",
+  "prompt": "Make ONE original 1536×1024 landscape 3:2 richly illustrated warm LUP teaching collaboration picture. Exactly three canonical characters each unobscured and recognizable, authentic anatomy, one legible narrative interaction, distinct setting and expressive shared gaze, cohesive hand-painted texture, fine tactile surfaces, natural atmosphere and breathing room. No typography, signs, letters, numbers, written code or branded logo, no illegible fake text, no extra actors. Keep tiny established pictograms on character clothes and goggles only. Large enough relevant props for 768px previews. No multi-panel comic or duplicate character. First reference Vatson is the small hovering white robot with exactly thick WHITE rectangular monitor head and BLACK face with happy cyan dot matrix expression, thin flex antenna with pale white bulb, small white/turquoise hovering body without legs, two black corrugated hose arms and white robotic hands, familiar TURQUOISE ring binder. Second reference Docker is the old dark grey-blue HUMPBACK whale with knobbly rounded elongated snout, pale deeply pleated throat, kind wise brown eye, heavy navy cable-knit sailor sweater, small mustard knitted cap, radio pocket and ONLY flippers as forelimbs, no human hands or legs. Third reference is the exact small golden bee with rounded friendly face and big brown eyes, two yellow-tipped dark antennae, chunky navy forehead goggles with cyan code/lock pictograms, navy hoodie/yellow drawstrings, cream veined wings and dark gold-soled boots. Scene at a tide-worn COASTAL WORKSHOP set on a timber quay. Harbor daylight and soft sea-green reflections, rustic crane silhouette far out of focus, spare harmless gears in shelves. Whale floats naturally beside the quay at left, large head and one foreflipper leaning on dock edge, eyes looking at exact replacement identification. Vatson hovers at center above dock at desk height with his turquoise binder open and facing the viewer, Cyberbien stands right at desk with paws near components and bright interested expression. Central low workbench carries exactly TWO nearly identical simple cream-and-brass replacement modules laid in separate shallow trays, same size and same harmless plug shape, both equally intact. The LEFT module has one prominent dark-blue seal containing a FIVE-POINTED STAR, the RIGHT module has one dark-blue seal containing a CIRCLE. The stored card in the open ringbinder contains the same clear FIVE-POINTED STAR within its dark blue seal plus the outlined silhouette of the module. Vatson's pointing hand aligns with the LEFT matching exact module. Bee's small blank inspection mat is beside the RIGHT candidate, a sand timer icon subtly represents an optional deliberate test later without recommending either blindly. No arrows linking two differing modules as equivalent, no reject/danger marks, no computer code or package names/numbers. Illustrates matching exact previously recorded component before deliberate test upgrade, gentle friendly instrument metaphor, not a live engineering tutorial. Whales tail may be visible far in the water naturally, recognizable silhouettes.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    },
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bee/portrait.webp",
+      "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-docker-cyberbien-afhaengighed.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3483972,
+    "sha256": "fa063f2cb8798640c7c1c23acfd46c02b008151f894fea3b914ec96c45b0d0d7"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-docker-cyberbien-afhaengighed.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 143188,
+    "sha256": "6ce3d9ca6ec17b2b1d8bc119b5067c5f05cdb772e9c74bd4668b508207fc8914"
+  }
+}

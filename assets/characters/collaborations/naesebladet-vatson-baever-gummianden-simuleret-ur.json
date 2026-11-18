@@ -1,0 +1,38 @@
+{
+  "id": "naesebladet-vatson-baever-gummianden-simuleret-ur",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.webp",
+      "sha256": "5c15516ee9e4755d31081e62a9b62e09aa6c99b3af15a2f537991568107941fc"
+    },
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    },
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    }
+  ],
+  "prompt": "Original LUP teaching illustration, landscape 1536x1024, rich warm Danish storybook gouache and clear material textures. Exactly four who are reference mascots 1 through 4, distinctive faces and costume details stay intact. Every figure has their own task around one shared subject, clear poses and interactions, correct wrist and hand or wing anatomy. Exactly four figures, no extra characters, signs with writing, logos or watermarks. In a miniature IoT test laboratory staged as a private theatrical rehearsal at blue hour, the group steps a simulated clock forward to test a timeout. A large tabletop wooden dial at center has a single hand moved by Vatson's attached simple gripper, three plain tick marks and a clear red deadline mark, with no numbers or letters. The exact neoclassical notched-ear bat Næsebladet in burgundy velvet points from the twin-lens distance sensor to a small motionless wooden target, two real bat wing wrists. Exactly rectangular white hover robot with cheerful cyan screen and teal ring binder, Vatson moves the dial with its other arm. Bæver exact brown beaver, flat tail and blue field jacket, checks a card with two amber light symbols and watches the status lamp by the dial. Yellow rubber duck in terracotta knit watches clock and lamp with wing to cheek. Put dial and sensor along one physical workbench, status lamp has simple amber turn-on event, no real lab branding or electrical directions. Encourage beautiful contrast of blue dusk and amber lamplight. No numbers, legible text, fake UI screens or warning language.",
+  "alt": "Vatson stiller et testur frem, mens Næsebladet, Bæver og Gummianden følger sensoren og statuslampen.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-vatson-baever-gummianden-simuleret-ur.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3015486,
+    "sha256": "197f33b6a59cf1c3efff8c83fae124ded6214ef235984f0a5b9271f41caff8f1"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-vatson-baever-gummianden-simuleret-ur.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 127096,
+    "sha256": "d1f3dde75df5b056eac44342a40a6105480994619bf918a8bc456dcf72510eda"
+  }
+}

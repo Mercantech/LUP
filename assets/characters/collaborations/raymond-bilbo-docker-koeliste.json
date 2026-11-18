@@ -1,0 +1,34 @@
+{
+  "id": "raymond-bilbo-docker-koeliste",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait-transparent.webp",
+      "sha256": "85490b2a05edc3499846b1789678cd8feebe56a8745933300511c397012af92f"
+    }
+  ],
+  "alt": "Raymond sætter to bestillingssedler med forskellige stempler i en fast rækkefølge på kajen. Bilbo og Docker sammenligner rækken under det samme tidevandsur.",
+  "prompt": "ONE full-bleed landscape illustration, 1536×1024 pixels, 3:2. LUP’s distinctive warm detailed hand-painted gouache and oil on textured paper storybook aesthetic. Match exactly the canonical characters from supplied references and keep THREE recognizable main characters, one coherent narrative setting, anatomically natural limbs, no duplicate hands, no lettering, captions, random pseudo-code, numerals, logos, watermark, panel montage or borders. Make the teaching objects large and semantically very clear. Curriculum story, deterministic order pagination with a unique record key breaking equal time ties, represented by order slips. At a nighttime wooden quay under a single amber marine lantern, deep ink-blue harbor and indigo mountains, three characters checking one little two-slot ORDER RACK placed prominently on a counter in front center. Rack has exactly TWO labeled-by-symbol slots, LEFT a blue circular seal and RIGHT a gold square seal, no text. Each slot contains ONE large cream order slip carrying the same correspondingly colored BLUE CIRCLE or GOLD SQUARE seal at its top. Both slips have the same tiny embossed tide clock circle icon near bottom, reflecting simultaneous timestamp; no digits. Directly above the rack is one ordinary brass tide clock with a single hand and simple tick marks only, no numbers. Raymond from first reference, friendly blue elephant professor with cream cardigan and brown trousers, round bronze glasses, warm brown eyes, blue tuft and curled trunk, on left is arranging the two slips in that stable left-to-right sequence with two natural arms, not obscuring seal marks. Bilbo from second reference, short round adult hobbit with chestnut ringlet hair, small chin tuft, green velvet waistcoat, brass buttons, rolled ivory shirt sleeves, rusty cuffed breeches and hairy bare feet, stands center-rear holding open his small paging ledger showing the gold square on its currently open right page. Use ONLY one large colored square on that page and no other writing, he checks the second page against rack. Docker from third reference, enormous slate-gray humpback whale with cream pleated throat, navy chunky cable-knit sweater and mustard knit beanie, emerges from water at right, broad natural flipper indicating a small cart on the dock that holds a round-marked crate ahead of a square-marked crate in the same left-to-right order. The cart is secondary, rack and clock primary. Warm affectionate interest, tangible paper and sea mist, exact three identities. No UI, letters or extra slips.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-bilbo-docker-koeliste.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3604110,
+    "sha256": "3a9ab4b37544523671398899180a7c5fc4ced327fd756df4f549201bf539b9db"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-bilbo-docker-koeliste.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 168730,
+    "sha256": "df389a39f98482b911b596766a32b0b94a42ff5c970d582aa672475aafeea96d"
+  }
+}

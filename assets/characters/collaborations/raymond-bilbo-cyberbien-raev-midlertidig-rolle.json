@@ -1,0 +1,38 @@
+{
+  "id": "raymond-bilbo-cyberbien-raev-midlertidig-rolle",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bee/portrait.webp",
+      "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    }
+  ],
+  "prompt": "Original LUP teaching illustration, landscape 1536x1024, rich warm Danish storybook gouache and clear material textures. Exactly four who are reference mascots 1 through 4, distinctive faces and costume details stay intact. Every figure has their own task around one shared subject, clear poses and interactions, correct wrist and hand or wing anatomy. Exactly four figures, no extra characters, signs with writing, logos or watermarks. A warmly illuminated library after-hours book fair, two hand-cut paper moons in upper background suggest closing hour, no digits. Main action at a walnut checkout desk. Raymond exact blue elephant with bronze round glasses, curled trunk and cable-knit cream cardigan opens a card catalog. Bilbo exact curly friendly hobbit in moss vest rolls sleeves and reads a temporary brass key pass with a small embossed hourglass. Cyberbien exact friendly small yellow bee in protective navy hoodie with cyan program goggles, gently points to the large matching hourglass standing at desk center. Ræv exact red orange fox in red jacket checks two illustrative pieces of test evidence side-by-side: left little brass gate icon open with green check, right little brass gate icon shut with amber closing marker. These two cases are the same guest's legitimate library pass before and after expiry, clearly a designed rule. Four strongly distinct characters, literary nighttime upper window, muted wood, golden ochre, warm violet shadows. No screens with text, password, intrusion depiction or external logos.",
+  "alt": "Raymond, Bilbo og Cyberbien tjekker et midlertidigt gæstekort. Ræv viser to kort med porten åben og lukket omkring udløbet.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-bilbo-cyberbien-raev-midlertidig-rolle.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3386152,
+    "sha256": "c9fbe38be00c2048d6a612628a9d3f457404a0e29118fd67ece5a5130201213d"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-bilbo-cyberbien-raev-midlertidig-rolle.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 160476,
+    "sha256": "83d8a372a2b92ff4e3dd601720a7f858b6bb00e2b7515983a787294ef08e4dea"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-raymond-naesebladet-udfald",
+  "alt": "Midterste måleramme står tom med et timeglas. Raymond noterer udfaldet, mens Næsebladet undersøger sensoren, og Kamæleonen sammenligner de to brugbare målinger.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-6d420131-caad-446a-9488-2cf8e255e69d.png",
+  "prompt": "Create ONE standalone finished landscape LUP story illustration at native1536x1024, exact3:2, richly hand-painted gouache with detailed colored-pencil textures and soft grounded cinematic lighting. The three attached portraits are exact character identity/wardrobe references. Exactly THREE canonical mascots, all faces and working gestures legible, calmly collaborating on a single concept through real props. Each has its proper distinct anatomy and scale. Warm storytelling focus, beautiful materials, space around silhouettes, no text, letters, numbers, logos, watermark, collage or poster. Do not copy the plain portrait backgrounds or poses. Kamæleonen is the same olive/yellow-green chameleon with finely detailed scales, orange-edged green crest, large warm brown turret eyes, cream rolled linen shirt and brown leather apron with brass hardware, one curled tail and two natural small hands. Raymond the friendly blue elephant professor has large blue ears, bronze round glasses, swept blue tuft, warm brown eyes, softly curled trunk, blue collared shirt, cream knit cardigan and brown trousers, two natural blue elephant hands. Næsebladet is the exact broad compact leaf-nosed bat, rust/plum fur, huge rust ears and viewer-right high ear notch, pink veined triangular leaf-nose, narrowed amber eyes, plum velvet jacket with gold piping, red brocade waistcoat, cream ruffled cravat. Two actual wing-arms and wrist claws only, membranes fan out from his real wrists through the garment, no extra human hands/arms. An amber-lit covered echo-market workbench in front of a little old theater at rainy dusk. Rear dark red curtain and small brass wall lamps, patterned brick arches, warm shelter with dim blue drizzle beyond. Chameleon CENTER compares THREE large wooden measurement slates standing in ONE clean evenly spaced horizontal row on bench. Each rectangular cream slate has same size and border. LEFT slate contains ONE cyan oscillating wave with short duration span (visible wave line occupies about half width), RIGHT slate contains ONE cyan wave of clearly LONGER duration span reaching further across, MIDDLE slate is EMPTY CREAM with a single SMALL simple brass hourglass leaning at its bottom border to indicate missed measurement. NO zero, circle, flatline, dash or data dot in the empty middle. There is clearly no value in middle, not zero. Chameleon points with one small hand between the valid left and right slate and holds other just beside them. Bat LEFT uses his real wing-wrist claw to inspect a small fixed two-disc ultrasonic sensor at bench far left, right-facing with cable below slates, no distinct fourth frame. Raymond RIGHT gently marks an open small ledger with pencil: same3sample positions, left and right little wave sketches, middle blank with tiny hourglass pictogram at margin; no digits/letters. Missing measurement is kept missing rather than replaced by a zero or invented value. Make the character gazes connect to the slate row and clear visually distinct status. Strong warm/blue rainy contrast, coherent equipment but no synthetic UI or computers, all3heads visible over the same bench.",
+  "references": [
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.png",
+      "sha256": "005fcf6f22d69cc23e4d323cb7896395403ead245ef30961ab5939f9bc7cc8af"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond-naesebladet-udfald.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3504039,
+    "sha256": "2bc66cc9b57b79a11433ea9e5cb1bfb7ef3a0e56338a0b69953f54a1e9c015c2"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond-naesebladet-udfald.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 149746,
+    "sha256": "d5b6e4da4fe9c35c5275d9225cfd782dc2c153fc2bf1e5eeaa969d7e875b7c8f"
+  }
+}

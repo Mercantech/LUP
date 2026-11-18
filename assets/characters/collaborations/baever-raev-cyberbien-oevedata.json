@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "baever-raev-cyberbien-oevedata",
+  "alt": "Bæver, Ræv og Cyberbien laver farverige øvekort med opdigtede dyrepiktogrammer ved skovens testbord. Klassens notesbog står lukket på hylden.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-6d458497-e31a-4a49-865b-bba95894f2fe.png",
+  "prompt": "Make ONE original 1536×1024 landscape 3:2 richly illustrated warm LUP teaching collaboration picture. Exactly three canonical characters each unobscured and recognizable, authentic anatomy, one legible narrative interaction, distinct setting and expressive shared gaze, cohesive hand-painted texture, fine tactile surfaces, natural atmosphere and breathing room. No typography, signs, letters, numbers, written code or branded logo, no illegible fake text, no extra actors. Keep tiny established pictograms on character clothes and goggles only. Large enough relevant props for 768px previews. No multi-panel comic or duplicate character. First attached reference is the exact round brown beaver with rectangular brown glasses, paired square incisors, cobalt-blue tailored instructor jacket over cream shirt, brown trousers/boots and one broad dark crosshatched paddle tail. Second reference is the exact slender auburn fox with upright triangular ears, cream muzzle/neck, warm inquisitive eyes, rust-red tailored jacket and waistcoat, cream rolled-sleeve shirt, brown cuffed trousers/boots and a single full white-tipped tail. Third reference is the exact small golden bee with rounded friendly face and big brown eyes, two yellow-tipped dark antennae, chunky navy forehead goggles with cyan code/lock pictograms, navy hoodie/yellow drawstrings, cream veined wings and dark gold-soled boots. A forest test workshop with open shutters, chunky pegged timber, blue-grey morning shade and golden sunlight, ferns and moss visible out a wide window. Around a small rectangular craft test table the three friendly teachers fabricate entirely invented data for practice using fresh blank cards and three small rubber stamps with CLEAR playful animal pictograms. Main foreground: exactly three finished bright fresh exercise cards, each with a different purely graphic animal icon (teal OWL face, orange RABBIT head, lilac CAT face) and two simple colored shape fields, no names or text. At left a small stack of genuinely BLANK cream cards, one still half stamped in front of the beaver. Beaver sits left carefully stamping the owl with one natural paw while other paw braces paper; fox at center shares a newly fabricated rabbit icon card in one paw, other paw with a capped pencil; bee at right compares the cat card and a blank with natural gloved hands. Cards are clearly made now with pads and pictographic stamps, imaginary characters not real students. Visibly high on the BACK shelf behind them sits a completely CLOSED deep-blue bound class notebook with an unlettered pupil-group icon (three simple anonymous silhouette dots), cloth wrap and closed clasp, safely separate from the table and never opened or copied. Do not repeat that notebook icon on the fresh cards. Small tea mug and pale wood storage drawers support the quiet domestic/forest feeling. All three canonical actors expressive and sharing the work, clear hands and tails, no sensitive documents, no screens or algorithms.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bee/portrait.webp",
+      "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/baever-raev-cyberbien-oevedata.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3535170,
+    "sha256": "beb65c5a1b7c347ba0c361932bb58a88c1ac1b5342f64f02327ac5c661a45376"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/baever-raev-cyberbien-oevedata.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 142296,
+    "sha256": "2d85448fa26f5d157568484fd544fab83fce7ebc2641e220557d1b4e84448650"
+  }
+}

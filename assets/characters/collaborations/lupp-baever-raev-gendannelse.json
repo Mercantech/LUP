@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "lupp-baever-raev-gendannelse",
+  "alt": "LUPP, Bæver og Ræv undersøger et papirspil efter en afbrudt lagring. Spillebrikken er væltet, men den tidligere komplette kontroltilstand ligger bevaret i sin egen træramme.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-8e5e4a4d-8d45-44e6-9024-e84fab2423d4.png",
+  "prompt": "Make ONE original 1536×1024 landscape 3:2 richly illustrated warm LUP teaching collaboration picture. Exactly three canonical characters each unobscured and recognizable, authentic anatomy, one legible narrative interaction, distinct setting and expressive shared gaze, cohesive hand-painted texture, fine tactile surfaces, natural atmosphere and breathing room. No typography, signs, letters, numbers, written code or branded logo, no illegible fake text, no extra actors. Keep tiny established pictograms on character clothes and goggles only. Large enough relevant props for 768px previews. No multi-panel comic or duplicate character. First reference LUPP is the exact single deep-purple rounded-square clay block with two HUGE ivory eyes and black pupils, a single large yellow pencil with coral pink eraser diagonally against it, NO arms, feet, legs, mouth, tail or separate body. Second reference the exact round brown beaver with rectangular brown glasses, paired square incisors, cobalt-blue tailored instructor jacket over cream shirt, brown trousers/boots and one broad dark crosshatched paddle tail. Third reference the exact slender auburn fox with upright triangular ears, cream muzzle/neck, warm inquisitive eyes, rust-red tailored jacket and waistcoat, cream rolled-sleeve shirt, brown cuffed trousers/boots and a single full white-tipped tail. Set in an AUTUMN PAPER GAME STUDIO, wide low oak table under warm afternoon window, russet leaf papercuts, teal-blue backing board, folded little trees and cardboard paths, scraps in a basket, rich cosy figural painting. Exactly one large new paper game state under construction in MAIN foreground, a folding cardstock path with two small bridge segments and a flag, and one AMBER game pawn tipped over OFF its outlined intended circular landing spot. An ordinary small low-voltage brass STATUS BULB right next to this ongoing board is unmistakably OUT: glass bulb transparent grey and no glow, separated from warm ambient sunshine. Beside board a half-inserted plain paper checkpoint sheet not yet fully in its holder makes interrupted save visible. On a clearly distinct raised side shelf left, a sturdy full wooden archival FRAME with closed clear glazing safely contains an EARLIER COMPLETE paper checkpoint, same style miniature path with bridge fully joined, flag and its upright amber pawn secured on the correct circle. Earlier complete frame is square and upright at readable angle, a very visible small GREEN CHECK attached to frame edge denotes intact kept checkpoint, no wording. Do not mingle current loose scraps or tipped pawn inside the preserved frame. Beaver on left calmly presents protected frame with one paw and traces its intact path with another. Fox at right leans over new board, gesture of noticing interruption, notebook tucked close. LUPP at center back carefully tilts pupils between the tipped token and the preserved snapshot, pencil lowered toward the new board. All three natural expressive roles, only two game pawns total, ordinary miniature prototypes, no magical resurrection or extra mascots, no plug diagrams, batteries or restoration instructions. Visual contrast of incomplete loose current board with stable complete preserved frame and an unlit status lamp is immediately readable.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-baever-raev-gendannelse.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3257048,
+    "sha256": "23692e9ec1c411832a5191300a8e7380a41d46370c2ed491593aaf7aa1df0eef"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-baever-raev-gendannelse.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 125020,
+    "sha256": "c50678211f37e8dc0057186e0f58455e0cab7b937131f25294a9b550c75aa848"
+  }
+}

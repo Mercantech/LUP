@@ -1,0 +1,38 @@
+{
+  "id": "lupp-bilbo-raymond-gummianden-seed",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    }
+  ],
+  "prompt": "Original LUP teaching illustration, landscape 1536x1024, rich warm Danish storybook gouache and clear material textures. Exactly four who are reference mascots 1 through 4, distinctive faces and costume details stay intact. Every figure has their own task around one shared subject, clear poses and interactions, correct wrist and hand or wing anatomy. Exactly four figures, no extra characters, signs with writing, logos or watermarks. At a late-summer paper carnival inside a striped craft tent, the four replay a platform game bug in precisely the same level. Across a shared wooden bench two three-dimensional folded-paper maze trays with identical geometry, identical pieces arranged the same way, and each has a card with the same unique blue acorn stamp. Two visibly matching small round tiles lie next to two trays. Left LUPP exact purple clay square with very large eyes and yellow pencil checks the first tray, no separate humanoid body. At center curly-haired hobbit Bilbo with moss vest and rolled cream sleeves places one copy of the matching seed card at the second tray. Blue elephant Raymond with cream sweater and round bronze spectacles checks the retained original acorn card in a small archive drawer. At right yellow rubber Gummianden, exact orange beak and terracotta cardigan, listens and follows the same route with its eyes. The two parallel trays occupy the immediate foreground with concise props. Warm carnival bunting and amber paper lanterns, close cinematic composition. No printed number, code, or upright text, just two matching acorn marks.",
+  "alt": "LUPP, Bilbo, Raymond og Gummianden sammenligner to ens papbaner. Begge har et kort med det samme blå agern.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-bilbo-raymond-gummianden-seed.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3299535,
+    "sha256": "68c0f4cdd6fd29ffa8dc4cf6a842e008a8380bb80ea0c103b76d32fd21451003"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-bilbo-raymond-gummianden-seed.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 139990,
+    "sha256": "f6b898d064a1a244e1604884cd889ae57bfcb6e20c5cef717daee9e1dd3b3394"
+  }
+}

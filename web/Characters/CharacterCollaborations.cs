@@ -290,6 +290,102 @@ internal static class CharacterCollaborations
             Exercise = new("Machine Learning, backend og SQL · Gem en rettelse",
                 "Modellen skriver »æble«, mens en person bekræfter »pære«. Vælg værdier til felterne forudsagt og bekræftet. Hvordan opdager du fejlen ved en senere optælling?",
                 "Gem æble som forudsagt og pære som bekræftet. Tæl rækker, hvor de to værdier er forskellige, for at finde fejlsvarene.")
+        },
+        new("lupp-bilbo-raymond-gummianden-seed", ["lupp", "bilbo", "raymond", "gummianden"], "Tilbage til præcis den samme bane",
+            "LUPP vil vise en fejl i en tilfældigt bygget bane. Bilbo henter banens starttal, som Raymond har gemt sammen med versionen. Gummianden får LUPP til at gentage de samme trin i den genskabte bane.",
+            "LUPP, Bilbo, Raymond og Gummianden sammenligner to ens papbaner. Begge har et kort med det samme blå agern.")
+        {
+            Exercise = new("Game Design, databaser og debugging · Genskab et forsøg",
+                "Fejlen opstår i version 2 på en bane med seed 42, når spilleren går til højre og derefter hopper. Hvilke oplysninger skal du bruge til at gentage forsøget?",
+                "Brug version 2, seed 42 og de samme spillerhandlinger i samme rækkefølge. Så har du samme udgangspunkt og kan undersøge, om fejlen gentager sig.")
+        },
+        new("naesebladet-vatson-baever-gummianden-simuleret-ur", ["bat", "vatson", "beaver", "gummianden"], "Flyt uret, mens sensoren venter",
+            "Næsebladet får en måling ind. Vatson stiller testens ur frem, mens Bæver holder øje med, hvornår status skifter. Gummianden noterer tidspunktet, så de kan gentage testen uden ventetid.",
+            "Vatson stiller et testur frem, mens Næsebladet, Bæver og Gummianden følger sensoren og statuslampen.")
+        {
+            Exercise = new("IoT og softwaretest · Simuleret ur",
+                "Sidste måling kom ved 0 ms. Visningen skal skifte til »Måling for gammel«, når den er mindst 100 ms gammel. Stil testuret på 99, 100 og 101 ms. Hvilken status forventer du?",
+                "Ved 99 ms vises målingen stadig som frisk. Ved både 100 og 101 ms viser systemet »Måling for gammel«.")
+        },
+        new("raymond-bilbo-cyberbien-raev-midlertidig-rolle", ["raymond", "bilbo", "bee", "fox"], "Et gæstekort, der udløber",
+            "Raymond gemmer gæstekortets udløbstid. Bilbo bruger den i appens adgangskontrol, Cyberbien gennemgår reglen, og Ræv afprøver den lige før og ved udløbet.",
+            "Raymond, Bilbo og Cyberbien tjekker et midlertidigt gæstekort. Ræv viser to kort med porten åben og lukket omkring udløbet.")
+        {
+            Exercise = new("Backend og cybersikkerhed · Udløb af adgang",
+                "Et gæstekort giver læseadgang frem til klokken 14.00. Test klokken 13.59 og præcis 14.00 med samme kort. Hvad skal appen svare?",
+                "Klokken 13.59 giver kortet læseadgang. Præcis klokken 14.00 er kortet udløbet, og appen afviser adgangen.")
+        },
+        new("raymond-bilbo-docker-koeliste", ["raymond", "bilbo", "whale"], "To sedler ved samme klokkeslæt",
+            "Bilbo vil bladre i bestillingerne ved kajen. Raymond sorterer dem efter tidspunkt og bruger ordrenummeret, når to sedler har samme tidspunkt. Docker kontrollerer, at rækkefølgen er den samme ved næste hentning.",
+            "Raymond sætter to bestillingssedler med forskellige stempler i en fast rækkefølge på kajen. Bilbo og Docker sammenligner rækken under det samme tidevandsur.")
+        {
+            Exercise = new("SQL og backend · Sortering med lige værdier",
+                "Ordre 41 og 42 kom begge kl. 10.10. Ordre 43 kom kl. 10.11. Vis to ordrer pr. side. Sortér først efter tidspunkt og dernæst efter ordrenummer, begge stigende.",
+                "Side 1 viser 41 og 42. Side 2 viser 43. Ordrenummeret afgør rækkefølgen for de to ordrer fra kl. 10.10.")
+        },
+        new("gitmejsen-raymond-kamaeleonen-dobbeltmaaling", ["gitmejsen", "raymond", "chameleon"], "Ét duplikat og to ens målinger",
+            "Kamæleonen ser ens værdier i sit datasæt. Gitmejsen finder den prøve, der kom ind to gange, og Raymond bruger målingernes id til at bevare de selvstændige prøver.",
+            "Gitmejsen lægger en gentaget leveringsseddel med samme bladsegl til side. Raymond og Kamæleonen beholder to enslydende prøver med forskellige røde og blå mærker.")
+        {
+            Exercise = new("SQL og Machine Learning · Dubletter",
+                "En sensor sender M7 med værdien 18, den samme M7 igen og til sidst M8 med værdien 18. Hvilke målinger skal gemmes, hvis hvert id kun må forekomme én gang?",
+                "Gem M7 og M8. Den gentagne M7 tæller én gang. M8 har sin egen identitet, selv om værdien også er 18.")
+        },
+        new("gitmejsen-bilbo-docker-featureflag", ["gitmejsen", "bilbo", "whale"], "Samme udgivelse, to indstillinger",
+            "Docker bruger det samme containerimage til to øvemiljøer. Bilbo gør den nye bestillingsside afhængig af en indstilling, og Gitmejsen tjekker, at miljøerne bruger samme kodeversion.",
+            "Bilbo tænder lanternen ved den ene syltetøjsbod, mens nabobodens låge er lukket. Gitmejsen og Docker sammenligner to ens kasser med det samme brombærmærke.")
+        {
+            Exercise = new("Backend, Git og deployment · Feature flag",
+                "Sæt den nye bestillingsside til »til« i prøvemiljøet og »fra« i det andet miljø. Begge kører samme image. Hvad skal en besøgende se i hvert miljø?",
+                "Prøvemiljøet åbner den nye side. Det andet miljø viser den nuværende side. Forskellen kommer fra indstillingen, mens begge miljøer kører samme image.")
+        },
+        new("baever-raev-cyberbien-oevedata", ["beaver", "fox", "bee"], "Byg et hold af fiktive elever",
+            "Bæver gør databasen klar til en test. Ræv laver tre opdigtede elevkort til forskellige situationer, og Cyberbien hjælper med at holde virkelige elevoplysninger væk fra øvelsen.",
+            "Bæver, Ræv og Cyberbien laver farverige øvekort med opdigtede dyrepiktogrammer ved skovens testbord. Klassens notesbog står lukket på hylden.")
+        {
+            Exercise = new("Softwaretest og cybersikkerhed · Fiktive testdata",
+                "Lav tre fiktive elevkort til en holdliste. Ét skal være aktivt, ét skal være afmeldt, og ét skal vente på at blive optaget. Hvem skal vises i listen over aktive elever?",
+                "Kun kortet med status »aktiv« skal vises. De tre fiktive kort er nok til at afprøve filtreringen.")
+        },
+        new("vatson-docker-cyberbien-afhaengighed", ["vatson", "whale", "bee"], "Hvilken del brugte vi sidst?",
+            "Vatson sammenligner to næsten ens moduler. Cyberbien finder versionsmærket i godkendelseslisten, og Docker bruger den aftalte version, når han gentager bygget.",
+            "Vatson, Docker og Cyberbien sammenligner to næsten ens moduler ved kystværkstedet. Kun modulets stjerneformede segl matcher kortet i den gemte mappe.")
+        {
+            Exercise = new("Deployment og cybersikkerhed · Fast version af en afhængighed",
+                "Det godkendte build brugte bibliotek 2.4.1. Nu findes 2.4.2. Hvilken version bruger du til at gentage det samme build, og hvordan undersøger du 2.4.2?",
+                "Brug 2.4.1 for at gentage bygget med samme biblioteksversion. Prøv 2.4.2 separat, og skift først den aftalte version, når testene er bestået.")
+        },
+        new("lupp-baever-raev-gendannelse", ["lupp", "beaver", "fox"], "Et gemmepunkt, der overlever afbrydelsen",
+            "LUPP tegner to gemmepunkter i spillet. Bæver lægger den nye gemning klar til kontrol, og Ræv afbryder spillet midt i forsøget for at se, hvad der kan indlæses bagefter.",
+            "LUPP, Bæver og Ræv undersøger et papirspil efter en afbrudt lagring. Spillebrikken er væltet, men den tidligere komplette kontroltilstand ligger bevaret i sin egen træramme.")
+        {
+            Exercise = new("Game Design og softwaretest · Afbrudt gemning",
+                "Spillets seneste færdige gemning er ved porten. Spilleren når tårnet, men spillet afbrydes, mens den nye gemning er ved at blive skrevet. Hvor skal spilleren starte ved genåbning?",
+                "Spilleren starter ved porten, hvor den seneste fuldførte gemning ligger. Gentag testen med en fuldført gemning ved tårnet, og kontrollér, at spillet nu starter dér.")
+        },
+        new("kamaeleonen-raymond-naesebladet-udfald", ["chameleon", "raymond", "bat"], "Hvad gør vi med den måling, der mangler?",
+            "Næsebladet sender to brugbare målinger og melder et manglende ekko i midten. Raymond markerer hullet i datasættet, og Kamæleonen undersøger, hvordan det påvirker gennemsnittet.",
+            "Midterste måleramme står tom med et timeglas. Raymond noterer udfaldet, mens Næsebladet undersøger sensoren, og Kamæleonen sammenligner de to brugbare målinger.")
+        {
+            Exercise = new("IoT, SQL og data · Manglende målinger",
+                "Målingerne er 18 cm, mangler og 24 cm. Beregn gennemsnittet af de målte værdier. Beregn derefter, hvad gennemsnittet ville blive, hvis den manglende værdi blev sat til 0.",
+                "De to målinger giver 21 cm i gennemsnit. Regner du det indsatte nul med, bliver resultatet 14 cm. Markér derfor den manglende værdi, før du regner.")
+        },
+        new("kamaeleonen-docker-raev-vintertest", ["chameleon", "whale", "fox"], "Virker frugtsorteringen også om vinteren?",
+            "Ræv samler vinterfrugter til en ny test ved kajen. Kamæleonen sammenligner modellens resultater med den tidligere sæson, og Docker tjekker, hvilken modelversion der kører.",
+            "Ræv lægger vinterens røde og grønne æbler frem ved sorteringskassen. Kamæleonen sammenligner resultaterne, og Docker følger den ravfarvede statuslampe.")
+        {
+            Exercise = new("Machine Learning og deployment · Data ændrer sig",
+                "Samme model genkender 20 af 20 frugter i den gamle test og 14 af 20 i vintertesten. Beregn begge andele. Hvilke forhold vil du undersøge i næste forsøg?",
+                "Andelene er 100 % og 70 %. Du kan fx undersøge lys, sne på frugten eller andre frugtsorter ved at variere ét forhold ad gangen.")
+        },
+        new("vatson-kamaeleonen-lupp-reaktionstid", ["vatson", "chameleon", "lupp"], "Spillet skal svare inden for 80 millisekunder",
+            "Vatson måler tiden fra knappens tryk. Kamæleonen måler modellens behandling, og LUPP måler spillets visning. De lægger tiderne sammen for at se, hvor spilleren venter længst.",
+            "Vatson ordner den turkise del af perlekæden, Kamæleonen undersøger den lange ravfarvede del, og LUPP følger spillets reaktion på skærmen.")
+        {
+            Exercise = new("Game Design og Machine Learning · Reaktionstid",
+                "Indlæsningen tager 20 ms, modellen tager 65 ms, og visningen tager 15 ms. Trinnene kører i rækkefølge. Hvor meget skal modellens tid falde for at nå højst 80 ms i alt?",
+                "Trinnene tager 100 ms i alt. Modellens tid skal falde med mindst 20 ms til højst 45 ms, hvis de to andre trin tager lige så lang tid som før.")
         }
     ];
 
