@@ -19,10 +19,10 @@ public sealed class HomeGameSimulationTests
     public void Invalid_purchase_keeps_the_entry_furniture_access_items_and_coins_unchanged()
     {
         var layout = HomeCatalog.CreateStarter();
-        var outside = HomeRules.Apply(layout, Buy(HomeCatalog.SofaId, 11, 9), 0);
-        var atEntry = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 0, 4), 0);
-        var blocksDesk = HomeRules.Apply(layout, Buy(HomeCatalog.SofaId, 6, 4), 0);
-        var atAvatar = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 2, 2), 0, new(2, 2));
+        var outside = HomeRules.Apply(layout, Buy(HomeCatalog.SofaId, 11, 9));
+        var atEntry = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 0, 4));
+        var blocksDesk = HomeRules.Apply(layout, Buy(HomeCatalog.SofaId, 6, 4));
+        var atAvatar = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 2, 2), new(2, 2));
 
         Assert.Equal("OUT_OF_BOUNDS", outside.Error?.Code);
         Assert.Equal("BLOCKED_ACCESS", atEntry.Error?.Code);
@@ -34,16 +34,16 @@ public sealed class HomeGameSimulationTests
             Assert.Equal(0, failed.GoldDelta);
         });
         Assert.Equal(1, layout.Revision);
-        Assert.Equal(6, layout.Items.Count);
+        Assert.Equal(8, layout.Items.Count);
     }
 
     [Fact]
     public void Rug_overlaps_a_sofa_on_its_own_layer_and_does_not_change_navigation()
     {
         var layout = HomeCatalog.CreateStarter();
-        var sofa = HomeRules.Apply(layout, Buy(HomeCatalog.SofaId, 2, 1), 0);
-        var rug = HomeRules.Apply(Assert.IsType<HomeLayout>(sofa.Layout), Buy(HomeCatalog.RugId, 2, 1), 0);
-        var duplicateRug = HomeRules.Apply(Assert.IsType<HomeLayout>(rug.Layout), Buy(HomeCatalog.RugId, 3, 1), 0);
+        var sofa = HomeRules.Apply(layout, Buy(HomeCatalog.SofaId, 2, 1));
+        var rug = HomeRules.Apply(Assert.IsType<HomeLayout>(sofa.Layout), Buy(HomeCatalog.RugId, 2, 1));
+        var duplicateRug = HomeRules.Apply(Assert.IsType<HomeLayout>(rug.Layout), Buy(HomeCatalog.RugId, 3, 1));
 
         Assert.Equal(-90, sofa.GoldDelta);
         Assert.Equal(-30, rug.GoldDelta);
@@ -62,14 +62,14 @@ public sealed class HomeGameSimulationTests
         layout = layout with { Items = [.. layout.Items, sensor] };
         Assert.Null(HomeRules.Validate(layout));
 
-        var moving = HomeRules.Apply(layout, new("place", desk.Id, Placement: new(new(2, 6), 90)), 0);
+        var moving = HomeRules.Apply(layout, new("place", desk.Id, Placement: new(new(2, 6), 90)));
         var moved = Assert.IsType<HomeLayout>(moving.Layout);
         var movedSensor = moved.Items.Single(item => item.Id == sensor.Id);
         Assert.Equal("indoor_light", movedSensor.Alias);
         Assert.Equal(new HomeCell(2, 7), movedSensor.Placement?.Anchor);
         Assert.Equal(90, movedSensor.Placement?.Rotation);
 
-        var storing = HomeRules.Apply(moved, new("store", desk.Id), 0);
+        var storing = HomeRules.Apply(moved, new("store", desk.Id));
         Assert.Null(Assert.IsType<HomeLayout>(storing.Layout).Items.Single(item => item.Id == sensor.Id).Placement);
     }
 
@@ -122,7 +122,7 @@ public sealed class HomeGameSimulationTests
     public void Combined_light_is_autonomous_and_daylight_sensor_does_not_see_lamps()
     {
         var layout = ReferenceLayout();
-        var second = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 7, 4), 5);
+        var second = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 7, 4));
         var simulation = new HomeSimulation(Assert.IsType<HomeLayout>(second.Layout),
             HomeCatalog.Scenarios["dark_reading"], "two-lamps", new(6, 4));
         var frame = simulation.BeginTick();
@@ -224,12 +224,12 @@ public sealed class HomeGameSimulationTests
     public void Aliases_are_unique_including_storage_and_survive_cosmetic_renaming()
     {
         var layout = HomeCatalog.CreateStarter();
-        var result = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 4, 2), 0);
+        var result = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 4, 2));
         var next = Assert.IsType<HomeLayout>(result.Layout);
         var lamp = next.Items.Single(item => item.Alias == HomeCatalog.LampId);
-        var duplicate = HomeRules.Apply(next, new("alias", lamp.Id, Value: "desk_lamp"), 0);
-        var invalid = HomeRules.Apply(next, new("alias", lamp.Id, Value: "lamp\n"), 0);
-        var rename = HomeRules.Apply(next, new("rename", lamp.Id, Value: "Min lampe"), 0);
+        var duplicate = HomeRules.Apply(next, new("alias", lamp.Id, Value: "desk_lamp"));
+        var invalid = HomeRules.Apply(next, new("alias", lamp.Id, Value: "lamp\n"));
+        var rename = HomeRules.Apply(next, new("rename", lamp.Id, Value: "Min lampe"));
         Assert.Equal("ALIAS_IN_USE", duplicate.Error?.Code);
         Assert.Equal("INVALID_ALIAS", invalid.Error?.Code);
         Assert.Equal(HomeCatalog.LampId, rename.Layout?.Items.Single(item => item.Id == lamp.Id).Alias);
@@ -268,25 +268,25 @@ public sealed class HomeGameSimulationTests
     }
 
     [Fact]
-    public void A_single_home_progresses_through_all_tasks_with_its_moved_reading_desk()
+    public void Device_placement_stays_valid_for_existing_simulation_fixtures()
     {
         var home = HomeCatalog.CreateStarter();
         var deskId = home.Items.Single(item => item.Role == HomeCatalog.PrimaryDeskRole).Id;
         var lightId = home.Items.Single(item => item.DefinitionId == HomeCatalog.LampId).Id;
         var daylight = home.Items.Single(item => item.DefinitionId == HomeCatalog.DaylightId);
-        var hidden = HomeRules.Apply(home, new("place", daylight.Id, Placement: new(new(7, 0), 180, new(7, 0, true))), 0);
-        Assert.Equal("ITEM_LOCKED", hidden.Error?.Code);
+        var sensor = HomeRules.Apply(home, new("place", daylight.Id, Placement: new(new(7, 0), 180, new(7, 0, true))));
+        Assert.Null(sensor.Error);
 
         foreach (var task in HomeCatalog.Tasks)
         {
             home = task.Id switch
             {
-                "P01" => Place(home, HomeCatalog.LampId, new(new(5, 4)), 0),
-                "P02" => Place(Place(home, HomeCatalog.DeskId, new(new(2, 6)), 1),
-                    HomeCatalog.LampId, new(new(3, 7)), 1),
-                "P03" => Place(home, HomeCatalog.DaylightId, new(new(7, 0), 180, new(7, 0, true)), 2),
-                "P04" => Place(home, HomeCatalog.PresenceId, new(new(2, 9), 0, new(2, 10, true)), 3),
-                "P05" => Place(home, HomeCatalog.SwitchId, new(new(8, 0), 180, new(8, 0, true)), 4),
+                "P01" => Place(home, HomeCatalog.LampId, new(new(5, 4))),
+                "P02" => Place(Place(home, HomeCatalog.DeskId, new(new(2, 6))),
+                    HomeCatalog.LampId, new(new(3, 7))),
+                "P03" => Place(home, HomeCatalog.DaylightId, new(new(7, 0), 180, new(7, 0, true))),
+                "P04" => Place(home, HomeCatalog.PresenceId, new(new(2, 9), 0, new(2, 10, true))),
+                "P05" => Place(home, HomeCatalog.SwitchId, new(new(8, 0), 180, new(8, 0, true))),
                 _ => home
             };
             Assert.Null(HomeRules.AssessmentPrerequisites(home, task));
@@ -358,10 +358,10 @@ public sealed class HomeGameSimulationTests
         return Place(home, HomeCatalog.LampId, new(new(3, 7))) with { LayoutVersion = "p02_reference_home_v1" };
     }
 
-    private static HomeLayout Place(HomeLayout layout, string definition, HomePlacement placement, int completed = 6)
+    private static HomeLayout Place(HomeLayout layout, string definition, HomePlacement placement)
     {
         var item = layout.Items.Single(candidate => candidate.DefinitionId == definition);
-        return Assert.IsType<HomeLayout>(HomeRules.Apply(layout, new("place", item.Id, Placement: placement), completed).Layout);
+        return Assert.IsType<HomeLayout>(HomeRules.Apply(layout, new("place", item.Id, Placement: placement)).Layout);
     }
 
     private static HomeBuildAction Buy(string definition, int x, int y) =>

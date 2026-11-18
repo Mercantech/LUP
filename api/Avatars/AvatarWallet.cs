@@ -7,9 +7,12 @@ namespace Mercantec.Tech.Api.Avatars;
 
 internal static class AvatarWallet
 {
-    internal static async Task<int> Gold(AppDbContext db, Guid subject, CancellationToken ct) =>
-        await db.AvatarProfiles.Where(profile => profile.UserSub == subject)
-            .Select(profile => (int?)profile.Gold).SingleOrDefaultAsync(ct) ?? AvatarEconomy.InitialGold;
+    internal static async Task<(int Gold, string SelectedAvatarId)> Read(AppDbContext db, Guid subject, CancellationToken ct)
+    {
+        var account = await db.AvatarProfiles.AsNoTracking().Where(profile => profile.UserSub == subject)
+            .Select(profile => new { profile.Gold, profile.SelectedAvatarId }).SingleOrDefaultAsync(ct);
+        return account is null ? (AvatarEconomy.InitialGold, AvatarEconomy.StarterId) : (account.Gold, account.SelectedAvatarId);
+    }
 
     // The caller's transaction covers the wallet, its purchase or reward, and the
     // standard starter ownerships if this is the first use of the account wallet.

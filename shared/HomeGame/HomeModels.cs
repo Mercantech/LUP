@@ -45,7 +45,6 @@ public sealed record HomeItemDefinition(
     int Width,
     int Height,
     int Price,
-    int UnlockAfter = 0,
     bool BlocksWalk = false,
     bool BlocksLight = false,
     bool BlocksPresence = false,

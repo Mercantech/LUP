@@ -5,7 +5,6 @@ public static class HomeCatalog
     public const string StarterLayoutId = "starter_home_v1";
     public const int TickMs = 100;
     public const double CellMeters = 0.5;
-    public const int TaskRewardGold = 25;
     public const string RoomId = "living_room";
     public const string PrimaryDeskRole = "primary_reading_desk";
     public const string DeskId = "desk_basic";
@@ -27,9 +26,9 @@ public static class HomeCatalog
         new(RugId, "Tæppe", "rug", "floorDecoration", 2, 2, 30),
         new(LampId, "Gulvlampe", "lamp", "floor", 1, 1, 30, BlocksWalk: true,
             Radius: 4, NominalLux: 480, BrightnessPercent: 75),
-        new(DaylightId, "Dagslyssensor", "daylight", "wall", 1, 1, 20, UnlockAfter: 2),
-        new(PresenceId, "Tilstedeværelsessensor", "presence", "wall", 1, 1, 20, UnlockAfter: 3, Radius: 4),
-        new(SwitchId, "Kontakt", "switch", "wall", 1, 1, 10, UnlockAfter: 4),
+        new(DaylightId, "Dagslyssensor", "daylight", "wall", 1, 1, 20),
+        new(PresenceId, "Tilstedeværelsessensor", "presence", "wall", 1, 1, 20, Radius: 4),
+        new(SwitchId, "Kontakt", "switch", "wall", 1, 1, 10),
         new(ControllerId, "Hjemmecontroller", "controller", "wall", 1, 1, 0, Purchasable: false)
     ]);
 
@@ -58,7 +57,9 @@ public static class HomeCatalog
         [
             Starter(DeskId, "reading_desk", new(new(6, 3)), PrimaryDeskRole),
             Starter(ControllerId, "home_controller", new(new(9, 0), 180, new(9, 0, true))),
-            Starter(LampId, "desk_lamp"),
+            Starter(LampId, "desk_lamp", new(new(5, 4))),
+            Starter(SofaId, "sofa", new(new(1, 8))),
+            Starter(RugId, "rug", new(new(2, 8))),
             Starter(DaylightId, "daylight"),
             Starter(PresenceId, "presence"),
             Starter(SwitchId, "auto_enabled")

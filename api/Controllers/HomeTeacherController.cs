@@ -70,15 +70,13 @@ public sealed class HomeTeacherController(AppDbContext db, CourseAccess access, 
     {
         if (!options.Value.Enabled || !await access.CanManageAsync(holdId, User, ct)) return NotFound();
         if (request.Revision is < 0 or int.MaxValue
-            || request.OpenThroughTask < 1 || request.OpenThroughTask > HomeCatalog.Tasks.Count
-            || request.SuggestedTask < 0 || request.SuggestedTask > request.OpenThroughTask
             || request.SuggestedLanguage is { } language && !HomeGameLanguages.IsKnown(language)
             || request.StarterCode is null || request.StarterCode.Count > HomeGameLanguages.All.Count
             || request.StarterCode.Any(pair => !HomeGameLanguages.IsKnown(pair.Key) || pair.Value is null
                 || Encoding.UTF8.GetByteCount(pair.Value) > HomeGameVersion.MaxSourceBytes))
-            return HomeGameController.Failure(400, "INVALID_SETTINGS", "Vælg opgave, udstyr og gyldig starterkode.");
+            return HomeGameController.Failure(400, "INVALID_SETTINGS", "Vælg et gyldigt sprog og starterkode.");
 
-        var updated = request with { Revision = request.Revision + 1 };
+        var updated = request with { Revision = request.Revision + 1, OpenThroughTask = 0, SuggestedTask = 0 };
         var json = HomeGameJson.Write(updated);
         int saved;
         if (request.Revision == 0)
@@ -97,13 +95,14 @@ public sealed class HomeTeacherController(AppDbContext db, CourseAccess access, 
         }
 
         return saved == 1 ? Ok(updated) : HomeGameController.Failure(409, "REVISION_CONFLICT",
-            "Holdets opgaver er ændret et andet sted. Hent den seneste version igen.");
+            "Holdets indstillinger er ændret et andet sted. Hent den seneste version igen.");
     }
 
     private async Task<HomeTeacherSettings> Settings(Guid holdId, CancellationToken ct)
     {
         var json = await db.HomeGameClassrooms.AsNoTracking().Where(row => row.HoldId == holdId)
             .Select(row => row.SettingsJson).SingleOrDefaultAsync(ct);
-        return json is null ? HomeGameStore.DefaultSettings : HomeGameJson.Read<HomeTeacherSettings>(json);
+        return json is null ? HomeGameStore.DefaultSettings :
+            HomeGameJson.Read<HomeTeacherSettings>(json) with { OpenThroughTask = 0, SuggestedTask = 0 };
     }
 }

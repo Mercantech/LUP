@@ -13,65 +13,23 @@ else
 {
     <section class="home-workshop">
         <header class="home-heading">
-            <div>
-                <h1>Hjem<span>.exe</span></h1>
-            </div>
-            <div class="home-progress" aria-label="Din progression">
+            <h1>Hjem<span>.exe</span></h1>
+            <nav class="work-nav" aria-label="Arbejdstilstand">
+                <button type="button" aria-pressed="@Pressed("build")" @onclick='() => ChangeModeAsync("build")'>Indret</button>
+                <button type="button" aria-pressed="@Pressed("code")" @onclick='() => ChangeModeAsync("code")'>Programmér</button>
+                <button type="button" aria-pressed="@Pressed("test")" @onclick='() => ChangeModeAsync("test")'>Afprøv</button>
+            </nav>
+            <div class="home-wallet">
                 @if (_state.IsTeacherSandbox)
                 {
-                    <span class="teacher-mode"><UiIcon Name="game" /> Prøvebolig for undervisere</span>
+                    <a class="teacher-mode" href="/teacher/home-game">Prøvebolig for undervisere</a>
                 }
                 else
                 {
                     <span class="gold-balance"><i class="v3-gold-dot" aria-hidden="true"></i><strong>@_state.Gold</strong> guld</span>
-                    <span><strong>@_state.Progress.Count / @HomeLessons.All.Count</strong> bestået</span>
                 }
             </div>
         </header>
-
-        @if (_state.IsTeacherSandbox)
-        {
-            <div class="teacher-preview">
-                <p>Prøv alle seks opgaver og alt udstyr i din egen bolig. Udstyr er gratis, og du får en prøvevurdering af din kode.</p>
-                <a class="secondary" href="/teacher/home-game">Styr opgaver for et hold</a>
-            </div>
-        }
-
-        <section class="mission-bar" aria-label="Aktuel opgave og kørsel">
-            <label class="task-label">
-                <span>Opgave</span>
-                <select value="@_task" @onchange="ChooseTask" disabled="@IsActive">
-                    @for (var index = 1; index <= HomeLessons.All.Count; index++)
-                    {
-                        var number = index;
-                        var locked = number > _state.HighestAvailableTask;
-                        var passed = _state.Progress.Any(progress => progress.Task == number);
-                        <option value="@number" disabled="@locked">@($"P{number:00}") @HomeLessons.All[number - 1].Title @(locked ? " (låst)" : passed ? " (bestået)" : "")</option>
-                    }
-                </select>
-            </label>
-            <div class="run-strip">
-                <span class="run-clock"><span class="status-dot @(IsAdvancing ? "active" : "")" aria-hidden="true"></span> @Clock</span>
-                @if (IsAdvancing)
-                {
-                    <button class="secondary" disabled="@_working" type="button" @onclick='() => ControlAsync(new("pause"))'>Pause</button>
-                }
-                else if (IsActive && _run?.Run.Status == "paused")
-                {
-                    <button class="action" disabled="@_working" type="button" @onclick='() => ControlAsync(new("resume"))'>Genoptag</button>
-                    <button class="secondary" disabled="@_working" type="button" @onclick="RestartAsync">Start forfra</button>
-                }
-                else
-                {
-                    <button class="action" disabled="@_working" type="button" @onclick="StartPracticeAsync">Kør</button>
-                }
-                @if (IsActive)
-                {
-                    <button class="secondary" disabled="@_working" type="button" @onclick='() => ControlAsync(new("stop"))'>Stop forsøg</button>
-                }
-            </div>
-        </section>
-
         @if (_error is not null || _notice is not null)
         {
             <div class="home-message @(_error is not null ? "failure" : "")" role="@(_error is not null ? "alert" : "status")">
@@ -85,42 +43,14 @@ else
         }
 
         <nav class="mobile-workspace" aria-label="Synligt arbejdsområde">
-            <button type="button" class="secondary" aria-pressed="@(_mobilePane == "plan" ? "true" : "false")" @onclick='() => _mobilePane = "plan"'>Boligplan</button>
-            <button type="button" class="secondary" aria-pressed="@(_mobilePane == "work" ? "true" : "false")" @onclick='() => _mobilePane = "work"'>Arbejdsområde</button>
+            <button type="button" aria-pressed="@(_mobilePane == "plan" ? "true" : "false")" @onclick='() => _mobilePane = "plan"'>Rum</button>
+            <button type="button" aria-pressed="@(_mobilePane == "work" ? "true" : "false")" @onclick='() => _mobilePane = "work"'>Værktøjer</button>
         </nav>
-        <div class="workspace" data-pane="@_mobilePane" style="@($"--home-split:{_split}fr;--work-split:{100 - _split}fr")">
-            <section class="plan-panel" aria-labelledby="plan-heading">
-                <header class="panel-heading">
-                    <h2 id="plan-heading">Boligplan</h2>
-                    <label class="compact-select">Zoom
-                        <select @bind="_zoom">
-                            <option value="100">100 %</option>
-                            <option value="125">125 %</option>
-                            <option value="150">150 %</option>
-                        </select>
-                    </label>
-                </header>
-                <div class="overlay-actions" role="group" aria-label="Visning af boligplan">
-                    @foreach (var mode in Overlays)
-                    {
-                        <button class="overlay-button" type="button" aria-pressed="@(mode.Id == _overlay ? "true" : "false")" @onclick="() => _overlay = mode.Id">@mode.Name</button>
-                    }
-                </div>
-                <HomeBoard Layout="@DisplayLayout" Snapshot="@Snapshot" Avatar="@AvatarCell" Cursor="@_cursor" Selected="@BoardSelection"
-                           Mode="@_overlay" Zoom="@_zoom" Ghost="@_ghost" InvalidPreview="@(_previewError is not null)" MarkDesk="@(_task == 2)"
+        <div class="workspace" data-pane="@_mobilePane">
+            <section class="plan-panel" aria-label="Din bolig">
+                <HomeBoard Layout="@DisplayLayout" Snapshot="@LightingSnapshot" Avatar="@AvatarCell" AvatarId="@_state.SelectedAvatarId" IsLightingPreview="@(Snapshot is null)" Cursor="@_cursor" Selected="@BoardSelection"
+                           Mode="@_overlay" Zoom="@_zoom" Ghost="@_ghost" InvalidPreview="@(_previewError is not null)"
                            ReduceMotion="@_reduceMotion" Visit="VisitCell" Activate="ActivateCellAsync" Turn="TurnPreview" Cancel="CancelPlacement" />
-                @if (_overlay == "range" && Selected is { } ranged)
-                {
-                    <p class="plan-legend">
-                        @(ranged.DefinitionId switch
-                        {
-                            HomeCatalog.LampId => "De markerede felter får lys fra lampen, når den er tændt. Skift til Målinger for at se, hvor læsefeltet når 300–600 lux.",
-                            HomeCatalog.PresenceId => "Sensoren registrerer avataren i de markerede felter, også når avataren står stille.",
-                            _ => "Den valgte genstand har intet område på plantegningen."
-                        })
-                    </p>
-                }
-
                 @if (_placement is not null)
                 {
                     <div class="placement-bar">
@@ -133,38 +63,31 @@ else
                         </div>
                     </div>
                 }
-                <div class="resident-panel">
-                    <AvatarIcon Size="42" Decorative="true" />
-                    <div>
-                        <strong>@Activity</strong>
-                        <div class="resident-detail">@(Snapshot?.Message ?? "Din avatar vil gerne læse ved skrivebordet.")</div>
-                    </div>
-                    <div class="resident-measurement">
-                        <strong>@(Snapshot?.AvatarLux is int lux ? $"{lux} lux" : "– lux")</strong>
-                        <span>@(Snapshot?.Comfort is int comfort ? $"{comfort} % lyskomfort" : "Mål ved læsning: 300–600 lux")</span>
-                    </div>
-                </div>
+                @if (Snapshot is { } world)
+                {
+                    <div class="resident-activity">@ActivityLabel(world.Activity)</div>
+                }
                 <details class="plan-settings">
-                    <summary>Visningsindstillinger</summary>
-                    <label>Boligplanens bredde <input type="range" min="45" max="65" @bind="_split" @bind:event="oninput" /></label>
+                    <summary>Visning af rummet</summary>
+                    <div class="overlay-actions" role="group" aria-label="Visning af boligplan">
+                        @foreach (var mode in Overlays)
+                        {
+                            <button class="overlay-button" type="button" aria-pressed="@(mode.Id == _overlay ? "true" : "false")" @onclick="() => _overlay = mode.Id">@mode.Name</button>
+                        }
+                    </div>
+                    <label>Zoom <select @bind="_zoom"><option value="100">100 %</option><option value="125">125 %</option><option value="150">150 %</option></select></label>
                     <label><input type="checkbox" @bind="_reduceMotion" /> Reducér bevægelse</label>
                 </details>
             </section>
-
             <section class="work-panel" aria-label="Arbejdsområde">
-                <nav class="work-nav" aria-label="Arbejdstilstand">
-                    <button type="button" aria-pressed="@Pressed("build")" @onclick='() => ChangeModeAsync("build")'>Indret</button>
-                    <button type="button" aria-pressed="@Pressed("code")" @onclick='() => ChangeModeAsync("code")'>Programmér</button>
-                    <button type="button" aria-pressed="@Pressed("test")" @onclick='() => ChangeModeAsync("test")'>Afprøv</button>
-                </nav>
                 <div class="work-content">
-                    <div class="goal">
-                        <h2>@Lesson.Title</h2>
-                        <p>@Lesson.Aim</p>
-                        <small>@Lesson.Criterion</small>
-                    </div>
                     @if (_mode == "build")
                     {
+                        <h2>Indretning</h2>
+                        @if (_state.IsTeacherSandbox && _shelf == "shop")
+                        {
+                            <p class="quiet">Du kan prøve alt udstyret gratis i din prøvebolig.</p>
+                        }
                         <div class="section-actions" role="group" aria-label="Indretning">
                             <button type="button" class="@ShelfClass("stock")" @onclick='() => ChooseShelf("stock")'>Lager</button>
                             <button type="button" class="@ShelfClass("shop")" @onclick='() => ChooseShelf("shop")'>Butik</button>
@@ -177,7 +100,11 @@ else
                                 @foreach (var item in ShopItems)
                                 {
                                     <li>
-                                        <div><strong>@item.Name</strong><small>@SizeLabel(item)</small></div>
+                                        @if (HomeRoomArt.Image(item.Id) is { } thumbnail)
+                                        {
+                                            <img class="item-thumbnail" src="@thumbnail" alt="" width="44" height="40" />
+                                        }
+                                        <div class="shop-label"><strong>@item.Name</strong><small>@SizeLabel(item)</small></div>
                                         <button class="secondary" type="button" disabled="@(!CanBuy(item) || _working)" @onclick="() => StartPurchase(item)">
                                             @PriceLabel(item)
                                         </button>
@@ -191,13 +118,17 @@ else
                                 @foreach (var item in ShelfItems)
                                 {
                                     <li class="@(item.Id == _selectedId ? "picked" : "")">
+                                        @if (HomeRoomArt.Image(item.DefinitionId) is { } thumbnail)
+                                        {
+                                            <img class="item-thumbnail" src="@thumbnail" alt="" width="44" height="40" />
+                                        }
                                         <button class="item-label" type="button" @onclick="() => Select(item)">
                                             <strong>@item.Name</strong>
-                                            <small>@(item.Placement is { } p ? $"Felt {p.Anchor.X}, {p.Anchor.Y}" : IsLocked(item.DefinitionId) ? "Låst" : item.Starter ? "Startsæt" : "På lager")</small>
+                                            <small>@(item.Placement is { } p ? $"Felt {p.Anchor.X}, {p.Anchor.Y}" : item.Starter ? "Startsæt" : "På lager")</small>
                                         </button>
                                         @if (item.Placement is null)
                                         {
-                                            <button class="secondary" type="button" disabled="@(IsLocked(item.DefinitionId) || _working)" @onclick="() => StartPlacement(item)">Placér</button>
+                                            <button class="secondary" type="button" disabled="@_working" @onclick="() => StartPlacement(item)">Placér</button>
                                         }
                                     </li>
                                 }
@@ -273,12 +204,13 @@ else
                     }
                     else if (_mode == "code")
                     {
+                        <h2>Controller</h2>
                         <div class="code-controls">
                             <label>Sprog
                                 <select value="@_language" @onchange="ChooseLanguageAsync">
                                     @foreach (var language in Languages)
                                     {
-                                        <option value="@language">@HomeLessons.Label(language)</option>
+                                        <option value="@language">@HomeCodeGuide.Label(language)</option>
                                     }
                                 </select>
                             </label>
@@ -306,25 +238,72 @@ else
                         {
                             <button type="button" class="secondary" @onclick="UseSavedCodeAsync">Åbn seneste gemte kode</button>
                         }
+                    }
+                    @if (_mode == "test")
+                    {
+                        <HomeLightPanel Reading="@HomeReadingPoint.Measure(DisplayLayout, LightingSnapshot)" HasDesk="@HasDesk" Preview="@(Snapshot is null)" />
+                    }
+                    @if (_mode != "build")
+                    {
+                        <div class="run-strip">
+                            @if (IsAdvancing)
+                            {
+                                <button class="action" disabled="@_working" type="button" @onclick='() => ControlAsync(new("pause"))'>Pause</button>
+                            }
+                            else if (IsActive)
+                            {
+                                <button class="action" disabled="@_working" type="button" @onclick='() => ControlAsync(new("resume"))'>Genoptag</button>
+                                <button class="secondary" disabled="@_working" type="button" @onclick="RestartAsync">Start forfra</button>
+                            }
+                            else
+                            {
+                                <button class="action run-code" disabled="@_working" type="button" @onclick="RunCodeAsync">Kør kode</button>
+                            }
+                            @if (IsActive)
+                            {
+                                <button class="secondary" disabled="@_working" type="button" @onclick='() => ControlAsync(new("stop"))'>Stop forsøg</button>
+                            }
+                            @if (_run is not null)
+                            {
+                                <span class="run-clock">@Clock</span>
+                            }
+                        </div>
+                        @if (!_state.RunnerAvailable)
+                        {
+                            <p role="status">Kodeafvikling er utilgængelig lige nu. Du kan stadig indrette og gemme kode.</p>
+                        }
+                        @if (!HasController)
+                        {
+                            <button type="button" class="secondary" @onclick="GoToControllerAsync">Placér hjemmecontrolleren fra lageret</button>
+                        }
+                        @if (_run is not null)
+                        {
+                            <div class="run-result" role="status">
+                                <strong>@RunLabel @(_stale ? "(tidligere version)" : "")</strong>
+                            </div>
+                            @if (_run.ErrorMessage is not null)
+                            {
+                                <p role="alert">@_run.ErrorMessage</p>
+                                @if (_mode != "code")
+                                {
+                                    <button class="secondary" type="button" @onclick='() => ChangeModeAsync("code")'>Ret kode</button>
+                                }
+                            }
+                        }
+                    }
+                    @if (_mode == "code")
+                    {
+                        <HomeLightPanel Reading="@HomeReadingPoint.Measure(DisplayLayout, LightingSnapshot)" HasDesk="@HasDesk" Preview="@(Snapshot is null)" />
                         <details class="help-details">
-                            <summary>SDK til @HomeLessons.Label(_language)</summary>
+                            <summary>SDK til @HomeCodeGuide.Label(_language)</summary>
                             <dl class="sdk">
-                                <dt>Styr lampen</dt><dd><code>@HomeLessons.SetSyntax(_language)</code></dd>
-                                @if (_state.HighestAvailableTask >= 3)
-                                {
-                                    <dt>Læs dagslys i lux</dt><dd><code>@HomeLessons.ReadSyntax(_language, "daylight", false)</code></dd>
-                                }
-                                @if (_state.HighestAvailableTask >= 4)
-                                {
-                                    <dt>Læs tilstedeværelse</dt><dd><code>@HomeLessons.ReadSyntax(_language, "presence", true)</code></dd>
-                                }
-                                @if (_state.HighestAvailableTask >= 5)
-                                {
-                                    <dt>Læs autolys</dt><dd><code>@HomeLessons.ReadSyntax(_language, "auto_enabled", true)</code></dd>
-                                }
-                                <dt>Vent 200 ms i simulationen</dt><dd><code>@HomeLessons.WaitSyntax(_language)</code></dd>
-                                <dt>Læs simulationstiden i ms</dt><dd><code>@HomeLessons.TimeSyntax(_language)</code></dd>
-                                <dt>Skriv til loggen</dt><dd><code>@HomeLessons.LogSyntax(_language)</code></dd>
+                                <dt>Styr lampen</dt><dd><code>@HomeCodeGuide.SetSyntax(_language, LampAlias)</code></dd>
+                                <dt>Læs dagslys i lux</dt><dd><code>@HomeCodeGuide.ReadSyntax(_language, DaylightAlias, false)</code></dd>
+                                <dt>Læs tilstedeværelse</dt><dd><code>@HomeCodeGuide.ReadSyntax(_language, Alias(HomeCatalog.PresenceId, "presence"), true)</code></dd>
+                                <dt>Læs autolys</dt><dd><code>@HomeCodeGuide.ReadSyntax(_language, Alias(HomeCatalog.SwitchId, "auto_enabled"), true)</code></dd>
+                                <dt>Vent 200 ms i simulationen</dt><dd><code>@HomeCodeGuide.WaitSyntax(_language)</code></dd>
+                                <dt>Læs simulationstiden i ms</dt><dd><code>@HomeCodeGuide.TimeSyntax(_language)</code></dd>
+                                <dt>Skriv til loggen</dt><dd><code>@HomeCodeGuide.LogSyntax(_language)</code></dd>
                             </dl>
                             @if (_language == "arduino")
                             {
@@ -336,22 +315,13 @@ else
                             <details class="help-details">
                                 <summary>Starterkode fra @classroom.Name</summary>
                                 <pre>@classroom.StarterCode[_language]</pre>
-                                <button type="button" class="secondary" @onclick="() => ApplySkeletonAsync(classroom.StarterCode[_language])">Brug i editor</button>
+                                <button type="button" class="secondary" @onclick="() => ApplyExampleAsync(classroom.StarterCode[_language])">Brug i editor</button>
                             </details>
                         }
                     }
-                    else
+                    @if (_mode == "test")
                     {
                         <div class="practice-tools">
-                            <label>Situation
-                                <select @bind="_scenario" disabled="@IsActive">
-                                    <option value="free">Frit forsøg</option>
-                                    @foreach (var scenario in AvailableScenarios)
-                                    {
-                                        <option value="@scenario">@ScenarioName(scenario)</option>
-                                    }
-                                </select>
-                            </label>
                             <label>Hastighed
                                 <select value="@_speed" @onchange="ChangeSpeedAsync">
                                     <option value="1">1×</option>
@@ -359,68 +329,34 @@ else
                                     <option value="10">10×</option>
                                 </select>
                             </label>
-                        </div>
-                        @if (_scenario == "free" && _run?.Run.Assessment != true)
-                        {
-                            <div class="practice-tools">
-                                <label>Avatarens intention
-                                    <select value="@_intent" @onchange="ChangeIntentAsync">
-                                        <option value="read">Læs ved bordet</option>
-                                        <option value="relax">Slap af på sofaen</option>
-                                        <option value="away">Gå hjemmefra</option>
-                                        <option value="idle">Bliv hjemme</option>
+                            <label>Hvad gør figuren?
+                                <select value="@_intent" @onchange="ChangeIntentAsync">
+                                    <option value="read">Læs ved bordet</option>
+                                    <option value="relax">Slap af på sofaen</option>
+                                    <option value="away">Gå hjemmefra</option>
+                                    <option value="idle">Bliv hjemme</option>
+                                </select>
+                            </label>
+                            @if (IsActive && Snapshot is not null)
+                            {
+                                <label>Dagslys
+                                    <select value="@Snapshot.DaylightLux" @onchange="ChangeLightAsync">
+                                        <option value="40">Mørke (40 lux)</option>
+                                        <option value="450">Dagslys (450 lux)</option>
                                     </select>
                                 </label>
-                                @if (IsActive && Snapshot is not null)
+                                @if (HasSwitch)
                                 {
-                                    <label>Dagslys
-                                        <select value="@Snapshot.DaylightLux" @onchange="ChangeLightAsync">
-                                            <option value="40">Mørke (40 lux)</option>
-                                            <option value="450">Dagslys (450 lux)</option>
-                                        </select>
-                                    </label>
-                                    @if (HasSwitch)
-                                    {
-                                        <label class="checkbox"><input type="checkbox" checked="@Snapshot.AutoEnabled" @onchange="ChangeSwitchAsync" /> Autolys aktiveret</label>
-                                    }
+                                    <label class="checkbox"><input type="checkbox" checked="@Snapshot.AutoEnabled" @onchange="ChangeSwitchAsync" /> Autolys aktiveret</label>
                                 }
-                            </div>
-                        }
-                        <div class="inline-actions test-actions">
-                            <button type="button" class="secondary" disabled="@(_working || IsActive)" @onclick="StartPracticeAsync">Kør forsøg</button>
-                            <button type="button" class="action" disabled="@(_working || IsActive)" @onclick="StartAssessmentAsync">@(_state.IsTeacherSandbox ? "Afprøv opgaven" : "Vurdér opgave")</button>
+                            }
                         </div>
-                        @if (!HasController)
-                        {
-                            <button type="button" class="secondary" @onclick="GoToControllerAsync">Placér hjemmecontrolleren fra lageret</button>
-                        }
-                        @if (!_state.RunnerAvailable)
-                        {
-                            <p class="quiet" role="status">Kodeafvikling er utilgængelig lige nu. Du kan stadig indrette og gemme din kode.</p>
-                        }
                         @if (_run is not null)
                         {
-                            <div class="run-result" aria-live="polite">
-                                <strong>@RunLabel @(_stale ? "(tidligere version)" : "")</strong>
-                                <span>@ScenarioLabel</span>
-                                @if (_run.GoldAwarded > 0)
-                                {
-                                    <span class="gold-balance">+@_run.GoldAwarded guld</span>
-                                }
-                                @if (_run.Run.Status == "passed" && _run.Run.Task == _task && _task < HomeLessons.All.Count && _state.HighestAvailableTask > _task)
-                                {
-                                    <button type="button" class="secondary" @onclick="NextTask">Næste opgave</button>
-                                }
-                                @if (_run.ErrorMessage is not null)
-                                {
-                                    <p role="alert">@_run.ErrorMessage</p>
-                                    <button type="button" class="secondary" @onclick='() => ChangeModeAsync("code")'>Ret kode</button>
-                                }
-                                @if (!IsActive && _run.Snapshot is not null && _replay is null)
-                                {
-                                    <button type="button" class="secondary" disabled="@_working" @onclick="OpenReplayAsync">Genafspil forsøg</button>
-                                }
-                            </div>
+                            @if (!IsActive && _run.Snapshot is not null && _replay is null)
+                            {
+                                <button type="button" class="secondary" disabled="@_working" @onclick="OpenReplayAsync">Genafspil forsøg</button>
+                            }
                             @if (_replay is { } replay)
                             {
                                 <section class="replay-controls" aria-label="Genafspilning">
@@ -439,26 +375,6 @@ else
                                         <input type="range" min="0" max="@replay.LastTick" value="@replay.Tick" @oninput="SeekReplay" />
                                     </label>
                                 </section>
-                            }
-                            @foreach (var outcome in _run.Outcomes)
-                            {
-                                <details class="outcome" open="@(!outcome.Passed)">
-                                    <summary>@ScenarioName(outcome.ScenarioId) <strong>@(outcome.Passed ? "Bestået" : "Ikke bestået")</strong></summary>
-                                    @if (outcome.Error is not null)
-                                    {
-                                        <p>@outcome.Error.Message</p>
-                                    }
-                                    <ul>
-                                        @foreach (var criterion in outcome.Criteria)
-                                        {
-                                            <li>
-                                                <strong>@criterion.Title</strong>
-                                                <span>@criterion.Matched af @criterion.Samples ticks opfylder målet. Krav @criterion.RequiredPercent % og mindst @criterion.MinSamples ticks.</span>
-                                            </li>
-                                        }
-                                    </ul>
-                                    <p>@((outcome.EnergyMicroJ / 1_000_000d).ToString("0.0")) J</p>
-                                </details>
                             }
                             @if (Snapshot is not null)
                             {
@@ -505,28 +421,33 @@ else
                             </details>
                         }
                     }
-                    <details class="help-details">
-                        <summary>Få et hint</summary>
-                        <p>@Lesson.Observation</p>
+                    @if (_mode == "build")
+                    {
+                        <HomeLightPanel Reading="@HomeReadingPoint.Measure(DisplayLayout, LightingSnapshot)" HasDesk="@HasDesk" Preview="@(Snapshot is null)" />
+                    }
+                    <details class="start-guide help-details">
+                        <summary>Kom i gang</summary>
+                        <p>Du kan styre lyset i din bolig med kode. Prøv med gulvlampen først.</p>
+                        <ol>
+                            <li>Vælg <strong>Indret</strong>. Stil en gulvlampe ved skrivebordet. Ligger den på lager, så vælg <strong>Placér</strong> og tryk på et felt i rummet.</li>
+                            <li>Åbn <strong>Programmér</strong> og vælg dit sprog. Her er et eksempel med lampens kodealias.</li>
+                        </ol>
+                        <pre class="guide-example">@LampExample</pre>
+                        <button type="button" class="secondary" @onclick="() => ApplyExampleAsync(LampExample)">Brug lampeeksempel</button>
+                        <p>Vælg <strong>Kør kode</strong>. Lyspanelet viser lux ved læsepladsen. Flyt lampen tættere på eller længere væk for at se forskellen.</p>
                         <details>
-                            <summary>Vis fagligt hint</summary>
-                            <p>@Lesson.Hint</p>
-                            <details>
-                                <summary>Vis kodeskelet</summary>
-                                <pre>@HomeLessons.Skeleton(_language, _task)</pre>
-                                <button type="button" class="secondary" @onclick="() => ApplySkeletonAsync(HomeLessons.Skeleton(_language, _task))">Brug i editor</button>
-                            </details>
+                            <summary>Styr lampen med dagslys</summary>
+                            <p>Montér dagslyssensoren på en væg. Eksemplet læser sensoren løbende og tænder lampen ved under 300 lux.</p>
+                            <pre class="guide-example">@DaylightExample</pre>
+                            <button type="button" class="secondary" @onclick="() => ApplyExampleAsync(DaylightExample)">Brug sensoreksempel</button>
                         </details>
                     </details>
-                    @if (_task == 6)
-                    {
-                        <details class="help-details" open>
-                            <summary>Din refleksion</summary>
-                            <label for="home-reflection">Hvilken forbedring ville du lave, og hvordan ville du afprøve den?</label>
-                            <textarea id="home-reflection" maxlength="2000" rows="4" @bind="_reflection" @bind:event="oninput"></textarea>
-                            <button type="button" class="secondary" disabled="@_working" @onclick="SaveReflectionAsync">Gem refleksion</button>
-                        </details>
-                    }
+                    <details class="help-details">
+                        <summary>Egne noter</summary>
+                        <label for="home-reflection">Noter til din afprøvning</label>
+                        <textarea id="home-reflection" maxlength="2000" rows="3" @bind="_reflection" @bind:event="oninput"></textarea>
+                        <button type="button" class="secondary" disabled="@_working" @onclick="SaveReflectionAsync">Gem noter</button>
+                    </details>
                     @if (_state.Classrooms.Count > 0)
                     {
                         <details class="help-details">

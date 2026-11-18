@@ -1,7 +1,5 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
-using Mercantec.Tech.Api.Avatars;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Contracts.HomeGame;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +23,13 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
         MaxConcurrentRuns);
 
     internal async Task<HomeRunStatus?> Start(Guid subject, HomeStartRunRequest request, HomeLayout layout,
-        HomeProgramDraft program, IReadOnlyList<HomeScenario> scenarios, HomeItem controller, bool teacherSandbox,
+        HomeProgramDraft program, HomeScenario scenario, HomeItem controller, bool teacherSandbox,
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         if (!capacity.Wait(0)) return null;
         var keys = layout.Items.ToDictionary(item => item.Alias, RunnerCapability, StringComparer.Ordinal);
-        var run = new LiveRun(subject, request, layout, program, scenarios, controller.Id, keys, teacherSandbox);
+        var run = new LiveRun(subject, request, layout, program, scenario, controller.Id, keys, teacherSandbox);
         if (!active.TryAdd(subject, run))
         {
             capacity.Release();
@@ -126,12 +124,11 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
                 case "speed" when request.Speed is 1 or 4 or 10:
                     run.Speed = request.Speed.Value;
                     break;
-                case "input" when !run.Assessment && run.State is "running" or "paused"
-                    && run.Scenarios[run.ScenarioIndex].Free:
+                case "input" when run.State is "running" or "paused" && run.Scenario.Free:
                     if (request.Intent is { } intent) run.Simulation.SetIntention(intent);
                     if (request.DaylightLux is int daylight) run.Simulation.SetDaylight(daylight);
                     if (request.AutoEnabled is bool auto) run.Simulation.SetAutoEnabled(auto);
-                    run.Events.Add(new(run.ScenarioIndex, run.Simulation.Snapshot().Tick, [], null, false,
+                    run.Events.Add(new(0, run.Simulation.Snapshot().Tick, [], null, false,
                         request.Intent, request.DaylightLux, request.AutoEnabled));
                     break;
                 default:
@@ -167,20 +164,15 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
         return new(run.State != "running", run.Simulation.Snapshot().AvatarCell, run.Gate);
     }
 
-    internal static IReadOnlyList<HomeScenario> Scenarios(HomeTask task, HomeStartRunRequest request)
+    internal static HomeScenario Scenario(HomeStartRunRequest request)
     {
-        if (request.Assessment)
-        {
-            var seed = RandomNumberGenerator.GetInt32(1, int.MaxValue);
-            return task.ScenarioIds.Select(id => HomeCatalog.WithSeed(HomeCatalog.Scenarios[id], seed)).ToArray();
-        }
         if (request.ScenarioId is { } id && HomeCatalog.Scenarios.TryGetValue(id, out var scenario))
-            return [scenario];
-        return [HomeCatalog.FreeScenario with
+            return scenario with { Windows = [] };
+        return HomeCatalog.FreeScenario with
         {
             Events = HomeCatalog.FreeScenario.Events.Select(change =>
                 change.Tick == 0 ? change with { Intention = request.Intent } : change).ToArray()
-        }];
+        };
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -350,7 +342,7 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
             // Replay needs only the final validated write for each installed alias.
             var effectiveCommands = commands.GroupBy(command => command.Alias, StringComparer.Ordinal)
                 .Select(writes => writes.Last()).ToArray();
-            run.Events.Add(new(run.ScenarioIndex, frame.Tick, effectiveCommands, batch.NextDelayMs, batch.Done));
+            run.Events.Add(new(0, frame.Tick, effectiveCommands, batch.NextDelayMs, batch.Done));
             run.AppendLogs(batch.Logs ?? []);
             return true;
         }
@@ -379,20 +371,9 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
 
     private async Task FinishScenario(LiveRun run)
     {
-        run.Outcomes.Add(run.Simulation.Outcome());
         await runner.Stop(run.WorkerId);
         if (run.Lifetime.IsCancellationRequested) return;
-        if (run.ScenarioIndex + 1 < run.Scenarios.Count)
-        {
-            run.State = "queued";
-            run.ScenarioIndex++;
-            run.Simulation = new HomeSimulation(run.Layout, run.Scenarios[run.ScenarioIndex], run.Id.ToString());
-            run.Activation = 1;
-            run.WorkerId = Guid.NewGuid();
-            ScheduleCompile(run);
-            return;
-        }
-        run.State = !run.Assessment ? "completed" : run.Outcomes.All(outcome => outcome.Passed) ? "passed" : "failed";
+        run.State = "completed";
     }
 
     private async Task<HomeRunStatus> Cancel(LiveRun run, string state)
@@ -413,8 +394,7 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
         run.Error = error;
         run.State = "error";
         run.Simulation.Fault(error);
-        run.Events.Add(new(run.ScenarioIndex, run.Simulation.Snapshot().Tick, [], null, false, Error: error));
-        run.Outcomes.Add(run.Simulation.Outcome());
+        run.Events.Add(new(0, run.Simulation.Snapshot().Tick, [], null, false, Error: error));
         await runner.Stop(run.WorkerId);
     }
 
@@ -429,74 +409,17 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
     {
         using var scope = scopes.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var store = scope.ServiceProvider.GetRequiredService<HomeGameStore>();
-        await using var transaction = await db.Database.BeginTransactionAsync();
-        var query = db.HomeGameRuns.Where(row => row.Id == run.Id && row.UserSub == run.Subject && row.Active);
-        if (!await query.AnyAsync())
+        var json = HomeGameJson.Write(run.Stored(includeReplay));
+        var updated = await db.HomeGameRuns.Where(row => row.Id == run.Id && row.UserSub == run.Subject && row.Active)
+            .ExecuteUpdateAsync(update => update.SetProperty(row => row.Active, !run.Terminal)
+                .SetProperty(row => row.RunJson, json));
+        if (updated == 0)
         {
-            var persisted = await store.FindRun(run.Subject, run.Id, CancellationToken.None);
-            if (persisted is not null)
-            {
-                run.State = persisted.Run.Run.Status;
-                run.GoldAwarded = persisted.Run.GoldAwarded;
-            }
-            run.PublishedSequence = run.Sequence;
-            return;
+            var store = scope.ServiceProvider.GetRequiredService<HomeGameStore>();
+            var saved = await store.FindRun(run.Subject, run.Id, CancellationToken.None);
+            run.State = saved?.Run.Run.Status ?? "cancelled";
         }
-
-        var previousState = run.State;
-        var previousAward = run.GoldAwarded;
-        var previousError = run.Error;
-        try
-        {
-            if (run.State == "passed" && !run.TeacherSandbox && run.GoldAwarded == 0)
-            {
-                var state = await store.Find(run.Subject, CancellationToken.None);
-                if (state is null || state.Layout.Revision != run.Revision || run.Lifetime.IsCancellationRequested)
-                    run.State = "cancelled";
-                else
-                {
-                    var rewardKey = $"{HomeCatalog.Tasks[run.Task - 1].Id}:first-pass";
-                    if (!state.Progress.Any(progress => progress.RewardKey == rewardKey))
-                    {
-                        var progress = new HomeTaskProgress(run.Task, rewardKey, HomeGameVersion.Content, run.Id, DateTimeOffset.UtcNow);
-                        var updated = state with
-                        {
-                            Layout = state.Layout with { Revision = state.Layout.Revision + 1 },
-                            Progress = [.. state.Progress, progress]
-                        };
-                        if (!await store.Write(run.Subject, run.Revision, updated, CancellationToken.None))
-                            run.State = "cancelled";
-                        else if (await AvatarWallet.TryAdjustGold(db, run.Subject, HomeCatalog.TaskRewardGold, CancellationToken.None))
-                        {
-                            run.GoldAwarded = HomeCatalog.TaskRewardGold;
-                        }
-                        else
-                        {
-                            // The profile row is still locked by this transaction.
-                            if (!await store.Write(run.Subject, updated.Layout.Revision, state, CancellationToken.None))
-                                throw new DbUpdateConcurrencyException("Home profile changed while reversing an unpayable reward.");
-                            run.Error = new("GOLD_LIMIT", "Din guldsaldo kan ikke rumme belønningen.", []);
-                            run.State = "error";
-                        }
-                    }
-                }
-            }
-
-            var json = HomeGameJson.Write(run.Stored(includeReplay));
-            if (await query.ExecuteUpdateAsync(update => update.SetProperty(row => row.Active, !run.Terminal)
-                .SetProperty(row => row.RunJson, json)) != 1)
-                throw new DbUpdateConcurrencyException("Home game run changed while its result was being saved.");
-            await transaction.CommitAsync();
-            run.PublishedSequence = run.Sequence;
-        }
-        catch
-        {
-            run.State = previousState;
-            run.GoldAwarded = previousAward;
-            run.Error = previousError;
-            throw;
-        }
+        run.PublishedSequence = run.Sequence;
     }
 
     private async Task PublishPending(LiveRun run)
@@ -539,7 +462,7 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
     }
 
     private sealed class LiveRun(Guid subject, HomeStartRunRequest request, HomeLayout layout,
-        HomeProgramDraft program, IReadOnlyList<HomeScenario> scenarios, string controllerId,
+        HomeProgramDraft program, HomeScenario scenario, string controllerId,
         IReadOnlyDictionary<string, string> aliases, bool teacherSandbox)
     {
         public Guid Id { get; } = Guid.NewGuid();
@@ -548,28 +471,20 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
         public int Revision => Layout.Revision;
         public HomeProgramDraft Program { get; } = program;
         public DateTimeOffset Started { get; } = DateTimeOffset.UtcNow;
-        public int Task { get; } = request.Task;
-        public bool Assessment { get; } = request.Assessment;
         public bool TeacherSandbox { get; } = teacherSandbox;
         public int Speed { get; set; } = request.Speed;
         public string InitialIntent { get; } = request.Intent;
-        public IReadOnlyList<HomeScenario> Scenarios { get; } = scenarios;
+        public HomeScenario Scenario { get; } = scenario;
         public string ControllerId { get; } = controllerId;
         public IReadOnlyDictionary<string, string> Aliases { get; } = aliases;
         public SemaphoreSlim Gate { get; } = new(1, 1);
         public CancellationTokenSource Lifetime { get; } = new();
         public List<HomeReplayEvent> Events { get; } = [];
-        public List<HomeScenarioOutcome> Outcomes { get; } = [];
         public List<string> Logs { get; } = [];
         public int LogBytes { get; private set; }
-        public int ScenarioIndex { get; set; }
         private HomeSimulation? simulation;
-        public HomeSimulation Simulation
-        {
-            get => simulation ??= new HomeSimulation(Layout, Scenarios[ScenarioIndex], Id.ToString());
-            set => simulation = value;
-        }
-        public Guid WorkerId { get; set; } = Guid.NewGuid();
+        public HomeSimulation Simulation => simulation ??= new HomeSimulation(Layout, Scenario, Id.ToString());
+        public Guid WorkerId { get; } = Guid.NewGuid();
         public long Sequence { get; set; }
         public long PublishedSequence { get; set; }
         public long Activation { get; set; } = 1;
@@ -577,24 +492,23 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
         public DateTimeOffset LastWorkerContact { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset? PausedAt { get; set; }
         public HomeRuleError? Error { get; set; }
-        public int GoldAwarded { get; set; }
         public string State { get; set; } = "queued";
         public bool HasWorker { get; set; }
         private int pauseRequests;
         public bool PausePending => Volatile.Read(ref pauseRequests) > 0;
         public void RequestPause() => Interlocked.Increment(ref pauseRequests);
         public void ReleasePause() => Interlocked.Decrement(ref pauseRequests);
-        public bool Terminal => State is "passed" or "failed" or "completed" or "error" or "cancelled" or "expired";
+        public bool Terminal => State is "completed" or "error" or "cancelled" or "expired";
 
-        public HomeRunStatus Status() => new(new(Id, Revision, Program.VersionId, Program.Language, Task,
-            Assessment, State, State == "passed" ? true : State == "failed" ? false : null,
+        public HomeRunStatus Status() => new(new(Id, Revision, Program.VersionId, Program.Language, 0,
+            false, State, null,
             Error?.Code, Started, Program.Hash, HomeGameVersion.Sdk, HomeGameVersion.Simulator, HomeGameVersion.Content,
             TeacherSandbox),
-            Sequence, ScenarioIndex, Scenarios.Select(scenario => scenario.Id).ToArray(), Speed,
-            Simulation.Snapshot(includeLightMap: true), Outcomes.ToArray(), Logs.ToArray(), Error?.Message, GoldAwarded);
+            Sequence, 0, [Scenario.Id], Speed,
+            Simulation.Snapshot(includeLightMap: true), [], Logs.ToArray(), Error?.Message, 0);
 
         public HomeStoredRun Stored(bool includeReplay = true) =>
-            new(new(Status(), Layout, Scenarios, includeReplay ? Events.ToArray() : [], InitialIntent), WorkerId);
+            new(new(Status(), Layout, [Scenario], includeReplay ? Events.ToArray() : [], InitialIntent), WorkerId);
 
         public void AppendLogs(IReadOnlyList<string> logs)
         {

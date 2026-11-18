@@ -66,6 +66,9 @@ public sealed partial class HomeGameTests : IAsyncLifetime
         var avatar = Read(await avatars.Unlock("bip01", default));
         var start = Read(await owner.Get(default));
         Assert.Equal(avatar.Gold, start.Gold);
+        Assert.Equal("bip01", start.SelectedAvatarId);
+        Read(await avatars.Select(new(AvatarEconomy.StarterId), default));
+        Assert.Equal(AvatarEconomy.StarterId, Read(await owner.Get(default)).SelectedAvatarId);
         var purchase = new HomeBuildRequest(Guid.NewGuid(), start.Layout.Revision,
             new("buy", DefinitionId: HomeCatalog.LampId, Placement: new(new(4, 4))));
         var bought = Read(await owner.Build(purchase, default));
@@ -140,45 +143,84 @@ public sealed partial class HomeGameTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Authenticated_run_uses_frozen_program_commits_once_and_rewards_only_the_first_pass()
+    public async Task Free_run_keeps_its_program_and_replay_without_grades_or_wallet_changes()
     {
         await using var scope = services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var owner = As(db, alice);
         var profile = await Prepare(owner);
-        var first = await Start(owner, profile, assessment: true);
+        Assert.Equal(400, Status(await owner.Start(new(profile.Layout.Revision, "python", 1, Assessment: true), default)));
+        Assert.Empty(await db.HomeGameRuns.ToListAsync());
+        var first = await Start(owner, profile);
+        Assert.Equal(0, first.Run.Task);
+        Assert.False(first.Run.Assessment);
         Assert.Equal(404, Status(await As(db, bob).Status(first.Run.Id, default)));
         var paused = Read(await owner.Control(first.Run.Id, new("pause"), default));
         Assert.Equal("paused", paused.Run.Status);
         Assert.Equal(paused.Snapshot!.TimeMs,
             Read(await owner.Step(first.Run.Id, new(paused.Sequence, 20), default)).Snapshot!.TimeMs);
         var resumed = Read(await owner.Control(first.Run.Id, new("resume"), default));
-        var passed = await Finish(owner, resumed);
-        Assert.True(passed.Run.Passed);
-        Assert.Equal(HomeCatalog.TaskRewardGold, passed.GoldAwarded);
-        // The program returned after one set call while simulation continued for all 300 ticks.
+        var completed = await Finish(owner, resumed);
+        Assert.Equal("completed", completed.Run.Status);
+        Assert.Null(completed.Run.Passed);
+        Assert.Empty(completed.Outcomes);
+        Assert.Equal(0, completed.GoldAwarded);
         Assert.Equal(1, broker.Activations);
-        Assert.Equal(300, passed.Snapshot!.Tick);
-        var replay = Read(await owner.Replay(passed.Run.Id, default));
-        Assert.Equal(1, Assert.Single(replay.Scenarios).Version);
+        Assert.Equal(HomeCatalog.FreeScenario.Ticks, completed.Snapshot!.Tick);
+        var replay = Read(await owner.Replay(completed.Run.Id, default));
+        Assert.Empty(Assert.Single(replay.Scenarios).Windows);
         Assert.True(Assert.Single(replay.Events).ControllerCompleted);
 
-        profile = Read(await owner.Get(default));
-        var avatars = new AvatarsController(db) { ControllerContext = Context(alice, "Student") };
-        var wallet = Read(await avatars.Get(default));
-        Assert.Equal(AvatarEconomy.InitialGold + HomeCatalog.TaskRewardGold, profile.Gold);
-        Assert.Equal(profile.Gold, wallet.Gold);
-        Assert.Contains(AvatarEconomy.StarterId, wallet.OwnedAvatarIds);
-        Assert.False(wallet.CanImportLegacy);
-        Assert.Equal(409, Status(await avatars.ImportLegacy(new([AvatarEconomy.StarterId], AvatarEconomy.StarterId, 0), default)));
-        Assert.Equal(profile.Gold, Read(await avatars.Get(default)).Gold);
-        Assert.Equal(1, profile.CompletedTasks);
-        Assert.Equal(2, profile.HighestAvailableTask);
-        Assert.Equal(passed.Run.ProgramVersionId, Assert.Single(profile.Drafts).VersionId);
-        var again = await Finish(owner, await Start(owner, profile, assessment: true));
-        Assert.True(again.Run.Passed);
+        var reloaded = Read(await owner.Get(default));
+        Assert.Equal(profile.Gold, reloaded.Gold);
+        Assert.Equal(profile.Layout.Revision, reloaded.Layout.Revision);
+        Assert.Empty(reloaded.Progress);
+        Assert.Equal(completed.Run.ProgramVersionId, Assert.Single(reloaded.Drafts).VersionId);
+        var again = await Finish(owner, await Start(owner, reloaded));
+        Assert.Equal("completed", again.Run.Status);
         Assert.Equal(0, again.GoldAwarded);
         Assert.Equal(profile.Gold, Read(await owner.Get(default)).Gold);
+    }
+
+    [Fact]
+    public async Task Existing_room_progress_and_earned_gold_survive_and_graded_replay_is_read_only()
+    {
+        await using var scope = services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var owner = As(db, alice);
+        var profile = await Prepare(owner);
+        var run = await Finish(owner, await Start(owner, profile));
+        var row = await db.HomeGameRuns.SingleAsync();
+        var stored = HomeGameJson.Read<HomeStoredRun>(row.RunJson);
+        var summary = run.Run with { Status = "passed", Task = 1, Assessment = true, Passed = true };
+        row.RunJson = HomeGameJson.Write(stored with
+        {
+            Replay = stored.Replay with { Run = run with { Run = summary, GoldAwarded = 25 } }
+        });
+        var existing = await db.HomeGameProfiles.SingleAsync();
+        var oldData = HomeGameJson.Read<HomeProfileData>(existing.StateJson);
+        var oldLayout = oldData.Layout with
+        {
+            Items = oldData.Layout.Items.Where(item => item.DefinitionId != HomeCatalog.SofaId && item.DefinitionId != HomeCatalog.RugId)
+                .Select(item => item.DefinitionId == HomeCatalog.LampId ? item with { Placement = null } : item).ToArray()
+        };
+        existing.StateJson = HomeGameJson.Write(oldData with
+        {
+            Layout = oldLayout,
+            Progress = [new(1, "P01:first-pass", HomeGameVersion.Content, summary.Id, DateTimeOffset.UtcNow)]
+        });
+        db.AvatarProfiles.Add(new AvatarProfile { UserSub = alice, Gold = AvatarEconomy.InitialGold + 25 });
+        await db.SaveChangesAsync();
+
+        var restored = Read(await owner.Get(default));
+        Assert.Equal(oldLayout.Items, restored.Layout.Items);
+        Assert.Equal(summary.Id, Assert.Single(restored.Progress).RunId);
+        Assert.Equal(AvatarEconomy.InitialGold + 25, restored.Gold);
+        var archived = Read(await owner.Replay(summary.Id, default));
+        Assert.Equal(25, archived.Run.GoldAwarded);
+        Assert.True(archived.Run.Run.Passed);
+        Assert.Equal(422, Status(await owner.Start(new(restored.Layout.Revision, "python", RestartRunId: summary.Id), default)));
+        Assert.Equal(1, await db.HomeGameRuns.CountAsync());
     }
 
     [Fact]
@@ -189,14 +231,14 @@ public sealed partial class HomeGameTests : IAsyncLifetime
         var owner = As(db, alice);
         var state = await Prepare(owner);
         broker.FutureTick = true;
-        var started = await Start(owner, state, assessment: true);
+        var started = await Start(owner, state);
         var bad = Read(await owner.Step(started.Run.Id, new(started.Sequence), default));
         Assert.Equal("INVALID_BATCH", bad.Run.ErrorCode);
         Assert.Empty(bad.Snapshot!.PoweredAliases);
         Assert.Empty(Read(await owner.Get(default)).Progress);
 
         broker.FutureTick = false;
-        started = await Start(owner, state, assessment: false);
+        started = await Start(owner, state);
         var oldRevision = state.Layout.Revision;
         state = Read(await owner.SaveProgram(new(oldRevision, "python", "print('changed')"), default));
         Assert.True(state.Layout.Revision > oldRevision);
@@ -211,7 +253,7 @@ public sealed partial class HomeGameTests : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var owner = As(db, alice);
         var state = await Prepare(owner);
-        var started = await Start(owner, state, assessment: false);
+        var started = await Start(owner, state);
         var advanced = Read(await owner.Step(started.Run.Id, new(started.Sequence, 20), default));
         var cell = Assert.IsType<HomeCell>(advanced.Snapshot!.AvatarCell);
         var purchase = new HomeBuildRequest(Guid.NewGuid(), state.Layout.Revision, new("buy",
@@ -227,7 +269,7 @@ public sealed partial class HomeGameTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Teacher_can_manage_only_own_hold_and_open_starter_equipment_for_its_members()
+    public async Task Teacher_can_share_starter_code_and_read_help_only_within_own_hold()
     {
         await using var scope = services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -241,31 +283,31 @@ public sealed partial class HomeGameTests : IAsyncLifetime
         Assert.Equal(404, Status(await denied.Overview(hold.Id, default)));
         var allowed = AsTeacher(db, teacher);
         Assert.Equal(404, Status(await allowed.Student(hold.Id, bob, default)));
-        var settings = new HomeTeacherSettings(0, 3, 3, "csharp",
+        var settings = new HomeTeacherSettings(0, 0, 0, "csharp",
             new Dictionary<string, string> { ["csharp"] = "// Starter" });
         Assert.Equal(1, Read(await allowed.SaveSettings(hold.Id, settings, default)).Revision);
 
         var owner = As(db, alice);
         var home = Read(await owner.Get(default));
-        Assert.Equal(3, home.HighestAvailableTask);
+        Assert.Equal(0, home.HighestAvailableTask);
         Assert.Equal("csharp", Assert.Single(home.Classrooms).SuggestedLanguage);
         var sensor = home.Layout.Items.Single(item => item.DefinitionId == HomeCatalog.DaylightId);
         Read(await owner.Build(new(Guid.NewGuid(), home.Layout.Revision,
             new("place", sensor.Id, Placement: new(new(7, 0), 180, new(7, 0, true)))), default));
         home = await Prepare(owner);
-        var historicalRun = await Start(owner, home, assessment: false);
+        var historicalRun = await Start(owner, home);
         historicalRun = Read(await owner.Step(historicalRun.Run.Id, new(historicalRun.Sequence), default));
-        var help = new HomeHelpRequest(Guid.NewGuid(), hold.Id, 3, "Hvordan læser jeg lux?");
+        var help = new HomeHelpRequest(Guid.NewGuid(), hold.Id, 0, "Hvordan læser jeg lux?");
         Read(await owner.Help(help, default));
         Read(await owner.Help(help, default));
         Assert.Equal(historicalRun.Run.Id, Assert.Single(Read(await allowed.Overview(hold.Id, default)).HelpRequests).Run?.Id);
         home = Read(await owner.SaveProgram(new(home.Layout.Revision, "python", "print('newer')"), default));
-        var latest = await Start(owner, home, assessment: false);
+        var latest = await Start(owner, home);
         var detail = Read(await allowed.Student(hold.Id, alice, default, historicalRun.Run.Id));
         Assert.NotEqual(latest.Run.Id, detail.LastRun?.Run.Id);
         Assert.Equal(historicalRun.Run.ProgramVersionId, detail.RunProgram?.VersionId);
         Assert.Equal(404, Status(await denied.Student(hold.Id, alice, default, historicalRun.Run.Id)));
-        Assert.Equal(1, Read(await As(db, bob).Get(default)).HighestAvailableTask);
+        Assert.Empty(Read(await As(db, bob).Get(default)).Classrooms);
     }
 
     private HomeGameController As(AppDbContext db, Guid subject, string role = "Student")
@@ -292,12 +334,12 @@ public sealed partial class HomeGameTests : IAsyncLifetime
         var lamp = home.Layout.Items.Single(item => item.DefinitionId == HomeCatalog.LampId);
         home = Read(await controller.Build(new(Guid.NewGuid(), home.Layout.Revision,
             new("place", lamp.Id, Placement: new(new(5, 4)))), default));
-        return Read(await controller.SaveProgram(new(home.Layout.Revision, "python", "home.set_power('desk_lamp', True)"), default));
+        return Read(await controller.SaveProgram(new(home.Layout.Revision, "python", "import home\nhome.set('desk_lamp', True)"), default));
     }
 
-    private static async Task<HomeRunStatus> Start(HomeGameController controller, HomeGameState home, bool assessment)
+    private static async Task<HomeRunStatus> Start(HomeGameController controller, HomeGameState home)
     {
-        var run = Read(await controller.Start(new(home.Layout.Revision, "python", 1, Assessment: assessment), default));
+        var run = Read(await controller.Start(new(home.Layout.Revision, "python"), default));
         for (var i = 0; i < 100; i++)
         {
             run = Read(await controller.Status(run.Run.Id, default));

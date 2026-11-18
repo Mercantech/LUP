@@ -9,7 +9,7 @@ public static partial class HomeRules
     private static partial Regex AliasPattern();
 
     public static HomeBuildResult Apply(
-        HomeLayout layout, HomeBuildAction action, int completed, HomeCell? avatarCell = null, bool freePurchase = false)
+        HomeLayout layout, HomeBuildAction action, HomeCell? avatarCell = null, bool freePurchase = false)
     {
         var items = layout.Items.ToList();
         var goldDelta = 0;
@@ -18,8 +18,6 @@ public static partial class HomeRules
             var definition = HomeCatalog.Definition(action.DefinitionId);
             if (definition is not { Purchasable: true })
                 return Reject("INVALID_ITEM", "Genstanden findes ikke i butikken.");
-            if (definition.UnlockAfter > completed)
-                return Reject("ITEM_LOCKED", "Løs den foregående opgave for at åbne genstanden.");
             if (action.Placement is null)
                 return Reject("INVALID_PLACEMENT", "Vælg en placering før du køber.");
             var alias = AvailableAlias(items, definition.Id);
@@ -35,8 +33,6 @@ public static partial class HomeRules
             var item = items[index];
             var definition = HomeCatalog.Definition(item.DefinitionId);
             if (definition is null) return Reject("INVALID_ITEM", "Genstandstypen findes ikke.");
-            if (definition.UnlockAfter > completed)
-                return Reject("ITEM_LOCKED", "Løs den foregående opgave for at åbne genstanden.");
             switch (action.Kind)
             {
                 case "place":

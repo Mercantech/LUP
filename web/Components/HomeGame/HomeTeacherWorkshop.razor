@@ -8,7 +8,7 @@
     <a href="/teacher/tools">Underviserværktøjer</a><span>›</span><span aria-current="page">Hjem.exe</span>
 </nav>
 <header class="page-title">
-    <div><h1>Hjem.exe for undervisere</h1><p>Vælg opgaver, del starterkode og følg elevernes forsøg.</p></div>
+    <div><h1>Hjem.exe for undervisere</h1><p>Del starterkode med dit hold, følg elevernes kodekørsler og læs deres spørgsmål.</p></div>
     <a class="action" href="/spil/hjem">Åbn min prøvebolig</a>
 </header>
 <section class="panel teacher-home">
@@ -39,31 +39,14 @@
     @if (_overview is { } overview)
     {
         <details open>
-            <summary>Opgaver og starterkode</summary>
+            <summary>Starterkode til holdet</summary>
             <div class="teacher-controls">
-                <label>Åbn opgaver til og med
-                    <select @bind="_openThrough">
-                        @for (var i = 1; i <= HomeLessons.All.Count; i++)
-                        {
-                            <option value="@i">@($"P{i:00}") @HomeLessons.All[i - 1].Title</option>
-                        }
-                    </select>
-                </label>
-                <label>Foreslå første opgave
-                    <select @bind="_suggested">
-                        <option value="0">Elevens næste opgave</option>
-                        @for (var i = 1; i <= _openThrough; i++)
-                        {
-                            <option value="@i">@($"P{i:00}") @HomeLessons.All[i - 1].Title</option>
-                        }
-                    </select>
-                </label>
                 <label>Foreslå sprog
                     <select @bind="_language">
                         <option value="">Elevens valgte sprog</option>
                         @foreach (var language in Languages)
                         {
-                            <option value="@language">@HomeLessons.Label(language)</option>
+                            <option value="@language">@HomeCodeGuide.Label(language)</option>
                         }
                     </select>
                 </label>
@@ -71,7 +54,7 @@
             @foreach (var language in Languages)
             {
                 <details>
-                    <summary>Starterkode til @HomeLessons.Label(language)</summary>
+                    <summary>Starterkode til @HomeCodeGuide.Label(language)</summary>
                     <label>
                         Redigér starterkode
                         <textarea rows="5" spellcheck="false" maxlength="@HomeGameVersion.MaxSourceBytes" value="@_starter.GetValueOrDefault(language)"
@@ -88,13 +71,12 @@
         {
             <div class="teacher-table">
                 <table class="table">
-                    <thead><tr><th>Elev</th><th>Opgaver bestået</th><th>Seneste forsøg</th><th>Elevens arbejde</th></tr></thead>
+                    <thead><tr><th>Elev</th><th>Seneste forsøg</th><th>Elevens arbejde</th></tr></thead>
                     <tbody>
                         @foreach (var student in overview.Students)
                         {
                             <tr>
                                 <th scope="row">@student.Name</th>
-                                <td>@student.Progress.Count / @HomeLessons.All.Count</td>
                                 <td>@Status(student.LastRun)</td>
                                 <td><button type="button" class="secondary" disabled="@_working" @onclick="() => OpenStudentAsync(student.StudentSub)">Vis kode og log</button></td>
                             </tr>
@@ -110,29 +92,23 @@
                 <p>@Status(detail.LastRun?.Run ?? detail.Student.LastRun)</p>
                 @if (!string.IsNullOrWhiteSpace(detail.Student.Reflection))
                 {
-                    <h4>Refleksion</h4><p class="plain-reflection">@detail.Student.Reflection</p>
+                    <h4>Elevens noter</h4><p class="plain-reflection">@detail.Student.Reflection</p>
                 }
                 @if (detail.LastRun is { } run)
                 {
                     <details open>
                         <summary>Resultat og log</summary>
                         @if (run.ErrorMessage is not null) { <p>@run.ErrorMessage</p> }
-                        <ul>
-                            @foreach (var outcome in run.Outcomes)
-                            {
-                                <li>@(HomeCatalog.Scenarios.GetValueOrDefault(outcome.ScenarioId)?.Title ?? outcome.ScenarioId): @(outcome.Passed ? "Bestået" : "Ikke bestået")</li>
-                            }
-                        </ul>
                         @if (run.Logs.Count > 0) { <pre>@string.Join("\n", run.Logs)</pre> }
                     </details>
                 }
                 @if (detail.RunProgram is { } program)
                 {
-                    <details open><summary>Kode fra forsøget (@HomeLessons.Label(program.Language))</summary><pre>@program.Source</pre></details>
+                    <details open><summary>Kode fra forsøget (@HomeCodeGuide.Label(program.Language))</summary><pre>@program.Source</pre></details>
                 }
                 @foreach (var draft in detail.Drafts)
                 {
-                    <details><summary>Senest gemt i @HomeLessons.Label(draft.Language)</summary><pre>@draft.Source</pre></details>
+                    <details><summary>Senest gemt i @HomeCodeGuide.Label(draft.Language)</summary><pre>@draft.Source</pre></details>
                 }
             </section>
         }
@@ -146,7 +122,7 @@
                 {
                     <li>
                         <strong>@(overview.Students.FirstOrDefault(student => student.StudentSub == help.StudentSub)?.Name ?? "Elev")</strong>
-                        <small>@($"P{help.Task:00}") · @Status(help.Run)</small>
+                        <small>@Status(help.Run)</small>
                         <p class="plain-reflection">@help.Question</p>
                         <button class="secondary" type="button" disabled="@_working" @onclick="() => OpenStudentAsync(help.StudentSub, help.Run?.Id)">Åbn elevens arbejde</button>
                     </li>
@@ -169,8 +145,6 @@
     private string _language = "";
     private string? _error;
     private string? _success;
-    private int _openThrough = 1;
-    private int _suggested;
     private bool _working;
 
     protected override Task OnInitializedAsync() => RefreshAsync();
@@ -178,7 +152,7 @@
     private Task RefreshAsync() => PerformAsync(async () =>
     {
         _holds = (await Notion.Holds(_lifetime.Token)).Where(hold => hold.CanManage).ToArray();
-        _hold ??= InitialHold ?? (_holds.Count == 1 ? _holds[0].Id : null);
+        _hold ??= InitialHold;
         if (_hold is { } id) SetOverview(await Client.ClassAsync(Subject, id, _lifetime.Token));
     });
 
@@ -193,8 +167,6 @@
     private void SetOverview(HomeTeacherOverview overview)
     {
         _overview = overview;
-        _openThrough = overview.Settings.OpenThroughTask;
-        _suggested = overview.Settings.SuggestedTask;
         _language = overview.Settings.SuggestedLanguage ?? "";
         _starter = new(overview.Settings.StarterCode, StringComparer.Ordinal);
     }
@@ -204,7 +176,7 @@
         if (_overview is not { } old) return;
         var code = _starter.Where(entry => !string.IsNullOrWhiteSpace(entry.Value))
             .ToDictionary(entry => entry.Key, entry => entry.Value, StringComparer.Ordinal);
-        var settings = new HomeTeacherSettings(old.Settings.Revision, _openThrough, Math.Min(_suggested, _openThrough),
+        var settings = new HomeTeacherSettings(old.Settings.Revision, 0, 0,
             _language.Length == 0 ? null : _language, code);
         var saved = await Client.SettingsAsync(Subject, old.HoldId, settings, _lifetime.Token);
         SetOverview(old with { Settings = saved });
@@ -230,11 +202,8 @@
 
     private static string Status(HomeRunSummary? run) => run?.Status switch
     {
-        "passed" when run.IsTeacherSandbox => "Prøvevurdering bestået",
-        "failed" when run.IsTeacherSandbox => "Prøvevurdering med mangler",
-        "passed" => "Bestået",
-        "failed" => "Mangler mål",
-        "completed" => "Øveforsøg",
+        "passed" or "failed" => "Tidligere forsøg",
+        "completed" => "Gennemført",
         "paused" => "Pauset",
         "compiling" or "queued" or "running" => "I gang",
         "cancelled" => "Stoppet",

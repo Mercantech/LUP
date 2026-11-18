@@ -17,7 +17,7 @@ const teacherSubject = "79a2b803-e11a-4ae8-b606-9b7f816e7c63";
 const runId = "469f3838-456d-4201-ad66-7bd7a031af90";
 const versionId = "667101e8-910b-4ba3-b759-2606c6b7d4f6";
 const startedAtUtc = "2026-11-16T09:00:00Z";
-const state = homeGameFixture();
+const state = homeGameFixture({ lampInStorage: true });
 const cells = state.layout.grid.rooms.living_room;
 const program = "import home\nhome.set(\"desk_lamp\", True)\n";
 const hostileLog = "<img src=x onerror=alert(1)>";
@@ -52,7 +52,7 @@ async function handler(route) {
     if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
     if (!url.pathname.includes("/me/home-game")) {
         if (url.pathname.endsWith("/me/avatars")) return send({
-            selectedAvatarId: "lupp", ownedAvatarIds: ["lupp", "starter"], gold: state.gold, level: 1,
+            selectedAvatarId: state.selectedAvatarId, ownedAvatarIds: ["lupp", "bip01", "starter"], gold: state.gold, level: 1,
             ownedItemIds: [], canImportLegacy: false, revision: 1, unlockProgress: []
         });
         return send([]);
@@ -93,15 +93,15 @@ async function handler(route) {
     }
     if (endpoint === "/runs") {
         assert.equal(body.revision, state.layout.revision);
-        assert.equal(body.assessment, true);
-        assert.equal(body.task, 1);
+        assert.equal(Boolean(body.assessment), false);
+        assert.equal(body.task ?? 0, 0);
         run = {
             run: {
-                id: runId, revision: state.layout.revision, programVersionId: versionId, language: "python", task: 1,
-                assessment: true, status: "running", startedAtUtc, programHash: "fixture", sdkVersion: "virtual-home-v1",
+                id: runId, revision: state.layout.revision, programVersionId: versionId, language: "python", task: 0,
+                assessment: false, status: "running", startedAtUtc, programHash: "fixture", sdkVersion: "virtual-home-v1",
                 simulatorVersion: "hjem-v1", contentVersion: "hjem-pilot-v1"
             },
-            sequence: 1, scenarioIndex: 0, scenarioIds: ["dark_reading"], speed: body.speed, snapshot: snapshot(0),
+            sequence: 1, scenarioIndex: 0, scenarioIds: ["free"], speed: body.speed, snapshot: snapshot(0),
             outcomes: [], logs: [hostileLog], goldAwarded: 0
         };
         state.lastRun = run.run;
@@ -110,21 +110,10 @@ async function handler(route) {
     if (endpoint === `/runs/${runId}/step`) {
         if (run.run.status !== "running" || body.afterSequence < run.sequence) return send(run);
         run.sequence++;
-        const nextTick = run.snapshot.tick < 13 ? run.snapshot.tick + body.maxTicks : 300;
+        const nextTick = Math.min(300, run.snapshot.tick + body.maxTicks);
         run.snapshot = snapshot(nextTick);
         if (nextTick >= 300) {
-            run.run.status = "passed";
-            run.run.passed = true;
-            run.goldAwarded = 25;
-            run.outcomes.push({ scenarioId: "dark_reading", seed: 3, passed: true, criteria: [{
-                id: "comfort", title: "300–600 lux under læsning", samples: 290, matched: 287, minSamples: 200,
-                requiredPercent: 95, passed: true
-            }], energyMicroJ: 180000000 });
-            state.gold += 25;
-            state.completedTasks++;
-            state.highestAvailableTask++;
-            state.layout.revision++;
-            state.progress.push({ task: 1, rewardKey: "P01:first-pass", contentVersion: "hjem-pilot-v1", runId, completedAtUtc: startedAtUtc });
+            run.run.status = "completed";
         }
         return send(run);
     }
@@ -137,9 +126,9 @@ async function handler(route) {
         run,
         layout: state.layout,
         scenarios: [{
-            id: "dark_reading", title: "Læsning i mørke", ticks: 300, free: false, seed: 0, version: 1,
+            id: "free", title: "Fri afprøvning", ticks: 300, free: true, seed: 0, version: 1,
             events: [{ tick: 0, daylightLux: 40, ambientLux: 40, intention: "read", autoEnabled: true }],
-            windows: [{ start: 10, end: 300, requirement: "comfort" }]
+            windows: []
         }],
         events: [{ scenarioIndex: 0, tick: 0, commands: [{ alias: "desk_lamp", action: "setPower", value: true }],
             waitMs: null, controllerCompleted: true }],
@@ -181,14 +170,15 @@ async function main() {
         page.on("dialog", async dialog => { errors.push(dialog.message()); await dialog.dismiss(); });
         await page.goto(`${base}/apartment/smart-home`, { waitUntil: "domcontentloaded" });
         await page.getByRole("heading", { name: "Hjem.exe" }).waitFor();
-        const board = page.getByRole("group", { name: /Boligens grid/ });
+        await page.getByRole("button", { name: "Indret", exact: true }).click();
+        const board = page.locator(".home-board");
         await board.waitFor();
         const tile = (x, y) => board.locator(`[data-x="${x}"][data-y="${y}"]`);
         assert.equal(await board.getByRole("button").count(), 120);
-        await board.locator('[data-avatar-icon="lupp"]').waitFor();
-        assert.match(await page.locator(".task-label option:checked").textContent(), /^P01 Lys ved bordet/);
+        await board.locator('.resident[data-avatar-id="lupp"]').waitFor();
+        assert.equal(await page.locator(".task-label").count(), 0);
         if (output) await page.screenshot({ path: path.join(output, "home-initial.png"), fullPage: true });
-        await page.getByRole("button", { name: "Placér", exact: true }).first().click();
+        await page.getByRole("listitem").filter({hasText:"Gulvlampe"}).getByRole("button",{name:"Placér",exact:true}).click();
         await tile(0, 4).focus();
         for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowRight");
         await page.keyboard.press("Enter");
@@ -215,29 +205,20 @@ async function main() {
         await page.getByRole("button", { name: "Programmér", exact: true }).click();
         assert.equal(await page.getByLabel("Controllerens program").inputValue(), program);
         await page.getByRole("button", { name: "Afprøv", exact: true }).click();
-        await page.getByRole("button", { name: "Vurdér opgave" }).click();
+        await page.getByRole("button", { name: "Kør kode", exact: true }).click();
         await page.getByRole("button", { name: "Pause", exact: true }).click();
-        await page.getByRole("button", { name: "Genoptag" }).waitFor();
+        await page.getByRole("button", { name: "Genoptag", exact: true }).waitFor();
         const pausedTick = run.snapshot.tick;
-        await page.waitForTimeout(350);
+        await page.waitForTimeout(300);
         assert.equal(run.snapshot.tick, pausedTick);
-        await page.getByRole("button", { name: "Indret", exact: true }).click();
-        await tile(5, 4).click();
-        await page.getByRole("button", { name: "Drej på stedet" }).click();
-        await page.getByRole("button", { name: "Kør", exact: true }).waitFor();
-        assert.equal(state.layout.items.find(item => item.id === "lamp").placement.rotation, 90);
-        assert.equal(run.run.status, "cancelled");
-        await page.getByRole("button", { name: "Afprøv", exact: true }).click();
-        await page.getByRole("button", { name: "Vurdér opgave" }).click();
-        await page.getByRole("button", { name: "Pause", exact: true }).click();
-        await page.getByRole("button", { name: "Genoptag" }).click();
-        await page.getByText("Opgave bestået", { exact: true }).waitFor();
-        await page.getByText("+25 guld", { exact: true }).waitFor();
-        assert.equal(state.gold, 125);
+        await page.getByRole("button", { name:"Genoptag", exact:true }).click();
+        await page.getByText("Forsøg gennemført", { exact: true }).waitFor();
+        assert.equal(run.run.status, "completed");
+        assert.equal(state.gold, 100);
         await page.getByText("Log (1)", { exact: true }).click();
         assert.equal(await page.locator(".run-log").textContent(), hostileLog);
         assert.equal(await page.locator(".run-log img").count(), 0);
-        await page.getByRole("button", { name: "Målinger", exact: true }).click();
+        assert.match(await page.getByTestId("reading-lux").innerText(), /378/);
         assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("378 lux"));
         if (output) await page.screenshot({ path: path.join(output, "home-result.png"), fullPage: true });
         await page.getByRole("button", { name: "Genafspil forsøg" }).click();
@@ -245,33 +226,31 @@ async function main() {
         await page.getByText("Din avatar læser", { exact: true }).waitFor();
         assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("378 lux"));
         await page.getByRole("button", { name: "Luk genafspilning" }).click();
-        await page.getByRole("button", { name: "Næste opgave" }).click();
-        await page.getByRole("heading", { name: "Placering betyder noget" }).waitFor();
         await page.setViewportSize({ width: 390, height: 844 });
-        await page.getByRole("button", { name: "Boligplan", exact: true }).click();
+        await page.getByRole("button", { name: "Rum", exact: true }).click();
         await board.waitFor({ state: "visible" });
-        await page.getByRole("button", { name: "Arbejdsområde", exact: true }).click();
-        await page.getByRole("heading", { name: "Placering betyder noget" }).waitFor({ state: "visible" });
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        await page.getByRole("button", { name: "Værktøjer", exact: true }).click();
+        await page.getByTestId("light-panel").waitFor({ state:"visible" });
         if (output) await page.screenshot({ path: path.join(output, "home-mobile.png"), fullPage: true });
         assert.deepEqual(errors, []);
         await context.close();
 
-        Object.assign(state, homeGameFixture({ gold: 0, isTeacherSandbox: true }));
+        Object.assign(state, homeGameFixture({ gold: 0, isTeacherSandbox: true, selectedAvatarId:"bip01" }));
         run = undo = null;
         const teacher = await device(browser, teacherSubject, "Teacher");
         const preview = await teacher.newPage();
         await preview.goto(`${base}/spil/hjem?vis=butik`, { waitUntil: "domcontentloaded" });
         await preview.getByText("Prøvebolig for undervisere", { exact: true }).waitFor();
-        assert.equal(await preview.locator(".task-label option:enabled").count(), 6);
-        await preview.locator(".task-label select").selectOption("6");
-        await preview.getByRole("heading", { name: "Et sammenhængende hjem" }).waitFor();
+        await preview.locator('.resident[data-avatar-id="bip01"]').waitFor();
+        assert.equal(await preview.locator(".task-label").count(), 0);
         await preview.getByRole("listitem").filter({ hasText: "Sofa" }).getByRole("button", { name: "Tilføj gratis" }).click();
         await preview.locator('.home-board [data-x="1"][data-y="1"]').click();
         await preview.getByText("Prøveudstyret er placeret.", { exact: true }).waitFor();
         assert.equal(state.gold, 0);
         assert.equal(state.layout.items.find(item => item.id === "sofa").goldPaid, 0);
         await teacher.close();
-        console.log("Hjem.exe browser: student progression, gold purchases and refunds, and teacher access to all six tasks and free preview gear passed.");
+        console.log("Hjem.exe browser: selected avatars, free simulation, keyboard placement, shared gold, mobile controls and teacher equipment passed.");
     } finally {
         await browser.close();
     }

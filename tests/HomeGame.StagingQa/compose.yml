@@ -1,4 +1,4 @@
-name: stage-hjem-20261118
+name: stage-hjem-workshop
 
 services:
   issuer:
@@ -104,7 +104,7 @@ networks:
     internal: true
     ipam:
       config:
-        - subnet: ${LUP_HOME_QA_SUBNET:-10.42.94.48/28}
+        - subnet: ${LUP_HOME_QA_SUBNET:-10.42.94.64/28}
   runner-control:
     external: true
     name: lup-home-runner-control

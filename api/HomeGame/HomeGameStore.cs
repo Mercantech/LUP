@@ -8,7 +8,7 @@ namespace Mercantec.Tech.Api.HomeGame;
 
 public sealed class HomeGameStore(AppDbContext db)
 {
-    internal static readonly HomeTeacherSettings DefaultSettings = new(0, 1, 0, null,
+    internal static readonly HomeTeacherSettings DefaultSettings = new(0, 0, 0, null,
         new Dictionary<string, string>());
 
     internal async Task<HomeProfileData> GetOrCreate(Guid subject, CancellationToken ct)
@@ -80,14 +80,10 @@ public sealed class HomeGameStore(AppDbContext db)
         {
             var settings = assignments.TryGetValue(hold.HoldId, out var json)
                 ? HomeGameJson.Read<HomeTeacherSettings>(json) : DefaultSettings;
-            return new HomeClassroom(hold.HoldId, hold.Name, settings.OpenThroughTask, settings.SuggestedTask,
+            return new HomeClassroom(hold.HoldId, hold.Name, 0, 0,
                 settings.SuggestedLanguage, settings.StarterCode);
         }).ToArray();
     }
-
-    internal static int AvailableTask(HomeProfileData state, IReadOnlyList<HomeClassroom> classrooms) =>
-        Math.Min(HomeCatalog.Tasks.Count, Math.Max(state.CompletedTasks + 1,
-            classrooms.Select(classroom => classroom.OpenThroughTask).DefaultIfEmpty(1).Max()));
 
     internal static string Hash(string input) => Convert.ToHexStringLower(
         SHA256.HashData(Encoding.UTF8.GetBytes(input)));

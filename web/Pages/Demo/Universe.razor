@@ -58,7 +58,7 @@ else if (PathKey == "universe/shop")
 }
 else if (PathKey == "universe/unlocks")
 {
-    <header class="page-title"><div><h1>Det næste, du kan låse op</h1><p>Se hvilke avatarer dine fremskridt åbner for.</p></div><a class="secondary" href="/spil/hjem">Se udstyr og opgaver i Hjem.exe</a></header>
+    <header class="page-title"><div><h1>Det næste, du kan låse op</h1><p>Se hvilke avatarer dine fremskridt åbner for.</p></div><a class="secondary" href="/spil/hjem">Se udstyret i Hjem.exe</a></header>
     <UnlockRoadmap />
     <section class="panel" style="margin-top:18px"><h2>Titler og ekstra profiltemaer</h2>@foreach (var unlock in DemoCatalog.Unlocks.Where(u => u.Type is "Titel" or "Tema")) { <div class="row"><span class="mark">@unlock.Level</span><div><h3>@unlock.Name</h3><p>@unlock.Type · level @unlock.Level · @(unlock.Open ? "Åben" : "Låst")</p></div></div> }</section>
 }

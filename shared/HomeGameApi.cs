@@ -26,7 +26,8 @@ public sealed record HomeGameState(
     int HighestAvailableTask,
     string Reflection,
     IReadOnlyList<HomeClassroom> Classrooms,
-    bool IsTeacherSandbox = false);
+    bool IsTeacherSandbox = false,
+    string SelectedAvatarId = AvatarEconomy.StarterId);
 
 public sealed record HomeClassroom(Guid HoldId, string Name, int OpenThroughTask, int SuggestedTask,
     string? SuggestedLanguage, IReadOnlyDictionary<string, string> StarterCode);
@@ -48,8 +49,8 @@ public sealed record HomeTeacherOverview(Guid HoldId, string Name, HomeTeacherSe
 public sealed record HomeTeacherStudentDetail(HomeTeacherStudent Student, IReadOnlyList<HomeProgramDraft> Drafts,
     HomeProgramDraft? RunProgram, HomeRunStatus? LastRun);
 
-public sealed record HomeStartRunRequest(int Revision, string Language, int Task, string Intent = "read",
-    bool Assessment = true, string? ScenarioId = null, int Speed = 1, Guid? RestartRunId = null);
+public sealed record HomeStartRunRequest(int Revision, string Language, int Task = 0, string Intent = "read",
+    bool Assessment = false, string? ScenarioId = null, int Speed = 1, Guid? RestartRunId = null);
 public sealed record HomeStepRunRequest(long AfterSequence, int MaxTicks = 1);
 public sealed record HomeRunControlRequest(string Action, string? Intent = null, int? DaylightLux = null,
     bool? AutoEnabled = null, int? Speed = null);

@@ -14,7 +14,7 @@ docker image inspect "$LUP_HOME_QA_API_IMAGE" >/dev/null
 docker image inspect "$LUP_HOME_QA_WEB_IMAGE" >/dev/null
 docker network inspect lup-home-runner-control >/dev/null
 docker volume inspect lup-hjem-stage-connection-20261118 >/dev/null
-if docker volume inspect stage-hjem-20261118_qa-db >/dev/null 2>&1; then
+if docker volume inspect stage-hjem-workshop_qa-db >/dev/null 2>&1; then
     printf '%s\n' 'A previous staging database exists. Stop and dispose that test stack before a fresh acceptance run.'
     exit 2
 fi
@@ -33,7 +33,7 @@ fi
 compose up -d api web
 compose exec -T --user nginx web sh -ec \
     'test -r /usr/share/nginx/html/appsettings.json && test -r /usr/share/nginx/html/js/home-game.js'
-printf '%s\n' 'Only the private synthetic stage-hjem-20261118 project was started.'
+printf '%s\n' 'Only the private synthetic stage-hjem-workshop project was started.'
 compose run --rm browser
 compose exec -T db psql -U lup_home_qa -d lup_home_qa_20261118 -v ON_ERROR_STOP=1 -t -A -c \
     'SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY "MigrationId" DESC LIMIT 1;'

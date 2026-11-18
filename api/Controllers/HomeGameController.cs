@@ -20,9 +20,6 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
     private const string SubjectHeader = "X-LUP-Apartment-Subject";
     private bool IsTeacherSandbox => UserClaims.IsTeacher(User);
 
-    private int AvailableTask(HomeProfileData state, IReadOnlyList<HomeClassroom> classrooms) =>
-        IsTeacherSandbox ? HomeCatalog.Tasks.Count : HomeGameStore.AvailableTask(state, classrooms);
-
     [HttpGet]
     public async Task<ActionResult<HomeGameState>> Get(CancellationToken ct)
     {
@@ -46,8 +43,6 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
         using var guard = await runs.GuardBuild(subject, request.Revision, ct);
         if (!guard.Allowed) return Failure(409, "RUN_BUILD_PAUSE_REQUIRED", "Sæt forsøget på pause, før du bygger.");
 
-        var classrooms = await store.Classrooms(subject, ct);
-        var availableTask = AvailableTask(state, classrooms);
         HomeBuildResult result;
         if (request.Action.Kind == "undo")
         {
@@ -57,7 +52,7 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
         }
         else
         {
-            result = HomeRules.Apply(state.Layout, request.Action, availableTask - 1, guard.AvatarCell, IsTeacherSandbox);
+            result = HomeRules.Apply(state.Layout, request.Action, guard.AvatarCell, IsTeacherSandbox);
         }
 
         if (result.Error is { } error) return Failure(422, error.Code, error.Message, error.Cells);
@@ -134,10 +129,7 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
             return Failure(400, "INVALID_REFLECTION", "Skriv højst 2.000 tegn i forklaringen.");
         var state = await store.GetOrCreate(subject, ct);
         if (request.Revision != state.Layout.Revision) return ConflictResult();
-        var classrooms = await store.Classrooms(subject, ct);
-        if (AvailableTask(state, classrooms) < 6)
-            return Failure(403, "TASK_LOCKED", "Åbn opgave 6 for at gemme din forklaring.");
-        if (state.Reflection == request.Text.Trim()) return Ok(await Bootstrap(subject, state, ct, classrooms));
+        if (state.Reflection == request.Text.Trim()) return Ok(await Bootstrap(subject, state, ct));
         var updated = state with
         {
             Layout = state.Layout with { Revision = state.Layout.Revision + 1 },
@@ -145,7 +137,7 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
         };
         if (!await store.Write(subject, request.Revision, updated, ct)) return ConflictResult();
         await runs.Invalidate(subject, updated.Layout.Revision);
-        return Ok(await Bootstrap(subject, updated, ct, classrooms));
+        return Ok(await Bootstrap(subject, updated, ct));
     }
 
     [HttpPost("help")]
@@ -153,14 +145,14 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
     public async Task<ActionResult<HomeHelpEntry>> Help(HomeHelpRequest request, CancellationToken ct)
     {
         if (Identify(out var subject) is { } rejection) return rejection;
-        if (request.OperationId == Guid.Empty || request.Task < 1 || request.Task > HomeCatalog.Tasks.Count
+        if (request.OperationId == Guid.Empty || request.Task < 0 || request.Task > HomeCatalog.Tasks.Count
             || string.IsNullOrWhiteSpace(request.Question) || request.Question.Length > 2_000)
-            return Failure(400, "INVALID_HELP", "Vælg opgave og skriv et spørgsmål på højst 2.000 tegn.");
+            return Failure(400, "INVALID_HELP", "Skriv et spørgsmål på højst 2.000 tegn.");
         if (!await db.Memberships.AsNoTracking().AnyAsync(m => m.HoldId == request.HoldId && m.UserSub == subject, ct))
             return NotFound();
         var hash = HomeGameStore.Hash(HomeGameJson.Write(request));
         var last = await store.LatestRun(subject, ct);
-        var entry = new HomeHelpEntry(request.OperationId, subject, request.Task, request.Question.Trim(),
+        var entry = new HomeHelpEntry(request.OperationId, subject, 0, request.Question.Trim(),
             last?.Run.Run, DateTimeOffset.UtcNow);
         var json = HomeGameJson.Write(entry);
         await db.Database.ExecuteSqlInterpolatedAsync($"""
@@ -180,15 +172,14 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
     public async Task<ActionResult<HomeRunStatus>> Start(HomeStartRunRequest request, CancellationToken ct)
     {
         if (Identify(out var subject) is { } rejection) return rejection;
-        if (!HomeGameLanguages.IsKnown(request.Language) || request.Task < 1 || request.Task > HomeCatalog.Tasks.Count
+        if (request.Assessment)
+            return Failure(400, "ASSESSMENT_UNAVAILABLE", "Åbn Hjem.exe igen for at køre koden i fri afprøvning.");
+        if (!HomeGameLanguages.IsKnown(request.Language) || request.Task < 0 || request.Task > HomeCatalog.Tasks.Count
             || request.Speed is not (1 or 4 or 10) || !KnownIntent(request.Intent)
             || request.ScenarioId is { } scenario && scenario != "free" && !HomeCatalog.Scenarios.ContainsKey(scenario))
-            return Failure(400, "INVALID_RUN", "Vælg et sprog, en opgave og et kendt scenarie.");
+            return Failure(400, "INVALID_RUN", "Vælg et gyldigt sprog og en kendt afprøvning.");
         var state = await store.GetOrCreate(subject, ct);
         if (request.Revision != state.Layout.Revision) return ConflictResult();
-        var classrooms = await store.Classrooms(subject, ct);
-        if (request.Task > AvailableTask(state, classrooms))
-            return Failure(403, "TASK_LOCKED", "Afslut den foregående opgave for at åbne denne.");
         var controller = state.Layout.Items.FirstOrDefault(item => item.DefinitionId == HomeCatalog.ControllerId
             && item.Placement is not null);
         if (controller is null)
@@ -197,25 +188,21 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
         if (program is null || string.IsNullOrWhiteSpace(program.Source))
             return Failure(422, "MISSING_PROGRAM", "Gem et program i det valgte sprog før kørslen.");
 
-        var task = HomeCatalog.Tasks[request.Task - 1];
-        if (request.Assessment && HomeRules.AssessmentPrerequisites(state.Layout, task) is { } requirement)
-            return Failure(422, requirement.Code, requirement.Message, requirement.Cells);
-        IReadOnlyList<HomeScenario> scenarios;
+        HomeScenario scenarioToRun;
         if (request.RestartRunId is Guid restartId)
         {
             var previous = await store.FindRun(subject, restartId, ct);
             if (previous is null) return NotFound();
-            if (previous.Run.Run.Assessment != request.Assessment || previous.Run.Run.Task != request.Task
-                || previous.Run.Run.ContentVersion != HomeGameVersion.Content)
-                return Failure(422, "INVALID_RESTART", "Vælg samme opgave og forsøgstype for at genstarte scenarierne.");
-            scenarios = previous.Scenarios;
+            if (previous.Run.Run.Assessment || previous.Scenarios.Count != 1 || previous.Run.Run.ContentVersion != HomeGameVersion.Content)
+                return Failure(422, "INVALID_RESTART", "Vælg en tidligere fri afprøvning for at genstarte.");
+            scenarioToRun = previous.Scenarios[0] with { Windows = [] };
             request = request with { Intent = previous.InitialIntent };
         }
         else
         {
-            scenarios = HomeRunCoordinator.Scenarios(task, request);
+            scenarioToRun = HomeRunCoordinator.Scenario(request);
         }
-        var run = await runs.Start(subject, request, state.Layout, program, scenarios, controller, IsTeacherSandbox, ct);
+        var run = await runs.Start(subject, request, state.Layout, program, scenarioToRun, controller, IsTeacherSandbox, ct);
         if (run is null)
             return Failure(409, "RUN_BUSY", "Der kører allerede et forsøg, eller køen er fuld. Prøv igen om lidt.");
         return AcceptedAtAction(nameof(Status), new { id = run.Run.Id }, run);
@@ -264,14 +251,14 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
         return Ok(replay);
     }
 
-    private async Task<HomeGameState> Bootstrap(Guid subject, HomeProfileData state, CancellationToken ct,
-        HomeClassroom[]? classrooms = null)
+    private async Task<HomeGameState> Bootstrap(Guid subject, HomeProfileData state, CancellationToken ct)
     {
-        classrooms ??= await store.Classrooms(subject, ct);
+        var classrooms = await store.Classrooms(subject, ct);
+        var wallet = await AvatarWallet.Read(db, subject, ct);
         var last = await store.LatestRun(subject, ct);
-        return new(state.Layout, await AvatarWallet.Gold(db, subject, ct), state.CompletedTasks, state.Drafts, state.Progress,
-            state.Undo is not null, last?.Run.Run, await runner.IsAvailable(ct), AvailableTask(state, classrooms),
-            state.Reflection, classrooms, IsTeacherSandbox);
+        return new(state.Layout, wallet.Gold, state.CompletedTasks, state.Drafts, state.Progress,
+            state.Undo is not null, last?.Run.Run, await runner.IsAvailable(ct), 0,
+            state.Reflection, classrooms, IsTeacherSandbox, wallet.SelectedAvatarId);
     }
 
     private Task<HomeBuildReceiptRow?> Receipt(Guid subject, Guid id, CancellationToken ct) =>

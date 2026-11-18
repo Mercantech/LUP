@@ -1,0 +1,12 @@
+.light-panel { border-block: 1px solid var(--home-line); padding: 1.15rem 0; }
+.light-panel h2 { font-size: 1.05rem; line-height: 1.28; margin: 0; color: var(--home-ink); }
+.reading-value { display: flex; align-items: baseline; gap: .35rem; margin: .35rem 0 .8rem; font-variant-numeric: tabular-nums; }
+.reading-value strong { font-size: clamp(2.3rem, 3.8vw, 3.7rem); line-height: 1.05; font-weight: 650; letter-spacing: -.055em; }
+.reading-value span { font-size: 1rem; }
+.reading-value .awaiting-light { color: var(--home-muted); font-weight: 550; }
+.lux-scale { height: .65rem; border-radius: .2rem; background: #e8e1d1; position: relative; }
+.reading-band { position: absolute; inset: 0 40% 0 30%; background: #9bb38b; }
+.lux-scale i { position: absolute; bottom: -.21rem; width: .2rem; height: 1.1rem; border: 1px solid white; border-radius: .1rem; background: #193f32; transform: translateX(-50%); }
+.scale-labels { display: flex; justify-content: space-between; color: var(--home-muted); font-size: .74rem; margin-top: .27rem; }
+.light-panel p { margin: .6rem 0 0; font-size: .85rem; }
+.light-panel small { display: block; margin-top: .4rem; line-height: 1.45; color: var(--home-muted); }

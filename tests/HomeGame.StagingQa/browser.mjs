@@ -74,61 +74,52 @@ const build = (identity, home, action, operationId = crypto.randomUUID(), expect
 const homeFor = identity => api(identity, '/api/me/home-game');
 const avatarFor = identity => api(identity, '/api/me/avatars');
 const installed = (home, definition) => home.layout.items.find(item => item.definitionId === definition);
-const place = async (identity, home, definition, x, y, rotation = 0, wall = null) =>
-    build(identity, home, { kind: 'place', itemId: installed(home, definition).id,
-        placement: { anchor: { x, y }, rotation, wall } });
-
-function source(language, task) {
-    if (language === 'python') {
-        if (task <= 2) return 'import home\nhome.set("desk_lamp", True)\n';
-        const condition = ['home.read("daylight") < 300',
-            ...(task >= 4 ? ['home.read("presence")'] : []),
-            ...(task >= 5 ? ['home.read("auto_enabled")'] : [])].join(' and ');
-        return 'import home\nwhile True:\n    home.set("desk_lamp", ' + condition + ')\n    home.wait(0.2)\n';
-    }
-    if (language === 'csharp') {
-        if (task <= 2) return 'using HomeSdk;\nHome.Set("desk_lamp", true);\n';
-        const condition = ['Home.Read("daylight") < 300',
-            ...(task >= 4 ? ['Home.ReadBool("presence")'] : []),
-            ...(task >= 5 ? ['Home.ReadBool("auto_enabled")'] : [])].join(' && ');
-        return 'using HomeSdk;\nwhile (true) { Home.Set("desk_lamp", ' + condition + '); Home.Wait(0.2); }\n';
-    }
-    if (task <= 2)
-        return '#include <VirtualHome.h>\nvoid setup() { home.set("desk_lamp", true); }\nvoid loop() { delay(200); }\n';
-    const condition = ['home.read("daylight") < 300',
-        ...(task >= 4 ? ['home.readBool("presence")'] : []),
-        ...(task >= 5 ? ['home.readBool("auto_enabled")'] : [])].join(' && ');
-    return '#include <VirtualHome.h>\nvoid setup() { home.begin(); }\nvoid loop() { home.set("desk_lamp", ' +
-        condition + '); delay(200); }\n';
-}
-async function assess(identity, language, task) {
-    let home = await homeFor(identity);
-    home = await api(identity, '/api/me/home-game/program', 'PUT',
-        { revision: home.layout.revision, language, source: source(language, task) });
-    let run = await api(identity, '/api/me/home-game/runs', 'POST',
-        { revision: home.layout.revision, language, task, assessment: true, speed: 10, intent: 'read' });
-    const id = run.run.id;
+async function finishFreeRun(identity, initial) {
+    let run = initial;
     const end = Date.now() + 180000;
-    let iterations = 0;
-    while (['queued', 'compiling', 'running', 'paused'].includes(run.run.status)) {
-        assert.ok(Date.now() < end, 'Real worker run timed out for ' + language + '/P' + task);
-        if (run.run.status === 'paused') throw new Error('Unexpected paused worker run.');
-        if (run.run.status === 'running')
-            run = await api(identity, '/api/me/home-game/runs/' + id + '/step', 'POST',
+    while (['queued', 'compiling', 'running'].includes(run.run.status)) {
+        assert.ok(Date.now() < end, 'Free run timed out for ' + run.run.language);
+        if (run.run.status === 'running') {
+            run = await api(identity, '/api/me/home-game/runs/' + run.run.id + '/step', 'POST',
                 { afterSequence: run.sequence, maxTicks: 20 });
-        else {
+        } else {
             await new Promise(resolve => setTimeout(resolve, 150));
-            run = await api(identity, '/api/me/home-game/runs/' + id);
+            run = await api(identity, '/api/me/home-game/runs/' + run.run.id);
         }
-        assert.ok(++iterations < 10000);
     }
-    assert.equal(run.run.status, 'passed', JSON.stringify({ language, task, status: run.run.status,
-        error: run.errorMessage, outcomes: run.outcomes }));
-    assert.equal(run.run.isTeacherSandbox, true);
+    assert.equal(run.run.status, 'completed', JSON.stringify({ language: run.run.language, error: run.errorMessage }));
+    assert.equal(run.run.task, 0);
+    assert.equal(run.run.assessment, false);
     assert.equal(run.goldAwarded, 0);
-    assert.ok(run.outcomes.length > 0 && run.outcomes.every(outcome => outcome.passed));
-    check('Real isolated teacher scenario passed', { language, task, scenarios: run.outcomes.length, runId: id });
+    assert.ok(run.snapshot.poweredAliases.includes('desk_lamp'));
+    const reading = run.snapshot.lightMap.find(v => v.cell.x === 6 && v.cell.y === 4);
+    assert.ok(reading && reading.lux > run.snapshot.ambientLux);
     return run;
+}
+
+async function checkAvatar(page, id) {
+    const resident = page.locator('.resident[data-avatar-id="' + id + '"]');
+    await resident.waitFor({ state: 'visible' });
+    if (id === 'starter') {
+        await resident.locator('.v2-sprite').waitFor({ state: 'visible' });
+        return;
+    }
+    const sheet = resident.locator('.avatar-sheet[data-avatar="' + id + '"]');
+    const portrait = resident.locator('img');
+    await waitUntil(async () => {
+        if (await sheet.count()) {
+            const loaded = await sheet.evaluate(async elem => {
+                const imageUrl = getComputedStyle(elem).backgroundImage.match(/url\(["']?(.*?)["']?\)/)?.[1];
+                if (!imageUrl) return false;
+                const img = new Image(); img.src = imageUrl; await img.decode();
+                return img.naturalWidth > 0 && elem.getBoundingClientRect().width > 0;
+            });
+            return loaded;
+        }
+        if (await portrait.count())
+            return portrait.first().evaluate(img => img.complete && img.naturalWidth > 0);
+        return false;
+    }, 15000);
 }
 
 try {
@@ -164,7 +155,13 @@ try {
     assert.equal(pupilHome.gold, 320);
     assert.equal((await avatarFor(identities.pupil)).gold, 320);
     assert.equal(pupilHome.isTeacherSandbox, false);
-    const positions = [[0,0],[2,0],[4,0],[6,0],[8,0],[10,0],[0,2],[2,2],[4,2],[8,2]];
+    assert.equal(pupilHome.selectedAvatarId, 'starter');
+    assert.ok(installed(pupilHome, 'lamp_basic').placement);
+    await api(identities.pupil, '/api/me/avatars/bip01/unlock', 'POST', {});
+    pupilHome = await homeFor(identities.pupil);
+    assert.equal(pupilHome.selectedAvatarId, 'bip01');
+    assert.equal(pupilHome.gold, 170);
+    const positions = [[0,0],[2,0],[4,0],[6,0],[8,0]];
     for (const [x, y] of positions)
         pupilHome = await build(identities.pupil, pupilHome, { kind: 'buy', definitionId: 'rug_basic',
             placement: { anchor: { x, y }, rotation: 0 } });
@@ -172,7 +169,7 @@ try {
     const purchase = { kind: 'buy', definitionId: 'rug_basic', placement: { anchor: { x: 10, y: 2 }, rotation: 0 } };
     await build(identities.pupil, pupilHome, purchase, crypto.randomUUID(), 422);
     assert.equal((await homeFor(identities.pupil)).gold, 20);
-    check('Default 320 gold legally spent to 20; insufficient purchase rejected');
+    check('A student equipped BIP-01 and bought five rugs; a purchase exceeding their 20 gold was rejected');
 
     phase = 'student-browser-submission';
     browser = await chromium.launch({ headless: true });
@@ -219,47 +216,104 @@ try {
     await pupilPage.screenshot({ path: '/artifacts/quest-gold-purchase.png', fullPage: true });
     check('Quest gold spent through real Hjem UI; persistent Home and Avatar balances both 10');
 
-    let teacherHome = await homeFor(identities.teacher);
-    assert.equal(teacherHome.gold, 320);
-    assert.equal(teacherHome.highestAvailableTask, 6);
-    assert.equal(teacherHome.isTeacherSandbox, true);
-    const languages = ['python', 'csharp', 'arduino'];
-    for (const language of languages) {
-        phase = 'teacher-pilot-' + language;
-        teacherHome = await homeFor(identities.teacher);
-        // Store the lamp before restoring the desk so build ordering never strands the avatar.
-        teacherHome = await build(identities.teacher, teacherHome, { kind: 'store', itemId: installed(teacherHome, 'lamp_basic').id });
-        teacherHome = await place(identities.teacher, teacherHome, 'desk_basic', 6, 3);
-        teacherHome = await place(identities.teacher, teacherHome, 'lamp_basic', 5, 4);
-        for (let task = 1; task <= 6; task++) {
-            teacherHome = await homeFor(identities.teacher);
-            if (task === 2) {
-                teacherHome = await place(identities.teacher, teacherHome, 'desk_basic', 2, 6);
-                teacherHome = await place(identities.teacher, teacherHome, 'lamp_basic', 3, 7);
-            }
-            if (task === 3) teacherHome = await place(identities.teacher, teacherHome, 'daylight_sensor', 7, 0, 180,
-                { x: 7, y: 0, horizontal: true });
-            if (task === 4) teacherHome = await place(identities.teacher, teacherHome, 'presence_sensor', 0, 7, 90,
-                { x: 0, y: 7, horizontal: false });
-            if (task === 5) teacherHome = await place(identities.teacher, teacherHome, 'switch_basic', 8, 0, 180,
-                { x: 8, y: 0, horizontal: true });
-            await assess(identities.teacher, language, task);
-        }
+    phase = 'student-free-workshop';
+    await checkAvatar(pupilPage, 'bip01');
+    await api(identities.pupil, '/api/me/avatars/selection', 'PUT', { avatarId: 'starter' });
+    await pupilPage.reload({ waitUntil: 'domcontentloaded' });
+    await checkAvatar(pupilPage, 'starter');
+    await api(identities.pupil, '/api/me/avatars/selection', 'PUT', { avatarId: 'bip01' });
+    await pupilPage.reload({ waitUntil: 'domcontentloaded' });
+    await checkAvatar(pupilPage, 'bip01');
+
+    await pupilPage.getByRole('button', { name: 'Programmér', exact: true }).click();
+    await pupilPage.getByText('Kom i gang', { exact: true }).first().click();
+    await pupilPage.getByRole('button', { name: 'Brug lampeeksempel', exact: true }).click();
+    const guideProgram = await pupilPage.getByLabel('Controllerens program', { exact: true }).inputValue();
+    assert.ok(guideProgram.includes('desk_lamp') && guideProgram.includes('True'));
+    const creation = pupilPage.waitForResponse(r => new URL(r.url()).pathname === '/api/me/home-game/runs' && r.request().method() === 'POST');
+    await pupilPage.getByRole('button', { name: 'Kør kode', exact: true }).click();
+    const started = await creation;
+    assert.equal(started.status(), 202);
+    const pupilRun = await started.json();
+    assert.equal(pupilRun.run.isTeacherSandbox, false);
+    assert.ok((await homeFor(identities.pupil)).drafts.some(d => d.language === 'python' && d.source === guideProgram));
+    await waitUntil(async () => {
+        const current = await api(identities.pupil, '/api/me/home-game/runs/' + pupilRun.run.id);
+        if (['error','cancelled','expired'].includes(current.run.status)) throw new Error(current.run.status);
+        return current.snapshot?.poweredAliases.includes('desk_lamp');
+    });
+    await pupilPage.getByRole('button', { name: 'Afprøv', exact: true }).click();
+    const status = await finishFreeRun(identities.pupil, pupilRun);
+    const expectedLux = status.snapshot.lightMap.find(v => v.cell.x === 6 && v.cell.y === 4).lux;
+    const panel = pupilPage.getByTestId('light-panel');
+    await panel.waitFor({ state: 'visible' });
+    await waitUntil(async () => {
+        const reading = await pupilPage.getByTestId('reading-lux').innerText();
+        const probe = await pupilPage.locator('.reading-probe').getAttribute('data-lux');
+        return Number(probe) === expectedLux && reading.includes(String(expectedLux));
+    }, 20000);
+    assert.doesNotMatch(await pupilPage.locator('.home-workshop').innerText(), /Vurdér opgave|Opgave bestået|Næste opgave|P0[1-6]\b/i);
+    assert.equal((await homeFor(identities.pupil)).gold, 10);
+    await pupilPage.screenshot({ path: '/artifacts/workshop-student.png', fullPage: true });
+    check('Student UI ran real Python; their BIP-01, room probe and light panel agree with the worker',
+        { lux: expectedLux, runId: status.run.id, balance: 10 });
+
+    phase = 'free-languages';
+    for (const language of ['csharp','arduino']) {
+        await pupilPage.getByRole('button', { name: 'Programmér', exact: true }).click();
+        await pupilPage.locator('.code-controls select').filter({ has: pupilPage.locator('option[value="csharp"]') }).selectOption(language);
+        const next = pupilPage.waitForResponse(r => new URL(r.url()).pathname === '/api/me/home-game/runs' && r.request().method() === 'POST');
+        await pupilPage.getByRole('button', { name:'Kør kode', exact:true }).click();
+        const response = await next;
+        assert.equal(response.status(), 202);
+        const attempt = await response.json();
+        assert.equal(attempt.run.language, language);
+        const result = await finishFreeRun(identities.pupil, attempt);
+        await pupilPage.getByText('Forsøg gennemført', { exact:true }).waitFor();
+        check('Real free workspace run completed', { language, runId: result.run.id });
     }
-    phase = 'teacher-browser-result-and-isolation';
-    teacherHome = await homeFor(identities.teacher);
-    assert.equal(teacherHome.gold, 320);
-    assert.equal(teacherHome.progress.length, 0);
-    await teacherPage.goto(origin + '/spil/hjem', { waitUntil: 'domcontentloaded' });
-    await teacherPage.getByText('Prøvebolig for undervisere', { exact: true }).waitFor();
-    assert.equal(await teacherPage.locator('.task-label option:enabled').count(), 6);
-    await teacherPage.getByRole('button', { name: 'Afprøv', exact: true }).click();
-    await teacherPage.getByText('Prøvevurdering bestået', { exact: true }).waitFor();
-    await teacherPage.screenshot({ path: '/artifacts/teacher-real-worker.png', fullPage: true });
+    const refreshed = await homeFor(identities.pupil);
+    await api(identities.pupil, '/api/me/home-game/runs', 'POST', { revision: refreshed.layout.revision,
+        language:'python', task:1, assessment:true }, 400);
+    assert.equal(refreshed.gold, 10);
+    assert.deepEqual(refreshed.progress, []);
+    phase = 'teacher-workshop';
+    const question = 'Hvordan kan jeg måle forskellen, når jeg flytter lampen?';
+    await pupilPage.getByText('Spørg din lærer', { exact: true }).click();
+    await pupilPage.getByLabel('Dit spørgsmål').fill(question);
+    await pupilPage.getByRole('button', { name:'Send spørgsmål', exact:true }).click();
+    await pupilPage.getByText('Dit spørgsmål er sendt til holdets lærer.', {exact:true}).waitFor();
+    await teacherPage.goto(origin + '/teacher/home-game', { waitUntil:'domcontentloaded' });
+    await teacherPage.locator('.teacher-home select').first().selectOption(holdId);
+    await teacherPage.getByText(question, { exact:true }).waitFor();
+    await teacherPage.getByRole('link', {name:'Åbn min prøvebolig'}).click();
+    for (const id of ['starter','bip01','raymond','santa','bilbo','lupp']) {
+        if (id !== 'starter') await api(identities.teacher, '/api/me/avatars/' + id + '/unlock', 'POST',{});
+        await teacherPage.reload({ waitUntil:'domcontentloaded' });
+        await checkAvatar(teacherPage,id);
+    }
+    const teacher = await homeFor(identities.teacher);
+    assert.equal(teacher.isTeacherSandbox, true);
+    assert.equal(teacher.gold, 320);
+    assert.deepEqual(teacher.progress, []);
+    const teachStart=teacherPage.waitForResponse(r=>new URL(r.url()).pathname==='/api/me/home-game/runs' && r.request().method()==='POST');
+    await teacherPage.getByRole('button',{name:'Kør kode',exact:true}).click();
+    const trial = await teachStart;
+    assert.equal(trial.status(),202);
+    const teacherRun=await finishFreeRun(identities.teacher, await trial.json());
+    assert.equal(teacherRun.run.isTeacherSandbox,true);
+    await teacherPage.getByText('Forsøg gennemført',{exact:true}).waitFor();
+    assert.equal((await homeFor(identities.teacher)).gold,320);
+    await teacherPage.screenshot({ path: '/artifacts/workshop-teacher.png', fullPage:true });
     await api(identities.outsider, '/api/holds/' + holdId + '/home-game', 'GET', undefined, 404);
-    await api(identities.peer, '/api/me/home-game/runs/' + teacherHome.lastRun.id, 'GET', undefined, 404);
+    await api(identities.peer, '/api/me/home-game/runs/' + status.run.id, 'GET', undefined, 404);
+    await pupilPage.setViewportSize({ width:390,height:844 });
+    await pupilPage.reload({ waitUntil:'domcontentloaded' });
+    await pupilPage.getByRole('heading',{name:'Hjem.exe',exact:true}).waitFor();
+    assert.ok(await pupilPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+    await pupilPage.screenshot({ path: '/artifacts/workshop-mobile.png', fullPage:true });
     assert.deepEqual(browserErrors, [], 'Browser runtime errors');
-    check('Teacher P01–P06 passed in all three real runtimes; no teacher gold or learner progress awarded');
+    check('All six selected characters displayed, mobile layout fit viewport, and class/run authorization held');
     report.passed = true;
 } catch (error) {
     report.passed = false;

@@ -11,12 +11,12 @@ foreach (var task in HomeCatalog.Tasks)
 {
     home = task.Id switch
     {
-        "P01" => Place(home, HomeCatalog.LampId, new(new(5, 4)), 0),
-        "P02" => Place(Place(home, HomeCatalog.DeskId, new(new(2, 6)), 1),
-            HomeCatalog.LampId, new(new(3, 7)), 1),
-        "P03" => Place(home, HomeCatalog.DaylightId, new(new(7, 0), 180, new(7, 0, true)), 2),
-        "P04" => Place(home, HomeCatalog.PresenceId, new(new(2, 9), 0, new(2, 10, true)), 3),
-        "P05" => Place(home, HomeCatalog.SwitchId, new(new(8, 0), 180, new(8, 0, true)), 4),
+        "P01" => Place(home, HomeCatalog.LampId, new(new(5, 4))),
+        "P02" => Place(Place(home, HomeCatalog.DeskId, new(new(2, 6))),
+            HomeCatalog.LampId, new(new(3, 7))),
+        "P03" => Place(home, HomeCatalog.DaylightId, new(new(7, 0), 180, new(7, 0, true))),
+        "P04" => Place(home, HomeCatalog.PresenceId, new(new(2, 9), 0, new(2, 10, true))),
+        "P05" => Place(home, HomeCatalog.SwitchId, new(new(8, 0), 180, new(8, 0, true))),
         _ => home
     };
     var prerequisite = HomeRules.AssessmentPrerequisites(home, task);
@@ -63,10 +63,10 @@ return passed ? 0 : 1;
 
 void Write<T>(T value) => Console.WriteLine(JsonSerializer.Serialize(value, json));
 
-static HomeLayout Place(HomeLayout layout, string definition, HomePlacement placement, int completed)
+static HomeLayout Place(HomeLayout layout, string definition, HomePlacement placement)
 {
     var item = layout.Items.Single(candidate => candidate.DefinitionId == definition);
-    var result = HomeRules.Apply(layout, new("place", item.Id, Placement: placement), completed);
+    var result = HomeRules.Apply(layout, new("place", item.Id, Placement: placement));
     return result.Layout ?? throw new InvalidOperationException(result.Error?.Message);
 }
 

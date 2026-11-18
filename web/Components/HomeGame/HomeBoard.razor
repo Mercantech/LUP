@@ -1,206 +1,72 @@
 @using Mercantec.Tech.Contracts.HomeGame
+@using Mercantec.Tech.Web.HomeGame
 @implements IAsyncDisposable
 @inject IJSRuntime Js
 
 <div class="home-board-scroll">
-    <div class="blueprint" style="@GridStyle">
-        <span class="plan-name">Stue</span>
-        <span class="plan-scale">1 felt = 0,5 m</span>
-        <div class="home-board @(ReduceMotion ? "motion-reduced" : "")" @ref="_board" role="group" aria-label="Boligens grid. Brug piletasterne til at skifte felt.">
+    <div class="room-shell" style="@GridStyle">
+        <div class="room-wall" aria-hidden="true">
+            <img class="room-window" src="images/home-workshop/window.webp" alt="" />
+            <img class="room-ledge" src="images/home-workshop/ledge.webp" alt="" />
+        </div>
+        <div class="home-board @(ReduceMotion ? "motion-reduced" : "") @(Ghost is not null ? "placing" : "")"
+             @ref="_board" role="group" aria-label="Boligens grid. Brug piletasterne til at skifte felt.">
+            <canvas class="light-map" @ref="_canvas" aria-hidden="true"></canvas>
             @for (var y = 0; y < Layout.Grid.Rows; y++)
             {
                 @for (var x = 0; x < Layout.Grid.Columns; x++)
                 {
                     var cell = new HomeCell(x, y);
                     _occupants.TryGetValue(cell, out var item);
-                    var lux = LuxAt(cell);
-                    var cellClass = CellClass(cell, item);
-                    <button @key="cell" type="button" data-x="@x" data-y="@y" tabindex="@(cell == Cursor ? 0 : -1)"
-                            class="@cellClass" style="@CellStyle(lux)" aria-label="@CellLabel(cell, item, lux)"
+                    int? lux = _light.TryGetValue(cell, out var reading) ? reading : null;
+                    <button @key="cell" type="button" data-x="@x" data-y="@y" data-lux="@lux" tabindex="@(cell == Cursor ? 0 : -1)"
+                            class="@CellClass(cell)" aria-label="@CellLabel(cell, item, lux)"
                             @onfocus="() => Visit.InvokeAsync(cell)" @onmouseover="() => Visit.InvokeAsync(cell)"
                             @onclick="() => Activate.InvokeAsync(cell)" @onkeydown="args => OnKeyAsync(args, cell)">
-                        @if (Mode == "light")
+                        @if (Mode == "light" && lux is not null)
                         {
-                            <span class="lux-value">@lux</span>
-                        }
-                        @if (MarkDesk && cell == DeskTarget)
-                        {
-                            <span class="target-label">Bord</span>
+                            <span class="lux-value">@lux lux</span>
                         }
                     </button>
                 }
             }
-            @foreach (var item in Layout.Items.Where(item => item.Placement is not null))
+            @foreach (var item in VisibleItems)
             {
-                <div @key="item.Id" class="furniture @item.DefinitionId @(item.Id == Selected?.Id ? "selected" : "") @(IsPowered(item) ? "powered" : "")"
-                     style="@ObjectStyle(item)" aria-hidden="true">
-                    <span class="object-mark"></span>
-                    <span class="object-label">@ShortName(item.DefinitionId)</span>
+                var preview = item == Ghost;
+                var sprite = HomeRoomArt.Image(item.DefinitionId);
+                <div @key="item.Id" class="furniture @item.DefinitionId @(item.Id == Selected?.Id ? "selected" : "") @(IsPowered(item) ? "powered" : "") @(preview ? "ghost" : "")"
+                     data-item-id="@item.Id" data-rotation="@item.Placement!.Rotation" style="@ObjectStyle(item)" aria-hidden="true">
+                    @if (sprite is not null)
+                    {
+                        <img class="object-art" src="@sprite" alt="" draggable="false" />
+                    }
+                    else
+                    {
+                        <span class="wall-device"><span class="device-signal">@DeviceMark(item.DefinitionId)</span></span>
+                    }
                 </div>
             }
             @if (Avatar is { } avatar)
             {
-                <div class="resident" style="@CellPosition(avatar)" aria-hidden="true" title="Din avatar">
-                    <AvatarIcon Size="30" Decorative="true" />
+                <div class="resident" style="@ResidentStyle(avatar)" role="img" aria-label="@($"Din avatar: {Character.Name}")"
+                     data-avatar-id="@Character.Id" data-activity="@Activity">
+                    @if (Character.SpriteAssetRoot is not null || Character.Id == AvatarCatalog.StarterId)
+                    {
+                        <AvatarSprite AvatarId="@Character.Id" Animation="@Animation" Mini="true" Paused="@ReduceMotion" />
+                    }
+                    else
+                    {
+                        <AvatarIcon AvatarId="@Character.Id" Size="96" Decorative="true" />
+                    }
                 </div>
             }
-            <span class="entrance" aria-hidden="true" style="@CellPosition(Layout.Grid.Entry)">»</span>
+            @if (Mode == "light" && _reading is { } point)
+            {
+                <span class="reading-probe @(point.Cell.X >= Layout.Grid.Columns - 2 ? "near-right" : "") @(point.Cell.Y < 2 ? "near-top" : "")"
+                      style="@CellPosition(point.Cell)" data-lux="@point.Lux" data-reading-x="@point.Cell.X" data-reading-y="@point.Cell.Y"
+                      aria-label="@($"Lys ved bordet: {point.Lux} lux")"><span>@point.Lux lux</span></span>
+            }
+            <span class="entrance" style="@CellPosition(Layout.Grid.Entry)" aria-hidden="true"></span>
         </div>
-        <span class="plan-entry">Indgang</span>
-        <span class="plan-size">@Layout.Grid.Columns × @Layout.Grid.Rows felter</span>
     </div>
 </div>
-
-@code {
-    [Parameter, EditorRequired] public HomeLayout Layout { get; set; } = default!;
-    [Parameter] public HomeWorldSnapshot? Snapshot { get; set; }
-    [Parameter] public HomeCell? Avatar { get; set; }
-    [Parameter] public HomeItem? Selected { get; set; }
-    [Parameter] public HomeItem? Ghost { get; set; }
-    [Parameter] public HomeCell Cursor { get; set; }
-    [Parameter] public string Mode { get; set; } = "normal";
-    [Parameter] public int Zoom { get; set; } = 100;
-    [Parameter] public bool InvalidPreview { get; set; }
-    [Parameter] public bool MarkDesk { get; set; }
-    [Parameter] public bool ReduceMotion { get; set; }
-    [Parameter] public EventCallback<HomeCell> Visit { get; set; }
-    [Parameter] public EventCallback<HomeCell> Activate { get; set; }
-    [Parameter] public EventCallback Turn { get; set; }
-    [Parameter] public EventCallback Cancel { get; set; }
-
-    private static readonly HomeCell DeskTarget = new(2, 6);
-    private readonly Dictionary<HomeCell, HomeItem> _occupants = [];
-    private HashSet<HomeCell> _range = [];
-    private HashSet<HomeCell> _ghost = [];
-    private HashSet<HomeCell> _selected = [];
-    private HashSet<HomeCell> _blocked = [];
-    private HashSet<HomeCell> _reachable = [];
-    private HashSet<HomeCell> _interactions = [];
-    private Dictionary<HomeCell, int> _light = [];
-    private ElementReference _board;
-    private IJSObjectReference? _module;
-
-    private string GridStyle => $"--columns:{Layout.Grid.Columns};--rows:{Layout.Grid.Rows};width:{Zoom}%;min-width:340px";
-
-    protected override void OnParametersSet()
-    {
-        _occupants.Clear();
-        _blocked = HomeRules.WalkBlockers(Layout).ToHashSet();
-        _reachable = Mode == "walk" ? HomeRules.Reachable(Layout).ToHashSet() : [];
-        _interactions.Clear();
-        _light = Snapshot?.LightMap.ToDictionary(reading => reading.Cell, reading => reading.Lux) ?? [];
-        foreach (var item in Layout.Items.Where(item => item.Placement is not null)
-                     .OrderBy(item => item.DefinitionId == "rug_basic" ? 0 : 1))
-        {
-            foreach (var cell in Cells(item))
-            {
-                _occupants[cell] = item;
-            }
-            if (Mode == "walk") _interactions.UnionWith(HomeRules.Interactions(item).Where(_reachable.Contains));
-        }
-        _range = Mode == "range" && Selected?.Placement is not null
-            ? HomeRules.Range(Layout, Selected).ToHashSet()
-            : [];
-        _ghost = Ghost?.Placement is null ? [] : Cells(Ghost).ToHashSet();
-        _selected = Selected?.Placement is null ? [] : Cells(Selected).ToHashSet();
-    }
-
-    private static IReadOnlyCollection<HomeCell> Cells(HomeItem item)
-    {
-        var cells = HomeRules.Footprint(item).ToArray();
-        return cells.Length == 0 && item.Placement is { } placement ? [placement.Anchor] : cells;
-    }
-
-    private static string ShortName(string definition) => definition switch
-    {
-        "desk_basic" => "Skrivebord",
-        "sofa_basic" => "Sofa",
-        "rug_basic" => "",
-        "lamp_basic" => "",
-        "daylight_sensor" => "LYS",
-        "presence_sensor" => "NÆR",
-        "switch_basic" => "AUTO",
-        "home_controller" => "CPU",
-        _ => ""
-    };
-
-    private string ObjectStyle(HomeItem item)
-    {
-        var cells = Cells(item);
-        var x = cells.Min(cell => cell.X);
-        var y = cells.Min(cell => cell.Y);
-        return $"{CellPosition(new(x, y))};--w:{cells.Max(cell => cell.X) - x + 1};--h:{cells.Max(cell => cell.Y) - y + 1};--angle:{item.Placement!.Rotation}deg";
-    }
-
-    private static string CellPosition(HomeCell cell) => $"--x:{cell.X};--y:{cell.Y}";
-
-    private string CellClass(HomeCell cell, HomeItem? item)
-    {
-        var classes = new List<string> { "tile" };
-        if (item is not null) classes.Add("occupied");
-        if (_selected.Contains(cell)) classes.Add("chosen");
-        if (_range.Contains(cell)) classes.Add("in-range");
-        if (_ghost.Contains(cell)) classes.Add(InvalidPreview ? "bad-preview" : "good-preview");
-        if (Mode == "walk" && _blocked.Contains(cell)) classes.Add("blocked");
-        if (Mode == "walk" && !_blocked.Contains(cell) && !_reachable.Contains(cell)) classes.Add("unreachable");
-        if (Mode == "walk" && _interactions.Contains(cell) && !_blocked.Contains(cell)) classes.Add("interaction");
-        if (Mode == "light") classes.Add("measuring");
-        if (Mode == "normal" && LuxAt(cell) > (Snapshot?.AmbientLux ?? 40)) classes.Add("lit");
-        if (MarkDesk && cell.Y == DeskTarget.Y && cell.X is 2 or 3) classes.Add("desk-target");
-        if (cell == Layout.Grid.Entry) classes.Add("entry");
-        return string.Join(' ', classes);
-    }
-
-    private string CellLabel(HomeCell cell, HomeItem? item, int lux)
-    {
-        var details = new List<string> { $"Felt {cell.X}, {cell.Y}" };
-        if (item is not null) details.Add(item.Name);
-        if (cell == Avatar) details.Add("Din avatar");
-        if (cell == Layout.Grid.Entry) details.Add("Indgang");
-        if (Mode == "light") details.Add($"{lux} lux");
-        if (_range.Contains(cell)) details.Add("Inden for rækkevidde");
-        if (Mode == "walk" && _blocked.Contains(cell)) details.Add("Blokeret");
-        if (Mode == "walk" && !_blocked.Contains(cell) && !_reachable.Contains(cell)) details.Add("Ingen adgang fra indgangen");
-        if (Mode == "walk" && _interactions.Contains(cell)) details.Add("Interaktionsfelt");
-        return string.Join(". ", details);
-    }
-
-    private bool IsPowered(HomeItem item) => Snapshot?.PoweredAliases.Contains(item.Alias) == true;
-    private int LuxAt(HomeCell cell) => _light.GetValueOrDefault(cell, Snapshot?.AmbientLux ?? 40);
-
-    private static string CellStyle(int lux)
-    {
-        var alpha = (.12 + Math.Min(lux, 650) / 650d * .68).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-        return $"--light:{alpha}";
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender) return;
-        _module ??= await Js.InvokeAsync<IJSObjectReference>("import", "./js/home-game.js");
-        await _module.InvokeVoidAsync("keepArrowKeysOnBoard", _board);
-    }
-
-    private async Task OnKeyAsync(KeyboardEventArgs args, HomeCell cell)
-    {
-        if (args.Key is "r" or "R") { await Turn.InvokeAsync(); return; }
-        if (args.Key == "Escape") { await Cancel.InvokeAsync(); return; }
-        var next = args.Key switch
-        {
-            "ArrowUp" => cell with { Y = Math.Max(0, cell.Y - 1) },
-            "ArrowRight" => cell with { X = Math.Min(Layout.Grid.Columns - 1, cell.X + 1) },
-            "ArrowDown" => cell with { Y = Math.Min(Layout.Grid.Rows - 1, cell.Y + 1) },
-            "ArrowLeft" => cell with { X = Math.Max(0, cell.X - 1) },
-            _ => cell
-        };
-        if (next == cell) return;
-        await Visit.InvokeAsync(next);
-        _module ??= await Js.InvokeAsync<IJSObjectReference>("import", "./js/home-game.js");
-        await _module.InvokeVoidAsync("focusCell", _board, next.X, next.Y);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_module is not null) await _module.DisposeAsync();
-    }
-}

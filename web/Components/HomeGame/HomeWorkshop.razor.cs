@@ -27,19 +27,18 @@ public partial class HomeWorkshop : IAsyncDisposable
     private HomeGameState? _state;
     private HomeRunStatus? _run;
     private HomeReplayPlayer? _replay;
+    private HomeLayout? _previewLayout;
+    private HomeWorldSnapshot? _previewLighting;
     private HomeBuildAction? _placement;
     private HomeBuildRequest? _retryBuild;
     private HomeItem? _ghost;
     private HomeCell _cursor = new(0, 4);
-    private string _mode = "build";
+    private string _mode = "test";
     private string _mobilePane = "plan";
     private string _shelf = "stock";
-    private string _overlay = "normal";
+    private string _overlay = "light";
     private string _language = "python";
-    private string _scenario = "free";
     private string _intent = "read";
-    private int _task = 1;
-    private int _split = 55;
     private int _zoom = 100;
     private int _fontSize = 15;
     private int _speed = 1;
@@ -65,11 +64,34 @@ public partial class HomeWorkshop : IAsyncDisposable
     private CancellationToken Token => _lifetime.Token;
     private HomeLayout DisplayLayout => _replay?.Layout ?? _state!.Layout;
     private HomeWorldSnapshot? Snapshot => _replay?.Snapshot ?? (_stale ? null : _run?.Snapshot);
+    private HomeWorldSnapshot LightingSnapshot
+    {
+        get
+        {
+            if (Snapshot is { } snapshot) return snapshot;
+            if (_previewLighting is null || !ReferenceEquals(_previewLayout, DisplayLayout))
+            {
+                _previewLayout = DisplayLayout;
+                var simulation = new HomeSimulation(DisplayLayout, HomeCatalog.FreeScenario, "room-preview");
+                simulation.BeginTick();
+                _previewLighting = simulation.Snapshot(includeLightMap: true);
+            }
+            return _previewLighting;
+        }
+    }
+
     private HomeCell? AvatarCell => Snapshot is { } snapshot ? snapshot.AvatarCell : DisplayLayout.Grid.Entry;
     private HomeItem? Selected => _state?.Layout.Items.FirstOrDefault(item => item.Id == _selectedId);
     private HomeItem? BoardSelection => _replay is null ? Selected : DisplayLayout.Items.FirstOrDefault(item => item.Id == _selectedId);
-    private HomeLesson Lesson => HomeLessons.All[_task - 1];
-    private IReadOnlyList<string> AvailableScenarios => HomeCatalog.Tasks[_task - 1].ScenarioIds;
+    private bool HasDesk => DisplayLayout.Items.Any(item => item.Role == HomeCatalog.PrimaryDeskRole && item.Placement is not null);
+    private string Alias(string definition, string fallback) => DisplayLayout.Items
+        .Where(item => item.DefinitionId == definition).OrderByDescending(item => item.Placement is not null)
+        .ThenByDescending(item => item.Starter).Select(item => item.Alias).FirstOrDefault() ?? fallback;
+    private string LampAlias => Alias(HomeCatalog.LampId, "desk_lamp");
+    private string DaylightAlias => Alias(HomeCatalog.DaylightId, "daylight");
+    private string LampExample => HomeCodeGuide.Lamp(_language, LampAlias);
+    private string DaylightExample => HomeCodeGuide.Daylight(_language, LampAlias, DaylightAlias);
+
     private IEnumerable<HomeItemDefinition> ShopItems => HomeCatalog.Items.Where(item => item.Purchasable);
     private IEnumerable<HomeItem> ShelfItems => DisplayLayout.Items.Where(item => (item.Placement is null) == (_shelf == "stock"));
     private bool HasSwitch => DisplayLayout.Items.Any(item => item.DefinitionId == HomeCatalog.SwitchId && item.Placement is not null);
@@ -81,18 +103,12 @@ public partial class HomeWorkshop : IAsyncDisposable
     private string SaveStatus => IsDirty() ? (_working ? "Gemmer ændringer…" : "Lokale ændringer") :
         _state?.Drafts.Any(draft => draft.Language == _language) == true ? "Gemt på LUP" : "Udkast";
     private string PlacementName => _ghost?.Name ?? HomeCatalog.Definition(_placement?.DefinitionId)?.Name ?? Selected?.Name ?? "Genstand";
-    private string ScenarioLabel => _run is { } run && run.ScenarioIndex >= 0 && run.ScenarioIndex < run.ScenarioIds.Count
-        ? ScenarioName(run.ScenarioIds[run.ScenarioIndex])
-        : "";
-
     private string RunLabel => _stale && IsUnfinished(_run?.Run.Status) ? "Tidligere forsøg" : _run?.Run.Status switch
     {
         "queued" => "I kø",
         "compiling" => "Gør programmet klar",
         "running" => "Kører",
         "paused" => "Pauset",
-        "passed" => _run?.Run.IsTeacherSandbox == true ? "Prøvevurdering bestået" : "Opgave bestået",
-        "failed" => "Opgaven mangler et eller flere mål",
         "completed" => "Forsøg gennemført",
         "cancelled" => "Forsøg stoppet",
         "expired" => "Forsøget er udløbet",
@@ -100,9 +116,7 @@ public partial class HomeWorkshop : IAsyncDisposable
         _ => "Klar"
     };
 
-    private static bool IsUnfinished(string? status) => status is "queued" or "compiling" or "running" or "paused";
-
-    private string Activity => Snapshot?.Activity switch
+    private static string ActivityLabel(string activity) => activity switch
     {
         "reading" => "Din avatar læser",
         "walking" => "Din avatar er på vej",
@@ -110,6 +124,8 @@ public partial class HomeWorkshop : IAsyncDisposable
         "away" => "Din avatar er ikke hjemme",
         _ => "Din avatar er hjemme"
     };
+
+    private static bool IsUnfinished(string? status) => status is "queued" or "compiling" or "running" or "paused";
 
     protected override Task OnInitializedAsync() => ReloadAsync();
 
@@ -124,13 +140,10 @@ public partial class HomeWorkshop : IAsyncDisposable
         {
             if (InitialView == "butik")
             {
+                _mode = "build";
                 _shelf = "shop";
                 _mobilePane = "work";
             }
-            var suggestion = _state.Classrooms.Select(room => room.SuggestedTask).FirstOrDefault(task => task > 0);
-            _task = suggestion > 0 && suggestion <= _state.HighestAvailableTask &&
-                    !_state.Progress.Any(progress => progress.Task == suggestion)
-                ? suggestion : Math.Min(_state.CompletedTasks + 1, HomeLessons.All.Count);
             var suggestedLanguage = _state.Classrooms.FirstOrDefault()?.SuggestedLanguage ?? _state.LastRun?.Language;
             if (suggestedLanguage is not null && Languages.Contains(suggestedLanguage))
                 _language = suggestedLanguage;
@@ -138,7 +151,7 @@ public partial class HomeWorkshop : IAsyncDisposable
             await RestoreDraftsAsync();
         }
 
-        _run = _state.LastRun is { } summary ? await Client.RunAsync(Subject, summary.Id, Token) : null;
+        _run = _state.LastRun is { Assessment: false } summary ? await Client.RunAsync(Subject, summary.Id, Token) : null;
         _replay = null;
         _stale = _run is { } run && !MatchesCurrentVersion(run.Run);
         if (_run is { } current)
@@ -146,9 +159,7 @@ public partial class HomeWorkshop : IAsyncDisposable
             _speed = current.Speed;
             if (IsActive)
             {
-                _task = current.Run.Task;
                 _language = current.Run.Language;
-                _scenario = current.Run.Assessment ? "free" : current.ScenarioIds.FirstOrDefault() ?? "free";
                 _mode = "test";
             }
         }
@@ -163,9 +174,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     private bool MatchesCurrentVersion(HomeRunSummary run)
     {
         var state = _state!;
-        var sameRevision = run.Revision == state.Layout.Revision ||
-            (run.Revision + 1 == state.Layout.Revision && state.Progress.Any(progress => progress.RunId == run.Id));
-        return sameRevision && state.Drafts.Any(draft => draft.VersionId == run.ProgramVersionId);
+        return run.Revision == state.Layout.Revision && state.Drafts.Any(draft => draft.VersionId == run.ProgramVersionId);
     }
 
     private async Task PerformAsync(Func<Task> action)
@@ -205,21 +214,6 @@ public partial class HomeWorkshop : IAsyncDisposable
         });
     }
 
-    private void ChooseTask(ChangeEventArgs args)
-    {
-        if (!int.TryParse(args.Value?.ToString(), out var task) || task < 1 || task > _state!.HighestAvailableTask) return;
-        _task = task;
-        if (!AvailableScenarios.Contains(_scenario)) _scenario = "free";
-    }
-
-    private void NextTask()
-    {
-        _task++;
-        _scenario = "free";
-        _mode = "build";
-        _shelf = "stock";
-    }
-
     private async Task ChangeModeAsync(string mode)
     {
         if (mode == "build" && IsAdvancing)
@@ -230,18 +224,14 @@ public partial class HomeWorkshop : IAsyncDisposable
         if (mode != "build") CancelPlacement();
         if (mode != "test") _replay = null;
         _mode = mode;
+        _overlay = mode == "build" ? "normal" : "light";
         _mobilePane = "work";
     }
 
-    private bool IsLocked(string definitionId) =>
-        HomeCatalog.Definition(definitionId) is { } definition && definition.UnlockAfter >= _state!.HighestAvailableTask;
-
-    private bool CanBuy(HomeItemDefinition definition) =>
-        !IsLocked(definition.Id) && (_state!.IsTeacherSandbox || _state.Gold >= definition.Price);
+    private bool CanBuy(HomeItemDefinition definition) => _state!.IsTeacherSandbox || _state.Gold >= definition.Price;
 
     private string PriceLabel(HomeItemDefinition definition)
     {
-        if (IsLocked(definition.Id)) return $"Åbner ved P{definition.UnlockAfter + 1:00}";
         if (_state!.IsTeacherSandbox) return "Tilføj gratis";
         return CanBuy(definition) ? $"{definition.Price} guld" : $"Mangler {definition.Price - _state.Gold} guld";
     }
@@ -338,7 +328,7 @@ public partial class HomeWorkshop : IAsyncDisposable
         var placement = new HomePlacement(_cursor, rotation, mount);
         _placement = action with { Placement = placement };
         _ghost = new("preview", definition.Id, "", Selected?.Name ?? definition.Name, placement);
-        var result = HomeRules.Apply(DisplayLayout, _placement, _state.HighestAvailableTask - 1, IsActive ? AvatarCell : null);
+        var result = HomeRules.Apply(DisplayLayout, _placement, avatarCell: IsActive ? AvatarCell : null, freePurchase: _state.IsTeacherSandbox);
         _previewError = result.Error?.Message;
     }
 
@@ -385,7 +375,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     });
 
     private string SavedSource(string language) => _state?.Drafts.FirstOrDefault(draft => draft.Language == language)?.Source
-        ?? HomeLessons.Starter(language);
+        ?? HomeCodeGuide.Lamp(language, LampAlias);
     private string DraftSource(string language) => _drafts.GetValueOrDefault(language) ?? SavedSource(language);
     private bool IsDirty() => !string.Equals(Source, SavedSource(_language), StringComparison.Ordinal);
     private Task ChooseLanguageAsync(ChangeEventArgs args)
@@ -480,11 +470,11 @@ public partial class HomeWorkshop : IAsyncDisposable
         await RemoveDraftAsync(language);
     }
 
-    private async Task ApplySkeletonAsync(string source)
+    private async Task ApplyExampleAsync(string source)
     {
         await ChangeModeAsync("code");
         if (Source == source) return;
-        if (Source != HomeLessons.Starter(_language) &&
+        if (Source != LampExample &&
             !await Js.InvokeAsync<bool>("confirm", Token, "Erstat koden i editoren med den valgte starterkode?"))
             return;
         await EditSourceAsync(source);
@@ -512,22 +502,20 @@ public partial class HomeWorkshop : IAsyncDisposable
     private Task SaveReflectionAsync() => PerformAsync(async () =>
     {
         _state = await Client.ReflectAsync(Subject, new(_state!.Layout.Revision, _reflection), Token);
-        _notice = "Din refleksion er gemt.";
+        _notice = "Dine noter er gemt.";
     });
 
     private Task SendHelpAsync() => PerformAsync(async () =>
     {
         _helpOperation ??= Guid.NewGuid();
-        await Client.HelpAsync(Subject, new(_helpOperation.Value, _helpHold, _task, _question), Token);
+        await Client.HelpAsync(Subject, new(_helpOperation.Value, _helpHold, 0, _question), Token);
         _helpOperation = null;
         _question = "";
         _notice = "Dit spørgsmål er sendt til holdets lærer.";
     });
 
-    private Task StartPracticeAsync() => StartAsync(false);
-    private Task StartAssessmentAsync() => StartAsync(true);
-
-    private Task RestartAsync() => _run is { } run ? StartAsync(run.Run.Assessment, run) : Task.CompletedTask;
+    private Task RunCodeAsync() => StartAsync();
+    private Task RestartAsync() => _run is { } run ? StartAsync(run) : Task.CompletedTask;
 
     private async Task GoToControllerAsync()
     {
@@ -537,11 +525,11 @@ public partial class HomeWorkshop : IAsyncDisposable
             Select(item);
     }
 
-    private Task StartAsync(bool assessment, HomeRunStatus? previous = null) => PerformAsync(async () =>
+    private Task StartAsync(HomeRunStatus? previous = null) => PerformAsync(async () =>
     {
         CancelPlacement();
         _replay = null;
-        _mode = "test";
+        _overlay = "light";
         _mobilePane = "work";
         if (!HasController)
             throw new HomeGameRequestException("Placér hjemmecontrolleren fra lageret for at køre kode.");
@@ -552,15 +540,11 @@ public partial class HomeWorkshop : IAsyncDisposable
                 throw new HomeGameRequestException("Kodeafvikling er utilgængelig lige nu. Prøv igen senere.");
         }
         var language = previous?.Run.Language ?? _language;
-        var task = previous?.Run.Task ?? _task;
         if (IsActive) await SendControlAsync(new("stop"));
         await SaveLanguageAsync(language, !_state.Drafts.Any(draft => draft.Language == language));
-        _run = await Client.StartAsync(Subject, new(_state.Layout.Revision, language, task, _intent,
-            assessment, assessment ? null : previous?.ScenarioIds.FirstOrDefault() ?? _scenario, _speed,
-            RestartRunId: previous?.Run.Id), Token);
-        _task = task;
+        _run = await Client.StartAsync(Subject, new(_state.Layout.Revision, language, Task: 0, Intent: _intent,
+            Assessment: false, ScenarioId: "free", Speed: _speed, RestartRunId: previous?.Run.Id), Token);
         _language = language;
-        if (!assessment) _scenario = _run.ScenarioIds.FirstOrDefault() ?? "free";
         _stale = false;
         Drive();
     });
@@ -637,15 +621,6 @@ public partial class HomeWorkshop : IAsyncDisposable
                 var status = await Client.StepAsync(Subject, id, new(current.Sequence, current.Speed), Token);
                 if (_run?.Run.Id != id || generation != _driverVersion) return;
                 if (status.Sequence >= _run.Sequence) _run = status;
-                if (status.Run.Status == "passed" && _state is not null)
-                {
-                    _state = await Client.LoadAsync(Subject, Token);
-                    if (!status.Run.IsTeacherSandbox && _state.HighestAvailableTask > _task &&
-                        !_state.Progress.Any(progress => progress.Task == _task + 1))
-                        _notice = $"Opgave P{_task + 1:00} er åbnet.";
-                    if (status.GoldAwarded > 0)
-                        await World.ReloadAvatarProfileAsync();
-                }
                 await InvokeAsync(StateHasChanged);
             }
         }
@@ -658,9 +633,6 @@ public partial class HomeWorkshop : IAsyncDisposable
             await InvokeAsync(StateHasChanged);
         }
     }
-
-    private static string ScenarioName(string id) => HomeCatalog.Scenarios.GetValueOrDefault(id)?.Title
-        ?? (id == "free" ? HomeCatalog.FreeScenario.Title : id);
 
     private static string ValueText(JsonElement value) => value.ValueKind switch
     {

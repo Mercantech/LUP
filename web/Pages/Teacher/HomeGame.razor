@@ -18,7 +18,7 @@ else if (!Auth.IsAuthenticated)
 }
 else if (Redirect.ShowsTeacherChrome && Auth.Subject is { Length: > 0 } subject)
 {
-    <HomeTeacherWorkshop Subject="@subject" InitialHold="@HoldId" @key="subject" />
+    <HomeTeacherWorkshop Subject="@subject" InitialHold="@HoldId" @key="(subject, HoldId)" />
 }
 else
 {
