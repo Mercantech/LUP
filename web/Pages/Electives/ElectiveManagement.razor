@@ -126,19 +126,25 @@
             @foreach (var item in FilteredItems)
             {
                 <li @key="item.Id">
-                    <div class="elective-admin-row-copy">
-                        <h3>@item.Title</h3>
-                        <p>
-                            <strong>@ElectiveDisplay.Status(item.Status)</strong>
-                            @if (ElectiveDisplay.Period(item.StartsOn, item.EndsOn) is { } period)
-                            {
-                                <span> · @period</span>
-                            }
-                            @if (item.Status != "template")
-                            {
-                                <span> · @item.EnrollmentCount @(item.Capacity is { } capacity ? $"af {capacity} pladser optaget" : "pladser optaget")</span>
-                            }
-                        </p>
+                    <div class="elective-admin-item">
+                        @if (ElectivePackage.ForElective(item) is { } package)
+                        {
+                            <img class="elective-admin-banner" src="@package.ImageUrl" alt="" width="96" height="64" loading="lazy" />
+                        }
+                        <div class="elective-admin-row-copy">
+                            <h3>@item.Title</h3>
+                            <p>
+                                <strong>@ElectiveDisplay.Status(item.Status)</strong>
+                                @if (ElectiveDisplay.Period(item.StartsOn, item.EndsOn) is { } period)
+                                {
+                                    <span> · @period</span>
+                                }
+                                @if (item.Status != "template")
+                                {
+                                    <span> · @item.EnrollmentCount @(item.Capacity is { } capacity ? $"af {capacity} pladser optaget" : "pladser optaget")</span>
+                                }
+                            </p>
+                        </div>
                     </div>
                     <div class="actions">
                         <button type="button" class="secondary" aria-label="@($"Redigér {item.Title}")" disabled="@(_busy || _rosterSaving)" @onclick="() => OpenEditor(Draft.ForEdit(item))">Redigér</button>

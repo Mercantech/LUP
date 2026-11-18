@@ -3,6 +3,10 @@
 @implements IDisposable
 
 <article class="elective-card" aria-labelledby="@($"elective-{Item.Id:N}")">
+    @if (ElectivePackage.ForElective(Item) is { } package)
+    {
+        <img class="elective-card-banner" src="@package.ImageUrl" alt="" width="600" height="400" loading="lazy" />
+    }
     <div class="elective-card-top">
         @if (Item.Status != "template")
         {

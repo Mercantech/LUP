@@ -8,6 +8,17 @@
     background: var(--paper);
 }
 
+.elective-card-banner {
+    display: block;
+    width: calc(100% + 34px);
+    height: auto;
+    aspect-ratio: 3 / 2;
+    max-height: 250px;
+    margin: -17px -17px 0;
+    border-radius: 11px 11px 0 0;
+    object-fit: cover;
+}
+
 .elective-card h3 {
     margin: 0;
     font-size: 1.12rem;

@@ -82,6 +82,23 @@
     overflow-wrap: anywhere;
 }
 
+.elective-admin-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.elective-admin-banner {
+    flex: none;
+    width: clamp(60px, 16vw, 96px);
+    height: auto;
+    aspect-ratio: 3 / 2;
+    align-self: center;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
 .elective-admin-error {
     padding-inline-start: 10px;
     border-inline-start: 3px solid var(--blue);
