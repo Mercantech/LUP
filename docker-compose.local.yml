@@ -10,6 +10,11 @@ services:
     ports:
       - "3000:3000"
   api:
+    networks:
+      home-runner-control: !reset null
+    volumes:
+      - type: tmpfs
+        target: /run/lup-home-game
     environment:
       Rost__Enabled: ${ROST_ENABLED:-true}
       Rost__BaseUrl: ${ROST_BASE_URL:-http://host.docker.internal:8091}
@@ -33,3 +38,7 @@ networks:
       config: !override
         - subnet: ${LUP_PRIVATE_SUBNET:-}
   dokploy-network: !reset null
+  home-runner-control: !reset null
+
+volumes:
+  lup-home-game-connection: !reset null

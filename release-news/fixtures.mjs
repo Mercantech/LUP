@@ -1,4 +1,6 @@
 /** Fictional, deterministic browser data. This module never reads environment secrets or calls a network. */
+import homeGame from './home-game-fixture.cjs';
+
 export const FIXED_TIME = '2026-11-09T09:00:00.000Z';
 export const fixtureId = number => `${String(number).padStart(8, '0')}-0000-4000-8000-000000000001`;
 export const ids = Object.freeze({ workspace: fixtureId(11), hold: fixtureId(22), course: fixtureId(33),
@@ -108,6 +110,7 @@ export function fixtureResponse(urlLike, method = 'GET') {
   if (p === 'me') return json({ sub: T, name: 'Underviser QA', email: 'underviser@example.test', roles: ['Teacher'] });
   if (p === 'me/profile') return json({ displayName: 'Underviser QA' });
   if (p === 'me/avatars') return json(avatarProfile);
+  if (p === 'me/home-game') return json(homeGame.homeGameFixture());
   if (p === 'me/actions') return json({ generatedAtUtc: stamp, items: actionItems });
   if (p === 'me/actions/read') return json({});
   if (p === 'gifts' || p === 'gifts/inbox') return json({ received: [], sent: [], unopenedCount: 0 });

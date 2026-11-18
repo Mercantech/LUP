@@ -2,12 +2,17 @@ using System.Security.Claims;
 using Mercantec.Tech.Api.Controllers;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
+using Mercantec.Tech.Api.HomeGame;
 using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Contracts;
+using Mercantec.Tech.Contracts.HomeGame;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Mercantec.Tech.Api.Tests;
 
@@ -85,6 +90,89 @@ public sealed class LearningSubmissionTests : IAsyncLifetime
         Assert.Equal("Flot løsning", Assert.Single(Assert.Single(byPeer.Revisions).Feedback).Text);
         Assert.Equal(approved.Version, byPeer.Version);
         Assert.IsType<NotFoundResult>(await Submissions(stranger).Get(submitted.Id, default));
+    }
+
+    [Fact]
+    public async Task ApprovalPaysFrozenQuestParticipantsOnceThroughTheSharedWallet()
+    {
+        const int originalGold = 15;
+        db.AvatarProfiles.Add(new AvatarProfile { UserSub = student, Gold = originalGold });
+        await db.SaveChangesAsync();
+        using var services = new ServiceCollection().AddHttpClient().BuildServiceProvider();
+        var options = Options.Create(new HomeGameOptions());
+        var runner = new HomeRunnerClient(services.GetRequiredService<IHttpClientFactory>(), options);
+        using var runs = new HomeRunCoordinator(services.GetRequiredService<IServiceScopeFactory>(), runner,
+            NullLogger<HomeRunCoordinator>.Instance);
+        var home = As(new HomeGameController(db, new HomeGameStore(db), runs, runner, options), student);
+        home.Request.Headers["X-LUP-Apartment-Subject"] = student.ToString();
+        var before = Value<HomeGameState>((await home.Get(default)).Result!);
+        var price = HomeCatalog.Definition(HomeCatalog.RugId)!.Price;
+        var purchase = new HomeBuildRequest(Guid.NewGuid(), before.Layout.Revision,
+            new("buy", DefinitionId: HomeCatalog.RugId, Placement: new HomePlacement(new HomeCell(2, 2))));
+        Assert.Equal(originalGold, before.Gold);
+        Assert.Equal(422, Assert.IsAssignableFrom<ObjectResult>((await home.Build(purchase, default)).Result).StatusCode);
+
+        var group = await Group();
+        var quest = await Quest("group");
+        var draft = await Draft(quest, group.Id);
+        var submitted = Value<SubmissionView>(await Submissions(student).Submit(draft.Id, new(draft.Version), default));
+        var revision = Assert.Single(submitted.Revisions);
+        var current = Assert.Single(Value<LearningGroupView[]>(await Groups().List(holdId, default)));
+        await Groups().Update(group.Id, new(holdId, group.Name, [studentMember, strangerMember], current.Version), default);
+
+        var reviewer = Submissions(teacher, true);
+        var note = Value<SubmissionView>(await reviewer.Feedback(submitted.Id,
+            new(revision.Id, submitted.Version, "Kommentar før bedømmelse", null, null, []), default));
+        Assert.Empty(await db.QuestGoldAwards.ToListAsync());
+        var approved = Value<SubmissionView>(await reviewer.Feedback(note.Id,
+            new(revision.Id, note.Version, "Godkendt", null, "approved", []), default));
+        await reviewer.Feedback(approved.Id,
+            new(revision.Id, approved.Version, "Stadig godkendt", null, "approved", []), default);
+
+        var awards = await db.QuestGoldAwards.AsNoTracking().ToListAsync();
+        Assert.Equal(new[] { student, peer }.Order(), awards.Select(award => award.UserSub).Order());
+        Assert.All(awards, award =>
+        {
+            Assert.Equal(quest.Id, award.QuestId);
+            Assert.Equal(QuestRewards.GoldOnApproval, award.Gold);
+            Assert.Equal(approved.Revisions.Single().Feedback.Single(feedback => feedback.Decision == "approved").Id,
+                award.FeedbackId);
+        });
+        var balances = await db.AvatarProfiles.AsNoTracking().ToDictionaryAsync(profile => profile.UserSub);
+        Assert.Equal(originalGold + QuestRewards.GoldOnApproval, balances[student].Gold);
+        Assert.Equal(AvatarEconomy.InitialGold + QuestRewards.GoldOnApproval, balances[peer].Gold);
+        Assert.False(balances.ContainsKey(stranger));
+        Assert.False(balances.ContainsKey(teacher));
+        var after = Value<HomeGameState>((await home.Get(default)).Result!);
+        Assert.Equal(originalGold + QuestRewards.GoldOnApproval, after.Gold);
+        var bought = Value<HomeGameState>((await home.Build(purchase, default)).Result!);
+        Assert.Equal(after.Gold - price, bought.Gold);
+        var avatar = await As(new AvatarsController(db), student).Get(default);
+        Assert.Equal(bought.Gold, Value<AvatarProfileDto>(avatar.Result!).Gold);
+    }
+
+    [Fact]
+    public async Task ApprovalAndAwardRollbackTogetherWhenOneWalletCannotBeCredited()
+    {
+        db.AvatarProfiles.AddRange(
+            new AvatarProfile { UserSub = student, Gold = 35 },
+            new AvatarProfile { UserSub = peer, Gold = int.MaxValue });
+        await db.SaveChangesAsync();
+        var group = await Group();
+        var draft = await Draft(await Quest("group"), group.Id);
+        var submission = Value<SubmissionView>(await Submissions(student).Submit(draft.Id, new(draft.Version), default));
+        var revision = Assert.Single(submission.Revisions);
+
+        var response = await Submissions(teacher, true).Feedback(submission.Id,
+            new(revision.Id, submission.Version, "Godkendt", null, "approved", []), default);
+
+        Assert.IsType<ConflictObjectResult>(response);
+        db.ChangeTracker.Clear();
+        Assert.Equal("submitted", (await db.QuestSubmissions.SingleAsync()).State);
+        Assert.Empty(await db.SubmissionFeedback.ToListAsync());
+        Assert.Empty(await db.QuestGoldAwards.ToListAsync());
+        Assert.Equal(35, (await db.AvatarProfiles.SingleAsync(profile => profile.UserSub == student)).Gold);
+        Assert.Equal(int.MaxValue, (await db.AvatarProfiles.SingleAsync(profile => profile.UserSub == peer)).Gold);
     }
 
     [Fact]

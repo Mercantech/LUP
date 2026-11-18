@@ -3,8 +3,10 @@ using System.Text;
 using System.Text.Json;
 using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Data;
+using Mercantec.Tech.Api.HomeGame;
 using Mercantec.Tech.Api.KnowledgeChecks;
 using Mercantec.Tech.Contracts;
+using Mercantec.Tech.Contracts.HomeGame;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -96,6 +98,8 @@ public class PrivacyController(AppDbContext db) : ControllerBase
         object[] gifts = [];
         object? giftProfile = null;
         object? avatarProfile = null;
+        object[] questGoldAwards = [];
+        object? homeGame = null;
         object[] pollResponses = [];
         object[] liveCourseAnswers = [];
         object[] liveCourseVotes = [];
@@ -133,6 +137,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
         {
             dailyRankingVisible = await db.DailyGameRankingPreferences.AsNoTracking()
                 .AnyAsync(preference => preference.UserSub == giftSub, ct);
+            homeGame = await BuildHomeGameData(giftSub, ct);
             uploadedGames = await db.UploadedGames.AsNoTracking()
                 .Where(game => game.OwnerSub == giftSub && game.FileAsset.OwnerSub == giftSub)
                 .OrderBy(game => game.CreatedAtUtc)
@@ -165,6 +170,9 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                     ownedItemIds = profile.Items.OrderBy(owned => owned.ItemId).Select(owned => owned.ItemId).ToArray(),
                     revision = profile.Revision
                 }).SingleOrDefaultAsync(ct);
+            questGoldAwards = await db.QuestGoldAwards.AsNoTracking().Where(award => award.UserSub == giftSub)
+                .Select(award => (object)new { award.QuestId, award.FeedbackId, award.Gold, award.AwardedAtUtc })
+                .ToArrayAsync(ct);
             actionReadReceipts = await db.ActionReadReceipts.AsNoTracking().Where(r => r.UserSub == giftSub)
                 .Select(r => (object)new { r.UserSub, r.Kind, r.ResourceId, r.ReadAtUtc }).ToArrayAsync(ct);
             pollResponses = await db.PollResponses.AsNoTracking().Where(r => r.UserSub == giftSub)
@@ -216,6 +224,8 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 gifts,
                 giftProfile,
                 avatarProfile,
+                questGoldAwards,
+                homeGame,
                 uploadedGames,
                 wordlePlays,
                 dailyGamePlays,
@@ -237,6 +247,27 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 "Tokens, refresh-tokens og secrets eksporteres aldrig."
             }
         );
+    }
+
+    private async Task<object?> BuildHomeGameData(Guid subject, CancellationToken ct)
+    {
+        var profile = await new HomeGameStore(db).Find(subject, ct);
+        if (profile is null) return null;
+        var programs = await db.HomeGamePrograms.AsNoTracking().Where(row => row.UserSub == subject)
+            .Select(row => row.SourceJson).ToArrayAsync(ct);
+        var runs = await db.HomeGameRuns.AsNoTracking().Where(row => row.UserSub == subject)
+            .Select(row => row.RunJson).ToArrayAsync(ct);
+        var help = await db.HomeGameHelpRequests.AsNoTracking().Where(row => row.UserSub == subject)
+            .Select(row => new { row.HoldId, row.DataJson }).ToArrayAsync(ct);
+        return new
+        {
+            profile.Layout,
+            profile.Progress,
+            profile.Reflection,
+            programs = programs.Select(HomeGameJson.Read<HomeProgramDraft>),
+            runs = runs.Select(json => HomeGameJson.Read<HomeStoredRun>(json).Replay),
+            help = help.Select(row => new { row.HoldId, entry = HomeGameJson.Read<HomeHelpEntry>(row.DataJson) })
+        };
     }
 
     private static bool IsSensitiveClaim(string type)

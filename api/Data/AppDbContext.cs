@@ -21,6 +21,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureAvatarProfiles(modelBuilder);
+        ConfigureHomeGame(modelBuilder);
         ConfigureUploadedGames(modelBuilder);
         ConfigureWordle(modelBuilder);
         ConfigureDailyGames(modelBuilder);

@@ -80,6 +80,7 @@ else
                         }
                         <a class="secondary" href="@WorkspaceNavigation.Roulette(selected.Id)"><UiIcon Name="shuffle" />Grupperoulette</a>
                         <a class="secondary" href="@WorkspaceNavigation.HoldGraph(selected.Id)"><UiIcon Name="chart" />Sidegraf</a>
+                        <a class="secondary" href="@($"/teacher/home-game/{selected.Id}")"><UiIcon Name="game" />Hjem.exe</a>
                     </nav>
                 }
             }
@@ -91,6 +92,7 @@ else
                 <NavigationCard Href="/notion" Title="Notesbøger og forløbseditor" Description="Skriv, organisér og udgiv undervisningssider." Icon="file" HeadingLevel="3" />
                 <NavigationCard Href="/videnstjek?vis=administrer" Title="Videnstjek" Description="Byg øvelser, del dem med dine hold, og se, hvad eleverne har forstået." Icon="check" HeadingLevel="3" />
                 <NavigationCard Href="/teacher/polls" Title="Afstemninger" Description="@($"Stil spørgsmål og opret {PollDesign.MoodLabel} til dine hold.")" Icon="chart" HeadingLevel="3" />
+                <NavigationCard Href="/teacher/home-game" Title="Hjem.exe" Description="Åbn din prøvebolig, vælg opgaver til et hold, og se elevernes forsøg." Icon="game" HeadingLevel="3" />
                 <NavigationCard Href="/valgfag?vis=administrer" Title="Administrér valgfag" Description="Opret valgfagshold, og se tilmeldinger." Icon="sliders" HeadingLevel="3" />
                 <NavigationCard Href="/courses/template" Title="Undervisningsplaner" Description="Find undervisningsplaner, læringsmål og ugeplaner." Icon="book" HeadingLevel="3" />
                 <NavigationCard Href="/library" Title="Bibliotek" Description="Find fag, undervisningsmaterialer og projekter." Icon="folder" HeadingLevel="3" />

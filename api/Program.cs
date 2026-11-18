@@ -55,6 +55,21 @@ builder.Services.AddNotionMcp();
 // Arena rooms and simulation share a single authoritative process.
 builder.Services.AddSingleton<Mercantec.Tech.Api.Arena.ArenaRoomService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<Mercantec.Tech.Api.Arena.ArenaRoomService>());
+builder.Services.Configure<Mercantec.Tech.Api.HomeGame.HomeGameOptions>(builder.Configuration.GetSection("HomeGame"));
+const string homeGameConnectionFile = "/run/lup-home-game/connection.json";
+if (File.Exists(homeGameConnectionFile))
+{
+    var homeGameConnection = new ConfigurationBuilder()
+        .AddJsonFile(homeGameConnectionFile, optional: false, reloadOnChange: false).Build();
+    builder.Services.Configure<Mercantec.Tech.Api.HomeGame.HomeGameOptions>(homeGameConnection.GetRequiredSection("HomeGame"));
+}
+builder.Services.AddScoped<Mercantec.Tech.Api.HomeGame.HomeGameStore>();
+builder.Services.AddSingleton<Mercantec.Tech.Api.HomeGame.HomeRunnerClient>();
+builder.Services.AddSingleton<Mercantec.Tech.Api.HomeGame.HomeRunCoordinator>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<Mercantec.Tech.Api.HomeGame.HomeRunCoordinator>());
+builder.Services.AddHttpClient("home-game", client => client.Timeout = Timeout.InfiniteTimeSpan)
+    .ConfigurePrimaryHttpMessageHandler(sp => Mercantec.Tech.Api.HomeGame.HomeRunnerClient.CreateHttpHandler(
+        sp.GetRequiredService<IOptions<Mercantec.Tech.Api.HomeGame.HomeGameOptions>>().Value.RunnerCertSha256));
 builder.Services.AddScoped<Mercantec.Tech.Api.Notebooks.NotebookAccess>();
 builder.Services.AddHostedService<Mercantec.Tech.Api.References.ReferenceBackfill>();
 builder.Services.AddScoped<Mercantec.Tech.Api.Drawings.DrawingAccess>();
