@@ -1,0 +1,38 @@
+.elective-roster {
+    margin-block: 16px;
+    padding: clamp(16px, 3vw, 28px);
+    overflow-wrap: anywhere;
+}
+.roster-header, .roster-results li, .roster-list li, .roster-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+.roster-header h2, .elective-roster h3, .elective-roster p { margin: 0; }
+.roster-header p, .elective-roster small { color: var(--muted); }
+.elective-roster small { display: block; }
+.elective-roster h3 { margin-top: 22px; }
+.elective-roster p { margin-block: 8px; }
+.roster-search {
+    margin-top: 16px;
+    padding-block: 16px;
+    border-block: 1px solid var(--rule);
+}
+.roster-search .field { margin: 0 0 4px; max-width: 34rem; }
+.roster-reserved {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+.roster-reserved input { width: 18px; height: 18px; }
+.roster-results, .roster-list { list-style: none; padding: 0; margin: 8px 0 0; }
+.roster-results { border: 1px solid var(--rule); border-radius: 8px; }
+.roster-results li { padding: 8px 12px; }
+.roster-list li { padding-block: 10px; }
+.roster-results li + li, .roster-list li + li { border-top: 1px solid var(--rule); }
+.roster-confirm { justify-content: flex-start; }
+.roster-confirm span { flex-basis: 100%; }
+.elective-roster :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }

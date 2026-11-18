@@ -61,6 +61,12 @@
             <a class="secondary" href="@($"/valgfag?vis=administrer&fag={Item.Id:D}")">Opret hold ud fra faget</a>
         </div>
     }
+    else if (CanManage)
+    {
+        <div class="elective-actions">
+            <a class="secondary" href="@($"/valgfag?vis=administrer&id={Item.Id:D}&deltagere=true")"><UiIcon Name="people" /> Deltagere (@(Item.EnrollmentCount - Item.ReservedSeats))</a>
+        </div>
+    }
     else if (Item.CanEnroll || Item.CanWithdraw)
     {
         <div class="elective-actions">

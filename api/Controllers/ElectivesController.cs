@@ -12,7 +12,7 @@ namespace Mercantec.Tech.Api.Controllers;
 
 [ApiController, Authorize, Route("api/electives")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : ControllerBase
+public sealed partial class ElectivesController(AppDbContext db, TimeProvider clock) : ControllerBase
 {
     private static readonly TimeZoneInfo Copenhagen = TimeZoneInfo.FindSystemTimeZoneById("Europe/Copenhagen");
 
@@ -46,7 +46,7 @@ public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : C
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         if (request.TemplateId is Guid templateId)
         {
-            await LockAsync(templateId, ct);
+            await db.LockElectiveAsync(templateId, ct);
             if (!await IsTemplateAsync(templateId, ct))
                 return BadRequest(new { error = "invalid_elective_template" });
         }
@@ -70,7 +70,7 @@ public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : C
         // Always take both locks in the same order when an offering references a template.
         var ids = request.TemplateId is Guid templateId ? new[] { id, templateId } : [id];
         foreach (var lockId in ids.Order())
-            await LockAsync(lockId, ct);
+            await db.LockElectiveAsync(lockId, ct);
 
         var elective = await db.Electives.SingleOrDefaultAsync(e => e.Id == id, ct);
         if (elective is null) return NotFound();
@@ -82,7 +82,7 @@ public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : C
             return Conflict(new { error = "elective_template_in_use" });
 
         var count = await db.ElectiveEnrollments.CountAsync(e => e.ElectiveId == id, ct);
-        if (count > 0 && request.Status is ("draft" or "template"))
+        if (count > 0 && request.Status != elective.Status && request.Status is ("draft" or "template"))
             return Conflict(new { error = "elective_has_enrollments" });
         if (request.Capacity is int capacity && count > capacity - request.ReservedSeats)
             return Conflict(new { error = "elective_capacity_below_enrollment" });
@@ -102,8 +102,8 @@ public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : C
         if (!UserClaims.IsTeacher(User)) return Forbid();
         if (!await db.Electives.AnyAsync(e => e.Id == id, ct)) return NotFound();
         var participants = await db.ElectiveEnrollments.AsNoTracking().Where(e => e.ElectiveId == id)
-            .OrderBy(e => e.DisplayName).ThenBy(e => e.UserSub)
-            .Select(e => new ElectiveParticipant(e.UserSub, e.DisplayName, e.EnrolledAtUtc)).ToArrayAsync(ct);
+            .OrderBy(e => e.DisplayName).ThenBy(e => e.Id)
+            .Select(e => new ElectiveParticipant(e.UserSub, e.DisplayName, e.EnrolledAtUtc, e.LectioId, e.Id)).ToArrayAsync(ct);
         return Ok(participants);
     }
 
@@ -127,7 +127,7 @@ public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : C
     private async Task<IActionResult> ChangeEnrollmentAsync(Guid id, Guid sub, bool enroll, CancellationToken ct)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        await LockAsync(id, ct);
+        await db.LockElectiveAsync(id, ct);
         var elective = await db.Electives.AsNoTracking().SingleOrDefaultAsync(e => e.Id == id && e.Status != "draft", ct);
         if (elective is null) return NotFound();
 
@@ -168,11 +168,6 @@ public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : C
         return Ok(View(elective, count, enroll, true, today));
     }
 
-    private Task<int> LockAsync(Guid id, CancellationToken ct) =>
-        // A database write lock serializes enrollment and administrative changes on every app instance.
-        db.Electives.Where(e => e.Id == id)
-            .ExecuteUpdateAsync(s => s.SetProperty(e => e.Version, e => e.Version), ct);
-
     private Task<bool> IsTemplateAsync(Guid id, CancellationToken ct) =>
         db.Electives.AnyAsync(e => e.Id == id && e.Status == "template", ct);
 
@@ -189,13 +184,15 @@ public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : C
     {
         var open = canParticipate && RegistrationOpen(e, today);
         var occupied = count + e.ReservedSeats;
-        return new(e.Id, e.Title, e.Description, e.Schedule, e.StartsOn, e.EndsOn, e.RegistrationOpensOn,
-            e.RegistrationClosesOn, e.Capacity, e.ReservedSeats, e.Status, e.SourceUrl, e.TemplateId, e.Version,
+        return new(e.Id, ElectiveCatalogueText.Clean(e.Title), ElectiveCatalogueText.Clean(e.Description),
+            ElectiveCatalogueText.Clean(e.Schedule), e.StartsOn, e.EndsOn, e.RegistrationOpensOn,
+            e.RegistrationClosesOn, e.Capacity, e.ReservedSeats, e.Status, ElectiveCatalogueText.Source(e.SourceUrl), e.TemplateId, e.Version,
             occupied, enrolled, open && !enrolled && (e.Capacity is null || occupied < e.Capacity), open && enrolled);
     }
 
     private static bool Valid(SaveElective r) =>
         !string.IsNullOrWhiteSpace(r.Title) && r.Title.Length <= 200 && !r.Title.Any(char.IsControl)
+        && !string.IsNullOrWhiteSpace(ElectiveCatalogueText.Clean(r.Title))
         && r.Description is not null && r.Description.Length <= 20000 && !r.Description.Contains('\0')
         && r.Schedule is not null && r.Schedule.Length <= 8000 && !r.Schedule.Contains('\0')
         && r.Status is "template" or "draft" or "open" or "closed" or "archived"
@@ -213,9 +210,9 @@ public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : C
 
     private static void Apply(Elective e, SaveElective r)
     {
-        e.Title = r.Title.Trim();
-        e.Description = r.Description.Trim();
-        e.Schedule = r.Schedule.Trim();
+        e.Title = ElectiveCatalogueText.Clean(r.Title).Trim();
+        e.Description = ElectiveCatalogueText.Clean(r.Description).Trim();
+        e.Schedule = ElectiveCatalogueText.Clean(r.Schedule).Trim();
         e.StartsOn = r.StartsOn;
         e.EndsOn = r.EndsOn;
         e.RegistrationOpensOn = r.RegistrationOpensOn;
@@ -223,7 +220,7 @@ public sealed class ElectivesController(AppDbContext db, TimeProvider clock) : C
         e.Capacity = r.Capacity;
         e.ReservedSeats = r.ReservedSeats;
         e.Status = r.Status;
-        e.SourceUrl = string.IsNullOrWhiteSpace(r.SourceUrl) ? null : r.SourceUrl.Trim();
+        e.SourceUrl = ElectiveCatalogueText.Source(r.SourceUrl);
         e.TemplateId = r.TemplateId;
     }
 }

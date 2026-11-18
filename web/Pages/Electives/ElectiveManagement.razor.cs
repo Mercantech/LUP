@@ -13,14 +13,17 @@ public partial class ElectiveManagement
     [Parameter] public ElectiveView? InitialTemplate { get; set; }
     [Parameter] public Guid? SearchItem { get; set; }
     [Parameter] public EventCallback<ElectiveView> OnSaved { get; set; }
+    [Parameter] public Guid? InitialRosterId { get; set; }
+    [Parameter] public EventCallback<ElectiveView> OnRosterChanged { get; set; }
     [Parameter] public EventCallback OnRefresh { get; set; }
 
     private static readonly string[] OfferingStatuses = ["draft", "open", "closed", "archived"];
     private readonly CancellationTokenSource _lifetime = new();
     private Draft? _draft;
     private ElectiveView? _roster;
-    private ElectiveParticipant[] _participants = [];
-    private ElementReference _titleInput, _rosterHeading;
+    private bool _rosterSaving;
+    private Guid? _lastRosterLink;
+    private ElementReference _titleInput;
     private Guid? _lastTemplate;
     private string _filter = "", _search = "";
     private string? _error;
@@ -36,12 +39,23 @@ public partial class ElectiveManagement
 
     protected override void OnParametersSet()
     {
+        if (InitialRosterId != _lastRosterLink)
+        {
+            _lastRosterLink = InitialRosterId;
+            if (!_dirty && InitialRosterId is { } id && Items.FirstOrDefault(e => e.Id == id && e.Status != "template") is { } item)
+            {
+                _roster = item;
+                _draft = null;
+            }
+        }
+
         if (InitialTemplate?.Id == _lastTemplate)
             return;
 
         _lastTemplate = InitialTemplate?.Id;
         if (InitialTemplate is { } template && !_dirty)
         {
+            _roster = null;
             _draft = new();
             _draft.ApplyTemplate(template);
             _focus = true;
@@ -56,8 +70,6 @@ public partial class ElectiveManagement
         _focus = false;
         if (_draft is not null)
             await _titleInput.FocusAsync();
-        else if (_roster is not null)
-            await _rosterHeading.FocusAsync();
     }
 
     private async Task CheckNavigation(LocationChangingContext context)
@@ -108,7 +120,6 @@ public partial class ElectiveManagement
     private void CloseRoster()
     {
         _roster = null;
-        _participants = [];
         _error = null;
     }
 
@@ -160,15 +171,16 @@ public partial class ElectiveManagement
         _draft = null;
         _dirty = false;
         _roster = item;
-        _participants = [];
-        _focus = true;
-        await Run(async ct =>
-        {
-            var participants = await Client.Participants(item.Id, ct);
-            if (!ct.IsCancellationRequested)
-                _participants = participants;
-        }, "Deltagerlisten kunne ikke hentes. Prøv igen.");
+        _error = null;
     }
+
+    private Task RosterChanged(ElectiveView item)
+    {
+        _roster = item;
+        return OnRosterChanged.InvokeAsync(item);
+    }
+
+    private void SetRosterSaving(bool value) => _rosterSaving = value;
 
     private async Task Run(Func<CancellationToken, Task> action, string fallback)
     {

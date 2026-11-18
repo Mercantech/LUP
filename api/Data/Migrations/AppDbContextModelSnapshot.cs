@@ -960,25 +960,45 @@ namespace Mercantec.Tech.Api.Data.Migrations
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.ElectiveEnrollment", b =>
                 {
-                    b.Property<Guid>("ElectiveId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserSub")
-                        .HasColumnType("uuid");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<Guid>("ElectiveId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("EnrolledAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("ElectiveId", "UserSub");
+                    b.Property<string>("LectioId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid?>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LectioId");
 
                     b.HasIndex("UserSub");
 
-                    b.ToTable("elective_enrollments", (string)null);
+                    b.HasIndex("ElectiveId", "LectioId")
+                        .IsUnique();
+
+                    b.HasIndex("ElectiveId", "UserSub")
+                        .IsUnique();
+
+                    b.ToTable("elective_enrollments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_elective_enrollments_identity", "\"UserSub\" IS NOT NULL OR \"LectioId\" IS NOT NULL");
+                        });
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.EntityReferenceLink", b =>

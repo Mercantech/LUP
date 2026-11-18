@@ -21,9 +21,11 @@ public sealed class Elective
 
 public sealed class ElectiveEnrollment
 {
+    public Guid Id { get; set; } = Guid.NewGuid();
     public Guid ElectiveId { get; set; }
     public Elective Elective { get; set; } = null!;
-    public Guid UserSub { get; set; }
+    public Guid? UserSub { get; set; }
+    public string? LectioId { get; set; }
     public string DisplayName { get; set; } = "";
     public DateTimeOffset EnrolledAtUtc { get; set; }
 }
