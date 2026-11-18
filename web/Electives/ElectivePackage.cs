@@ -1,3 +1,5 @@
+using Mercantec.Tech.Contracts;
+
 namespace Mercantec.Tech.Web.Electives;
 
 // The template IDs are the original Notion page IDs used by the catalogue import.
@@ -15,6 +17,12 @@ public sealed record ElectivePackage(Guid Id, string Title, string ImageUrl, str
             "/images/valgfag/machine-learning.webp",
             "Træn en model i Python. Gå fra rå data til forudsigelser, og test, hvor godt modellen rammer på nye eksempler.")
     ];
+
+    public static ElectivePackage? ForElective(ElectiveView elective)
+    {
+        var packageId = elective.TemplateId ?? elective.Id;
+        return Catalogue.FirstOrDefault(package => package.Id == packageId);
+    }
 
     public string Href => $"/valgfag?vis=katalog&id={Id:D}";
 }

@@ -3,6 +3,10 @@
 @implements IDisposable
 
 <section class="panel elective-roster" aria-labelledby="elective-roster-title">
+    @if (ElectivePackage.ForElective(Item) is { } package)
+    {
+        <img class="roster-banner" src="@package.ImageUrl" alt="" width="600" height="400" />
+    }
     <header class="roster-header">
         <div>
             <h2 id="elective-roster-title" tabindex="-1" @ref="_heading">Deltagere på @Item.Title</h2>
