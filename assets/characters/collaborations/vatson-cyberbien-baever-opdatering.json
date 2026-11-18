@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "vatson-cyberbien-baever-opdatering",
+  "alt": "Vatson, Cyberbien og Bæver prøver en opdatering på én enhed på testbordet. De øvrige enheder står samlet i en separat bakke.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-de8b51fd-6f16-436d-ae3e-5569098c9e72.png",
+  "prompt": "Make one polished original opaque 3:2 landscape 1536×1024 LUP storybook illustration with exactly THREE named reference characters each fully recognizable and an original balanced visual composition. Preserve portraits' face, clothes, color and silhouette, give all three an active role and natural gaze. Rich mature painterly storybook textures and subtle paper grain, calm warmth, clean hierarchy with one coherent teaching story and distinctive setting, detail readable at 768px. Each character has exactly its own correct limbs and no cut faces. Render no words, labels, numbers or programming code, no logo or watermark, no fake UI. FIRST reference is Vatson, the original small WHITE hovering robot: rectangular monitor head with thick WHITE rim, black face screen with one simple joyful cyan dot-matrix expression, thin black flexible antenna topped with pale bulb, two flexible black corrugated hose arms ending in white-grey robotic claws, tiny hovering rounded white/turquoise lower body without legs. Open turquoise ring binder with simple document/book/gear icons at his side. Do not turn him into a beehive or human. SECOND reference Cyberbien is exact small rounded golden bee with yellow-tipped dark antennae, original dark-cyan-symbol forehead goggles above expressive brown eyes, navy hoodie/yellow drawstrings, striped abdomen, cream veined wings, and dark gold-soled boots. THIRD is the canonical friendly stocky brown beaver with square incisors, rectangular bronze-brown glasses, cobalt tailored instructor jacket over cream shirt, brown trousers/boots and flat crosshatched paddle tail. They are together in a sunlit wood-and-brass teaching workshop with ceiling pipes, jars of benign bolts and a broad oak instrument bench; window has quiet hills beyond. Vatson at the left holds his open turquoise binder, one natural flex arm indicating the isolated practice apparatus, Cyberbien at center leans attentively toward the measured indicator, and Bæver at right watches his rugged log tablet, eyes directed to the single test. MAIN ACTION is one harmless small teal practice control device standing clearly alone at the center foreground on its own pale cork mat, a small green status lamp beside it and one update card with generic broad circular refresh-arrow pictogram. An analog brass pointer instrument observes it with a plain low-voltage lead. On a CLEARLY SEPARATE rear-right shelf or deep tray behind a raised wood divider stand four identical smaller teal devices with all leads neatly parked and absolutely NO arrows, energy, cables or rays reaching them. Express staged learning by first single device here and waiting group there. A small complete bracket and gap must separate practice mat and stored tray. Benign physical instrument desk metaphor only, no detailed electrical schematic, no futuristic console, warnings or step-by-step instructions. Three faces large enough, room at margins. Warm natural palette with cyan and blue detail.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bee/portrait.webp",
+      "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+    },
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-cyberbien-baever-opdatering.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3241958,
+    "sha256": "c2943979f2963ae841142b58749c20c0475e230d65494d3c07747ed16955bf91"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-cyberbien-baever-opdatering.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 131772,
+    "sha256": "095d7e4de2c2a9b85d8f3fbdb3e65244680864e380a1d9da8765a32417a03130"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-raymond-bilbo-evaluering",
+  "alt": "Kamæleonen viser en forkert æbleforudsigelse for en pære. Bilbo tilføjer den korrekte pære, og Raymond arkiverer kortet med begge oplysninger.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-4b11802e-8104-4a18-b4bf-86b35a3e6a08.png",
+  "prompt": "Create ONE finished LUP storybook illustration, landscape 3:2 at native 1536x1024, high-quality warmly painted gouache and colored-pencil detail, naturally lit tangible materials and a cohesive everyday teaching story. Include EXACTLY THREE distinct canonical characters given by the three attached identity references. Preserve identity, clothing, features and their correct natural anatomy. Give each character a clear active contribution to the same activity and keep all three faces/silhouettes legible, with natural scale and enough room. No printed text, letters, numbers, logos, watermark, poster layout, floating overlay, collage or technical dashboard. Show concepts through a few physical props or simple single pictograms, never a sheet of charts. Exact Kamæleonen in olive/yellow green tiny scales, orange-edged crest, large warm brown turret eyes, cream rolled linen shirt, copper-brown stitched leather apron with brass hardware, natural little green hands, one curling tail. Raymond from reference2 is the exact large friendly BLUE elephant professor, broad blue ears, swept blue tuft, round bronze glasses, warm brown eyes, gently curled elephant trunk, cream cable-knit cardigan, blue shirt, brown trousers and natural blue elephant hands. Bilbo from reference3 is short stocky adult hobbit-like backend merchant with kind ruddy face, thick rich chestnut curls, pointed ears, sideburns and tiny beard tuft, green velvet vest with brass buttons, cream rolled shirt, rust brown cuffed trousers, large hairy bare feet and natural hands. Place all3 at Brombærbo's warm domestic wooden table inside a cozy round-windowed blackberry cottage, soft honey lamp, low stone hearth and a few blackberry jars on distant shelf, golden evening through round window, home scale. A single beautiful paired two-field archival cream data card is the key prop at center foreground, held by Raymond's large gentle hand at its outer edge while he places it into the open divider of a small wooden card-index. The card's LEFT field shows a clean clearly wrong red apple pictogram already inked, its RIGHT field shows the correct green PEAR pictogram freshly added by Bilbo, both sides remain equally visible separated only by a thin physical fold line. A real single green pear sits on the table immediately in front of the card to make verification unambiguous. No crossing out or replacing the original apple. Bilbo CENTER uses a little pencil tip to finish the pear drawing in the right field, while Chameleon LEFT gestures with one small hand toward the incorrect left apple field and looks at Raymond. Raymond RIGHT looks kindly at both original and verified label while archiving both together on one card. Keep all six hands consistent and only necessary hands prominent, nobody's trunk holds extra objects. There is only one visible paired card, other archive tabs are blank. Clear natural story about preserving prediction alongside later verified truth. No numbers, chart, words or labels, no erasing marks, no red crosses or check marks needed. Distinct character poses and heights so all3 faces in clear row behind bench, 3/4 bodies visible.",
+  "references": [
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond-bilbo-evaluering.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3275619,
+    "sha256": "71a582ae127717ea100af453de0e5aa0644dd7ac78b49dba40c6640f34912e88"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond-bilbo-evaluering.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 151068,
+    "sha256": "318dd078529c48533ea334d808897f51bd4e44aded6188729c6888734501add5"
+  },
+  "initialGeneration": "exec-76e75395-8e28-4f8e-bab8-1ef80778f995.png",
+  "initialSourceSha256": "a59071eaf53e7d41fc6bfc36d654d4bf5026796d01c6c8869a1a41fe78e6a43a",
+  "editPrompt": "Edit the provided illustration with ONE narrowly targeted change: Bilbo the curly-haired person in the middle must be visibly adding the verified green PEAR in the RIGHT HALF of the single paired record card. Move only his pencil hand and forearm gracefully so the pencil tip is touching an outer lower-right contour of the green pear drawing in the RIGHT field. Keep his hand out of the apple field and below all faces. The existing red APPLE drawing in the LEFT field is the model's original prediction and MUST remain fully intact, visible and unaltered. The green pear drawing on the right remains visible and correct. Preserve the exact same three characters, all facial identities and clothes, the actual pear on the plate, the card in Raymond's hand, archive box, all composition, cottage, lighting and every other detail. Do not add any extra fingers, hands, cards, objects or marks, no erasing, writing, arrows, symbols or text. Same complete native landscape1536x1024 image. This exact story is recording a corrected actual label in right field while preserving original wrong prediction in left field."
+}

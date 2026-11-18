@@ -1,0 +1,34 @@
+{
+  "id": "docker-bilbo-raymond-migration",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait-transparent.webp",
+      "sha256": "85490b2a05edc3499846b1789678cd8feebe56a8745933300511c397012af92f"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    }
+  ],
+  "alt": "Docker, Bilbo og Raymond arbejder ved havnens pakkebord. Runde og firkantede ordrekort ligger i hver sin bane, og arkivskuffen har fået et ekstra felt.",
+  "prompt": "Create ONE standalone 1536×1024 landscape (3:2), full bleed, rich detailed warm hand-painted LUP mascot storybook illustration with gouache, soft oil texture and believable wood/fabric/light. Every character retains the EXACT canonical design from its local portrait reference. Exactly THREE main characters as specified. Clear natural anatomical limbs, no duplicate arms, no human hands on birds or whales, no floating body parts, no lettering, words, labels, numbers, brand logos, watermark, border or panel montage. Subject/curriculum must be visible through concrete simple props without fake software text. Story: a backward-compatible database migration during gradual application rollout, illustrated with concrete sorting pieces. In a warm golden harbor packing room whose open wide side looks on container quay at dusk, large low sorting shelf fills center foreground. The same shelf has exactly TWO PARALLEL horizontal paths, both unobstructed and accepted: the left lane holds two ROUND cream order cards with a painted blackberry in center; the right lane holds two SQUARE cream order cards with same painted blackberry and an additional tiny empty optional rectangular field near bottom. Both lanes guide into separate openings of the same broad safe wooden archive drawer behind. Important: no barrier, rejected pile, return arrows or alarm, both old rounds and new squares remain valid while the new data field is introduced. At right side of that archive drawer a small extra FIELD COMPARTMENT is being attached to its side as a plain empty shallow honey-wood cubby with brass bracket, the old drawer visibly intact beside it. Raymond from third reference, a very recognizable friendly blue elephant professor, large ears and warm brown eyes behind round bronze glasses, tufted blue hair, curled trunk, cream knitted cardigan over blue collared shirt and brown trousers, stands on right showing the new small compartment with one natural hand, two arms only. Bilbo Backend from second reference, short round curly chestnut-haired hobbit with pointed ears, tiny chin tuft, green velvet waistcoat and brass buttons, rolled ivory shirt, rusty cropped trousers and very hairy bare feet clearly visible, stands on left gently feeds a round card into left lane with one hand and studies a square card in the other, no extra arms. Docker from first ref, enormous old slate-blue humpback whale in navy cable-knit sweater and little mustard beanie with cream pleated throat and bumpy features, rises from harbor water just outside the room's open side in background center. He leans in with broad natural flipper calmly indicating both lanes, not blocking either face. Show enough scale to make the same room believable, blue/gold dusk, lamp lighting, a few packing ropes and one closed jar far side. The shelf geometry and two shapes are the focal point, the exact three characters relaxed and cooperative. No tablet UI, screen, QR code or random pictograms.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-bilbo-raymond-migration.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3439749,
+    "sha256": "1c301a5c0f15c1f08f9e28e0c952daef0b3a11f7e292dc8cbecfa36b9f6fe936"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-bilbo-raymond-migration.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 165980,
+    "sha256": "f0ecd75d3a1ea59900799b82d01e5afa18e10f6eb6db6b62253a789e7eb9b15e"
+  }
+}

@@ -27,9 +27,9 @@
             </div>
         }
         <div class="character-collaboration-links">
-            @foreach (var slug in LinkedSlugs)
+            @foreach (var slug in Scene.ParticipantSlugs)
             {
-                @if (CharacterCatalog.Find(slug) is { } participant)
+                @if (slug != ProfileSlug && CharacterCatalog.Find(slug) is { } participant)
                 {
                     <a href="@($"{participant.Path}#{Scene.Anchor}")">Se billedet hos @participant.Name</a>
                 }
@@ -42,7 +42,4 @@
     [Parameter, EditorRequired] public CharacterCollaboration Scene { get; set; } = default!;
     [Parameter] public string? ProfileSlug { get; set; }
 
-    private string[] LinkedSlugs => ProfileSlug is { } slug
-        ? [Scene.PartnerSlug(slug)]
-        : [Scene.FirstSlug, Scene.SecondSlug];
 }

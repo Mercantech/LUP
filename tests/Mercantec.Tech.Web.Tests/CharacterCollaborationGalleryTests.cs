@@ -6,6 +6,7 @@ using Mercantec.Tech.Web.Demo;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using CharacterIndex = Mercantec.Tech.Web.Pages.Characters.Index;
+using CharacterDetail = Mercantec.Tech.Web.Pages.Characters.Detail;
 using GalleryPage = Mercantec.Tech.Web.Pages.Characters.Collaborations;
 using LibraryPage = Mercantec.Tech.Web.Pages.Library;
 
@@ -41,12 +42,34 @@ public sealed class CharacterCollaborationGalleryTests
             Assert.Equal(scene.Image, download.GetAttribute("href"));
             Assert.Equal($"{scene.Id}.png", download.GetAttribute("download"));
 
-            foreach (var slug in new[] { scene.FirstSlug, scene.SecondSlug })
+            Assert.Equal(scene.ParticipantSlugs.Count, card.QuerySelectorAll("a[href^='/characters/']").Length);
+            foreach (var slug in scene.ParticipantSlugs)
             {
                 var character = CharacterCatalog.Find(slug)!;
                 var participantLink = Assert.Single(card.QuerySelectorAll($"a[href='{character.Path}#{scene.Anchor}']"));
                 Assert.Contains(character.Name, participantLink.TextContent, StringComparison.Ordinal);
             }
+        }
+    }
+
+    [Fact]
+    public async Task Group_scene_appears_once_on_each_participant_profile_and_links_to_the_others()
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await CreateAnonymousContext(api);
+        var participants = new[] { "lupp", "bilbo", "raymond", "gitmejsen" };
+        const string scene = "lupp-bilbo-raymond-gitmejsen-highscore";
+
+        foreach (var slug in participants)
+        {
+            var profile = context.Render<CharacterDetail>(parameters => parameters.Add(page => page.Slug, slug));
+            var card = Assert.Single(profile.FindAll($"#collaboration-{scene}"));
+            var linkedProfiles = card.QuerySelectorAll("a[href^='/characters/']")
+                .Select(link => link.GetAttribute("href"))
+                .ToArray();
+            Assert.Equal(participants.Where(participant => participant != slug)
+                .Select(participant => $"/characters/{participant}#collaboration-{scene}"), linkedProfiles);
+            Assert.Equal($"{scene}.png", card.QuerySelector("a[download]")!.GetAttribute("download"));
         }
     }
 

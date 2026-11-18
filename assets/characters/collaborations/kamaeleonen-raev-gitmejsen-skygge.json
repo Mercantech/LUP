@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-raev-gitmejsen-skygge",
+  "alt": "Ræv flytter en pære ind i skyggen ved prøveboden. Kamæleonen sammenligner de to resultater, mens Gitmejsen holder styr på modelmærket.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-60b32ebe-8754-46c6-9d72-239febd5839f.png",
+  "prompt": "Create ONE finished LUP storybook illustration, landscape 3:2 at native 1536x1024, high-quality warmly painted gouache and colored-pencil detail, naturally lit tangible materials and a cohesive everyday teaching story. Include EXACTLY THREE distinct canonical characters given by the three attached identity references. Preserve identity, clothing, features and their correct natural anatomy. Give each character a clear active contribution to the same activity and keep all three faces/silhouettes legible, with natural scale and enough room. No printed text, letters, numbers, logos, watermark, poster layout, floating overlay, collage or technical dashboard. Show concepts through a few physical props or simple single pictograms, never a sheet of charts. Exact Kamæleonen in olive/yellow green tiny scales, orange-edged crest, large warm brown turret eyes, cream rolled linen shirt, copper-brown stitched leather apron with brass hardware, natural little green hands, one curling tail. Ræv from reference2 is exact inquisitive russet fox with upright ears, cream muzzle and neck, warm brown eyes, rust-red rolled sleeve blazer/waistcoat over cream shirt, brown trousers and one bushy pale-tipped tail. Gitmejsen from reference3 is a SMALL actual crested tit perched on a twig attached to bench: beige and cream feathering, black bib and horseshoe cheek stripe, impressive tall black-spotted crest, blue chunky wool scarf, small true beak and2gray bird feet, two natural wings and no human hands. Setting a charming orchard fruit-classifier TEST booth under pale green canvas awning at afternoon. There is a visible soft diagonal shadow edge across a single small test pad in foreground. Ræv LEFT deliberately holds ONE real pear by its stalk at the edge of this shade zone, moving same pear toward the darker part with a slightly quizzical glance. Small simple lens/device fixed opposite pad is linked to a restrained desktop test box with exactly one stamped leaf icon on its side identifying unchanged saved model. No regeneration/training actions. Chameleon CENTER compares two cream result cards on a small slanted easel RIGHT: first card has sun pictogram at top, a green pear pictogram below and small dark-blue leaf wax insignia at foot; second card has moon/shadow pictogram at top, a red apple pictogram below and the EXACT SAME dark-blue leaf insignia at foot. The contrasting cards represent light and shade predictions for one unchanged model. Cards larger than little bird and fully readable with no words. Gitmejsen RIGHT perches beside these two cards and gently touches a single blank archive tab bearing that same blue leaf insignia with natural wingtip. A few blurred trees and baskets deep background, no other characters or fruit bins foreground, autumn ochre/rust and shade olive palette. Focus on rigorous hands-on test where one pear changes appearance in shade and results differ, roles and three gazes interconnected. Grounded beautiful natural textures and a quiet discovery, no long case rows, no duplicate held pear or dramatic machines.",
+  "references": [
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+      "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raev-gitmejsen-skygge.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3488073,
+    "sha256": "c205976bf09e613a8ea1309093d160e8668a43abf206b0014b69b9f6db236099"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raev-gitmejsen-skygge.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 142392,
+    "sha256": "1668474162e92f6221ac6de21662cd46ea8d310dfe62c960298c3f5ed9fb2926"
+  }
+}

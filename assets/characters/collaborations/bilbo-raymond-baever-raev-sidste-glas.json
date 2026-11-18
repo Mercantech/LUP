@@ -1,0 +1,38 @@
+{
+  "id": "bilbo-raymond-baever-raev-sidste-glas",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    }
+  ],
+  "prompt": "Original LUP teaching illustration, warm rich painterly gouache, full landscape 1536x1024 3:2. Four distinct figures, only the four reference identities in their given order. Preserve every exact face, costume and scale. Stage clear collaboration with one tangible job and each figure interacting with a different appropriate prop. Carefully count four recognizable faces at normal thumbnail scale. No other mascots, logos, writing, excess hands or extra characters. A lively cozy autumn fair outside Brombærbo. Four collaborators investigate what happens when two customers place an order for the same last jar. Put exactly one beautiful blackberry jam jar in the center on a brass inventory pedestal, one order card with round red wax mark held by brown Bæver with flat beaver tail and blue field jacket, and a second card with square blue wax mark held by orange Ræv in red jacket. Bilbo in moss waistcoat, warm curls and bare hairy feet near the end of the table stops a second confirming stamp, and tall blue Raymond with bronze glasses creamy cable-knit cardigan shows a wooden token board with one green check and one crossed-out slot. Distinct four readable faces, sense of both orders arriving together. Behind them tilted warm green circular doorway, sunflowers and blackberry branches. Strong story composition with clear four positions, one jam jar, no text.",
+  "alt": "Bæver og Ræv holder hver sin bestilling ved det sidste syltetøjsglas, mens Bilbo og Raymond tjekker, hvilken bestilling der kan godkendes.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-raymond-baever-raev-sidste-glas.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3478264,
+    "sha256": "8c8d0ad647150414a4b844c93a46122ad151cbf0a3b8a77f94ffe346aa240e68"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-raymond-baever-raev-sidste-glas.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 172064,
+    "sha256": "4502106d829cc5c493dba774005f9ec22e0f5e5f40aa224f2247c1f3a1917f98"
+  }
+}

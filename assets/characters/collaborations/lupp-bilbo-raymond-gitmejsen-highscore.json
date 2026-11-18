@@ -1,0 +1,38 @@
+{
+  "id": "lupp-bilbo-raymond-gitmejsen-highscore",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+      "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+    }
+  ],
+  "prompt": "Original LUP teaching illustration, warm rich painterly gouache, full landscape 1536x1024 3:2. Four distinct figures, only the four reference identities in their given order. Preserve every exact face, costume and scale. Stage clear collaboration with one tangible job and each figure interacting with a different appropriate prop. Carefully count four recognizable faces at normal thumbnail scale. No other mascots, logos, writing, excess hands or extra characters. In LUPP's fold-paper house warm afternoon, with plum door and rounded teal window. A game score travels as a gold star card from a handmade playable platform model at left to validation stamp at center to a sorted wooden high-score rack at right. Purple square LUPP with only two eyes and yellow pencil watches the star course; orange curly hobbit Bilbo in moss vest checks the newly arrived star card with a simple embossed green tick; big blue elephant Professor Raymond in glasses and cream cardigan places a star card into the slot in the high-score rack; small crested tit Gitmejsen with blue scarf perches on the rack holding a little test tag in its beak. Clever alignment makes a visual left-to-right pipeline with all figures distinct and door/window believable. No numbers, letters or pseudo code, just star marks and validation stamp.",
+  "alt": "LUPP ser på spilbanen, Bilbo tjekker et stjernekort, og Raymond lægger en score i stativet, hvor Gitmejsen holder et testmærke.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-bilbo-raymond-gitmejsen-highscore.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3196132,
+    "sha256": "27cc525b382787b0746ba917ae70bf06fdd2dcb564f20d0d9facf8df9a0c2e67"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-bilbo-raymond-gitmejsen-highscore.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 133750,
+    "sha256": "3745034abbaf47b4b5a7e53e76962b1e017258652fa8f8573ee596af1ccdd842"
+  }
+}

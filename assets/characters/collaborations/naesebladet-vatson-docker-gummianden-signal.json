@@ -1,0 +1,38 @@
+{
+  "id": "naesebladet-vatson-docker-gummianden-signal",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.webp",
+      "sha256": "5c15516ee9e4755d31081e62a9b62e09aa6c99b3af15a2f537991568107941fc"
+    },
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    },
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    }
+  ],
+  "prompt": "Original LUP teaching illustration, warm rich painterly gouache, full landscape 1536x1024 3:2. Four distinct figures, only the four reference identities in their given order. Preserve every exact face, costume and scale. Stage clear collaboration with one tangible job and each figure interacting with a different appropriate prop. Carefully count four recognizable faces at normal thumbnail scale. No other mascots, logos, writing, excess hands or extra characters. During early morning light in a maritime signal shed by the water, show a four-stop debugging path along one bench where an IoT measurement stops between two components. Left Næsebladet in deep red Victorian frockcoat and recognizable notched ear, exactly two attached wing wrists, points with one at a twin-lens distance sensor and wooden target. Near him small hovering white robot Vatson with square black turquoise face and open teal ring binder looks at a simple small gateway with lit green indicator. The old gray-blue Docker humpback whale with flippers, mustard cap and navy knit sweater leans through huge boathouse waterside hatch, checks a separate unlit receiving box at other end of tabletop. Yellow rubber Gummianden with terracotta cardigan sits near receiving box with wing to cheek, tracing the path. A teal cable connects sensor to gateway, and a conspicuous narrow gap remains between lit gateway and dark receiving box with two disconnected round plugs. Exactly four characters, clean restrained amber/teal, no stats or labels. The connection gap is a story clue; characters are not looking at viewer.",
+  "alt": "Næsebladet og Vatson følger en måling frem til gatewayen. Docker og Gummianden står ved den mørke modtager på den anden side af kabelbruddet.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-vatson-docker-gummianden-signal.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3455137,
+    "sha256": "687c3fec9fa8c5abd788d342eee0ae666696830cb7def8a88d110dec2eae9f01"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-vatson-docker-gummianden-signal.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 156092,
+    "sha256": "c674337e85d7567e666031ed108af864dd01de26ca22792610fe8acfccab2ffd"
+  }
+}

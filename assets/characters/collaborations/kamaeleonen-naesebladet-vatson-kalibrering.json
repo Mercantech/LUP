@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-naesebladet-vatson-kalibrering",
+  "alt": "Kamæleonen sammenligner afstanden med en lineal, Næsebladet retter sensoren mod træmålet, og Vatson noterer resultatet i sit ringbind.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-902a03a5-6619-4bd9-b072-0d52a5f5401e.png",
+  "prompt": "Create ONE finished LUP storybook illustration, landscape 3:2 at native 1536x1024, high-quality warmly painted gouache and colored-pencil detail, naturally lit tangible materials and a cohesive everyday teaching story. Include EXACTLY THREE distinct canonical characters given by the three attached identity references. Preserve identity, clothing, features and their correct natural anatomy. Give each character a clear active contribution to the same activity and keep all three faces/silhouettes legible, with natural scale and enough room. No printed text, letters, numbers, logos, watermark, poster layout, floating overlay, collage or technical dashboard. Show concepts through a few physical props or simple single pictograms, never a sheet of charts. Exact Kamæleonen in olive/yellow green tiny scales, orange-edged crest, large warm brown turret eyes, cream rolled linen shirt, copper-brown stitched leather apron with brass hardware, natural little green hands, one curling tail. Næsebladet is reference2, broad compact plum/rust furry leaf-nosed bat, amber eyes and skeptical attentive face, huge rust ears with viewer-right notch, pink veined triangular leaf nose, tiny clawed feet, canonical aubergine velvet tailcoat with gold piping, wine brocade vest, cream ruffled cravat and tiny ruffled cuffs. Exactly TWO true bat wing-arms with membranous folds continuing from their actual little wrist claws, no human arms or fingers. Vatson is reference3, white legless hovering compact robot, rounded white rectangular screen head, black display with happy cyan pixel crescent eyes and smile, spring antenna and white ball, black ribbed arms and small white grippers, tapered floating white torso, teal ring binder. Setting is an intimate covered theater backstage workbench in lamplight, rich red curtains, muted purple painted scenery flats, brass lamp, stage floor and faint cool rainy doorway beyond. Næsebladet LEFT carefully adjusts ONE two-disc ultrasonic sensor on a pivoting base with the claw at his actual wing wrist. Sensor stands left of a long physical wooden ruler on bench and its twin circular faces aim along the ruler to the right toward ONE broad upright pale wood target block. Chameleon CENTER leans across the ruler, touches its unnumbered small ticks lightly with one hand, checking where the target stands; his other hand holds a simple small mechanical dial showing needle only, no digits. Calibration means comparing the displayed reading to the physical reference ruler, no fantasy beams needed. Vatson RIGHT floats beside target and marks one tiny circular sample symbol onto a page in his familiar open teal ring binder with the other gripper, no words. All look at the same bench, twin sensor faces, ruler and clear air gap easy to read. One short cable joins sensor to the small needle dial, simple and safe. No extra signal lights, no measuring tape running through characters, no separate hands on bat, no extra tech. One 3/4 view looking slightly downward to the tabletop, clear space for all3 participants.",
+  "references": [
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.png",
+      "sha256": "005fcf6f22d69cc23e4d323cb7896395403ead245ef30961ab5939f9bc7cc8af"
+    },
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-naesebladet-vatson-kalibrering.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3266457,
+    "sha256": "c2fafa627c02c78040bc93a53258a06d697c6ed2be5e569adcffdc81253d87f9"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-naesebladet-vatson-kalibrering.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 134290,
+    "sha256": "3a3415043c1e97ee8a227884919e79f4412267721b59589fc4629839e605d504"
+  }
+}

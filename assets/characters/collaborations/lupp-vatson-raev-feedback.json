@@ -1,0 +1,38 @@
+{
+  "id": "lupp-vatson-raev-feedback",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/about/lupp.webp",
+      "sha256": "0b49b7e0178e673b10d73ee29c79c846ed83798ec174775dd8eaa1e67d23c933"
+    },
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    },
+    {
+      "path": "web/wwwroot/images/about/fox.webp",
+      "sha256": "55d546057d613594f8ad44a6ea1c5aaa4899b753fcdeff4c80a33b17ccefdbd5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/lupp/home/inside.webp",
+      "sha256": "363010da44e977a12569473192473a2ad467abb985da128329296c35c3d37a0e"
+    }
+  ],
+  "alt": "LUPP, Vatson og Ræv afprøver en trækonsol i Papirhuset. Ræv holder en grå prøve foran den røde trekant, mens den grønne cirkel og LUPPs to formkort er synlige.",
+  "prompt": "Create ONE standalone 1536×1024 landscape (3:2), full bleed, rich detailed warm hand-painted LUP mascot storybook illustration with gouache, soft oil texture and believable wood/fabric/light. Every character retains the EXACT canonical design from its local portrait reference. Exactly THREE main characters as specified. Clear natural anatomical limbs, no duplicate arms, no human hands on birds or whales, no floating body parts, no lettering, words, labels, numbers, brand logos, watermark, border or panel montage. Subject/curriculum must be visible through concrete simple props without fake software text. Story: accessible game feedback with shape as well as color at Papirhuset, exact purple door and teal-framed round garden window, pale honey plaster and cut-paper decorations from fourth reference, whimsical bright afternoon living room where the game design is tested. Build a compact, attractive wooden prototype console in center foreground on a low oval worktable, with exactly two large distinct outputs, one bright GREEN CIRCLE at left and one bright RED TRIANGLE at right, each separate wood-mounted raised shape, clear enough at thumbnail size. They are outputs, not letters; no plus/cross icons. Ræv from third reference is the fine red-orange fox with cream muzzle and long cream-tipped bushy tail, brick-red jacket, brown trousers and boots, stands at right holding a single translucent NEUTRAL GRAY acetate sample in front of only the red triangle. The triangular outline stays perfectly clear through it but the color looks desaturated. Pose her attentively testing the shapes. LUPP from first ref is the small rounded purple square clay body with two huge white spherical eyes, large black pupils and the familiar oversized yellow pencil with pink eraser leaning into its front, no added arms/legs/mouth/clothing. LUPP sits on a yellow cushion left of console, pencil next to two simple thick paper design cards propped side by side, one shows a green circle and the other a red triangle, comparing the feedback. Vatson from second ref floats at center rear behind the console, smiling cyan LED eyes and mouth on black screen face, white rounded rectangular head, ball antenna on black coiled stalk, small segmented white body and cyan underglow, black corrugated robot arms and small white robot fingers; one arm is at the side back of the prototype where two short colored test leads go out of sight under the table, with no dissection, loose alarming wires or exposed components front-and-center. Everybody is looking at console/cards. Keep three recognizable faces in unobscured triangular arrangement, cozy abundant paper pop-up miniature set and potted flowers background but main two symbols clear. This is a friendly cooperative user test. No dialog, generated code, text or crowd.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-vatson-raev-feedback.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3227379,
+    "sha256": "2dd95f1c4954f5189835f4dbddc3d846a643c66413518ccceabced942a0e550a"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-vatson-raev-feedback.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 141722,
+    "sha256": "4fb4f314e487d748e8ab45f927cdcfb03c2ecae21fce9a8b18e992980c887904"
+  }
+}
