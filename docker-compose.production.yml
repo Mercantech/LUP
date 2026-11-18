@@ -1,0 +1,13 @@
+services:
+  web:
+    labels:
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-lup.priority=${LUP_PRODUCTION_TRAEFIK_PRIORITY:-1000}
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-games-home.priority=${LUP_PRODUCTION_GAMES_REDIRECT_PRIORITY:-10001}
+  minio:
+    labels:
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-minio-console.priority=${LUP_PRODUCTION_TRAEFIK_PRIORITY:-1000}
+
+networks:
+  default: !override
+    external: true
+    name: ${LUP_PRIVATE_NETWORK_NAME:-${COMPOSE_PROJECT_NAME}_default}

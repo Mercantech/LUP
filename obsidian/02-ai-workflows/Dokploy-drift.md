@@ -25,10 +25,10 @@ Dokploy: domain på service **`web`**, port **3000**. For mercantec.tech / lup.d
 
 ## Netværk (påkrævet)
 
-Hosten har opbrugte address pools → **ingen nye bridge-net**.
+Produktionsstakken **Mercantec.tech → Production** genbruger sin eksisterende private Docker-bridge. Tilføj `-f ./docker-compose.production.yml` efter `-f ./docker-compose.yml` i Dokploys Compose-kommando. Behold projektets navn, som bestemmer navnene på bridgen og datavolumenerne. Hvis bridgen har et særskilt navn, sæt `LUP_PRIVATE_NETWORK_NAME` til navnet på den bridge, produktionsdatabasen allerede bruger. Brug **Deploy** til at starte produktion, så Dokploy bruger kommandoen med begge Compose-filer.
 
-1. `dokploy-network` som compose `default` (`external: true`)
-2. Aliases: **`mercantec-tech-api`**, **`mercantec-tech-db`**, **`mercantec-tech-minio`**
+1. `default` er det private net for databasen, API'et og collaboration. Web og MinIO-konsollen bruger også `dokploy-network` til Traefik.
+2. Aliaser på det private net er **`mercantec-tech-api`**, **`mercantec-tech-db`** og **`mercantec-tech-minio`**.
 3. Nginx: `resolver 127.0.0.11` + `set $upstream_api http://mercantec-tech-api:8080`
 4. Connection string: `Host=mercantec-tech-db`
 5. Object storage: API → `http://mercantec-tech-minio:9000` (S3 path-style). MinIO credentials via Dokploy env (`MINIO_ROOT_*`, `MINIO_BUCKET`, `OBJECT_STORAGE_*`) — **ikke** i git.
