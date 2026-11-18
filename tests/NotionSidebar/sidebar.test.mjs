@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-async function fixture({ mobile = false, stored = null, storedWidth = null, rootWidth = 1280, clientWidth = rootWidth, aiWidth = 0, edgeToEdge = false, storageBlocked = false, inert = false, overflow = '' } = {}) {
+async function fixture({ mobile = false, stored = null, storedWidth = null, rootWidth = 1280, clientWidth = rootWidth, aiWidth = 0, edgeToEdge = false, storageBlocked = false, inert = false, overflow = '', platform = 'Win32', onInvoke } = {}) {
     const oldWindow = globalThis.window, oldDocument = globalThis.document;
     const calls = [], storage = new Map(stored === null ? [] : [['lup.notion.sidebar.collapsed', stored]]);
     const listeners = new Map(), mediaListeners = new Set();
@@ -11,6 +11,7 @@ async function fixture({ mobile = false, stored = null, storedWidth = null, root
     const styles = new Map(overflow ? [['overflow', [overflow, 'important']]] : []);
     const document = {
         activeElement: null,
+        querySelectorAll: () => [],
         body: { style: {
             getPropertyValue: key => styles.get(key)?.[0] ?? '',
             getPropertyPriority: key => styles.get(key)?.[1] ?? '',
@@ -24,10 +25,12 @@ async function fixture({ mobile = false, stored = null, storedWidth = null, root
         const attributes = new Map();
         return {
             id, isConnected: true, tabIndex: 0, disabled: false,
-            parent: null, focusCount: 0,
+            parent: null, focusCount: 0, dataset: {},
             get parentElement() { return this.parent; },
             focus() { document.activeElement = this; this.focusCount++; },
             getClientRects: () => [{}],
+            scrollIntoView() {},
+            matches(selector) { return selector === '.notion-page,.notion-branch-toggle' && this.treeAction; },
             hasAttribute: key => attributes.has(key),
             getAttribute: key => attributes.get(key) ?? null,
             setAttribute: (key, value) => attributes.set(key, value),
@@ -39,7 +42,10 @@ async function fixture({ mobile = false, stored = null, storedWidth = null, root
                     if (selector === 'button,a' && target.action) return target;
                     if (selector === '.notion-document-menu' && target.menu) return target;
                     if (selector === '.notion-sidebar-resize' && target.resize) return target;
-                    if (selector.startsWith('[role=') && target.hasAttribute('role') && target.getAttribute('role') === 'dialog') return target;
+                    if (selector === '[data-page-id]' && target.dataset?.pageId) return target;
+                    if (selector === '.notion-page-row' && target.row) return target;
+                    if (selector.startsWith('input,textarea,select,') && target.editable) return target;
+                    if (selector.startsWith('[role="dialog"]') && target.hasAttribute('role') && target.getAttribute('role') === 'dialog') return target;
                 }
                 return null;
             },
@@ -58,7 +64,7 @@ async function fixture({ mobile = false, stored = null, storedWidth = null, root
     background.inert = inert;
     if (inert) background.setAttribute('inert', 'existing');
     const search = node('notion-page-search'), first = node('first'), last = node('last');
-    search.value = '';
+    search.value = ''; search.editable = true; search.select = () => { search.selected = true; };
     for (const item of [first, search, last]) item.parent = panel;
     panel.querySelectorAll = () => [first, search, last];
     const more = node('more'), summary = node('more-summary'), menu = node('more-menu'), action = node('more-action');
@@ -83,6 +89,7 @@ async function fixture({ mobile = false, stored = null, storedWidth = null, root
     };
     const window = {
         innerWidth: rootWidth, innerHeight: 900,
+        navigator: { platform },
         matchMedia: query => { assert.equal(query, '(max-width: 1000px)'); return media; },
         localStorage: {
             getItem: key => { if (storageBlocked) throw new Error('blocked'); return storage.get(key) ?? null; },
@@ -92,11 +99,12 @@ async function fixture({ mobile = false, stored = null, storedWidth = null, root
     globalThis.window = window; globalThis.document = document;
     const source = await readFile(new URL('../../web/wwwroot/js/notion-sidebar.js', import.meta.url), 'utf8');
     const module = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64') + '#' + Math.random());
-    const callbacks = { invokeMethodAsync: async (...args) => { calls.push(args); } };
+    const callbacks = { invokeMethodAsync: async (...args) => { calls.push(args); return onInvoke?.(...args); } };
     function key(key, target, options = {}) {
         const event = { key, target, shiftKey: false, defaultPrevented: false,
-            preventDefault() { this.defaultPrevented = true; }, ...options };
-        listeners.get('keydown')?.(event);
+            preventDefault() { this.defaultPrevented = true; }, stopPropagation() { this.stopped = true; }, ...options };
+        if (root.contains(target)) rootListeners.get('keydown')?.(event);
+        if (!event.stopped) listeners.get('keydown')?.(event);
         return event;
     }
     return {
@@ -108,6 +116,126 @@ async function fixture({ mobile = false, stored = null, storedWidth = null, root
         cleanup() { module.destroy(root); globalThis.window = oldWindow; globalThis.document = oldDocument; },
     };
 }
+
+test('workspace shortcuts cooperate with editors, dialogs, page permissions and native shortcuts', async () => {
+    const f = await fixture();
+    try {
+        f.mount(); f.module.setOpen(f.root, true);
+        const ctrl = { ctrlKey: true }, create = { ctrlKey: true, altKey: true };
+        const editor = f.makeNode(); editor.parent = f.background; editor.editable = true;
+        assert.equal(f.key('b', editor, ctrl).defaultPrevented, false);
+        assert.equal(f.key('p', f.makeNode('header'), ctrl).defaultPrevented, false);
+        assert.equal(f.key('p', editor, { ...ctrl, isComposing: true }).defaultPrevented, false);
+        assert.equal(f.key('n', editor, create).defaultPrevented, false);
+        f.root.dataset.canCreatePage = 'true';
+        assert.equal(f.key('N', editor, { ...create, shiftKey: true }).defaultPrevented, false);
+        assert.equal(f.key('n', editor, { ...create, getModifierState: key => key === 'AltGraph' }).defaultPrevented, false);
+        assert.equal(f.key('P', editor, { ...ctrl, shiftKey: true }).defaultPrevented, false);
+        const dialog = f.makeNode(); dialog.parent = f.background; dialog.setAttribute('role', 'dialog');
+        assert.equal(f.key('F1', dialog).defaultPrevented, false);
+        f.document.querySelectorAll = () => [dialog];
+        assert.equal(f.key('p', editor, ctrl).defaultPrevented, false);
+        f.document.querySelectorAll = () => [];
+        assert.deepEqual(f.calls, []);
+        for (const [key, target, options] of [
+            ['b', f.toggle, ctrl], ['p', editor, ctrl], ['E', editor, { ...ctrl, shiftKey: true }],
+            ['n', editor, create], ['F1', editor, {}], ['F1', editor, { repeat: true }],
+        ]) assert.equal(f.key(key, target, options).defaultPrevented, true);
+        assert.deepEqual(f.calls.map(([method, command]) => [method, command]), [
+            ['OnNotebookShortcut', 'toggle-sidebar'], ['OnNotebookShortcut', 'search'],
+            ['OnNotebookShortcut', 'explorer'], ['OnNotebookShortcut', 'new-page'], ['OnNotebookShortcut', 'help'],
+        ]);
+        f.module.focusShortcutTarget(f.root, 'search');
+        assert.equal(f.document.activeElement, f.search); assert.equal(f.search.selected, true);
+    } finally { f.cleanup(); }
+});
+
+test('Mac Command and Option use the platform modifier and support a dead N key', async () => {
+    const f = await fixture({ platform: 'MacIntel' });
+    try {
+        f.mount(); f.root.dataset.canCreateChild = 'true';
+        assert.equal(f.root.dataset.shortcutPlatform, 'mac');
+        assert.equal(f.key('p', f.toggle, { ctrlKey: true }).defaultPrevented, false);
+        assert.equal(f.key('p', f.toggle, { metaKey: true }).defaultPrevented, true);
+        assert.equal(f.key('Dead', f.toggle, { metaKey: true, altKey: true, shiftKey: true, code: 'KeyN' }).defaultPrevented, true);
+        assert.deepEqual(f.calls, [['OnNotebookShortcut', 'search'], ['OnNotebookShortcut', 'new-child']]);
+    } finally { f.cleanup(); }
+});
+
+test('tree traversal moves focus without opening a page, and Enter from search opens its result', async () => {
+    const f = await fixture({ onInvoke: () => ({ id: 'child', index: -1 }) });
+    try {
+        f.mount(); f.module.setOpen(f.root, true);
+        const row = f.makeNode(); row.row = true; row.dataset.pageId = 'parent'; row.parent = f.panel;
+        const title = f.makeNode(); title.treeAction = true; title.parent = row;
+        const branch = f.makeNode(); branch.setAttribute('aria-expanded', 'false');
+        branch.click = () => branch.setAttribute('aria-expanded', 'true');
+        row.querySelector = () => branch;
+        const child = f.makeNode(); child.parent = f.panel;
+        let opens = 0; child.click = () => opens++;
+        const queries = f.root.querySelector;
+        f.root.querySelector = selector => selector === '[data-page-id="child"] .notion-page' ? child : queries(selector);
+        title.focus();
+        assert.equal(f.key('Escape', title).defaultPrevented, true);
+        assert.equal(f.document.activeElement, f.background, 'read-only documents remain reachable');
+        title.focus();
+        assert.equal(f.key('ArrowRight', title).defaultPrevented, true);
+        assert.equal(branch.getAttribute('aria-expanded'), 'true');
+        assert.deepEqual(f.calls, []);
+        assert.equal(f.key('ArrowRight', title).defaultPrevented, true);
+        await new Promise(resolve => setImmediate(resolve));
+        assert.equal(f.document.activeElement, child);
+        assert.equal(opens, 0);
+        assert.deepEqual(f.calls, [['GetNotebookTreeTarget', 'parent', 'ArrowRight']]);
+        f.search.focus(); f.search.value = 'SQL';
+        assert.equal(f.key('ArrowLeft', f.search).defaultPrevented, false);
+        assert.equal(f.key('Enter', f.search).defaultPrevented, true);
+        await new Promise(resolve => setImmediate(resolve));
+        assert.deepEqual(f.calls.at(-1), ['GetNotebookTreeTarget', '', 'Home']);
+        assert.equal(opens, 1);
+    } finally { f.cleanup(); }
+});
+
+test('Enter waits for fresh search results and focuses a virtualized row only after it is rendered', async () => {
+    const f = await fixture({ onInvoke: () => ({ id: 'last-page', index: 79 }) });
+    const previous = globalThis.MutationObserver;
+    const observers = [];
+    globalThis.MutationObserver = class {
+        constructor(callback) { this.callback = callback; observers.push(this); }
+        observe() { this.active = true; }
+        disconnect() { this.active = false; }
+    };
+    try {
+        f.mount(); f.module.setOpen(f.root, true);
+        const list = f.makeNode(), result = f.makeNode();
+        let rendered = false, opens = 0;
+        list.querySelector = () => null; result.click = () => opens++;
+        list.setAttribute('aria-busy', 'true');
+        const queries = f.root.querySelector;
+        f.root.querySelector = selector => {
+            if (selector === '.notion-page-list') return list;
+            if (selector === '[data-page-id="last-page"] .notion-page') return rendered ? result : null;
+            return queries(selector);
+        };
+        f.search.focus(); f.search.value = 'gammel';
+        f.key('Enter', f.search);
+        assert.deepEqual(f.calls, []);
+        f.key('x', f.search);
+        assert.equal(observers[0].active, false, 'typing cancels a previous open request');
+        f.search.value = 'ny'; f.key('Enter', f.search);
+        list.setAttribute('aria-busy', 'false');
+        observers.at(-1).callback();
+        await new Promise(resolve => setImmediate(resolve));
+        assert.deepEqual(f.calls, [['GetNotebookTreeTarget', '', 'Home']]);
+        assert.equal(list.scrollTop, 79 * 44);
+        assert.equal(opens, 0, 'stale and not-yet-rendered rows must not open');
+        rendered = true;
+        observers.at(-1).callback();
+        assert.ok(observers.every(o => !o.active));
+        assert.equal(f.document.activeElement, result);
+        assert.equal(opens, 1);
+    } finally { f.cleanup(); globalThis.MutationObserver = previous; }
+});
 
 test('desktop preference is a single boolean and does not affect the document', async () => {
     const f = await fixture({ stored: 'true' });

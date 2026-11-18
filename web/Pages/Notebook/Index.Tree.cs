@@ -17,6 +17,15 @@ public partial class Index
     private CancellationToken TreeToken => _requests?.Token ?? _life.Token;
 
     private Task OpenTreeActions(Guid id) => _treeDialogs?.Show(id) ?? Task.CompletedTask;
+    protected override NotebookTreeTarget? FindTreeTarget(Guid? current, string key)
+    {
+        if (!CanUse || _loading || _filtering) return null;
+        if (TemplateMode)
+            return IsTeacher ? NotebookTreeUi.KeyboardTarget(VisibleTemplates.ToList(), current, key, t => t.Id, _ => null) : null;
+        var rows = OrderedPages();
+        return NotebookTreeUi.KeyboardTarget(rows, current, key, r => r.Page.Id, r => r.Page.ParentPageId,
+            rows.Count > 60 ? _virtualRows : null);
+    }
     private Task OpenTreeTrash() => _treeDialogs?.ShowTrash() ?? Task.CompletedTask;
     private Task CreateTreeChild(Guid id) { _expandedPages.Add(id); BeginCreateAt(id); return Task.CompletedTask; }
     private void ToggleBranch(Guid id)

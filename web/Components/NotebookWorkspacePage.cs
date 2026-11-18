@@ -3,7 +3,7 @@ using Microsoft.JSInterop;
 
 namespace Mercantec.Tech.Web.Components;
 
-public abstract class NotebookWorkspacePage : ComponentBase
+public abstract partial class NotebookWorkspacePage : ComponentBase
 {
     [Inject] private IJSRuntime SidebarJs { get; set; } = default!;
     protected ElementReference _workspaceElement;
@@ -27,7 +27,7 @@ public abstract class NotebookWorkspacePage : ComponentBase
         var element = _workspaceElement;
         try
         {
-            _sidebarModuleTask ??= SidebarJs.InvokeAsync<IJSObjectReference>("import", "/js/notion-sidebar.js?v=notebook-tree-20261110").AsTask();
+            _sidebarModuleTask ??= SidebarJs.InvokeAsync<IJSObjectReference>("import", "/js/notion-sidebar.js?v=keyboard-20261118").AsTask();
             var module = await _sidebarModuleTask;
             if (generation != _sidebarGeneration) return;
             if (_sidebarModule is not null && !string.IsNullOrEmpty(_sidebarMountedElement.Id))
@@ -84,6 +84,7 @@ public abstract class NotebookWorkspacePage : ComponentBase
         var element = _sidebarMountedElement;
         _sidebarMountedElement = default;
         _sidebarReady = false;
+        _pendingShortcutFocus = null;
         if (_sidebarModule is not null && !string.IsNullOrEmpty(element.Id))
         {
             try { await _sidebarModule.InvokeVoidAsync("destroy", element); }
@@ -117,6 +118,12 @@ public abstract class NotebookWorkspacePage : ComponentBase
             _scrollCenterToTop = false;
             try { await _sidebarModule.InvokeVoidAsync("scrollCenterTop", _sidebarMountedElement); }
             catch (JSException) { /* The center remains scrollable without the enhanced shortcut. */ }
+        }
+        if (_pendingShortcutFocus is string command && _sidebarModule is not null && !_sidebarDisposed)
+        {
+            _pendingShortcutFocus = null;
+            try { await _sidebarModule.InvokeVoidAsync("focusShortcutTarget", _sidebarMountedElement, command); }
+            catch (JSException) { /* Navigation and creation also work via the sidebar controls. */ }
         }
     }
 

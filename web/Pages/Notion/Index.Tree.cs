@@ -16,6 +16,11 @@ public partial class Index
     private CancellationToken TreeToken => _requests?.Token ?? _life.Token;
 
     private Task OpenTreeActions(Guid id) => _treeDialogs?.Show(id) ?? Task.CompletedTask;
+    protected override NotebookTreeTarget? FindTreeTarget(Guid? current, string key) =>
+        CanUse && !_loading
+            ? NotebookTreeUi.KeyboardTarget(_pageRows, current, key, r => r.Page.Id, r => r.Page.ParentPageId,
+                _pageRows.Count > 60 ? _virtualRows : null)
+            : null;
     private Task OpenTreeTrash() => _treeDialogs?.ShowTrash() ?? Task.CompletedTask;
     private Task CreateTreeChild(Guid id) { _expandedPages.Add(id); BeginCreateAt(id); return Task.CompletedTask; }
     private void StartTreeDrag(Guid id) { if (Authoring && !_busy) _draggingPage = id; }

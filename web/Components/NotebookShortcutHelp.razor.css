@@ -1,0 +1,68 @@
+.shortcut-trigger, .notebook-shortcut-help button {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    min-height: 36px;
+    padding: 6px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+}
+.shortcut-trigger:hover, .notebook-shortcut-help button:hover { background: var(--bg); border-color: var(--rule); }
+.shortcut-trigger ::deep .ui-icon, .notebook-shortcut-help ::deep .ui-icon { width: 17px; height: 17px; }
+.notebook-shortcut-help {
+    box-sizing: border-box;
+    width: min(32rem, calc(100vw - 24px));
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: 18px 22px 20px;
+    overflow: auto;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    box-shadow: 0 18px 60px #0004;
+    white-space: normal;
+    font-size: 14px;
+    line-height: 1.45;
+}
+.notebook-shortcut-help::backdrop { background: #09141dae; }
+.notebook-shortcut-help header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.notebook-shortcut-help h2 { margin: 0; font-size: 20px; }
+.notebook-shortcut-help h3 { margin: 14px 0 4px; color: var(--muted); font-size: 12px; }
+.notebook-shortcut-help dl, .notebook-shortcut-help dd, .notebook-shortcut-help form { margin: 0; }
+.notebook-shortcut-help dl > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-height: 32px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--rule);
+}
+.notebook-shortcut-help dl > div:last-child { border: 0; }
+.notebook-shortcut-help small { display: block; color: var(--muted); font-size: 11px; }
+.notebook-shortcut-help dd { display: flex; align-items: center; gap: 3px; color: var(--muted); }
+.notebook-shortcut-help kbd {
+    padding: 1px 5px;
+    border: 1px solid var(--rule);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 600 12px/1.5 ui-monospace, monospace;
+}
+.key-mac, [data-shortcut-platform="mac"] .key-pc { display: none; }
+[data-shortcut-platform="mac"] .key-mac { display: inline; }
+@media (pointer: coarse) {
+    .shortcut-trigger, .notebook-shortcut-help button { width: 44px; min-height: 44px; }
+}
+@media (max-width: 480px) {
+    .notebook-shortcut-help { padding: 12px 14px; }
+    .notebook-shortcut-help kbd { padding-inline: 3px; }
+}
+@media print {
+    .shortcut-trigger, .notebook-shortcut-help { display: none; }
+}

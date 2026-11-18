@@ -1,6 +1,6 @@
 {
   "date": "2026-11-18",
   "title": "Samme sideoversigt på tværs af notesbøger",
-  "description": "Brug sidepanelet til at søge og skifte side i forløb, personlige notesbøger og logbøger. Den åbne side er markeret. Panelet med tilbagelinks er fjernet fra bunden af både forløbssider og notesbogssider.",
+  "description": "Brug Ctrl+P (⌘P på Mac) til at finde en side i den åbne notesbog. Navigér med piletasterne, og åbn en side med Enter. Tryk F1 for at se genvejene, også til at oprette sider og undersider, hvor du har skriveadgang. Forløb og personlige notesbøger deler sidepanel, og tilbagelinkene i bunden er fjernet.",
   "authors": ["Mathias"]
 }
