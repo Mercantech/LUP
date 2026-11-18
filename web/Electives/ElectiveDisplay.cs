@@ -64,7 +64,16 @@ internal static partial class ElectiveDisplay
 
     public static string? SafeSourceUrl(string? value) =>
         Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
-            && uri.Host.Length > 0 && uri.UserInfo.Length == 0 ? uri.AbsoluteUri : null;
+            && uri.Host.Length > 0 && uri.UserInfo.Length == 0 && !ElectiveCatalogueText.IsNotionSource(uri)
+            ? uri.AbsoluteUri : null;
+
+    public static ElectiveView ForCatalogue(ElectiveView elective) => elective with
+    {
+        Title = ElectiveCatalogueText.Clean(elective.Title),
+        Description = ElectiveCatalogueText.Clean(elective.Description),
+        Schedule = ElectiveCatalogueText.Clean(elective.Schedule),
+        SourceUrl = SafeSourceUrl(elective.SourceUrl)
+    };
 
     public static IEnumerable<(string Text, string? Href)> TextLinks(string text)
     {

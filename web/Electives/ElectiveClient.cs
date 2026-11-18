@@ -27,6 +27,21 @@ public sealed class ElectiveClient(HttpClient http)
     public Task<ElectiveParticipant[]> Participants(Guid id, CancellationToken ct) =>
         Send<ElectiveParticipant[]>(new(HttpMethod.Get, $"electives/{id:D}/participants"), ct);
 
+    public Task<ElectiveLectioStudent[]> SearchLectioStudents(string query, CancellationToken ct) =>
+        Send<ElectiveLectioStudent[]>(new(HttpMethod.Get, $"electives/lectio-students?q={Uri.EscapeDataString(query)}"), ct);
+
+    public Task<ElectiveView> AddLectioParticipant(Guid id, string lectioId, bool useReservedSeat, CancellationToken ct) =>
+        Send<ElectiveView>(new(HttpMethod.Put, ParticipantPath(id, lectioId))
+        {
+            Content = JsonContent.Create(new AddElectiveParticipant(useReservedSeat))
+        }, ct);
+
+    public Task<ElectiveView> RemoveLectioParticipant(Guid id, string lectioId, CancellationToken ct) =>
+        Send<ElectiveView>(new(HttpMethod.Delete, ParticipantPath(id, lectioId)), ct);
+
+    private static string ParticipantPath(Guid id, string lectioId) =>
+        $"electives/{id:D}/participants/lectio/{Uri.EscapeDataString(lectioId)}";
+
     private async Task<T> Send<T>(HttpRequestMessage request, CancellationToken ct)
     {
         using (request)
@@ -41,6 +56,11 @@ public sealed class ElectiveClient(HttpClient http)
                 catch (Exception ex) when (ex is JsonException or NotSupportedException) { }
                 throw new ElectiveException(error?.Error switch
                 {
+                    "elective_reserved_seat_unavailable" => "Den reserverede plads er allerede brugt. Opdatér oversigten.",
+                    "elective_participants_require_offering" => "Vælg et hold for at ændre deltagerlisten.",
+                    "lectio_student_not_found" or "invalid_lectio_id" => "Eleven kunne ikke findes i Lectio.",
+                    "lectio_unavailable" => "Lectio kunne ikke kontaktes. Prøv igen.",
+                    "elective_identity_conflict" => "Elevens tilmelding er knyttet til en anden identitet. Kontrollér elevens Lectio-tilknytning.",
                     "elective_full" => "Holdet er fyldt.",
                     "elective_enrollment_closed" => "Tilmeldingen til holdet er lukket.",
                     "elective_withdrawal_closed" => "Afmeldingen til holdet er lukket. Kontakt underviseren.",

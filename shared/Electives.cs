@@ -13,4 +13,8 @@ public sealed record SaveElective(string Title, string Description, string Sched
 
 public sealed record EnrollInElective(bool HasEmployerAgreement);
 
-public sealed record ElectiveParticipant(Guid UserSub, string DisplayName, DateTimeOffset EnrolledAtUtc);
+public sealed record ElectiveParticipant(Guid? UserSub, string DisplayName, DateTimeOffset EnrolledAtUtc,
+    string? LectioId, Guid Id);
+
+public sealed record ElectiveLectioStudent(string LectioId, string DisplayName, string? ClassName);
+public sealed record AddElectiveParticipant(bool UseReservedSeat);

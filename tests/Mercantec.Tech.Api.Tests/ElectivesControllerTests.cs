@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mercantec.Tech.Api.Tests;
 
-public sealed class ElectivesControllerTests : IAsyncLifetime
+public sealed partial class ElectivesControllerTests : IAsyncLifetime
 {
     private static readonly Guid Student = Guid.NewGuid();
     private static readonly Guid Teacher = Guid.NewGuid();
@@ -52,6 +52,39 @@ public sealed class ElectivesControllerTests : IAsyncLifetime
         Assert.DoesNotContain(Read<ElectiveWorkspace>(await teacher.List(default, publishedOnly: true)).Electives, e => e.Id == draft.Id);
         Assert.Equal("elective_template_in_use", Error(Assert.IsType<ConflictObjectResult>(
             await teacher.Update(template.Id, Request() with { Status = "archived", Version = template.Version }, default))));
+    }
+
+    [Fact]
+    public async Task Editing_and_reading_imported_material_keeps_local_text_and_official_urls()
+    {
+        var teacher = As(Teacher, true);
+        const string official = "https://www.eud.uddannelsesadministration.dk/Soeg/?reference=notion.so";
+        const string archived = "https://mercantec.notion.site/hold";
+        var request = Request() with
+        {
+            Title = $"Databaser {archived}", Description = $"[SQL-programmet]({archived})",
+            Schedule = $"Læs {official}", SourceUrl = archived
+        };
+        var created = Read<ElectiveView>(await teacher.Create(request, default));
+        var stored = await _db.Electives.SingleAsync(e => e.Id == created.Id);
+        Assert.Equal("Databaser", stored.Title);
+        Assert.Equal("SQL-programmet", stored.Description);
+        Assert.Equal($"Læs {official}", stored.Schedule);
+        Assert.Null(stored.SourceUrl);
+        Assert.IsType<BadRequestObjectResult>(await teacher.Create(request with { Title = archived }, default));
+
+        // Legacy rows remain readable before their first edit.
+        stored.Description = request.Description;
+        stored.SourceUrl = archived;
+        await _db.SaveChangesAsync();
+        var imported = Assert.Single(Read<ElectiveWorkspace>(await As(Student).List(default)).Electives);
+        Assert.Equal("SQL-programmet", imported.Description);
+        Assert.Null(imported.SourceUrl);
+        var updated = Read<ElectiveView>(await teacher.Update(stored.Id, request with
+        {
+            Version = created.Version, SourceUrl = official
+        }, default));
+        Assert.Equal(official, updated.SourceUrl);
     }
 
     [Fact]

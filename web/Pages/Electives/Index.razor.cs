@@ -10,6 +10,8 @@ public partial class Index
     [SupplyParameterFromQuery(Name = "fag")] public string? Template { get; set; }
     [SupplyParameterFromQuery(Name = "id")] public Guid? SearchItem { get; set; }
 
+    [SupplyParameterFromQuery(Name = "deltagere")] public bool? RosterRequested { get; set; }
+
     private CancellationTokenSource _accountScope = new();
     private (string? Subject, bool Preview, bool Teacher)? _account;
     private ElectiveView[] _items = [];
@@ -148,7 +150,7 @@ public partial class Index
             var result = await Client.List(ViewAs.IsActive, ct);
             if (!ct.IsCancellationRequested)
             {
-                _items = result.Electives;
+                _items = result.Electives.Select(ElectiveDisplay.ForCatalogue).ToArray();
                 _canManage = result.CanManage && Redirect.ShowsTeacherChrome;
             }
         }
@@ -168,17 +170,18 @@ public partial class Index
     {
         Replace(item);
         _notice = item.Status == "template" ? "Faget er gemt i fagkataloget." : "Holdet er gemt.";
-        if (Template is not null)
-            Nav.NavigateTo("/valgfag?vis=administrer", replace: true);
+        if (Template is not null && item.Status != "template")
+            Nav.NavigateTo($"/valgfag?vis=administrer&id={item.Id:D}&deltagere=true", replace: true);
     }
 
     private void EnrollmentChanged(ElectiveView item)
     {
         Replace(item);
-        _notice = item.IsEnrolled ? $"Du er tilmeldt {item.Title}." : $"Du er afmeldt {item.Title}.";
+        var title = ElectiveCatalogueText.Clean(item.Title);
+        _notice = item.IsEnrolled ? $"Du er tilmeldt {title}." : $"Du er afmeldt {title}.";
     }
 
-    private void Replace(ElectiveView item) => _items = [.. _items.Where(e => e.Id != item.Id), item];
+    private void Replace(ElectiveView item) => _items = [.. _items.Where(e => e.Id != item.Id), ElectiveDisplay.ForCatalogue(item)];
 
     public void Dispose()
     {

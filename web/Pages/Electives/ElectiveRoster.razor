@@ -1,0 +1,122 @@
+@using Mercantec.Tech.Web.Electives
+@inject ElectiveClient Client
+@implements IDisposable
+
+<section class="panel elective-roster" aria-labelledby="elective-roster-title">
+    <header class="roster-header">
+        <div>
+            <h2 id="elective-roster-title" tabindex="-1" @ref="_heading">Deltagere på @Item.Title</h2>
+            <p>@Item.EnrollmentCount @(Item.Capacity is { } capacity ? $"af {capacity} pladser optaget" : "pladser optaget"). @Item.ReservedSeats reserveret uden navn.</p>
+        </div>
+        <button type="button" class="secondary" disabled="@_saving" @onclick="OnClose">Luk deltagerliste</button>
+    </header>
+
+    @if (_loading)
+    {
+        <p role="status">Henter deltagere…</p>
+    }
+    else if (_loadError is not null)
+    {
+        <p role="alert">@_loadError</p>
+        <button type="button" class="secondary" @onclick="LoadParticipants">Hent deltagerlisten igen</button>
+    }
+    else
+    {
+        <div class="roster-search">
+            <label class="field">Find elev i Lectio
+                <input type="search" @ref="_searchInput" placeholder="Navn, klasse eller Lectio-id" value="@_query"
+                       aria-describedby="roster-search-help" maxlength="100" autocomplete="off"
+                       disabled="@_saving" @oninput="Search" @onkeydown="SearchKeyDown" />
+            </label>
+            <small id="roster-search-help">Skriv mindst to tegn.</small>
+            @if (Item.ReservedSeats > 0)
+            {
+                <label class="roster-reserved">
+                    <input type="checkbox" disabled="@_saving" @bind="_useReserved" />
+                    Brug en reserveret plads til eleven
+                </label>
+            }
+            @if (_searching)
+            {
+                <p role="status">Søger i Lectio…</p>
+            }
+            else if (_searchError is not null)
+            {
+                <p role="alert">@_searchError</p>
+                <button type="button" class="secondary" @onclick="() => FindStudents(_query)">Prøv søgningen igen</button>
+            }
+            else if (_results is { } students)
+            {
+                @if (students.Length == 0)
+                {
+                    <p role="status">Ingen elever matcher din søgning.</p>
+                }
+                else
+                {
+                    <ul class="roster-results" aria-label="Søgeresultater fra Lectio">
+                        @foreach (var student in students)
+                        {
+                            <li @key="student.LectioId">
+                                <div>
+                                    <strong>@student.DisplayName</strong>
+                                    <small>@StudentInfo(student)</small>
+                                </div>
+                                @if (_participants.Any(p => p.LectioId == student.LectioId))
+                                {
+                                    <span>Tilmeldt</span>
+                                }
+                                else
+                                {
+                                    <button type="button" class="secondary" disabled="@_saving"
+                                            aria-label="@($"Tilføj {student.DisplayName}")" @onclick="() => AddStudent(student)">Tilføj</button>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+        </div>
+
+        <h3>Navngivne deltagere (@_participants.Length)</h3>
+        @if (_participants.Length == 0)
+        {
+            <p>Der er ingen navngivne deltagere på holdet endnu.</p>
+        }
+        else
+        {
+            <ul class="roster-list">
+                @foreach (var person in _participants)
+                {
+                    <li @key="person.Id">
+                        <div>
+                            <strong>@person.DisplayName</strong>
+                            @if (person.LectioId is { } lectioId)
+                            {
+                                <small>Lectio-id @lectioId</small>
+                            }
+                            <small>Tilmeldt <time datetime="@person.EnrolledAtUtc.ToString("O")">@ElectiveDisplay.DateTime(person.EnrolledAtUtc)</time></small>
+                        </div>
+                        @if (person.LectioId is not null)
+                        {
+                            @if (_removeId == person.Id)
+                            {
+                                <div class="roster-confirm">
+                                    <span>Fjern @person.DisplayName (Lectio-id @person.LectioId) fra holdet?</span>
+                                    <button type="button" class="secondary" @ref="_cancelRemove" disabled="@_saving" @onclick="CancelRemove">Annullér</button>
+                                    <button type="button" class="action" disabled="@_saving" @onclick="() => RemoveStudent(person)">Bekræft fjernelse</button>
+                                </div>
+                            }
+                            else
+                            {
+                                <button type="button" class="secondary" disabled="@_saving"
+                                        aria-label="@($"Fjern {person.DisplayName}, Lectio-id {person.LectioId}")" @onclick="() => ConfirmRemove(person.Id)">Fjern</button>
+                            }
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    }
+    @if (_notice is not null) { <p role="status">@_notice</p> }
+    @if (_changeError is not null) { <p role="alert">@_changeError</p> }
+</section>

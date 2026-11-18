@@ -8,6 +8,11 @@ public partial class AppDbContext
     public DbSet<Elective> Electives => Set<Elective>();
     public DbSet<ElectiveEnrollment> ElectiveEnrollments => Set<ElectiveEnrollment>();
 
+    // Serialize roster changes across application instances, including account linking.
+    public Task<int> LockElectiveAsync(Guid id, CancellationToken ct) =>
+        Electives.Where(e => e.Id == id)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(e => e.Version, e => e.Version), ct);
+
     private static void ConfigureElectives(ModelBuilder model)
     {
         model.Entity<Elective>(e =>
@@ -28,10 +33,16 @@ public partial class AppDbContext
         });
         model.Entity<ElectiveEnrollment>(e =>
         {
-            e.ToTable("elective_enrollments");
-            e.HasKey(x => new { x.ElectiveId, x.UserSub });
+            e.ToTable("elective_enrollments", table =>
+                table.HasCheckConstraint("CK_elective_enrollments_identity", "\"UserSub\" IS NOT NULL OR \"LectioId\" IS NOT NULL"));
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()");
+            e.Property(x => x.LectioId).HasMaxLength(64);
             e.Property(x => x.DisplayName).HasMaxLength(200).IsRequired();
             e.HasIndex(x => x.UserSub);
+            e.HasIndex(x => x.LectioId);
+            e.HasIndex(x => new { x.ElectiveId, x.UserSub }).IsUnique();
+            e.HasIndex(x => new { x.ElectiveId, x.LectioId }).IsUnique();
             e.HasOne(x => x.Elective).WithMany(x => x.Enrollments).HasForeignKey(x => x.ElectiveId).OnDelete(DeleteBehavior.Cascade);
         });
     }

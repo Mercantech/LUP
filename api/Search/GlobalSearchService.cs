@@ -166,7 +166,8 @@ internal sealed class GlobalSearchService(AppDbContext db, TimeProvider clock)
                 _ when (elective.EndsOn ?? elective.StartsOn) < today => ("historik", "Tidligere hold"),
                 _ => ("aktuelle", "Aktuelle hold")
             };
-            return new GlobalSearchHit(Category.Electives, "Valgfag", elective.Title, $"/valgfag?vis={view}&id={elective.Id:D}", context, elective.Description);
+            return new GlobalSearchHit(Category.Electives, "Valgfag", ElectiveCatalogueText.Clean(elective.Title),
+                $"/valgfag?vis={view}&id={elective.Id:D}", context, ElectiveCatalogueText.Clean(elective.Description));
         });
     }
 }

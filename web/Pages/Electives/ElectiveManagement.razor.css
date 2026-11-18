@@ -8,7 +8,6 @@
 }
 
 .elective-admin-header h1,
-.elective-admin-header h3,
 .elective-admin-row-copy h3 {
     margin: 0 0 3px;
 }
@@ -24,8 +23,7 @@
     height: 16px;
 }
 
-.elective-editor,
-.elective-roster {
+.elective-editor {
     margin: 14px 0;
 }
 
@@ -82,22 +80,6 @@
 .elective-admin-row-copy {
     min-width: 0;
     overflow-wrap: anywhere;
-}
-
-.elective-roster {
-    overflow-x: auto;
-}
-
-.elective-roster table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-}
-
-.elective-roster th,
-.elective-roster td {
-    padding: 8px;
-    border-bottom: 1px solid var(--rule);
 }
 
 .elective-admin-error {

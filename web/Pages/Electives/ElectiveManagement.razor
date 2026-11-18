@@ -12,9 +12,9 @@
             <p>Beskriv et fag i kataloget, eller opret et hold med datoer og tilmelding.</p>
         </div>
         <div class="actions">
-            <button type="button" class="secondary" disabled="@_busy" @onclick="Refresh">Opdatér</button>
-            <button type="button" class="secondary" disabled="@_busy" @onclick="NewTemplate">Nyt katalogfag</button>
-            <button type="button" class="action" disabled="@_busy" @onclick="() => OpenEditor(new())"><UiIcon Name="plus" /> Opret hold</button>
+            <button type="button" class="secondary" disabled="@(_busy || _rosterSaving)" @onclick="Refresh">Opdatér</button>
+            <button type="button" class="secondary" disabled="@(_busy || _rosterSaving)" @onclick="NewTemplate">Nyt katalogfag</button>
+            <button type="button" class="action" disabled="@(_busy || _rosterSaving)" @onclick="() => OpenEditor(new())"><UiIcon Name="plus" /> Opret hold</button>
         </div>
     </div>
 
@@ -26,7 +26,7 @@
             {
                 <p class="elective-admin-error" role="alert">@_error</p>
             }
-            <fieldset disabled="@_busy">
+            <fieldset disabled="@(_busy || _rosterSaving)">
                 @if (draft.Id is null && draft.Status != "template" && Templates.Any())
                 {
                     <label class="field">
@@ -95,46 +95,7 @@
 
     @if (_roster is { } roster)
     {
-        <section class="panel elective-roster" aria-labelledby="elective-roster-title">
-            <div class="elective-admin-header">
-                <div>
-                    <h3 id="elective-roster-title" tabindex="-1" @ref="_rosterHeading">Deltagere på @roster.Title</h3>
-                    @if (roster.ReservedSeats > 0)
-                    {
-                        <p>@roster.ReservedSeats reserveret uden for LUP.</p>
-                    }
-                </div>
-                <button type="button" class="secondary" disabled="@_busy" @onclick="CloseRoster">Luk deltagerliste</button>
-            </div>
-            @if (_busy)
-            {
-                <p role="status">Henter deltagere…</p>
-            }
-            else if (_error is not null)
-            {
-                <p class="elective-admin-error" role="alert">@_error</p>
-                <button type="button" class="secondary" @onclick="() => ShowParticipants(roster)">Prøv igen</button>
-            }
-            else if (_participants.Length == 0)
-            {
-                <p>Ingen deltagere har tilmeldt sig i LUP endnu.</p>
-            }
-            else
-            {
-                <table>
-                    <thead><tr><th scope="col">Elev</th><th scope="col">Tilmeldt</th></tr></thead>
-                    <tbody>
-                        @foreach (var participant in _participants)
-                        {
-                            <tr @key="participant.UserSub">
-                                <td>@participant.DisplayName</td>
-                                <td><time datetime="@participant.EnrolledAtUtc.ToString("O")">@ElectiveDisplay.DateTime(participant.EnrolledAtUtc)</time></td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-        </section>
+        <ElectiveRoster @key="roster.Id" Item="roster" OnClose="CloseRoster" OnChanged="RosterChanged" OnSavingChanged="SetRosterSaving" />
     }
 
     <div class="elective-admin-filters">
@@ -180,10 +141,10 @@
                         </p>
                     </div>
                     <div class="actions">
-                        <button type="button" class="secondary" aria-label="@($"Redigér {item.Title}")" disabled="@_busy" @onclick="() => OpenEditor(Draft.ForEdit(item))">Redigér</button>
+                        <button type="button" class="secondary" aria-label="@($"Redigér {item.Title}")" disabled="@(_busy || _rosterSaving)" @onclick="() => OpenEditor(Draft.ForEdit(item))">Redigér</button>
                         @if (item.Status != "template")
                         {
-                            <button type="button" class="secondary" aria-label="@($"Deltagere på {item.Title}")" disabled="@_busy" @onclick="() => ShowParticipants(item)">Deltagere</button>
+                            <button type="button" class="secondary" aria-label="@($"Deltagere på {item.Title}")" disabled="@(_busy || _rosterSaving)" @onclick="() => ShowParticipants(item)">Deltagere</button>
                         }
                     </div>
                 </li>

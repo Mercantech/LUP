@@ -1,6 +1,6 @@
 {
   "date": "2026-11-18",
-  "title": "Find dit valgfag blandt tre fagpakker",
-  "description": "Sammenlign Deploy or Die, Game Design og Machine Learning med billeder fra Mercantecs fagkatalog. Åbn en pakke for at læse om faget, se kommende hold og tilmelde dig, når et hold er åbent.",
+  "title": "Se, hvem der deltager på et valgfag",
+  "description": "Undervisere kan tilføje elever fra Lectio til et valgfagshold og se deltagerlisten. En reserveret plads kan knyttes til en elev. De tre fagpakker, fagbeskrivelser og hold findes samlet i LUP.",
   "authors": ["Mathias"]
 }
