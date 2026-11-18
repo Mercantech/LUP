@@ -3,6 +3,7 @@
 @page "/journal"
 @page "/teacher/notebook-templates"
 @page "/teacher/notebook-templates/{TemplateId:guid}"
+@inherits NotebookWorkspacePage
 @implements IAsyncDisposable
 @using Mercantec.Tech.Web.Notion
 
@@ -14,47 +15,116 @@ else if (!Auth.IsAuthenticated) { <section class="panel"><h1>Din notesbog</h1><p
 else if (ViewAs.IsActive) { <section class="panel"><h1>Notesbøger</h1><p>Afslut elevvisningen for at åbne elevens notesbog med din egen underviseradgang.</p><a class="secondary" href="/teacher/notebooks">Elevnotesbøger</a></section> }
 else
 {
-    <header class="page-title nb-heading"><div><h1>@Heading</h1></div><div class="nb-actions">@if (IsTeacher) { <a class="secondary" href="/teacher/notebooks">Elevnotesbøger</a><a class="secondary" href="/teacher/notebook-templates">Skabeloner</a> }@if (!TemplateMode && !Own) { <a class="secondary" href="/notebook">Min notesbog</a> }<button class="secondary" disabled="@_busy" @onclick="Reload">Opdatér</button></div></header>
     @if (_error is not null) { <div class="nb-message nb-error" role="alert">@_error @if (_comment.Length > 0 || _commentDrafts.Count > 0) { <button type="button" class="secondary" @onclick="DiscardCommentDrafts">Kassér kommentarudkast</button> }</div> }
     @if (_notice is not null) { <p class="nb-message" role="status">@_notice</p> }
     @if (_loading) { <p role="status">Henter notesbogen…</p> }
     else if (!TemplateMode || IsTeacher)
     {
-        <button class="secondary nb-sidebar-toggle" aria-controls="nb-sidebar" aria-expanded="@_sidebarOpen" @onclick="() => _sidebarOpen = !_sidebarOpen">Sider og værktøjer</button>
-        <div class="nb-workspace">
-            <aside id="nb-sidebar" class="nb-sidebar @(_sidebarOpen ? "is-open" : "")" aria-label="Notesbogens sider">
+        <div @ref="_workspaceElement" class="notion-workspace nb-workspace @(_sidebarOpen ? "sidebar-open" : null) @(_workspaceFocused ? "notion-focus-mode" : null)" data-edge-to-edge="true" data-sidebar-ready="@_sidebarReady.ToString().ToLowerInvariant()" data-focus-mode="@_workspaceFocused.ToString().ToLowerInvariant()">
+            @if (_sidebarOpen)
+            {
+                <button type="button" class="notion-sidebar-backdrop" tabindex="-1" aria-label="Luk sidemenu" @onclick="() => SetSidebarOpen(false)"></button>
+            }
+            <aside id="notion-sidebar" class="notion-sidebar nb-sidebar @(_sidebarOpen ? "is-open" : null)" tabindex="-1" hidden="@(!_sidebarOpen)" role="@(_sidebarMobile && _sidebarOpen ? "dialog" : null)" aria-modal="@(_sidebarMobile && _sidebarOpen ? "true" : null)" aria-label="Notesbogens sider">
+                <div class="notion-sidebar-heading">
+                    <div><span class="notion-sidebar-eyebrow">@Heading</span><h2>@(TemplateMode ? "Skabeloner" : "Sider")</h2></div>
+                    <button type="button" class="notion-icon-button notion-sidebar-close" aria-label="Skjul sidemenu" title="Skjul sidemenu" @onclick="() => SetSidebarOpen(false)"><UiIcon Name="panel" /></button>
+                </div>
+                <div class="notion-page-search">
+                    <UiIcon Name="search" /><label class="notion-visually-hidden" for="notion-page-search">@(TemplateMode ? "Find en skabelon" : "Find en side")</label>
+                    <input id="notion-page-search" type="search" value="@(TemplateMode ? _templateSearch : _search)" @oninput="SearchPages" @onkeydown="SearchKeyDown" placeholder="@(TemplateMode ? "Find en skabelon…" : "Find en side…")" autocomplete="off" />
+                    @if ((TemplateMode ? _templateSearch : _search).Length > 0)
+                    {
+                        <button type="button" class="notion-icon-button" aria-label="Ryd sidesøgning" @onclick="ClearSearch"><UiIcon Name="close" /></button>
+                    }
+                </div>
+                @if (Own || TemplateMode)
+                {
+                    <div class="notion-actions notion-tree-actions">
+                        <button type="button" class="notion-sidebar-create" @onclick="() => BeginCreate(false)" disabled="@_busy"><UiIcon Name="plus" />@(TemplateMode ? "Ny skabelon" : "Ny note")</button>
+                        @if (!TemplateMode)
+                        {
+                            <button type="button" class="secondary" @onclick="OpenTreeTrash" disabled="@_busy">Papirkurv</button>
+                        }
+                    </div>
+                }
                 @if (TemplateMode)
                 {
-                    <div class="nb-sidebar-title"><h2>Skabeloner</h2><button class="secondary" @onclick="() => BeginCreate(false)" disabled="@_busy">Ny</button></div>
-                    <nav class="nb-page-list" aria-label="Logbogsskabeloner">@foreach (var template in _templates) { <a class="nb-page @(TemplateId == template.Id ? "is-current" : "")" href="/teacher/notebook-templates/@template.Id"><span>@template.Title<small>@CadenceLabel(template.Cadence) · @(template.IsActive ? $"Aktiv v{template.Version}" : "Kladde / arkiveret")</small></span></a> }</nav>
+                    <div class="notion-page-list-heading"><span>@(_templateSearch.Trim().Length > 0 ? "Søgeresultater" : "Alle skabeloner")</span><span aria-live="polite">@VisibleTemplates.Count()</span></div>
+                    <nav class="notion-page-list" aria-label="Logbogsskabeloner">
+                        @foreach (var template in VisibleTemplates)
+                        {
+                            <div class="notion-page-row"><span class="notion-branch-spacer" aria-hidden="true"></span><a class="notion-page nb-page @(TemplateId == template.Id ? "is-current" : null)" href="/teacher/notebook-templates/@template.Id" aria-current="@(TemplateId == template.Id ? "page" : null)"><UiIcon Name="file" /><span class="notion-page-label"><EmojiText Text="@template.Title" /><small class="notion-page-parent">@CadenceLabel(template.Cadence) · @(template.IsActive ? $"Aktiv v{template.Version}" : "Kladde / arkiveret")</small></span></a></div>
+                        }
+                        @if (!VisibleTemplates.Any()) { <p class="notion-sidebar-empty" role="status">@(_templateSearch.Trim().Length > 0 ? "Ingen skabeloner matcher søgningen." : "Der er ingen skabeloner endnu.")</p> }
+                    </nav>
                 }
                 else
                 {
-                    @if (Own) { <div class="nb-actions nb-create-actions"><button class="action" @onclick="() => BeginCreate(false)" disabled="@_busy">Ny note</button><button class="secondary" @onclick="() => _showJournal = !_showJournal" disabled="@_busy">Ny logbog</button><button class="secondary" @onclick="OpenTreeTrash" disabled="@_busy">Papirkurv</button></div> }
-                    <form class="nb-filters" @onsubmit="() => Filter()" @onsubmit:preventDefault><label>Find i notesbogen<input type="search" @bind="_search" placeholder="Titel eller indhold" /></label><div class="nb-filter-row"><label>Type<select @bind="_kind"><option value="">Alle sider</option><option value="note">Noter</option><option value="journal">Logbog</option></select></label><label>Tag<input @bind="_tag" placeholder="Alle tags" /></label></div><button class="secondary" disabled="@_busy">Søg</button></form>
-                    <div class="nb-sidebar-title"><h2>Sider</h2><span>@_total</span></div>
                     @if (_draggingPage is not null) { <NotebookTreeRootDrop OnDrop="DropTreePage" /> }
-                    <nav class="nb-page-list" aria-label="Sider i notesbogen">
-                        @foreach (var item in OrderedPages())
+                    <div class="notion-page-list-heading"><span>@(HasFilters ? "Søgeresultater" : "Alle sider")</span><span aria-live="polite">@PageCount</span></div>
+                    <nav class="notion-page-list" aria-label="Sider i notesbogen" aria-busy="@(_filtering ? "true" : "false")">
+                        @if (_sidebarOpen)
                         {
-                            <NotebookTreeRow @key="item.Page.Id" Id="@item.Page.Id" Title="@item.Page.Title" Editable="Own"
-                                             Busy="_busy" Reorder="CanReorderTree" Dragging="_draggingPage"
-                                             OnActions="OpenTreeActions" OnDragStart="StartTreeDrag" OnDragEnd="EndTreeDrag" OnDrop="DropTreePage">
-                                <button class="nb-page @(item.Page.Id == _current?.DocumentId ? "is-current" : "")" style="--nb-depth:@item.Depth" aria-current="@(item.Page.Id == _current?.DocumentId ? "page" : null)" @onclick="() => OpenPage(item.Page.Id)"><span>@item.Page.Title<small>@(item.Page.Kind == "journal" ? item.Page.PeriodStart?.ToString("d. MMM yyyy") ?? "Logbog" : "Note")</small>@if (!string.IsNullOrWhiteSpace(item.Page.Snippet) && _search.Length > 0) { <small class="nb-snippet">@item.Page.Snippet</small> }</span></button>
-                            </NotebookTreeRow>
+                            var rows = OrderedPages();
+                            @if (rows.Count > 60)
+                            {
+                                @if (_activeRow is not null) { <div class="notion-current-page"><span>Du er her</span>@PageRowContent(_activeRow)</div> }
+                                <Virtualize Items="_virtualRows" Context="item" ItemSize="44" OverscanCount="4">@PageRowContent(item)</Virtualize>
+                            }
+                            else { @foreach (var item in rows) { @PageRowContent(item) } }
                         }
+                        @if (PageCount == 0 && !_filtering) { <p class="notion-sidebar-empty" role="status">@(HasFilters ? "Ingen sider matcher dine filtre." : "Din første side starter her.")</p> }
                     </nav>
-                    @if (_pages.Length == 0) { <p class="nb-muted">@(_search.Length > 0 || _tag.Length > 0 || _kind.Length > 0 ? "Ingen sider matcher dine filtre." : "Din første side starter her.")</p> }
-                    @if (_pages.Length < _total) { <button class="secondary" disabled="@_busy" @onclick="() => Filter(true)">Vis flere sider</button> }
-                    @if (_notebookId is not null) { <button class="secondary nb-graph-button" disabled="@_busy" @onclick="ShowGraph">Åbn forbindelser og graf</button> }
-                    @if (_shared.Length > 0) { <details class="nb-shared"><summary>Delt med mig <span>@_shared.Length</span></summary><nav aria-label="Delt med mig">@foreach (var shared in _shared) { <a class="nb-page" href="/notebook/@shared.Id"><span>@shared.Title<small>Læseadgang</small></span></a> }</nav></details> }
+                    @if (_pages.Length < _total && (HasFilters || _current is null)) { <button class="secondary" disabled="@(_busy || _filtering)" @onclick="() => Filter(more: true)">Vis flere sider</button> }
                 }
                 @if (_creating)
                 {
                     <form class="nb-create-form" @onsubmit="Create" @onsubmit:preventDefault><h3>@(TemplateMode ? "Ny skabelon" : _newParent is null ? "Ny note" : "Ny underside")</h3><label>Titel<input @bind="_newTitle" @bind:event="oninput" maxlength="200" required autofocus /></label>@if (TemplateMode) { <label>Rytme<select @bind="_newCadence"><option value="daily">Daglig</option><option value="weekly">Ugentlig</option><option value="free">Fri</option></select></label> }<div class="nb-actions"><button class="action" disabled="@(_busy || string.IsNullOrWhiteSpace(_newTitle))">Opret</button><button type="button" class="secondary" @onclick="() => _creating = false">Annullér</button></div></form>
                 }
+                <details class="notion-sidebar-tools"><summary><UiIcon Name="sliders" />Notesbogsværktøjer<span aria-hidden="true">⌄</span></summary>
+                    <nav aria-label="Notesbogsværktøjer">
+                        <a href="/notion"><UiIcon Name="book" />Alle notesbøger</a>
+                        @if (!Own) { <a href="/notebook"><UiIcon Name="book" />Min notesbog</a> }
+                        @if (!TemplateMode && _notebookId is not null) { <button type="button" disabled="@_busy" @onclick="ShowGraph"><UiIcon Name="chart" />Åbn forbindelser og graf</button> }
+                        @if (Own && !TemplateMode) { <button type="button" disabled="@_busy" @onclick="ToggleJournal"><UiIcon Name="plus" />Ny logbog</button> }
+                        @if (IsTeacher)
+                        {
+                            <a href="/teacher/notebooks"><UiIcon Name="people" />Elevnotesbøger</a>
+                            @if (!TemplateMode) { <a href="/teacher/notebook-templates"><UiIcon Name="file" />Skabeloner</a> }
+                        }
+                        <button type="button" disabled="@_busy" @onclick="Reload"><UiIcon Name="loop" />Opdatér</button>
+                    </nav>
+                </details>
+                @if (!TemplateMode)
+                {
+                    <details class="notion-sidebar-tools"><summary><UiIcon Name="search" />Filtre<span aria-hidden="true">⌄</span></summary>
+                        <form class="nb-filters" @onsubmit="() => Filter()" @onsubmit:preventDefault>
+                            <div class="nb-filter-row"><label>Type<select @bind="_kind" @bind:after="ApplyFilters"><option value="">Alle sider</option><option value="note">Noter</option><option value="journal">Logbog</option></select></label><label>Tag<input @bind="_tag" @bind:event="oninput" @bind:after="QueueFilter" placeholder="Alle tags" /></label></div>
+                        </form>
+                    </details>
+                    @if (_shared.Length > 0)
+                    {
+                        <details class="notion-sidebar-tools"><summary><UiIcon Name="people" />Delt med mig (@_shared.Length)<span aria-hidden="true">⌄</span></summary>
+                            <nav aria-label="Delt med mig">@foreach (var shared in _shared) { <a href="/notebook/@shared.Id"><UiIcon Name="file" /><EmojiText Text="@shared.Title" /></a> }</nav>
+                        </details>
+                    }
+                }
+                <div class="notion-sidebar-resize" role="separator" aria-label="Sideoversigtens bredde" aria-orientation="vertical" aria-valuemin="180" aria-valuemax="420" aria-valuenow="268" tabindex="0"></div>
             </aside>
-            <section class="nb-document" aria-label="Dokumentside">
+            <section class="notion-document nb-document" aria-label="Dokumentside">
+                <div class="notion-document-toolbar">
+                    <h1 class="notion-visually-hidden">@Heading</h1>
+                    <div class="notion-toolbar-nav">
+                        <button type="button" class="notion-sidebar-toggle nb-sidebar-toggle" aria-controls="notion-sidebar" aria-expanded="@(_sidebarOpen && !_workspaceFocused ? "true" : "false")" aria-label="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" title="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" @onclick="ToggleSidebar"><UiIcon Name="panel" /><span>Sider</span></button>
+                    <button type="button" class="notion-focus-toggle" disabled="@(!SidebarEnhanced)" aria-pressed="@(_workspaceFocused ? "true" : "false")" aria-label="@(_workspaceFocused ? "Afslut fokus" : "Fokus")" title="@(_workspaceFocused ? "Afslut fokus" : "Fokus")" @onclick="ToggleWorkspaceFocus"><UiIcon Name="screen" /><span>@(_workspaceFocused ? "Afslut fokus" : "Fokus")</span></button>
+                    </div>
+                    <div class="notion-toolbar-title notion-published-title"><EmojiText Text="@(_current?.Title ?? Heading)" /></div>
+                    @if (_current is not null)
+                    {
+                        <div class="notion-toolbar-actions"><span class="notion-save-status nb-save @_status" role="status" title="@(Editing ? StatusLabel : "Læsevisning · opdateres automatisk")"><i aria-hidden="true"></i><span class="notion-save-label">@(Editing ? StatusLabel : "Læsevisning")</span></span></div>
+                    }
+                </div>
                 @if (_showJournal && Own)
                 {
                     <section class="nb-journal-library" aria-labelledby="nb-journal-title"><div class="nb-sidebar-title"><h2 id="nb-journal-title">Skriv logbog</h2><button class="secondary" @onclick="() => _showJournal = false">Luk</button></div><p>Vælg en skabelon. Et dagligt eller ugentligt indlæg åbnes igen, hvis du allerede har skrevet i perioden.</p><div class="nb-meta-grid"><label>Dato<input type="date" @bind="_period" /></label><label>Hold (valgfrit)<select @bind="_entryHold"><option value="">Uden hold</option>@foreach (var hold in _holds) { <option value="@hold.Id">@hold.Name</option> }</select></label></div><div class="nb-template-cards">@foreach (var template in _templates.Where(t => t.IsActive)) { <button class="nb-template-card" disabled="@_busy" @onclick="() => Entry(template.Id)"><strong>@template.Title</strong><span>@CadenceLabel(template.Cadence)</span></button> }</div>@if (!_templates.Any(t => t.IsActive)) { <p class="nb-muted">Der er endnu ingen aktive skabeloner. Din underviser kan oprette dem.</p> }</section>
@@ -69,7 +139,8 @@ else
                 }
                 else
                 {
-                    <div class="nb-document-bar"><span class="nb-save @_status" role="status">@(Editing ? StatusLabel : "Læsevisning · opdateres automatisk")</span><div class="nb-actions">@if (Editing && !TemplateMode) { <button class="secondary" @onclick="() => BeginCreate(true)" disabled="@_busy">Ny underside</button> }@if (_current.CanComment) { <button class="secondary" @onclick="ToggleComments" disabled="@_busy" aria-expanded="@_showComments">Kommentarer</button> }@if (Own) { <button class="secondary" @onclick="ToggleShares" disabled="@_busy" aria-expanded="@_showShares">Del</button> }</div></div>
+                    <article class="nb-sheet">
+                    <div class="nb-document-bar"><div class="nb-actions">@if (Editing && !TemplateMode) { <button class="secondary" @onclick="() => BeginCreate(true)" disabled="@_busy">Ny underside</button> }@if (_current.CanComment) { <button class="secondary" @onclick="ToggleComments" disabled="@_busy" aria-expanded="@_showComments">Kommentarer</button> }@if (Own) { <button class="secondary" @onclick="ToggleShares" disabled="@_busy" aria-expanded="@_showShares">Del</button> }</div></div>
                     <p class="nb-visibility">@(TemplateMode ? "Undervisere kan skrive i skabelonen. Elever får en kopi ved oprettelse af logbog." : "Alle undervisere kan læse og kommentere. Deling giver andre læseadgang.")</p>
                     @if (_status is "offline" or "error" && _statusDetail.Length > 0) { <p class="nb-message nb-error" role="alert">@_statusDetail</p> }
                     @if (Editing)
@@ -83,6 +154,7 @@ else
                     }
                     <div class="nb-editor-root" @ref="_editorElement"></div>@if (NoticeKind == "mention" && !string.IsNullOrEmpty(NoticeQuery)) { <MentionReceipt SourceId="_current.DocumentId" Loaded="_mounted" Notice="@NoticeQuery" /> }
                     @if (!Editing && !_mounted) { <p class="nb-muted nb-waiting" role="status">Venter på sidens gemte indhold…</p> }
+                    </article>
                     @if (_showComments && _current.CanComment)
                     {
                         <section class="nb-comments"><div class="nb-sidebar-title"><h2>Kommentarer</h2><button class="secondary" @onclick="() => _showComments = false">Luk</button></div><p class="nb-muted">Kommentarer deles mellem eleven og underviserne.</p>@foreach (var comment in _comments.OrderBy(c => c.CreatedAtUtc)) { <article class="nb-comment"><header><strong>@comment.AuthorName</strong><time datetime="@comment.CreatedAtUtc.ToString("O")">@comment.CreatedAtUtc.ToLocalTime().ToString("d. MMM HH:mm")</time></header><p>@comment.Text</p></article> }@if (_comments.Length == 0) { <p class="nb-muted">Der er ingen kommentarer endnu.</p> }<form @onsubmit="AddComment" @onsubmit:preventDefault><label>Skriv en kommentar<textarea @bind="_comment" @bind:event="oninput" maxlength="4000" rows="3"></textarea></label><button class="action" disabled="@(_busy || string.IsNullOrWhiteSpace(_comment))">Tilføj kommentar</button></form></section>
@@ -101,4 +173,22 @@ else
                                  DeletePage="DeleteTreePage" ListTrash="ListTreeTrash" RestorePage="RestoreTreePage" />
         }
     }
+}
+
+@code {
+    private RenderFragment PageRowContent(SidebarRow item) => @<NotebookTreeRow @key="item.Page.Id" Id="@item.Page.Id" Title="@item.Page.Title" Editable="Own"
+                     Busy="_busy" Reorder="CanReorderTree" Dragging="_draggingPage"
+                     OnActions="OpenTreeActions" OnDragStart="StartTreeDrag" OnDragEnd="EndTreeDrag" OnDrop="DropTreePage">
+        <div class="notion-page-row" style="--page-depth:@item.Depth">
+            @if (item.HasChildren && !HasFilters)
+            {
+                <button type="button" class="notion-branch-toggle @(_expandedPages.Contains(item.Page.Id) ? "is-expanded" : null)" aria-expanded="@(_expandedPages.Contains(item.Page.Id) ? "true" : "false")" aria-label="@($"Fold {item.Page.Title} {(_expandedPages.Contains(item.Page.Id) ? "sammen" : "ud")}")" @onclick="() => ToggleBranch(item.Page.Id)"><UiIcon Name="chevron" /></button>
+            }
+            else { <span class="notion-branch-spacer" aria-hidden="true"></span> }
+            <button type="button" class="notion-page nb-page @(item.Page.Id == _current?.DocumentId ? "is-current" : null)" title="@item.Page.Title" aria-current="@(item.Page.Id == _current?.DocumentId ? "page" : null)" @onclick="() => OpenPage(item.Page.Id)">
+                <UiIcon Name="@(item.HasChildren ? "folder" : "file")" /><span class="notion-page-label"><EmojiText Text="@item.Page.Title" />
+                @if (item.Detail is string detail) { <small class="notion-page-parent">@detail</small> }</span>
+            </button>
+        </div>
+    </NotebookTreeRow>;
 }

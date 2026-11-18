@@ -14,6 +14,4 @@ public sealed class ReferenceClient(HttpClient http)
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<EntityGraph>(ct) ?? new([], [], 0, false);
     }
-    public async Task<ResolvedReference[]> Backlinks(string kind, string id, CancellationToken ct, bool publishedOnly = false) =>
-        await http.GetFromJsonAsync<ResolvedReference[]>($"references/backlinks?kind={Uri.EscapeDataString(kind)}&id={Uri.EscapeDataString(id)}&publishedOnly={publishedOnly.ToString().ToLowerInvariant()}", ct) ?? [];
 }

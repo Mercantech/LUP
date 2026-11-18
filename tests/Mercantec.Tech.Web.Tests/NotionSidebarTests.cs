@@ -29,6 +29,8 @@ public sealed class NotionSidebarTests
         Assert.Equal("true", page.Find(".notion-workspace").GetAttribute("data-edge-to-edge"));
         Assert.Single(page.FindAll(".notion-document-toolbar h1.notion-visually-hidden"));
         Assert.Empty(page.FindAll(".notion-workspace > .page-title"));
+        Assert.Empty(page.FindAll("[aria-label='Tilbagelinks']"));
+        Assert.DoesNotContain("/api/references/backlinks", api.Requests);
 
         page.Find(".notion-sidebar-toggle").Click();
         Assert.Equal("false", page.Find(".notion-sidebar-toggle").GetAttribute("aria-expanded"));
@@ -200,6 +202,8 @@ public sealed class NotionSidebarTests
         Assert.Contains("CSS layout", Assert.Single(PageLinks(page)).TextContent);
         Assert.Empty(page.FindAll("#notion-title"));
         Assert.Single(page.FindAll(".notion-editor-root"));
+        Assert.Empty(page.FindAll("[aria-label='Tilbagelinks']"));
+        Assert.DoesNotContain("/api/references/backlinks", api.Requests);
         Assert.Equal(1, javascript.Editor.Mounts);
     }
 
@@ -507,7 +511,6 @@ public sealed class NotionSidebarTests
             Requests.Enqueue(path);
             if (request.Method == HttpMethod.Post && path == "/api/notion/pages") return Create(request, ct);
             if (path == "/api/emojis") return Json(Array.Empty<CustomEmojiItem>());
-            if (path == "/api/references/backlinks") return Json(Array.Empty<ResolvedReference>());
             if (path == "/api/notion/holds") return Json(new[] { new NotionHold(HoldId, "Programmering H1", Teacher) });
             if (path == "/api/notion/pages") { PageQueries.Enqueue(request.RequestUri.Query); return Json(Pages); }
             if (path == $"/api/notion/holds/{HoldId}/groups") return Json(Array.Empty<NotionGroupView>());

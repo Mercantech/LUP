@@ -1,6 +1,6 @@
 {
   "date": "2026-11-18",
-  "title": "Enklere visning af notesbogssider",
-  "description": "Sektionen »Sider, der linker hertil« er fjernet fra bunden af notesbogssiderne.",
+  "title": "Samme sideoversigt på tværs af notesbøger",
+  "description": "Brug sidepanelet til at søge og skifte side i forløb, personlige notesbøger og logbøger. Den åbne side er markeret. Panelet med tilbagelinks er fjernet fra bunden af både forløbssider og notesbogssider.",
   "authors": ["Mathias"]
 }

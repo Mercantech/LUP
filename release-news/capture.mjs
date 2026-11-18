@@ -178,7 +178,11 @@ async function prepare(page, id) {
     await columns.nth(1).locator('.lectio-pick').filter({ hasText: 'Anna Nielsen' }).click();
   }
   if (id === 'notebook-graph') {
-    await page.getByRole('button', { name: 'Åbn forbindelser og graf', exact: true }).click();
+    const graph = page.getByRole('button', { name: 'Åbn forbindelser og graf', exact: true });
+    if (!await graph.isVisible()) {
+      await page.locator('#notion-sidebar summary').filter({ hasText: 'Notesbogsværktøjer' }).click();
+    }
+    await graph.click();
   }
   if (id === 'notebook-graph' || id === 'page-graph') {
     await page.locator('.reference-canvas canvas').waitFor({ state: 'visible' });
