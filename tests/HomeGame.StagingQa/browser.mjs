@@ -194,7 +194,7 @@ try {
     phase = 'teacher-browser-approval';
     await teacherPage.goto(origin + '/quests/' + quest.id + '?hold=' + holdId + '&submission=' + submissionId,
         { waitUntil: 'domcontentloaded' });
-    await teacherPage.getByLabel('Vurdering', { exact: true }).selectOption('approved');
+    await teacherPage.getByRole('combobox', { name: /^Vurdering/ }).selectOption('approved');
     await teacherPage.getByRole('button', { name: 'Gem feedback', exact: true }).click();
     await waitUntil(async () => (await homeFor(identities.pupil)).gold === 40);
     submission = await api(identities.teacher, '/api/submissions/' + submissionId);
