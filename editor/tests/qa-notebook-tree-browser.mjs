@@ -58,7 +58,7 @@ async function until(read, matches, description) {
   throw new Error('Timed out: ' + description);
 }
 
-const sidebar = page => page.getByRole('complementary', { name: 'Notesbogens sider' });
+const sidebar = page => page.locator('#notion-sidebar');
 const actions = (page, title) => page.getByRole('button', { name: 'Sidehandlinger: ' + title, exact: true });
 const row = (page, title) => sidebar(page).locator('.nb-tree-row[data-page-id]').filter({
   has: actions(page, title),
@@ -66,12 +66,9 @@ const row = (page, title) => sidebar(page).locator('.nb-tree-row[data-page-id]')
 
 async function openSidebar(page, path) {
   await page.goto(new URL(path, base).href);
-  if (path.startsWith('/notion')) {
-    // The desktop sidebar is collapsible and its state persists across pages.
-    const toggle = page.locator('.notion-sidebar-toggle');
-    await toggle.waitFor();
-    if (!await sidebar(page).isVisible()) await toggle.click();
-  }
+  const toggle = page.locator('.notion-sidebar-toggle');
+  await toggle.waitFor();
+  if (!await sidebar(page).isVisible()) await toggle.click();
   await sidebar(page).waitFor();
 }
 
@@ -183,7 +180,7 @@ async function editRestoredPage(page, path, text) {
 async function mobileActions(who, id, title) {
   const page = await client(who, { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   await page.goto(new URL('/notebook/' + id, base).href);
-  const toggle = page.getByRole('button', { name: 'Sider og værktøjer', exact: true });
+  const toggle = page.locator('.notion-sidebar-toggle');
   await toggle.waitFor();
   if (!await sidebar(page).isVisible()) await toggle.tap();
   await actions(page, title).tap();

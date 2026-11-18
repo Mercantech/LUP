@@ -1,6 +1,7 @@
 @page "/notion/{PageId:guid}"
 @page "/notion/collections/{CollectionId:guid}"
 @using Mercantec.Tech.Web.Notion
+@inherits NotebookWorkspacePage
 @implements IAsyncDisposable
 
 <NotionTabTitle Title="@(_current?.Title ?? _collection?.Title)" />
@@ -60,7 +61,7 @@ else
                     <h1 class="notion-visually-hidden">@(_current?.Title ?? (_holdId == Guid.Empty ? "Teorinotesbog" : "Holdets indhold"))</h1>
                     <div class="notion-toolbar-nav">
                         <button type="button" class="notion-sidebar-toggle" aria-controls="notion-sidebar" aria-expanded="@(_sidebarOpen && !_workspaceFocused ? "true" : "false")" aria-label="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" title="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" @onclick="ToggleSidebar"><UiIcon Name="panel" /><span>Sider</span></button>
-                        <button type="button" class="notion-focus-toggle" disabled="@(!_sidebarReady || _sidebarModule is null)" aria-pressed="@_workspaceFocused.ToString().ToLowerInvariant()" aria-label="@(_workspaceFocused ? "Afslut fokus" : "Fokus")" title="@(_workspaceFocused ? "Gendan sidekolonnerne" : "Skjul sidekolonnerne og fokusér på dokumentet")" @onclick="ToggleWorkspaceFocus"><UiIcon Name="screen" /><span>@(_workspaceFocused ? "Afslut fokus" : "Fokus")</span></button>
+                        <button type="button" class="notion-focus-toggle" disabled="@(!SidebarEnhanced)" aria-pressed="@_workspaceFocused.ToString().ToLowerInvariant()" aria-label="@(_workspaceFocused ? "Afslut fokus" : "Fokus")" title="@(_workspaceFocused ? "Gendan sidekolonnerne" : "Skjul sidekolonnerne og fokusér på dokumentet")" @onclick="ToggleWorkspaceFocus"><UiIcon Name="screen" /><span>@(_workspaceFocused ? "Afslut fokus" : "Fokus")</span></button>
                     </div>
                     @if (_current is not null)
                     {
@@ -133,7 +134,11 @@ else
                 else
                 {
                     @if (_statusDetail.Length > 0 && _status is "error" or "offline") { <p class="notion-connection-warning" role="alert">@_statusDetail</p> }
-                    <div @key="(_current.PageId, _generation)" class="notion-editor-root" @ref="_editorElement"></div>@if (!string.IsNullOrEmpty(MentionNotice)) { <MentionReceipt SourceId="_current.PageId" Loaded="_mounted" Notice="@MentionNotice" /> }<ReferenceBacklinks Kind="notion-page" Id="@_current.PageId.ToString()" Revision="_current.DraftRevision" PublishedOnly="ForceReadOnly" />
+                    <div @key="(_current.PageId, _generation)" class="notion-editor-root" @ref="_editorElement"></div>
+                    @if (!string.IsNullOrEmpty(MentionNotice))
+                    {
+                        <MentionReceipt SourceId="_current.PageId" Loaded="_mounted" Notice="@MentionNotice" />
+                    }
                 }
             </section>
             <div class="notion-ai-slot" aria-label="AI-arbejdsområde"></div>

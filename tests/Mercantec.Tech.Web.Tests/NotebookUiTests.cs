@@ -1,9 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Bunit;
 using Mercantec.Tech.Contracts;
 using Mercantec.Tech.Web.Notebooks;
 using Mercantec.Tech.Web.Notion;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using NotebookPage = Mercantec.Tech.Web.Pages.Notebook.Index;
@@ -16,12 +18,7 @@ public sealed class NotebookUiTests
     public async Task Typing_enables_create_and_find_buttons_without_blurring_the_input()
     {
         using var api = new NotebookApi();
-        await using var context = await LearningUiTestContext.CreateAsync(api, configure: services =>
-        {
-            var original = (IJSRuntime)services.Last(s => s.ServiceType == typeof(IJSRuntime)).ImplementationInstance!;
-            services.AddSingleton<IJSRuntime>(new NotebookJavascript(original));
-            services.AddSingleton<NotebookClient>(); services.AddSingleton<NotionClient>();
-        });
+        await using var context = await CreateContext(api);
         var page = context.Render<NotebookPage>(p => p.Add(x => x.PageId, api.Page.Id));
         page.WaitForAssertion(() => Assert.Single(page.FindAll(".nb-title-input")));
 
@@ -59,8 +56,10 @@ public sealed class NotebookUiTests
 
         page.Find(".nb-title-input").Input("Min titel under redigering");
         page.Find(".nb-sidebar-toggle").Click();
-        Assert.Contains("is-open", page.Find("#nb-sidebar").ClassName);
+        Assert.Equal("false", page.Find(".nb-sidebar-toggle").GetAttribute("aria-expanded"));
+        Assert.True(page.Find("#notion-sidebar").HasAttribute("hidden"));
         page.Find(".nb-sidebar-toggle").Click();
+        Assert.Equal("true", page.Find(".nb-sidebar-toggle").GetAttribute("aria-expanded"));
         Button(page, "Kommentarer").Click();
         page.WaitForAssertion(() => Assert.Single(page.FindAll(".nb-comments textarea")));
         page.Find(".nb-comments textarea").Input("Kan vi drøfte denne løsning?");
@@ -73,6 +72,7 @@ public sealed class NotebookUiTests
         await page.Instance.OnNotionStatus("saved", "");
         Assert.Equal("Gemt i skyen", page.Find(".nb-save").TextContent);
         Assert.Empty(page.FindAll("section[aria-label='Tilbagelinks']"));
+        Assert.Single(page.FindAll("#notion-sidebar [aria-current='page']"));
         Assert.Empty(api.Unexpected);
     }
 
@@ -92,6 +92,8 @@ public sealed class NotebookUiTests
         page.WaitForAssertion(() => Assert.Equal(1, javascript!.Editor.ReadOnlyMounts));
         Assert.Empty(page.FindAll(".nb-title-input"));
         Assert.Empty(page.FindAll("section[aria-label='Tilbagelinks']"));
+        Assert.Single(page.FindAll("#notion-sidebar .notion-page-list [aria-current='page']"));
+        Assert.Empty(page.FindAll("#notion-sidebar .nb-tree-more, #notion-sidebar [draggable='true']"));
         Assert.DoesNotContain(page.FindAll("button"), b => b.TextContent.Trim() is "Kommentarer" or "Del");
         Assert.DoesNotContain(api.Requests, p => p.EndsWith("/comments", StringComparison.Ordinal));
 
@@ -110,18 +112,74 @@ public sealed class NotebookUiTests
         Assert.Empty(api.Unexpected);
     }
 
+    [Fact]
+    public async Task Search_finds_a_collapsed_child_and_keeps_the_personal_document_open()
+    {
+        using var api = new NotebookApi();
+        await using var context = await CreateContext(api);
+        var page = context.Render<NotebookPage>(p => p.Add(x => x.PageId, api.Page.Id));
+        page.WaitForAssertion(() => Assert.Single(page.FindAll("#notion-sidebar [aria-current='page']")));
+        var toggle = page.Find("#notion-sidebar .notion-branch-toggle");
+        if (toggle.GetAttribute("aria-expanded") == "true") toggle.Click();
+        Assert.DoesNotContain(api.Child.Title, page.Find(".notion-page-list").TextContent);
+        page.Find("#notion-sidebar .notion-branch-toggle").Click();
+        Assert.Contains(api.Child.Title, page.Find(".notion-page-list").TextContent);
+        page.Find("#notion-sidebar .notion-branch-toggle").Click();
+        page.Find("#notion-page-search").Input(api.Child.Title);
+        page.WaitForAssertion(() => Assert.Equal(api.Child.Id.ToString(),
+            Assert.Single(page.FindAll(".notion-page-list [data-page-id]")).GetAttribute("data-page-id")));
+        Assert.Equal(api.Page.Title, page.Find(".nb-title-input").GetAttribute("value"));
+        Assert.Empty(api.Unexpected);
+    }
+
+    [Theory]
+    [InlineData("/journal", false)]
+    [InlineData("/teacher/notebook-templates", true)]
+    public async Task Journal_and_templates_use_the_page_explorer_and_keep_their_own_actions(string route, bool teacher)
+    {
+        using var api = new NotebookApi();
+        await using var context = await CreateContext(api, teacher);
+        var path = teacher ? $"{route}/{api.Template.Id}" : route;
+        context.Services.GetRequiredService<NavigationManager>().NavigateTo(path);
+        var page = context.Render<NotebookPage>(p => p.Add(x => x.TemplateId, teacher ? api.Template.Id : null));
+        page.WaitForAssertion(() => Assert.Single(page.FindAll("#notion-sidebar #notion-page-search")));
+        Assert.Contains(teacher ? api.Template.Title : api.Child.Title, page.Find("#notion-sidebar .notion-page-list").TextContent);
+        Assert.Single(page.FindAll(teacher ? ".nb-template-status" : ".nb-journal-library"));
+        Assert.Empty(page.FindAll("[aria-label='Tilbagelinks']"));
+        Assert.Empty(api.Unexpected);
+    }
+
+    private static Task<LearningUiTestContext> CreateContext(NotebookApi api, bool teacher = false)
+        => LearningUiTestContext.CreateAsync(api, teacher: teacher, configure: services =>
+        {
+            var runtime = (IJSRuntime)services.Last(s => s.ServiceType == typeof(IJSRuntime)).ImplementationInstance!;
+            services.AddSingleton<IJSRuntime>(new NotebookJavascript(runtime));
+            services.AddSingleton<NotebookClient>(); services.AddSingleton<NotionClient>();
+        });
+
     private static AngleSharp.Dom.IElement Button(IRenderedComponent<NotebookPage> page, string label)
         => page.FindAll("button").Single(b => b.TextContent.Trim() == label);
 
     private sealed class NotebookJavascript(IJSRuntime original) : IJSRuntime
     {
         public EditorModule Editor { get; } = new();
+        private readonly SidebarModule _sidebar = new();
         public ValueTask<TValue> InvokeAsync<TValue>(string id, object?[]? args) => InvokeAsync<TValue>(id, CancellationToken.None, args);
         public ValueTask<TValue> InvokeAsync<TValue>(string id, CancellationToken ct, object?[]? args)
         {
-            if (id == "import") return ValueTask.FromResult((TValue)(object)Editor);
+            if (id == "import") return ValueTask.FromResult((TValue)(object)(
+                args?.FirstOrDefault()?.ToString()?.Contains("notion-sidebar", StringComparison.Ordinal) == true
+                    ? (IJSObjectReference)_sidebar : Editor));
             return original.InvokeAsync<TValue>(id, ct, args);
         }
+    }
+    private sealed class SidebarModule : IJSObjectReference
+    {
+        public ValueTask<TValue> InvokeAsync<TValue>(string id, object?[]? args) => InvokeAsync<TValue>(id, CancellationToken.None, args);
+        public ValueTask<TValue> InvokeAsync<TValue>(string id, CancellationToken ct, object?[]? args) => id == "mount"
+            ? ValueTask.FromResult(JsonSerializer.Deserialize<TValue>("""{"mobile":false,"desktopOpen":true}""", JsonSerializerOptions.Web)!)
+            : ValueTask.FromResult(default(TValue)!);
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
     private sealed class EditorModule : IJSObjectReference
     {
@@ -144,27 +202,40 @@ public sealed class NotebookUiTests
         private readonly Guid _notebook = Guid.NewGuid(), _sharedNotebook = Guid.NewGuid();
         public bool Reader, Revoked;
         public NotebookPageSummary Page { get; }
+        public NotebookPageSummary Child { get; }
+        public NotebookTemplateView Template { get; } = new(Guid.NewGuid(), Guid.NewGuid(), "Ugens refleksion", "weekly", true, 1, DateTimeOffset.UtcNow);
         public List<string> Requests { get; } = [];
         public List<string> Unexpected { get; } = [];
         private readonly List<NotebookCommentView> _comments = [];
-        public NotebookApi() => Page = new(Guid.NewGuid(), _notebook, "Databaseovervejelser", null, "note", ["sql"], null, null, null, DateTimeOffset.UtcNow, 1);
+        public NotebookApi()
+        {
+            Page = new(Guid.NewGuid(), _notebook, "Databaseovervejelser", null, "note", ["sql"], null, null, null, DateTimeOffset.UtcNow, 1);
+            Child = Page with { Id = Guid.NewGuid(), Title = "Relationer", ParentPageId = Page.Id, Kind = "journal" };
+        }
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             var path = request.RequestUri!.AbsolutePath;
             Requests.Add(path);
             var notebook = Reader ? _sharedNotebook : _notebook;
             var page = Page with { NotebookId = notebook };
+            NotebookPageSummary[] visiblePages = Reader ? [page] : [page, Child];
+            var query = System.Web.HttpUtility.ParseQueryString(request.RequestUri.Query);
+            var matching = visiblePages.Where(p => p.Title.Contains(query["search"] ?? "", StringComparison.OrdinalIgnoreCase)
+                && (string.IsNullOrEmpty(query["kind"]) || p.Kind == query["kind"])).ToArray();
+            var tree = visiblePages.Select(p => new NotionPageLink(p.Id, p.Title, p.ParentPageId)).ToArray();
+            var document = visiblePages.FirstOrDefault(p => path == $"/api/notebooks/pages/{p.Id}/context");
             object? body = path switch
             {
                 "/api/notebooks/profile" => null,
                 "/api/notebooks/mine" => new NotebookInfo(_notebook, LearningUiTestContext.AccountId, "Testelev", true, true),
                 "/api/notebooks/shared" => Reader ? new[] { page } : Array.Empty<NotebookPageSummary>(),
-                "/api/notebooks/templates" => Array.Empty<NotebookTemplateView>(),
+                "/api/notebooks/templates" => new[] { Template },
+                var p when p == $"/api/notebooks/templates/{Template.Id}/context" => new NotebookDocumentContext(Template.DocumentId, null, Template.Title, "template", true, true, false, false, "AA==", DateTimeOffset.UtcNow, 1, null, [], []),
                 "/api/notebooks/today" => new DateOnly(2026, 11, 7),
                 "/api/notion/holds" => Array.Empty<NotionHold>(),
-                var p when p == $"/api/notebooks/{notebook}/pages" => new NotebookPageList([page], 1),
+                var p when p == $"/api/notebooks/{notebook}/pages" => new NotebookPageList(matching, matching.Length),
                 var p when p == $"/api/notebooks/{notebook}/shares" => Array.Empty<NotebookShareView>(),
-                var p when p == $"/api/notebooks/pages/{Page.Id}/context" => new NotebookDocumentContext(Page.Id, notebook, Page.Title, "note", true, !Reader, !Reader, !Reader, request.RequestUri.Query.Contains("knownRevision=", StringComparison.Ordinal) ? null : "AA==", DateTimeOffset.UtcNow, 1, null, [new(Page.Id, Page.Title, null)], ["sql"]),
+                _ when document is not null => new NotebookDocumentContext(document.Id, notebook, document.Title, document.Kind, true, !Reader, !Reader, !Reader, query["knownRevision"] is null ? "AA==" : null, DateTimeOffset.UtcNow, 1, null, tree, document.Tags),
                 _ => null
             };
             if (path.EndsWith("/context", StringComparison.Ordinal) && Revoked) return new(HttpStatusCode.NotFound);

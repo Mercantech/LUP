@@ -21,6 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Course pages and personal notebooks share the same explorer and document chrome. -->
+    <None Update="Pages/Notion/Index.razor.css;Pages/Notebook/Index.razor.css" CssScope="b-notebook-workspace" />
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 

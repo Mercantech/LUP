@@ -21,7 +21,7 @@
   {"id":"student-preview","title":"Se siden som elev","route":"/teacher/view-as/qa-anna","selector":".student-home","ready":".student-hold-row"},
   {"id":"notebook-journal","title":"Notesbog og logbog","route":"/journal","selector":".nb-journal-library","ready":".nb-journal-library"},
   {"id":"teacher-notebooks","title":"Underviserens elevnotesbøger","route":"/teacher/notebooks","selector":".nb-teacher-list","ready":".nb-teacher-list"},
-  {"id":"notebook-graph","title":"Graf i notesbogen","route":"/notebook","selector":".nb-graph-panel","ready":".nb-graph-button"},
+  {"id":"notebook-graph","title":"Graf i notesbogen","route":"/notebook","selector":".nb-graph-panel","ready":"#notion-sidebar .notion-sidebar-tools summary"},
   {"id":"hold-overview","title":"Holdets kommandocentral","route":"/courses/00000011-0000-4000-8000-000000000001","selector":".hold-workspace","ready":".hold-workspace"},
   {"id":"teaching-course","title":"Forløb på holdet","route":"/courses/00000011-0000-4000-8000-000000000001?view=content&course=00000033-0000-4000-8000-000000000001","selector":".tc-detail","ready":".tc-detail"},
   {"id":"quests","title":"Holdets quests","route":"/courses/00000011-0000-4000-8000-000000000001?view=quests","selector":".hold-quests","ready":".hold-quests"},

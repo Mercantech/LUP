@@ -65,20 +65,18 @@ public sealed class EmojiTextRenderingTests
     }
 
     [Fact]
-    public async Task Backlinks_render_known_title_emojis_and_preserve_unicode_unknown_codes_and_literal_text()
+    public async Task Titles_render_known_emojis_and_preserve_unicode_unknown_codes_and_literal_text()
     {
         using var api = new EmojiApi();
         using var context = await LearningUiTestContext.CreateAsync(api);
-        var backlinks = context.Render<ReferenceBacklinks>(p => p.Add(x => x.Kind, "notion-page").Add(x => x.Id, Guid.NewGuid().ToString()));
+        var title = context.Render<EmojiText>(p => p.Add(x => x.Text, "SQL 🐘 :raymond_applause: :ukendt: <b>tekst</b>"));
 
-        backlinks.WaitForAssertion(() => Assert.Single(backlinks.FindAll("nav img")));
-        var link = backlinks.Find("nav a");
-        Assert.Equal("/notion/22222222-2222-4222-8222-222222222222", link.GetAttribute("href"));
-        Assert.Equal(Raymond.ContentUrl, link.QuerySelector("img")!.GetAttribute("src"));
-        Assert.Contains("SQL 🐘", link.TextContent);
-        Assert.Contains(":ukendt:", link.TextContent);
-        Assert.Contains("<b>tekst</b>", link.TextContent);
-        Assert.Empty(link.QuerySelectorAll("b"));
+        title.WaitForAssertion(() => Assert.Equal(Raymond.ContentUrl, title.Find("img").GetAttribute("src")));
+        var label = title.Find(".emoji-text");
+        Assert.Contains("SQL 🐘", label.TextContent);
+        Assert.Contains(":ukendt:", label.TextContent);
+        Assert.Contains("<b>tekst</b>", label.TextContent);
+        Assert.Empty(label.QuerySelectorAll("b"));
     }
 
     private sealed class EmojiApi : HttpMessageHandler
@@ -96,12 +94,6 @@ public sealed class EmojiTextRenderingTests
                 if (Gate is not null) await Gate.Task.WaitAsync(ct);
                 Completed.TrySetResult();
                 return new(HttpStatusCode.OK) { Content = JsonContent.Create(new[] { Raymond }) };
-            }
-            if (request.RequestUri.AbsolutePath == "/api/references/backlinks")
-            {
-                ResolvedReference[] links = [new(new("notion-page", "22222222-2222-4222-8222-222222222222"),
-                    "SQL 🐘 :raymond_applause: :ukendt: <b>tekst</b>", "/notion/22222222-2222-4222-8222-222222222222", "Teori")];
-                return new(HttpStatusCode.OK) { Content = JsonContent.Create(links) };
             }
             return new(HttpStatusCode.NotFound);
         }
