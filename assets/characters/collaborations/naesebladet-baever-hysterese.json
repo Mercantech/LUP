@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "naesebladet-baever-hysterese",
+  "alt": "Bæver flytter et træmål mellem to farvede markeringer på måleskinnen, mens Næsebladet holder øje med den tændte lampe.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-6095ec7c-fd18-411a-850a-e0e996df3c79.png",
+  "prompt": "One polished 1536×1024 native landscape 3:2 story illustration in the warm LUP premium hand-painted gouache/oil and colored-pencil world, rich natural tactile detail, no text, logos, watermarks, lettering or numbers. Exactly two canonical characters, both visually important and recognizable as supplied references, naturally doing something together. Coherent anatomy, realistic material light, room around their silhouettes. Avoid collage, annotated poster, synthetic UI or repeated rows. A clear materially believable teaching moment through physical props, no floating labels. At a sheltered small echo-theater stage under an open wooden portico, rainy plum dusk in distance, velvet red curtain to one side and dry warm lit testing bench onstage, wonderful rusty amber and indigo setting. Exact canonical Næsebladet bat at left: broad low compact furry plum/rust body, enormous rust ears and viewer-right notch, veined pink leaf nose, narrow amber focused eyes, small feet, two integrated folded wing-arm membranes with real claws at wing wrists. Canonical plum velvet tailcoat gold piping, wine brocade vest, cream ruffled cravat and cuffs, no separate human hands or arms. Exact Bæver on right from ref2: friendly brown beaver, broad flat crosshatched paddle tail, large bronze rectangular glasses, two square front teeth, blue work blazer over cream shirt, brown trousers, brown practical shoes, real broad brown paws. Both look at one stable amber lamp on bench. Foreground physical demonstration: ONE timber sliding distance-measurement track left-to-right. A stationary TWO-disc ultrasonic distance sensor on LEFT end faces RIGHT toward ONE upright pale wooden target in a sliding carriage. The base has TWO widely separated unmistakable colored threshold pins across the travel path: first small BLUE pin closer to sensor, second orange/copper pin farther away. Between them a natural pale neutral strip with unnumbered ruler ticks. Place target clearly at MIDPOINT between these pins with visible space both sides. The separate single steady amber indicator lamp remains visibly ON as the target is held within this middle zone, no flashing effects or light trails. Beaver gently grips sliding target in one paw and rests other near the single test switch which has a green position peg depicting previously active state. Bat gestures with one actual wing-wrist claw toward stable lamp. One visible low-voltage wire from sensor controller to lamp, tidy covered circuitry with no sparks. Repeated diagram arrows are unnecessary. Readability goal: target in distinct middle between two physical thresholds and steady on lamp, context and explanation provided outside image. Do not show two target positions or two lamps. Anatomically convincing bat wing-wrists essential.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.png",
+      "sha256": "005fcf6f22d69cc23e4d323cb7896395403ead245ef30961ab5939f9bc7cc8af"
+    },
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-baever-hysterese.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3256563,
+    "sha256": "eca9af03ff5b5ebcf19c5b4ca90dba462c8b8c4c6904af36294cd7dc35bdbd00"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-baever-hysterese.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 132964,
+    "sha256": "cc69be6cc8148fce101f1fda70ca851971012c7629188a2d15f92a38f6b540dd"
+  }
+}

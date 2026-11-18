@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "bilbo-kamaeleonen-usikkert-svar",
+  "alt": "Kamæleonen sætter et glas marmelade med en tvetydig frugtlabel til side, og Bilbo gør klar til at undersøge det nærmere.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-40438883-110d-4ef7-8fcd-1b3cd8432ca2.png",
+  "prompt": "One polished 1536×1024 native landscape 3:2 story illustration in the warm LUP premium hand-painted gouache/oil and colored-pencil world, rich natural tactile detail, no text, logos, watermarks, lettering or numbers. Exactly two canonical characters, both visually important and recognizable as supplied references, naturally doing something together. Coherent anatomy, realistic material light, room around their silhouettes. Avoid collage, annotated poster, synthetic UI or repeated rows. A clear materially believable teaching moment through physical props, no floating labels. Exact Kamæleonen with olive yellow-green tiny scales, softly orange-edged crest, large brown turret eyes, cream rolled linen shirt, brown leather apron with brass buttons, curling tail, two natural green hands. The other character is exact canonical Bilbo Backend from reference1: short kind stocky adult hobbit-like workshop merchant, ruddy face, thick brown curly mop of hair, pointed ears, curly sideburns and tiny chin tuft, moss green velvet waistcoat with bronze buttons, loose cream rolled shirt, rust brown cropped trousers, large hairy bare feet. Sunny autumn outdoor jam market, warm timber stall, harvest awning with muted green and cream stripes, leafy branches and old soft masonry, bright dappled afternoon. Lively warmth with no crowd in foreground. Bilbo at left leans forward in calm concentration with small actual handheld magnifying lens, ready for a HUMAN check. Chameleon at right uses two small hands to set ONE questionable glass jam jar on a visibly separate little cream linen-covered decision spot, at left-front of a simple little handcranked test rig rather than a computer. The jar has a simple illustrated label of an intentionally ambiguous dark berry icon whose shape could be grape cluster or blackberry, no letters. The tiny rig at center has an amber question-mark-shaped signal as its sole cue, contrasting softly with a few already green-tagged accepted jam jars on the far right. It is okay to use one simple amber QUESTION MARK icon but no words or digits. Make chameleon's cautious friendly expression and paused hand show voluntary human handoff. Bilbo is inspecting the jar itself, not an unrelated notebook. No green approval on uncertain jar, no percentages, certainty numbers, or model-generated explanation. Physical staging makes it clear one unclear jar is withheld for review while other jars remain ready to sell. Both faces and full action sharp, true jar size relative to tiny characters.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-kamaeleonen-usikkert-svar.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3254651,
+    "sha256": "3c101a6813f7a2d74ee74e102a7c93dbf3ffd7c2f7678d22d3f59146f6539a9e"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-kamaeleonen-usikkert-svar.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 151002,
+    "sha256": "04064fa6627fd4bd674470382e860d268650ed96029fc72f8ea072e0903306f3"
+  }
+}

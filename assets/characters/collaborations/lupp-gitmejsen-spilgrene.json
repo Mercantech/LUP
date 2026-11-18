@@ -1,0 +1,30 @@
+{
+  "id": "lupp-gitmejsen-spilgrene",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+      "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+    }
+  ],
+  "prompt": "Original LUP educational collaboration storybook illustration, 3:2 landscape exactly 1536x1024. Use image 1 and image 2 as the exact identity references for the two mascots. Warm, richly painted gouache with handmade materials, no panel split or character sheet, one coherent beautiful scene, lively collaboration with both characters clearly visible, clean anatomy, no logos, words or watermarks. In the warm Papirhuset with corrugated card walls, plum-colored door and round teal window, LUPP (reference 1, purple rounded-square clay block with two huge eyes and one oversized yellow pencil, no human body, no arms needed) and Gitmejsen (reference 2, small crested tit with patterned pointed crest and blue knitted scarf, two feet and wings, never hands) compare two paper platform-game variants on one generous wooden table. Two miniature landscape models side by side, both with a round amber token starting from a clearly matching entrance and a star finish goal. Left model has a bridge, right model has ascending stepping stones. The bird perches by the shared ancestor blueprint behind a simple carved twig arranged as a Y fork toward the two models, while LUPP watches, yellow pencil pointing between finish markers. The split design is made of three-dimensional handcrafted folded paper set pieces. Show two game ideas derived from the same start, no implied merge or winner, visual clarity at thumbnail scale. Late golden sunshine, tactile paper, cream colored walls; no letters, numbers or outside characters.",
+  "alt": "Gitmejsen og LUPP ser to papbaner med samme start og mål. Den ene har en bro, den anden trædesten.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-gitmejsen-spilgrene.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3013696,
+    "sha256": "3a2357db57fcb45c9fe30237c029e4452445469bddd5f64f803f4b6bcc9d8457"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-gitmejsen-spilgrene.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 113176,
+    "sha256": "0016596f5955e78450cb040cb66dd8ccc000099f363ddc64e6a59437d9a8fe98"
+  }
+}

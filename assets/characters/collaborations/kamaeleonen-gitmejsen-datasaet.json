@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-gitmejsen-datasaet",
+  "alt": "Kamæleonen åbner en forseglet prøvebakke i Cremonaværkstedet, mens Gitmejsen sammenligner voksseglet med mærket i notesbogen.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-af9362bc-7e21-454e-a077-c4971da4e132.png",
+  "prompt": "One polished 1536×1024 native landscape 3:2 story illustration in the warm LUP premium hand-painted gouache/oil and colored-pencil world, rich natural tactile detail, no text, logos, watermarks, lettering or numbers. Exactly two canonical characters, both visually important and recognizable as supplied references, naturally doing something together. Coherent anatomy, realistic material light, room around their silhouettes. Avoid collage, annotated poster, synthetic UI or repeated rows. A clear materially believable teaching moment through physical props, no floating labels. Exact Kamæleonen with olive yellow-green tiny scales, softly orange-edged crest, large brown turret eyes, cream rolled linen shirt, brown leather apron with brass buttons, curling tail, two natural green hands. The other is exact Gitmejsen crested tit from second reference, an actual SMALL BIRD scale perched on a short natural twig attached to the bench. Feathery cream/tan body, black bib, black cheek horseshoe, immense upstanding spotted swept crest, tiny beak, dark brown kind eyes and blue chunky wool scarf tied once. Two wings and two gray bird feet only, no human hands. In honey-colored Cremona violin-making workshop with amber side window, wooden violin molds on stone wall, handsome workbench, bottle of animal glue, one unfinished violin out of focus, good intimate atmosphere. On bench TWO clearly separated shallow wooden sample boxes, lids open enough to see only a few sound-recording cylinders and tiny wood samples. Each box has a clear wax seal fixed to its individual string closure, even though the lid partly open: left has round indigo wax seal stamped with simple leaf pictogram, right has burgundy wax seal stamped with star pictogram. A separate modest open lab notebook rests beside them showing a hand-drawn plain leaf pictogram that MATCHES the left box and a tiny moon/sun sketch on next page suggesting a dated snapshot, no written date. Kamæleonen uses one hand to lift lid of the left leaf-marked box and the other hovers at edge of notebook, while Gitmejsen delicately points with its real folded wingtip toward matching leaf mark. Warm story about preserving which experimental sample snapshot goes with which notes. No samples crossing between boxes, no fake magic, avoid full board of symbols, only two distinguishable insignias and matched notebook leaf. Each container's individual archive string tied to its own box. Clearly show pair working with same left sample group.",
+  "references": [
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+      "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-gitmejsen-datasaet.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3159259,
+    "sha256": "82c01ba95dbdd1cf9ce252e0348a7b5dd65d6fd2e9d2b9b476c3e73efc8b1ef5"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-gitmejsen-datasaet.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 125886,
+    "sha256": "a2e6ecb1e26d2ab2c0f156252b097451a8251726c32c3159275aed12f848f71f"
+  }
+}

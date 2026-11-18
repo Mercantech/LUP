@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "raymond-cyberbien-laeseadgang",
+  "alt": "Raymond viser Cyberbien en offentlig læsekopi under glas i bibliotekets læsesal. Det originale katalog står låst bag skranken.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-f8efe9ef-3388-40af-9d66-cc9f961f6048.png",
+  "prompt": "Create ONE polished original wide 3:2 landscape 1536×1024 LUP character collaboration illustration. Match the supplied characters with exact recognizable identity while creating natural shared acting. Cohesive warm finely painted storybook material with tactile shadows and natural depth, no photography. Both characters have distinct unobstructed faces and complete recognizable silhouettes. A single coherent teaching story, readable at 768px, wide crop safety, richly specific place, correct hands and paws, no extra characters, no duplication. Opaque. Reference ONE is Raymond, the warm blue elephant professor with light blue large wide ears, curled friendly trunk, warm brown eyes, short blue hair tuft, fine round bronze glasses, cream knit cardigan and blue collared shirt over brown trousers, exactly two ordinary blue hands, two feet, and no extra trunk. Reference TWO is Cyberbien, the same small golden bee, large brown eyes, yellow-tipped black antennae, navy hoodie/gold drawstrings and chunky dark cyan pictogram goggles perched on forehead above eyes, four translucent cream wings, rounded dark/gold shoes. They actively present and examine a READ-ONLY public copy in a refined library reading room: Raymond stands behind an oak desk at left with one open blue hand politely indicating the public extract and one holding his navy book against his side; Cyberbien on public visitor side at right leans forward, one gloved hand cupped thoughtfully near face, physically unable to reach original. On desk front is one clearly visible coherent shallow glass reader display with hinged transparent protective lid CLOSED, containing ONE cream catalogue sheet with only leaf, teacup and quill pictograms in a few aligned rows. Light turquoise paper border indicates public filtered copy. Only show graphics; no illegible words/letters. Exactly behind Raymond the same pictograms appear in more comprehensive stacked original pages inside a closed wood-and-glass archive cabinet with conspicuous closed brass padlock, a small extra muted person silhouette only in the original illustrates filtered private column. The public glass display has no editing pen or door key within reach, and there is absolutely no path or tool reaching the locked cabinet. Separate reader space and original archive with the oak desk, a calm Gothic arched window with warm oak shelves, afternoon soft green and copper light, cozy scholarly scene, no prison mood, no big screen, no labels, numbers, actual books with printed titles, code or logos. Strong spatial connection of public copy to locked original and simple readable composition.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bee/portrait.webp",
+      "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-cyberbien-laeseadgang.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3307207,
+    "sha256": "03bccc677bc4f04c0cb35ad0758eb42be01462c85aa71e563e5c4a2536194658"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-cyberbien-laeseadgang.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 133686,
+    "sha256": "91bdcc3362c200359f5a03434741e0e9089356bd003fdec373ec1f41e3be79db"
+  }
+}

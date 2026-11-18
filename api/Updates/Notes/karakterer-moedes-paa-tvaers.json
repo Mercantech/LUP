@@ -1,6 +1,6 @@
 {
-  "date": "2026-11-17",
+  "date": "2026-11-18",
   "title": "Se LUPs karakterer arbejde sammen",
-  "description": "Se alle karakterernes fællesbilleder på én side, og filtrér dem efter karakter. Hent illustrationerne som PNG, eller prøv opgaverne om LEFT JOIN, timeout, forvekslingsmatricer og test før containerbuild.",
+  "description": "Se 12 nye fællesbilleder med opgaver om blandt andet databasetransaktioner, spiltest og sensorer. Galleriet har nu 32 illustrationer, som du kan filtrere efter karakter og hente som PNG.",
   "authors": ["Mathias"]
 }

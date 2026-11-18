@@ -1,0 +1,30 @@
+{
+  "id": "docker-raev-volume",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait-transparent.webp",
+      "sha256": "85490b2a05edc3499846b1789678cd8feebe56a8745933300511c397012af92f"
+    },
+    {
+      "path": "web/wwwroot/images/about/fox.webp",
+      "sha256": "55d546057d613594f8ad44a6ea1c5aaa4899b753fcdeff4c80a33b17ccefdbd5"
+    }
+  ],
+  "alt": "Docker og Ræv udskifter den blå container med en grøn ved kajen. Deres mærkede notesbog bliver i en åben skattekiste på kajen.",
+  "prompt": "One polished full-bleed 1536×1024 landscape, 3:2, detailed warm painterly LUP storybook style, gouache and oil with believable material textures. Preserve EXACT mascot identities supplied by local reference images, natural unambiguous anatomy and strong distinct silhouettes, one full setting, no captions, readable lettering, random text, numerals, logos, watermark or panel border. Teach persistent external Docker storage during container replacement via a clean, physically readable harbor episode. On a weathered wooden dock in the amber-lit Nordic harbor, exact Docker from first reference is enormous humpback in a navy cable-knit sweater and small mustard knit beanie, gray navy bumpy skin, cream pleated throat, large flipper and tail, no legs. He rises from the water at right side and points a natural flipper toward an OPEN SMALL SEA CHEST which sits immobile on the dock in foreground. Inside that open treasure chest is ONE characteristic marked notebook with a prominent plain blue-and-red circle medallion on its cover, unmistakable and important. A stout bronze cord from the chest leads to the waiting new green shipping container on dock behind. The same chest stands well separate from either container. Ræv in second reference is small upright russet-red fox with white muzzle and chest, long beautiful bushy orange tail with cream end, brick red jacket, brown cuffed trousers and boots, stands on dock at left, calmly holding her plain small pencil while attentively checking the chest. High in background an old BLUE unmarked container hangs safely from crane sling, slightly lifted and moving out of its berth. New GREEN unmarked container is solidly standing on same dock to receive future service, with no data markings. The old container is clearly higher than new and chest stays on the ground; a visual replacement sequence in ONE moment, not two panels. Keep chest/notebook big enough to dominate the teaching point, warm green and blue containers on dock midground, slate-blue water, distant cargo cranes and a little fog. Everyone warmly cooperative, no labels or UI, no dangerous chase, no weapons, no letters or math symbols.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-raev-volume.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3425292,
+    "sha256": "3014f71232e991b25571df621a7656faba6cf78b51d81c1d4cd8acfa6e49d43c"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-raev-volume.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 169482,
+    "sha256": "f264128b9e0090b8858f933d58a83608e605f2f51a3e59df78b9c2eadbdbcb52"
+  }
+}

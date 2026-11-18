@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "lupp-cyberbien-spillerlog",
+  "alt": "I Papirhuset skjuler Cyberbien personfeltet på spillets logkort, mens LUPP følger billedspillet. Symbolet for den tekniske hændelse er stadig synligt.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-f2bcd0d1-ab5c-4876-b812-a27203118b51.png",
+  "prompt": "Create ONE polished original wide 3:2 landscape 1536×1024 LUP character collaboration illustration. Match the supplied characters with exact recognizable identity while creating natural shared acting. Cohesive warm finely painted storybook material with tactile shadows and natural depth, no photography. Both characters have distinct unobstructed faces and complete recognizable silhouettes. A single coherent teaching story, readable at 768px, wide crop safety, richly specific place, correct hands and paws, no extra characters, no duplication. Opaque. The FIRST reference is LUPP, the deep violet rounded-square clay block with only two huge ivory eyes and black pupils, with a large yellow pencil with coral eraser against his body, exactly no limbs, mouth, ears or humanoid body. The SECOND reference is Cyberbien, round sunny yellow bee with two yellow-tipped dark antennae, large brown eyes, forehead goggles with tiny cyan code and lock glyphs above eyes, original navy hoodie with yellow drawstrings and yellow-edged shoes, and pale veined wings, soft smooth toy form in painterly lighting. The THIRD image establishes Papirhuset interior exactly: warm cream folded cardstock wall construction, plum rounded rectangular door, circular turquoise-framed four-pane porthole, coral papercut petals, cozy mustard cushions and amber lamp. Playtesting one miniature picture-matching game on the low wooden coffee table with two simple identical leaf-picture cards and two actual wooden discs as play markers in the middle distance. LUPP sits at left with pupils looking down and yellow pencil leaning forward near the game. Cyberbien at right attentively presses a small blank violet paper patch with his natural gloved hand over only the left personal identity field of a log card, the other paw resting aside. Main foreground focal prop is ONE large cream log card with two separate bordered fields side by side: left field is fully obscured by the opaque blank violet patch except for a tiny uncovered silhouette of a generic head in its top corner showing field meaning, no individual identifiable face or name; right field is completely visible with a simple technical event icon (one ring linked to a tiny gear and a single leaf tile) as event/session record. Card is clearly separate from game tiles and belongs to the test rather than an interface. No reading text, no simulated names, no code, no numbers or written logs, no device screens or terminal, no privacy padlocks all over. Hands do not cover the technical field. Quiet warm dusk through round teal window and shelves in background. Make the character action and retained field easy to infer.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bee/portrait.webp",
+      "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+    },
+    {
+      "path": "web/wwwroot/images/characters/lupp/home/inside.png",
+      "sha256": "bc97e0ca0495072ac138b93c928b9eba87af0d4fe6903bb87679bb0080ca697b"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-cyberbien-spillerlog.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2780175,
+    "sha256": "67ae531e0b7b4d380a66406583abd1c8503adcc09a2d7544c6abe75217ef5d18"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-cyberbien-spillerlog.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 95052,
+    "sha256": "4faf860ed714df3782faf94ebaad64528cacb1e964050b08e868446a48bcbee6"
+  }
+}

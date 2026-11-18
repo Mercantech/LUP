@@ -1,0 +1,30 @@
+{
+  "id": "naesebladet-docker-offline",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.webp",
+      "sha256": "5c15516ee9e4755d31081e62a9b62e09aa6c99b3af15a2f537991568107941fc"
+    },
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    }
+  ],
+  "prompt": "Original LUP educational collaboration storybook illustration, 3:2 landscape exactly 1536x1024. Use image 1 and image 2 as the exact identity references for the two mascots. Warm, richly painted gouache with handmade materials, no panel split or character sheet, one coherent beautiful scene, lively collaboration with both characters clearly visible, clean anatomy, no logos, words or watermarks. Næsebladet (reference 1 exactly, dark red Victorian velvet coat, jagged cut in ear, two attached bat wing wrists) and Docker sea captain (reference 2, clearly humpback whale, mustard knit cap and navy cable-knit sweater, two anatomically appropriate flippers, no human hands) work together at sunset in Docker's floating boathouse Lanternehuset with a huge circular brass porthole looking out on a squall. The bat rests his wing claw beside a little table-top distance sensor and checks a dimmed copper radio; Docker holds a flap of an open weatherproof wooden card box with three individual signal measurement cards safely lined up inside, each an orderly colored, no words token card. Near the radio a simple small antenna with a dim amber light indicates offline. Three cards are clear, one small instrument and no duplicate character paws. The whale shows how to keep measurements through a connection loss. Porthole, storm, and warm indoor storage create depth, strong readable shapes and dynamic storytelling. No stage text, numbers or extraneous control screens.",
+  "alt": "Næsebladet står ved radioen og afstandssensoren, mens Docker viser tre målekort i en kasse i flydehuset.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-docker-offline.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3570956,
+    "sha256": "4a8e2bf5559983415306d51d9fb30aaf666250cb270860a9d3cd7774f68702e4"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-docker-offline.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 172246,
+    "sha256": "695ca25aaab9cf87e920bc129b712661436eb70d70b4d07ebfbbbb63c8652b15"
+  }
+}

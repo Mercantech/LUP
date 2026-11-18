@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "raev-gummianden-graense",
+  "alt": "Ræv og Gummianden afprøver en tællegrænse ved en lille markedsbod. Kortene med 6 og 7 perler har grønne flueben, mens kortet med 8 får et rødt kryds.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-39d3d70c-5eca-413d-8132-fb50a0e12c0a.png",
+  "prompt": "Create ONE polished original wide 3:2 landscape 1536×1024 LUP character collaboration illustration. Match the supplied characters with exact recognizable identity while creating natural shared acting. Cohesive warm finely painted storybook material with tactile shadows and natural depth, no photography. Both characters have distinct unobstructed faces and complete recognizable silhouettes. A single coherent teaching story, readable at 768px, wide crop safety, richly specific place, correct hands and paws, no extra characters, no duplication. Opaque. First reference is Ræv the precise original auburn fox instructor with slender inquisitive muzzle, cream cheek and chest fur, tall upright ears, red tailored jacket and vest over cream shirt, cuffed brown trousers, brown boots, and exactly one bushy white-tipped tail. Second reference is Gummianden, a REAL yellow rubber toy duck with shiny smooth rounded yellow body, two oval black eyes, a tiny yellow curled crest, orange flat bill and small orange feet, exact knitted terracotta cardigan with large wood button, one real duck wing held to ear in listening pose, no humanoid body/hands/fingers. A joyful small outdoor crafts fair's tabletop checkpoint test under a striped russet and cream canvas awning, violet flower garland, soft blurred merry fair in distant background, zero extra people/animals. A tiny bead-sorting gate/hinged toy wooden arm is on the far side of the bench, obvious domestic fair prop. Fox at left bends gently to point with one natural paw at an eighth bead, notebook held in the other paw, visibly thinking. Duck at right listens and compares. MAIN FOCAL OBJECTS laid on the near table edge are exactly three distinct equal cream sample cards fully visible with space around them, ordered left to right. Card one stamped very legibly with single black numeral '6' and one green CHECK, card two with single black numeral '7' and one green CHECK, card three with single black numeral '8' and one red CROSS. ABSOLUTELY NO other text/numerals anywhere. No combination like 67/78 or duplicate digit. On each card include exactly one nonoverlapping row of literal spherical wooden counting beads: exactly SIX blue-green beads on first card, exactly SEVEN on second card, exactly EIGHT on third card, physically separate with countable gaps, eighth bead on rightmost card is pale coral to emphasize the extra single bead. Arrange neatly in THREE SEPARATE straightforward rows, no beads outside cards, no rows spilling over. The correct result is six pass, seven pass, eight fails, maximum seven inclusive. One tiny visual gate sketch above each row can be omitted if it confuses count. No fancy UI diagrams, no graphs, no terminal/code, no logos or signage. Preserve fox-and-duck rich material identity, late summer fair light, legible characters and correct number of limbs.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/raev-gummianden-graense.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3292709,
+    "sha256": "c8d7753d0207792297ab103b052396683f74ee4b91030a57a6ca93dc9a3287dd"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/raev-gummianden-graense.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 122570,
+    "sha256": "1a4ef483157d1b5ddbb14214322d14b92a3c6f0a74d99925b708474db7e3e3a3"
+  }
+}

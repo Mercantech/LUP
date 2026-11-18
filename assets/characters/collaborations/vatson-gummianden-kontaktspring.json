@@ -1,0 +1,34 @@
+{
+  "id": "vatson-gummianden-kontaktspring",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    },
+    {
+      "path": "web/wwwroot/images/characters/vatson/home/inside.webp",
+      "sha256": "6a7ed3084095dcfa1fa76484b46305f38d2b1d3488cb9b3bb4034e6069e4737f"
+    }
+  ],
+  "alt": "Vatson og Gummianden tester en stor trykknap på bordet i Prototypehuset. Skærmen viser flere tætte pulser til venstre og én ren puls til højre.",
+  "prompt": "One polished full-bleed 1536×1024 landscape, 3:2, detailed warm painterly LUP storybook style, gouache and oil with believable material textures. Preserve EXACT mascot identities supplied by local reference images, natural unambiguous anatomy and strong distinct silhouettes, one full setting, no captions, readable lettering, random text, numerals, logos, watermark or panel border. Teach push-button contact bounce and debouncing in the exact Prototypehuset domestic study from third reference: warm timber beams, teal plaster and brass-lined glass garden door, leafy indoor plants and a home workbench with teal desk lamp. Exact Vatson from first reference is little friendly white rounded robot with black screen face, cyan digital curved smiling eyes and mouth, spring-and-ball antenna and black corrugated arms, floating by bench at left. Exact Gummianden from second reference is shiny literal molded yellow rubber duck with black oval eyes, broad orange rubber bill, small top tuft, terracotta knit cardigan with one pale wooden button, natural wings and simple orange molded feet, standing on tabletop at right and listening with one wing near his head. At center a SINGLE OVERSIZED BIG GREEN TEST PUSH BUTTON sits in pale wooden enclosure. Vatson presses it with one of his simple white robot finger pads, no extra limbs. Behind it an ordinary black electronic oscilloscope screen is intentionally a super simple teaching diagram: a single long horizontal signal trace divided visually into left and right halves by a short blank gap; LEFT half has three tightly packed square up-down electrical pulses, RIGHT half has just ONE clean wide square pulse, both occupying same baseline and amplitude, cyan line on dark slate screen. No grids, axes, labels, text, digits or other decoration, show multiple sharp rising edges on left and single rising edge on right clearly enough to understand at thumbnail. Keep waveform screen facing viewer nearly straight so symbols perfectly visible, approximately a quarter image width at center, and green button in front below it. Scene intimate and cheerful, soft gold/cyan balance, tangible painted details, no robot factory or rack hardware.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-gummianden-kontaktspring.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2986289,
+    "sha256": "4ecf14f42242fc7e2812ed8216df90b7a5698a93f5bd573329824e19fd220d59"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-gummianden-kontaktspring.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 141276,
+    "sha256": "3a94ecbc54ca826e6225985fa115c8c387d2505e2cd2eddd10d622e0627727b5"
+  }
+}

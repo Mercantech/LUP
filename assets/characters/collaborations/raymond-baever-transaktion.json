@@ -1,0 +1,30 @@
+{
+  "id": "raymond-baever-transaktion",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    }
+  ],
+  "prompt": "Original LUP educational collaboration storybook illustration, 3:2 landscape exactly 1536x1024. Use image 1 and image 2 as the exact identity references for the two mascots. Warm, richly painted gouache with handmade materials, no panel split or character sheet, one coherent beautiful scene, lively collaboration with both characters clearly visible, clean anatomy, no logos, words or watermarks. Raymond (reference 1, the warm blue elephant with bronze round glasses, curled trunk, pale cabled cardigan and blue collar) and Bæver (reference 2, brown fur, broad flat tail, blue jacket and water-workshop feel) are inside Bæver's streamside repair workshop with a blue-shutter window and moving waterwheel visible behind them. Raymond at left holds a small brass pan of exactly three round blue tokens physically above the center of a glowing grand two-pan counter balance, speaking calmly while Bæver on the right checks the matching inventory tray from the other cupboard. Two large distinct inventory bins are on opposite sides of the same workbench, warm ochre on left, blue on right, with large wooden tile sketches of a minus above one and a plus above the other. Teach that a transfer is a single all-or-nothing operation. Use a strong centered sculptural balance as a simple metaphor, tiny ledger, tungsten light reflecting on a clear stream outside. Both faces are engaged in same task. No rendered words, letters or numeric amounts; symbols plus and minus only. No third mascot, no tiny UI.",
+  "alt": "Raymond holder tre blå brikker over en vægt, mens Bæver tjekker lagerkassen i sit værksted.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-baever-transaktion.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3447732,
+    "sha256": "068f2a6b989a1ff49d27c7d665f0d9d84b452fd475b4346898940cf2a8c19cdb"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/raymond-baever-transaktion.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 160210,
+    "sha256": "42025570000bcba4edf340579cd7a8ff346025ece56fd15d5feba5bf6f7e741c"
+  }
+}

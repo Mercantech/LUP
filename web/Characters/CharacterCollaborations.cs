@@ -98,6 +98,102 @@ internal static class CharacterCollaborations
                 "Åbn et .NET-øvelsesprojekt med en Dockerfile og mindst én bestået test. Kør kommandoen i Bash fra projektets rod. Få derefter en assertion til at fejle, kør igen, og kig efter, om Docker går i gang. Gendan assertionen og kør en sidste gang.",
                 "Når testen fejler, stopper kommandoen efter dotnet test. Når testene er grønne igen, går docker build i gang.",
                 "dotnet test && docker build -t undervisning/syltetoej:lokal .")
+        },
+        new("raymond-baever-transaktion", "raymond", "beaver", "Raymond og Bæver · Tre brikker skal skifte kasse",
+            "I Blåbækhuset flytter Bæver reservedele fra én lagerkasse til en anden. Raymond samler de to lagerændringer i én databasetransaktion, så en afbrudt flytning kan rulles tilbage.",
+            "Raymond holder tre blå brikker over en vægt, mens Bæver tjekker lagerkassen i sit værksted.")
+        {
+            Exercise = new("SQL · Transaktioner",
+                "Start med 10 brikker i kasse A og 4 i B. Flyt 3 fra A til B i én transaktion. Forestil dig, at programmet stopper efter det første trin. Hvad skal tallene vise efter ROLLBACK og efter en fuldført flytning?",
+                "Efter ROLLBACK står der 10 i A og 4 i B. Efter COMMIT står der 7 i begge kasser.")
+        },
+        new("naesebladet-docker-offline", "bat", "whale", "Næsebladet og Docker · Målinger i stormvejr",
+            "Forbindelsen ryger, mens Næsebladet måler afstanden ved kajen. Docker hjælper ham med at gemme målingerne i en lokal kø og vente på en kvittering, før et målekort kan fjernes.",
+            "Næsebladet står ved radioen og afstandssensoren, mens Docker viser tre målekort i en kasse i flydehuset.")
+        {
+            Exercise = new("IoT og deployment · En kø til målinger",
+                "Læg målingerne 101, 102 og 103 i kø. Modtageren kvitterer for 101, og så afbrydes forbindelsen, før de næste bliver sendt. Hvad ligger i køen, når forbindelsen kommer tilbage?",
+                "101 er kvitteret og fjernes. 102 og 103 ligger stadig i køen og sendes i den rækkefølge.")
+        },
+        new("lupp-gitmejsen-spilgrene", "lupp", "gitmejsen", "LUPP og Gitmejsen · En bro eller tre trædesten?",
+            "LUPP vil afprøve to udgaver af den samme bane. Gitmejsen laver en Git-gren til broen og en anden til trædestenene. De lader spilleren begynde samme sted med det samme mål i begge forsøg.",
+            "Gitmejsen og LUPP ser to papbaner med samme start og mål. Den ene har en bro, den anden trædesten.")
+        {
+            Exercise = new("Game Design og Git · To grene fra samme start",
+                "Tegn et fælles startpunkt i Git-historikken og to grene med hver sin ændring. Vælg én ting at måle i begge spiltests, fx tiden fra porten til stjernen.",
+                "Begge grene starter ved den samme commit. I de to spiltests bruger du samme start, mål og målemetode, så du kan sammenligne ændringerne i ruten.")
+        },
+        new("lupp-cyberbien-spillerlog", "lupp", "bee", "LUPP og Cyberbien · Hvad skal stå i spillets log?",
+            "LUPP vil vide, hvilken version der sendte spilleren tilbage til start. Cyberbien hjælper med at vælge de oplysninger, der skal med i loggen, så holdet kan finde fejlen med færre personoplysninger.",
+            "I Papirhuset skjuler Cyberbien personfeltet på spillets logkort, mens LUPP følger billedspillet. Symbolet for den tekniske hændelse er stadig synligt.")
+        {
+            Exercise = new("Game Design og cybersikkerhed · Dataminimering",
+                "Et logkort har spillerens navn, versionsnummer, bane og hændelsen »sendt til start«. Sammensæt et logkort, som holdet kan bruge til at tælle fejlen pr. version og bane.",
+                "Behold versionsnummer, bane og hændelse. De tre felter er tilstrækkelige til optællingen.")
+        },
+        new("raymond-cyberbien-laeseadgang", "raymond", "bee", "Raymond og Cyberbien · Et kig i kataloget",
+            "Raymond laver et view med bogtitler og udlånsstatus. Cyberbien hjælper ham med at give gæster læseadgang til viewet. Bibliotekaren har ansvaret for ændringer i hovedkataloget.",
+            "Raymond viser Cyberbien en offentlig læsekopi under glas i bibliotekets læsesal. Det originale katalog står låst bag skranken.")
+        {
+            Exercise = new("SQL og cybersikkerhed · Læserettigheder til et view",
+                "Et katalog har bogtitel, udlånsstatus og lånerens navn. Beslut, hvad gæster skal kunne se i viewet, og hvilken rettighed de behøver for at læse det.",
+                "Viewet kan vise titel og udlånsstatus. Gæster får SELECT på viewet, og adgang til hovedkataloget gives særskilt til bibliotekaren.")
+        },
+        new("raev-gummianden-graense", "fox", "gummianden", "Ræv og Gummianden · Der er plads til syv",
+            "Ræv tester en regel om højst syv brikker. Gummianden beder Ræv læse reglen højt efter at have set, at programmet afviser netop den syvende brik. De gemmer grænsetilfældene som tests.",
+            "Ræv og Gummianden afprøver en tællegrænse ved en lille markedsbod. Kortene med 6 og 7 perler har grønne flueben, mens kortet med 8 får et rødt kryds.")
+        {
+            Exercise = new("Softwaretest og debugging · Test ved grænsen",
+                "Prøv reglen med 6, 7 og 8 brikker. Hvilke to tilfælde skal godkendes? Ret udtrykket antal < 7, så det passer til reglen.",
+                "6 og 7 skal godkendes. 8 skal afvises. Udtrykket antal <= 7 inkluderer den syvende brik.")
+        },
+        new("bilbo-vatson-validering", "bilbo", "vatson", "Bilbo og Vatson · Hvor mange glas?",
+            "Vatson tager imod bestillinger ved Brombærbos dør. Bilbo hjælper ham med at fange en seddel uden antal, før den bliver til en ordre i systemet.",
+            "Bilbo og Vatson kontrollerer to bestillinger foran Brombærbos grønne dør. En pil sender sedlen med tomt felt tilbage, mens den udfyldte ligger ved syltetøjet.")
+        {
+            Exercise = new("Backend og teknologi · Validering af input",
+                "Afprøv tre fiktive ordrer. Den første bestiller 2 glas, den anden 0, og den tredje har tomt antalsfelt. Hvilke sendes videre, hvis en ordre kræver mindst ét glas?",
+                "Ordren på 2 glas sendes videre. De to andre får en besked om at indtaste mindst ét glas.")
+        },
+        new("docker-raev-volume", "whale", "fox", "Docker og Ræv · Noterne bliver på kajen",
+            "Ræv vil tjekke, om testnoterne er der efter en opdatering. Docker viser, hvordan et navngivet volume kan genbruges, når en container bliver udskiftet.",
+            "Docker og Ræv udskifter den blå container med en grøn ved kajen. Deres mærkede notesbog bliver i en åben skattekiste på kajen.")
+        {
+            Exercise = new("Deployment og test · Data på et volume",
+                "Forestil dig, at version 1 skriver »Første test bestået« til volumet noter. Version 2 får monteret det samme volume. Hvad skal Rævs test lede efter efter udskiftningen?",
+                "Den tidligere note skal stadig kunne læses. Testen åbner version 2 og sammenligner indholdet med det, version 1 gemte.")
+        },
+        new("vatson-gummianden-kontaktspring", "vatson", "gummianden", "Vatson og Gummianden · Ét tryk, tre skift",
+            "Vatson ser, at én fysisk knap hurtigt skifter mellem åben og lukket. Gummianden hjælper ham med at gennemgå tidslinjen og vente, til signalet er stabilt, før trykket registreres.",
+            "Vatson og Gummianden tester en stor trykknap på bordet i Prototypehuset. Skærmen viser flere tætte pulser til venstre og én ren puls til højre.")
+        {
+            Exercise = new("Automation og debugging · Kontaktspring",
+                "Kontakten lukker ved 0 ms, åbner ved 3 ms og lukker igen ved 7 ms. Den forbliver lukket. Hvornår kan der registreres ét tryk, hvis lukket skal have været stabilt i 20 ms?",
+                "Trykket kan registreres ved 27 ms. De 20 ms regnes fra den sidste ændring ved 7 ms.")
+        },
+        new("kamaeleonen-gitmejsen-datasaet", "chameleon", "gitmejsen", "Kamæleonen og Gitmejsen · Gem det rigtige datasæt",
+            "Kamæleonen vil gentage et forsøg med violinoptagelser. Gitmejsen hjælper med at skrive versionen af datasættet ind i forsøgsnoterne, så de kan finde optagelserne igen, selv efter nye er kommet til.",
+            "Kamæleonen åbner en forseglet prøvebakke i Cremonaværkstedet, mens Gitmejsen sammenligner voksseglet med mærket i notesbogen.")
+        {
+            Exercise = new("Machine Learning og Git · Gentag et forsøg",
+                "Forsøg A bruger datasættet v1 med 100 optagelser. Senere tilføjes 20 i v2. Hvilken version skal du vælge for at gentage A, og hvad skal du ellers gemme om forsøget?",
+                "Vælg v1. Gem også versionen af koden samt indstillingerne og opdelingen af data, så du kan få samme grundlag for kørslen.")
+        },
+        new("bilbo-kamaeleonen-usikkert-svar", "bilbo", "chameleon", "Bilbo og Kamæleonen · Send det usikre glas til tjek",
+            "Kamæleonens model genkender etiketter på syltetøjsglas. Bilbo hjælper med at bygge et API, der sender glasset til manuel kontrol, når modellens score er under den aftalte grænse.",
+            "Kamæleonen sætter et glas marmelade med en tvetydig frugtlabel til side, og Bilbo gør klar til at undersøge det nærmere.")
+        {
+            Exercise = new("Backend og Machine Learning · En grænse for modellens svar",
+                "Grænsen er 0,80. En score på 0,80 eller derover går videre automatisk. Hvad skal API'et gøre med scorerne 0,92, 0,80 og 0,61?",
+                "0,92 og 0,80 går videre automatisk. 0,61 sendes til manuel kontrol.")
+        },
+        new("naesebladet-baever-hysterese", "bat", "beaver", "Næsebladet og Bæver · Hold lampen rolig",
+            "En afstand ændrer sig lidt, når træklodsen står tæt på grænsen. Næsebladet måler, og Bæver hjælper med at vælge to grænser, så lampen beholder sin tilstand mellem dem.",
+            "Bæver flytter et træmål mellem to farvede markeringer på måleskinnen, mens Næsebladet holder øje med den tændte lampe.")
+        {
+            Exercise = new("IoT og test · Hysterese",
+                "Start med lyset slukket. Tænd ved 18 cm eller mindre og sluk ved 22 cm eller mere. Behold tilstanden mellem grænserne. Afprøv 24, 18, 20, 21 og 22 cm.",
+                "Lampen er slukket ved 24 cm, tænder ved 18 cm, bliver tændt ved 20 og 21 cm og slukker igen ved 22 cm.")
         }
     ];
 
