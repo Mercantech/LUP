@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "cyberbien-raev-bilbo-auth",
+  "alt": "Cyberbien, Ræv og Bilbo sammenligner to adgangsforsøg i læsesalen. Det ene kort mangler identifikation, mens det andet viser et kendt medlem med et mærke til en anden hylde.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-48a90b9c-b0a4-4ad4-a60b-191392e93555.png",
+  "prompt": "Create one original full-bleed 1536×1024 landscape 3:2 LUP teaching collaboration illustration. Exactly THREE recognizable reference characters, distinct expressive faces and silhouettes, each with an active natural role, anatomically sound hands/wings/flippers. Cohesive warm finely painted storybook style, natural light, finely textured practical props, generous cropping safety and one clear teaching comparison at 768px. No letters, words, digits, signs, watermark, code, fake writing or branded logo. Keep only canonical cyan goggle symbols. No screens full of data or extra actors. FIRST input Cyberbien is the small sunny golden-yellow bee with large brown eyes, two yellow-ended dark antennae, original dark forehead goggles/cyan code and lock glyphs above eyes, navy hoodie/yellow drawstrings, pale veined wings and dark gold-edged boots. SECOND input Ræv is the same tall slim auburn fox with cream muzzle and neck, warm inquisitive eyes, tall pointed ears, rust-red tailored jacket/vest over cream rolled sleeves, cuffed brown trousers/boots and full white-tipped tail. THIRD input Bilbo is the exact chosen Bodmesteren: short stocky halfling, rosy round face, dark chestnut curls, sideburns and tiny chin beard, pointed ears, green velvet waistcoat/brass buttons over cream rolled sleeves, loose brown rolled trousers and BARE HAIRY feet. In a calm private reading room of an old library with honey oak cases and rain mist outside round arched window, the THREE colleagues gather around a low reading-room desk to compare TWO clearly separate paper outcome cards. No actual fourth visitor, only pictograms. Foreground card LEFT has a simple anonymous visitor pawn silhouette beside a large EMPTY outlined ID-card space outlined in dashes, and a small amber pause-hand pictogram as outcome; absolutely no identity card lying inside this outline. Foreground card RIGHT has an actual cream membership card with a plain anonymous silhouette and green verified CHECK, and a big BLUE CIRCLE badge; immediately beside it is a tiny RED SQUARE shelf emblem and a clearly CLOSED miniature bookshelf gate with a red stop bar. Different identity and permission outcomes: first identity missing, second identity confirmed but wrong shelf permission. Keep matching colors exactly blue-circle on member and red-square on shelf, no route to get past gate. Bee at left delicately points to the empty outline with a natural glove, Ræv at middle leans and indicates the mismatch on second card with a pencil, Bilbo on right holds an open plain specimen ledger with the same blue-circle and red-square reference icons as simple shapes, thoughtful expression, no jar distracting the lesson. Their eyes connect and look toward task, no threats, no attacks, no interface dashboards or code. Readable shapes across tabletop with clear gap between the TWO outcomes, rich quiet library textures, sober amber/blue accents.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bee/portrait.webp",
+      "sha256": "8cecede2b65b30a1a2a7a985398d59a2928691e02c7bdbdd83438c3fcc7d4b44"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/cyberbien-raev-bilbo-auth.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3355412,
+    "sha256": "4a31bd9aedf16cb35589788563ca530605e04e2e686eb05d2934f9382fee50af"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/cyberbien-raev-bilbo-auth.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 145118,
+    "sha256": "8590e06959d430b3fb06bde7098cd137600b7e37addfc6dbd507dd6f6e31bd6f"
+  }
+}

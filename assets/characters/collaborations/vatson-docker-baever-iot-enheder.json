@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "vatson-docker-baever-iot-enheder",
+  "alt": "Vatson, Docker og Bæver sammenholder en temperaturmåling fra et modul med en visning i testen. Termometrene står lige højt, mens råværdien og den omregnede værdi har hver sit enhedsmærke.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-01f483c4-dc91-45f0-829f-169ad66695e0.png",
+  "prompt": "Create one original full-bleed 1536×1024 landscape 3:2 LUP teaching collaboration illustration. Exactly THREE recognizable reference characters, distinct expressive faces and silhouettes, each with an active natural role, anatomically sound hands/wings/flippers. Cohesive warm finely painted storybook style, natural light, finely textured practical props, generous cropping safety and one clear teaching comparison at 768px. No letters, words, digits, signs, watermark, code, fake writing or branded logo. Keep only canonical cyan goggle symbols. No screens full of data or extra actors. FIRST reference Vatson is the small hovering WHITE robot with thick white rectangular monitor-head rim around a black face, happy cyan dot-matrix eyes/mouth, thin black flexible antenna/pale bulb, black corrugated arms and white robotic hands, white turquoise lower body WITHOUT legs, familiar turquoise ring binder. SECOND reference Docker is a genuine old humpback whale, knobbly blue-grey head and long rounded snout, pale strongly pleated throat, kind wise brown eye, mustard knitted cap, heavy navy cable-knit sweater with radio, true pectoral flippers, no human limbs or feet, floating naturally alongside the dock. THIRD reference Bæver is same stocky friendly brown beaver with rectangular brown spectacles, two square incisors, cobalt blue tailored instructor jacket and cream shirt, brown trousers/boots and broad flat crosshatched paddle tail. A warm INDOOR TIDAL TEST WORKSHOP with a stone-lined calm water channel along the back wall where whale naturally floats, timber clerestory, amber lantern reflections and soft morning outdoor sea visible out high window. Broad shared measuring bench stretches from Vatson hovering on left, past Docker at center back with flipper resting naturally on bench, to Bæver standing at right with his rugged tablet tucked low under arm, free paw indicating matching reading. Clear main story on near edge: LEFT small turquoise measurement MODULE fitted with upright classic thermometer tube and bulb, RIGHT freestanding PAPER/BRAss dashboard TEST THERMOMETER in a simple wood frame. Make both thermometers exactly the SAME HEIGHT with same bottom/top endpoints and red columns stopping at precisely the SAME relative height just above halfway. Both scales have plain short marks with NO digits, NO actual units or characters. A physical plain cream round sample marker lies between thermometers to imply ONE SAME TEMPERATURE. The left thermometer has one square RAW UNIT TOKEN with many tightly spaced blue vertical hatch marks; the right has one round CONVERTED UNIT TOKEN with a simple broad blue ring and one tiny orange dot. One very clear gentle arrow from left raw token toward right converted token indicates transformation of representation, but thermometer columns unchanged. No numbers anywhere, no false extra amount. Vatson's open turquoise binder shows only sketch of pair of same-height thermometer columns and arrow; do not draw text. Characters compare thoughtfully, cozy safe low-energy exercise, no realistic electrical instructions or sprawling cables. Avoid more than the TWO thermometers and small binder schematic, no computer UI. Identity and all hands/flippers readable, beautiful instrument brass and wood, inviting luminous color.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    },
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    },
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-docker-baever-iot-enheder.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3374623,
+    "sha256": "91c4db3f706da244d1ba6f6f2e5afea8726c12d7a71a913df9bb401074d006d4"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/vatson-docker-baever-iot-enheder.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 142774,
+    "sha256": "1036335afc3f18f43c135013ee33798c14f65225476ab5bc7d0c1d72027be477"
+  }
+}

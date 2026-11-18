@@ -386,6 +386,140 @@ internal static class CharacterCollaborations
             Exercise = new("Game Design og Machine Learning · Reaktionstid",
                 "Indlæsningen tager 20 ms, modellen tager 65 ms, og visningen tager 15 ms. Trinnene kører i rækkefølge. Hvor meget skal modellens tid falde for at nå højst 80 ms i alt?",
                 "Trinnene tager 100 ms i alt. Modellens tid skal falde med mindst 20 ms til højst 45 ms, hvis de to andre trin tager lige så lang tid som før.")
+        },
+        new("naesebladet-vatson-raymond-docker-mqtt", ["bat", "vatson", "raymond", "whale"], "Send kun temperatur til oversigten",
+            "Næsebladet måler, og Vatson sætter rum og måletype på beskederne. Docker kører MQTT-brokeren. Raymond vælger det abonnement, der skal fylde temperaturoversigten.",
+            "Næsebladet og Vatson sender målekort til Docker. Raymond modtager temperaturkort fra to rum, mens fugtkortet bliver sorteret til en anden bakke.")
+        {
+            Exercise = new("H3 · IoT-kæden · MQTT-topics",
+                "En øvebroker modtager rum/a/temp, rum/b/temp og rum/a/fugt. Raymond abonnerer på rum/+/temp. Hvilke beskeder får han i oversigten?",
+                "Han får rum/a/temp og rum/b/temp. Tegnet + matcher ét niveau i emnet, mens det sidste niveau skal hedde temp.")
+            {
+                TeachingSource = new("Næsebladets IoT-kort om MQTT", "/characters/bat#character-gallery-title", false, false)
+            }
+        },
+        new("naesebladet-baever-gummianden-millis", ["bat", "beaver", "gummianden"], "Når millis går rundt",
+            "Næsebladet tester, om den næste opdatering stadig bliver udløst, når uret går rundt. Bæver holder reglen samlet i én sammenligning. Gummianden får dem til at regne med de to værdier på hver sin side af skiftet.",
+            "Næsebladet, Bæver og Gummianden følger et kort interval mellem to knopper på hver sin side af tællerens samling.")
+        {
+            Exercise = new("H3 C++ · Datatyper · Forløbet tid",
+                "Brug et simuleret 32-bit ur. Sidste tidspunkt er 4 294 967 290, og det aktuelle er 4 efter omslaget. Beregn tiden som en 32-bit værdi uden fortegn. Skal en opdatering med intervallet 10 ms køre?",
+                "Der er gået 10 ms. Subtraktionen som 32-bit værdi uden fortegn regner rundt over omslaget. Opdateringen kører ved grænsen på 10 ms.",
+                "const uint32_t last = 4294967290U;\nconst uint32_t now = 4U;\nconst uint32_t elapsed = now - last;")
+            {
+                TeachingSource = new("C++ H3 · Datatyper og millis", "https://cpp.mercantec.tech/h3/datatyper", true, false)
+            }
+        },
+        new("lupp-raev-gummianden-dobbelt-halvt", ["lupp", "fox", "gummianden"], "Fordobl eller halvér farten i Rune Run",
+            "LUPP holder banen ens i tre forsøg. Ræv ændrer kun farten, og Gummianden hjælper med at skille den målte tid fra oplevelsen af, hvor svær banen er at styre.",
+            "LUPP, Ræv og Gummianden sammenligner tre lige lange papbaner. De lilla brikker er nået forskelligt langt fra start.")
+        {
+            Exercise = new("Game Design · Rune Run · Fordobl eller halvér",
+                "En figur skal løbe 12 felter. Normal fart er 2 felter pr. sekund. Beregn tiden ved halv, normal og dobbelt fart. Kør derefter forsøget i jeres prototype og notér, om figuren er lige let at styre.",
+                "Ved samme strækning tager det 12, 6 og 3 sekunder. Styringen skal bedømmes i spiltesten, fx ved at tælle overskudte drejninger.")
+            {
+                TeachingSource = new("Rune Run · LUPPs undervisningskort", "/characters/lupp#character-gallery-title", false, false)
+            }
+        },
+        new("raymond-bilbo-baever-normalisering", ["raymond", "bilbo", "beaver"], "Ét produkt på to bestillinger",
+            "Bilbo viser to bestillinger, der begge har brombærsyltetøj. Raymond placerer produktets navn ét sted. Bæver prøver at omdøbe produktet og kontrollerer, at begge bestillinger stadig peger på det.",
+            "Raymond, Bilbo og Bæver forbinder to ordremapper med ét fælles syltetøjskatalog. Små varelinjekort med samme brombærmærke danner forbindelserne.")
+        {
+            Exercise = new("SQL-H1 · Mål 5 og 17 · Relationer og normalisering",
+                "Tegn Produkter, Ordrer og Ordrelinjer. Produkt P7 indgår med antal 2 på ordre 41 og antal 1 på ordre 42. Skriv de to ordrelinjer, og vis, hvor du ændrer produktets navn.",
+                "Ordrelinjerne peger på henholdsvis ordre 41 og 42 og begge på P7. Antal gemmes på hver ordrelinje. Produktets aktuelle navn ændres én gang i Produkter.")
+            {
+                TeachingSource = new("SQL-H1 · Database-design og normalisering", "https://sql.mercantec.tech/learn/relations-04-normalization", true, false)
+            }
+        },
+        new("raymond-docker-gitmejsen-indeks", ["raymond", "whale", "gitmejsen"], "Hvilken vej fandt ordren?",
+            "Raymond sammenligner planer for den samme SELECT. Docker måler gentagne kørsler i øvemiljøet, og Gitmejsen noterer datasættet og forespørgslen, så målingen kan gentages.",
+            "Raymond sammenligner den lange søgebakke med et fanebladskartotek ved havnen. Docker tager tid, og Gitmejsen følger den samme klokkemærkede prøve.")
+        {
+            Exercise = new("Databaseprogrammering · Mål 15 og 16 · Indeks og måling",
+                "Kør samme SELECT på de samme øvedata før og efter et indeks på order_date. Kig i EXPLAIN efter den vej, PostgreSQL vælger. Hvis tiderne er 12, 13 og 18 ms før og 8, 9 og 20 ms efter, hvad er de to medianer?",
+                "Medianerne er 13 og 9 ms. Sammenhold målingen med planen. PostgreSQL kan stadig vælge Seq Scan, fx når tabellen er lille eller forespørgslen læser mange rækker.",
+                "EXPLAIN (ANALYZE, BUFFERS)\nSELECT * FROM orders\nWHERE order_date >= DATE '2024-04-01';")
+            {
+                TeachingSource = new("SQL-H1 · Backup, indeks og EXPLAIN", "https://sql.mercantec.tech/learn/drift-02-backup-explain", true, false)
+            }
+        },
+        new("bilbo-gummianden-raev-http-svar", ["bilbo", "gummianden", "fox"], "Tre svar fra bestillings-API’et",
+            "Bilbo skriver kontrakten for bestillings-API’et. Ræv afprøver en oprettelse, en ugyldig seddel og et opslag uden træffer. Gummianden læser statuskoden og svaret med dem.",
+            "Bilbo, Gummianden og Ræv gennemgår tre tests ved syltetøjsbordet. Kortene viser en oprettet bestilling, et mangelfuldt skema og en tom hylde.")
+        {
+            Exercise = new("H2 · ASP.NET Core · Statuskoder og API-test",
+                "Prøv en gyldig POST /orders, en POST uden det krævede antal og en GET på en ordre, som ikke findes. Vælg statuskode og tjek, at en vellykket oprettelse viser, hvor ordren kan findes.",
+                "Forvent 201 med en Location til den nye ordre, 400 med en valideringsfejl og 404 for opslaget, der ikke finder ordren.")
+            {
+                TeachingSource = new("H2 · Web, API og test", "/courses/template/h2", false, false)
+            }
+        },
+        new("cyberbien-raev-bilbo-auth", ["bee", "fox", "bilbo"], "Kender vi gæsten, og må gæsten komme ind?",
+            "Bilbo beskytter en læserute i holdets øve-API. Cyberbien skelner mellem identitet og rettigheder, mens Ræv tjekker begge svar med holdets fiktive testbrugere.",
+            "Cyberbien, Ræv og Bilbo sammenligner to adgangsforsøg i læsesalen. Det ene kort mangler identifikation, mens det andet viser et kendt medlem med et mærke til en anden hylde.")
+        {
+            Exercise = new("H2 · Sikkerhed · AuthN og AuthZ",
+                "Kald en beskyttet øverute først uden gyldig identitet og derefter som en gyldig bruger uden den krævede rolle. Hvilken HTTP-status forventer du i hvert tilfælde?",
+                "Forvent 401, når identiteten mangler eller er ugyldig. Forvent 403, når appen kender brugeren, men brugeren mangler den krævede rettighed.")
+            {
+                TeachingSource = new("H2 · Sikkerhed og test", "/courses/template/h2", false, false)
+            }
+        },
+        new("docker-gitmejsen-bilbo-runbook", ["whale", "gitmejsen", "bilbo"], "Kan et andet hold gentage jeres deploy?",
+            "Gitmejsen samler versionen og trinene i en runbook. Docker giver vejledningen til en makker ved reservestationen, og Bilbo tjekker, om det samme API svarer efter opstart.",
+            "Docker, Gitmejsen og Bilbo følger en foldet billedvejledning ved kysten. Den rene reservestation gentager den fungerende stations opsætning med samme mærkede kasse og forventede grønne status.")
+        {
+            Exercise = new("DevNet · Deploy Or Die · Runbook",
+                "Overlad runbooken til et andet hold på en ren øvemaskine. Bed dem starte samme image, sætte øvemiljøets port og åbne /health. Hvad skal de kunne finde i vejledningen?",
+                "De skal kunne finde image og version, lokal opsætning, startkommando og den kontrol, der viser, at tjenesten svarer, fx status 200 på /health. Notér ét trin, hvis holdet måtte spørge undervejs.")
+            {
+                TeachingSource = new("DevNet · Deploy Or Die-forløbet", "/courses/template/deploy-or-die", false, false)
+            }
+        },
+        new("vatson-docker-baever-iot-enheder", ["vatson", "whale", "beaver"], "Én måling på tværs af sensor og dashboard",
+            "Vatson får sensorens råtal ind. Docker holder samme aftalte datakontrakt i øvemiljøet, og Bæver tjekker, hvad dashboardet viser i grader Celsius.",
+            "Vatson, Docker og Bæver sammenholder en temperaturmåling fra et modul med en visning i testen. Termometrene står lige højt, mens råværdien og den omregnede værdi har hver sit enhedsmærke.")
+        {
+            Exercise = new("H3 · IoT, API og dashboard · Enheder i kæden",
+                "Sensoren sender temperatur 26 000 i milligrader Celsius. Lad API og dashboard bruge samme måling, og vælg, hvor værdien omregnes én gang. Hvad skal dashboardtesten forvente?",
+                "26 000 milligrader giver 26 °C. Hvis API’et foretager omregningen og tydeligt angiver °C, skal dashboardet vise 26 °C uden at dividere igen.")
+            {
+                TeachingSource = new("H3 · Fra Arduino til dashboard", "/courses/template/h3", false, false)
+            }
+        },
+        new("kamaeleonen-raymond-vatson-regression", ["chameleon", "raymond", "vatson"], "Hvor tungt vejer den store fejl?",
+            "Vatson lægger de målte afstande frem. Kamæleonen sammenligner dem med tre forudsigelser, og Raymond regner både med afstanden og med afstanden i anden for at se, hvor meget den store fejl fylder.",
+            "Vatson og Kamæleonen sammenligner tre forudsigelser med målingerne. Raymond peger på den røde række, hvor afstanden mellem de to mærker er størst.")
+        {
+            Exercise = new("ML-VUF · Dag 5 · Regression og loss",
+                "De absolutte fejl er 1, 2 og 7 cm. Beregn MAE og MSE. Hvilken af de tre observationer bidrager mest til MSE, og med hvilket kvadrat?",
+                "MAE er 10/3 cm, cirka 3,33 cm. MSE er 18 cm². Fejlen på 7 cm bidrager med 49 cm² inden gennemsnittet beregnes.")
+            {
+                TeachingSource = new("ML-VUF · Dag 5 om regression", "https://ml.mercantec.tech/vuf/#/dag/5", true, false)
+            }
+        },
+        new("kamaeleonen-raymond-lupp-klynger", ["chameleon", "raymond", "lupp"], "Tre klynger på LUPPs spillebord",
+            "LUPP lægger brikkerne efter to egenskaber. Raymond tegner dem som punkter, og Kamæleonen afprøver, hvordan punkterne kan samles i klynger ud fra deres placering.",
+            "LUPPs brikker ligger i tre adskilte klynger på papiret. Kamæleonen og Raymond undersøger grupperingen ud fra brikkernes placering.")
+        {
+            Exercise = new("ML-VUF · Dag 7 · Clustering",
+                "Tegn punkterne (1,1), (1,2), (5,5), (5,6), (9,1) og (9,2). Prøv k = 3, og markér de tre grupper, du forventer. Hvad kan et gruppenummer fortælle om brikkernes type?",
+                "De oplagte grupper er de tre punktpar omkring x = 1, x = 5 og x = 9. Gruppenummeret identificerer en klynge. Brikkernes virkelige type kræver en særskilt undersøgelse.")
+            {
+                TeachingSource = new("ML-VUF · Dag 7 om modelkvalitet og clustering", "https://ml.mercantec.tech/vuf/#/dag/7", true, false)
+            }
+        },
+        new("lupp-gitmejsen-raev-resource-loop", ["lupp", "gitmejsen", "fox"], "Ét boost til hele runden",
+            "LUPP giver Rune Run-figuren én opladning. Ræv prøver at bruge den forskellige steder på samme bane. Gitmejsen gemmer begge varianter med resultatet fra hver spiltest.",
+            "Ræv lægger en mønt ved prøvens indgang, mens LUPP følger ressourcekredsløbet. Gitmejsen gemmer kortet med den afprøvede version.")
+        {
+            Exercise = new("Game Design · Rune Run · Ressourcekredsløb",
+                "Du har ét boost ved starten af hver runde. Prøv at bruge det tidligt i det første forsøg og sent på samme bane i det andet. Tegn kredsløbet, og sammenlign tiderne eller de runer, der blev samlet.",
+                "Figuren starter med én opladning, bruger den, og får en ny ved næste runde. Sammenlign målingen fra samme bane. Den bedste timing afhænger af, hvad du måler, og hvornår boostet gør en forskel.")
+            {
+                TeachingSource = new("Rune Run · LUPPs undervisningskort", "/characters/lupp#character-gallery-title", false, false)
+            }
         }
     ];
 
@@ -402,4 +536,7 @@ public sealed record CharacterCollaboration(string Id, IReadOnlyList<string> Par
     public string Preview => $"/images/characters/collaborations/{Id}.webp";
 }
 
-public sealed record CharacterCollaborationExercise(string Topic, string Task, string ExpectedResult, string? StarterCode = null);
+public sealed record CharacterCollaborationExercise(string Topic, string Task, string ExpectedResult, string? StarterCode = null)
+{
+    public CharacterLink? TeachingSource { get; init; }
+}

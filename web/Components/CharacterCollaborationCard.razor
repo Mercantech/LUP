@@ -24,6 +24,11 @@
                     <summary>Vis forventet resultat</summary>
                     <p>@exercise.ExpectedResult</p>
                 </details>
+                @if (exercise.TeachingSource is { } source)
+                {
+                    <p><a class="character-collaboration-source" href="@source.Href"
+                          target="@(source.External ? "_blank" : null)" rel="@(source.External ? "noopener noreferrer" : null)">@source.Label</a></p>
+                }
             </div>
         }
         <div class="character-collaboration-links">

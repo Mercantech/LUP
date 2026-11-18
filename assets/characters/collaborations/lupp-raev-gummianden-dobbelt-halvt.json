@@ -1,0 +1,39 @@
+{
+  "id": "lupp-raev-gummianden-dobbelt-halvt",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    }
+  ],
+  "prompt": "A new LUP educational storybook illustration, 3:2 landscape 1536x1024, warm rich painterly gouache, exact recognizable portraits provided in the declared order. Coherent readable scene with all figures cooperating, expressive gazes, correct hands and prop interaction, no logos, printed words, equations, letters, watermarks, third party mascots or extra faces. Exactly three canonical mascots. LUPP, the rounded square purple clay mascot with giant white-and-black eyes and golden pencil, hosts a paper Rune Run tabletop prototype in Papirhuset with the purple door and big round turquoise four-pane window. Ræv in red jacket moves ONE wooden speed dial at one edge while Gummianden, genuine round yellow rubber duck with terracotta cardigan, compares near half/normal/double effect. Across same table three horizontal straight PARALLEL paper game tracks, equal length with aligned start and finish markers, and one small abstract purple folded-paper game pawn on each, forms are plain geometric tokens, no additional mascot faces. The three tokens visibly traveled short, middle, long distances from SAME baseline in same time. LUPP studies with pencil. Exact distance ratios not rendered using words or numbers, three carefully obvious relative positions. Breathing space, late afternoon warm daylight, layered handcut card and wood, three tracks read at thumbnail size. No text, no branding or extra people.",
+  "alt": "LUPP, Ræv og Gummianden sammenligner tre lige lange papbaner. De lilla brikker er nået forskelligt langt fra start.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-raev-gummianden-dobbelt-halvt.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2970210,
+    "sha256": "028454fb98a40c171418e0d2b5755173684b21f1c7d40641955bf3834a466311"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-raev-gummianden-dobbelt-halvt.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 114726,
+    "sha256": "b9628cd65f1f4d20f24c0e8eba05b6aba8210437f6c9491de2d5c4984020244d"
+  },
+  "editPrompt": "Precise edit of source image 1, preserve exact landscape 3:2 composition, lighting, Ræv and Gummianden positions and clothes, three tracks, both aligned sets of flags, all three purple player-token positions, wood dial, purple plum door and turquoise round window. Change exactly LUPP's two visible long purple arms into a clean continuous rounded-square clay silhouette like source image 2. Remove the forearm resting against the cheek and the forearm holding the pencil, with both disappearing fully. LUPP remains a round-edged solid purple block with two huge eyes, no limbs or hands, with the same oversized yellow pencil leaning against the front of its lower right corner and resting on the table as in identity source 2. Keep both pupils and large eyes, a thoughtful gaze at the board. No other changes and no text or marks added.",
+  "initialGeneration": {
+    "file": "exec-ae0293f8-6e83-4a11-bff2-cf8a0b79e072.png",
+    "sha256": "1b3920e084eccb8b8a3572539f77095cf99b5ec3a60dd97d176ae8202363c203"
+  }
+}

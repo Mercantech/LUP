@@ -42,7 +42,7 @@ public sealed class CharacterCollaborationGalleryTests
             Assert.Equal(scene.Image, download.GetAttribute("href"));
             Assert.Equal($"{scene.Id}.png", download.GetAttribute("download"));
 
-            Assert.Equal(scene.ParticipantSlugs.Count, card.QuerySelectorAll("a[href^='/characters/']").Length);
+            Assert.Equal(scene.ParticipantSlugs.Count, card.QuerySelectorAll(".character-collaboration-links a").Length);
             foreach (var slug in scene.ParticipantSlugs)
             {
                 var character = CharacterCatalog.Find(slug)!;
@@ -98,6 +98,9 @@ public sealed class CharacterCollaborationGalleryTests
             var code = block.QuerySelector("pre code");
             Assert.Equal(exercise.StarterCode?.Trim().ReplaceLineEndings("\n"),
                 code?.TextContent.Trim().ReplaceLineEndings("\n"));
+            var source = block.QuerySelector(".character-collaboration-source");
+            Assert.Equal(exercise.TeachingSource?.Href, source?.GetAttribute("href"));
+            Assert.Equal(exercise.TeachingSource?.Label, source?.TextContent.Trim());
         }
     }
 

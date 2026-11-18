@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "docker-gitmejsen-bilbo-runbook",
+  "alt": "Docker, Gitmejsen og Bilbo følger en foldet billedvejledning ved kysten. Den rene reservestation gentager den fungerende stations opsætning med samme mærkede kasse og forventede grønne status.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-bf254e29-2443-4a8b-ac39-3bbbe3b21f91.png",
+  "prompt": "Create one original full-bleed 1536×1024 landscape 3:2 LUP teaching collaboration illustration. Exactly THREE recognizable reference characters, distinct expressive faces and silhouettes, each with an active natural role, anatomically sound hands/wings/flippers. Cohesive warm finely painted storybook style, natural light, finely textured practical props, generous cropping safety and one clear teaching comparison at 768px. No letters, words, digits, signs, watermark, code, fake writing or branded logo. Keep only canonical cyan goggle symbols. No screens full of data or extra actors. FIRST reference Docker is a genuine old humpback whale, knobbly blue-grey head and long rounded snout, pale strongly pleated throat, kind wise brown eye, mustard knitted cap, heavy navy cable-knit sweater with radio, true pectoral flippers, no human limbs or feet, floating naturally alongside the dock. SECOND reference Gitmejsen is the small natural crested tit bird in attached reference: creamy tan body, detailed grey-brown wings, crisp black-and-white speckled tall crest, distinct black curved cheek/chin bib, sharp grey beak, bright warm brown eye and knitted COBALT BLUE scarf, exactly two normal bird wings and two gripping bird feet. No arms or hands, use her beak or one wing naturally to follow the page. THIRD reference Bilbo is the exact chosen Bodmesteren: short stocky halfling, rosy round face, dark chestnut curls, sideburns and tiny chin beard, pointed ears, green velvet waistcoat/brass buttons over cream rolled sleeves, loose brown rolled trousers and BARE HAIRY feet. COASTAL RELEASE REHEARSAL in a honey-oak boathouse opening onto soft turquoise sea with weathered dock, brass lamp and muted cargo ship far behind. Whale at left stays naturally afloat beside the timber platform with one flipper just resting at desk edge. Bilbo in center studies a large folded illustrated runbook stretched across a desk. Gitmejsen, clearly big enough to recognize face and scarf, perches on a small raised branch stand above desk at center right and traces the middle folded page with beak, body natural. Main diagram is a PHYSICAL repeatable practice station at left foreground and a CLEAN IDENTICAL reserve station at right foreground. Each has same plain teal small module on a dark wood base and a brass lantern-shaped status lamp; functioning left lamp glows GREEN. Right station module matches shape/color, just assembled, with one separate paper card holding a green CHECK and lamp icon as expected status marker; this right lamp may be softly green to show successful rehearsal. A small cargo/image CRATE with a clear purple DIAMOND tag is alongside each station, tags exact match. Runbook contains only large simple sketches of tagged crate, station, then green check, with unobtrusive diagram arrows across successive folds, no lettering or digits or terminal commands. Wide clean staging lets viewer compare stations and see matching tags, environment is ordinary tidy release practice, not giant datacenter or racks. Keep composition vivid and natural, each of three characters has distinct intent and breathing room.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait-transparent.webp",
+      "sha256": "2d6828c391f0744aa2a948e6be367eb3a87bc33c4fd132317d46cf74cfa5b6aa"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-gitmejsen-bilbo-runbook.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3744305,
+    "sha256": "4a0b0e7a0df5c3d4647a2b574ddb394038eb6ca4eca18000531bf9e05253e79c"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/docker-gitmejsen-bilbo-runbook.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 162098,
+    "sha256": "29491ea29af26862ca20a93848c8defbbcc96892d1029bf2187e29ec7e5e6904"
+  }
+}

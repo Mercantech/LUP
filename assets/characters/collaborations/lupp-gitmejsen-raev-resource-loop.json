@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "lupp-gitmejsen-raev-resource-loop",
+  "alt": "Ræv lægger en mønt ved prøvens indgang, mens LUPP følger ressourcekredsløbet. Gitmejsen gemmer kortet med den afprøvede version.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-30c344eb-93a9-4510-b1c9-5ff51ba0d82d.png",
+  "prompt": "One finished standalone LUP curriculum story illustration at native1536x1024 landscape3:2, tactile hand-painted gouache/oil with colored-pencil detail, luminous natural warm light, charming workshop storytelling. Use three attached portraits as exact identity references for EXACTLY THREE recognizable mascots, each doing one meaningful role in the same teaching activity. Faces, silhouettes, natural anatomy and interaction readable. No text, words, labels, letters, numerals, logos, watermark, collage or synthetic interface. Focus on tangible physical teaching props, with all key distinctions clear at half-size. LUPP is the EXACT purple clay rounded cuboid with two immense cream eyes and black pupils and oversized yellow pencil with pink eraser leaning against him. MOUTHLESS, NO nose, arms, hands, feet, legs or antenna, entirely a soft tactile single purple clay block. He interacts with gaze and his large pencil. Gitmejsen is a small natural crested tit with tan/cream feathers, black bib and horseshoe cheek, tall spotted cream crest, bright blue knitted scarf, small beak, two real wings and two tiny gray bird feet, no human hands. Ræv is the exact russet fox with sharp upright ears, cream muzzle and chest, warm brown eyes, rust blazer and waistcoat over cream shirt, brown trousers, one bushy white-tipped tail, natural little brown paws. A wonderfully tactile miniature tabletop game-design prototype, warm candle-and-window-lit round atelier table. LUPP LEFT watches with big eyes and oversized yellow pencil leaning at a small adjustment piece on game track, Gitmejsen SMALL at CENTER rear perched on a twig stand with its natural wingtip touching a little saved-version cream card bearing ONE leaf seal in blue wax, and Ræv RIGHT tests the board with natural paw, face engaged. Main foreground prop is ONE SIMPLE THREE-STATION closed wooden tabletop loop, distinctly physical hand-crafted toy-circuit. It is a rounded triangular path with three miniature scenes on its corners. LOWER LEFT station is small supply/purchase chest with a few amber game coins available and a tiny plain shopping-bag pictogram plaque. UPPER CENTER station is a miniature challenge doorway with one low slot/coin cup at entrance. Ræv's right paw clearly PLACES an amber coin into this entrance cup; entry has positive cost, never free. No hard printed count needed. LOWER RIGHT station is tiny finish flag and an open reward cup with amber coins. Path runs from supply chest toward paid challenge gate then to finish reward then bends back to the supply/purchase chest, all three connected in one closed circuit; small carved chevron impressions in the path unobtrusively show direction. Visible amber coins belong in cups, not continuous trail of dozens. Use exactly three stations, no extra flag or bonus chest, clear cyclic layout with space between, leaves and a modest lamp in distant background only. Gitmejsen's version leaf card records test while Ræv tries a repeat and LUPP considers adjusting one modular cost/reward tile. All text-free. Make loop economically sensible: costs at trial entry and awarded coins at finish return to spend at start, concept conveyed as toy story, no literal electronics or neon.",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gitmejsen/portrait.webp",
+      "sha256": "7f66cb2b71d40968fe1981b7f5a5e94a110394fd525ebc4ceb723ef9b0e00814"
+    },
+    {
+      "path": "web/wwwroot/images/characters/fox/portrait.png",
+      "sha256": "01509b739eec882ee2cd876aeb023b2a0e2a548aad5cb9750500a41871abc2b9"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-gitmejsen-raev-resource-loop.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2996034,
+    "sha256": "a0c2c6c04145ed8f4d4ced0d92525c8127e21305c8aaab43b8716aa1d759e74a"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/lupp-gitmejsen-raev-resource-loop.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 128532,
+    "sha256": "108dce0ca5d615ea0cb3b68571bc4c5869d79b2280dc23ecc806bdeb0a2f757d"
+  },
+  "initialGeneration": "exec-297a16d8-bab9-4cd0-8f59-e9f66f443348.png",
+  "initialSourceSha256": "a0a2f41e3bf062ea8d87d11e22f7b8e4389ef586cec32107f7ffb4957225ce0f",
+  "editPrompt": "Make ONE precise local correction to this finished 1536x1024 warm painted illustration. Reverse ONLY the two carved chevrons at the center of the LOWER FRONT HORIZONTAL wooden track, approximately x810,y850. They currently point right, toward the reward flag. They MUST point LEFT, toward the open chest in the lower-left corner. Thus this bottom track is visibly the RETURN from the reward station at lower right back to the chest/start station at lower left, completing the clockwise triangular closed loop. Leave the other two track chevrons untouched, leave all three stations and coins unchanged, preserve the purple block with no mouth/limbs and pencil, the crested bird with blue scarf and leaf wax-sealed version card, fox's exact gesture dropping coin, lighting, wood texture, all anatomy and every other detail. No words, numbers or extra symbols. Only reverse this single bottom pair of chevrons."
+}

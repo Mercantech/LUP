@@ -1,0 +1,38 @@
+{
+  "id": "naesebladet-vatson-raymond-docker-mqtt",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.webp",
+      "sha256": "5c15516ee9e4755d31081e62a9b62e09aa6c99b3af15a2f537991568107941fc"
+    },
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/whale/portrait.webp",
+      "sha256": "6d5b9cd8ae78f634c8e5bb4312d5f5af74b738af2f22b9e7e1392da9f1bc4048"
+    }
+  ],
+  "prompt": "A new LUP educational storybook illustration, 3:2 landscape 1536x1024, warm rich painterly gouache, exact recognizable portraits provided in the declared order. Coherent readable scene with all figures cooperating, expressive gazes, correct hands and prop interaction, no logos, printed words, equations, letters, watermarks, third party mascots or extra faces. Exactly four mascots. Center a warm port mailroom where three plain-colored wooden mail packets with different simple pictograms route through a small sorting cabinet. Two incoming red thermometer-symbol cards each with a different colored room badge proceed to the output tray, while the blue droplet-symbol humidity card goes to another tray. Left exact notched-ear Victorian bat Næsebladet points at two-lens sensor and supplies the first packet, only its two wing wrists. White floating screen-faced Vatson adds matching room badges at the intake, keeping teal binder. Exact big humpback Docker wearing mustard cap and navy sweater guides cards with proper flipper through the cabinet, leaning through a big brass porthole dockside opening. Blue elephant Raymond in cream knit and bronze glasses receives only two matching red measurement cards in his registry. No text, arrows physically simple or implied by tracks. Distinct clear animal forms, two route endpoints, amber room interior with icy blue sea visible, viewed from front in close enough format for all faces, above timber desk.",
+  "alt": "Næsebladet og Vatson sender målekort til Docker. Raymond modtager temperaturkort fra to rum, mens fugtkortet bliver sorteret til en anden bakke.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-vatson-raymond-docker-mqtt.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3523617,
+    "sha256": "9efc9ee215689988f3ac3e4d2c85b0f1ce5e9272b672b86e6657b13071645b4c"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-vatson-raymond-docker-mqtt.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 158678,
+    "sha256": "6daf2341627d544c07430773c5425982cc0f461873ef18eb03d7737340600f79"
+  }
+}

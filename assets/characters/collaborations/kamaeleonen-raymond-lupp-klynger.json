@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-raymond-lupp-klynger",
+  "alt": "LUPPs brikker ligger i tre adskilte klynger på papiret. Kamæleonen og Raymond undersøger grupperingen ud fra brikkernes placering.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-9d9bd046-b18b-42c9-afa4-f5565f466b21.png",
+  "prompt": "One finished standalone LUP curriculum story illustration at native1536x1024 landscape3:2, tactile hand-painted gouache/oil with colored-pencil detail, luminous natural warm light, charming workshop storytelling. Use three attached portraits as exact identity references for EXACTLY THREE recognizable mascots, each doing one meaningful role in the same teaching activity. Faces, silhouettes, natural anatomy and interaction readable. No text, words, labels, letters, numerals, logos, watermark, collage or synthetic interface. Focus on tangible physical teaching props, with all key distinctions clear at half-size. Kamæleonen is exactly the olive/yellow-green friendly luthier chameleon, orange-edged crest, large warm brown turret eyes, cream rolled linen sleeves, copper-brown leather apron, natural little green hands and curled tail. Raymond is the exact friendly blue elephant professor with large blue ears, swept tuft, bronze round spectacles, warm brown eyes, natural softly curled trunk, cream cable-knit cardigan over blue shirt and brown trousers, two true blue elephant hands. LUPP is the EXACT purple clay rounded cuboid with two immense cream eyes and black pupils and oversized yellow pencil with pink eraser leaning against him. MOUTHLESS, NO nose, arms, hands, feet, legs or antenna, entirely a soft tactile single purple clay block. He interacts with gaze and his large pencil. Sunny late-afternoon paper game prototyping studio with low timber table, warm gouache paper palette, simple cardboard platforms and soft plant shadow. LUPP RIGHT of table looks down in curiosity, a little overturned plain wooden cup near him has spilled small game tokens onto a very large cream sheet laid FLAT covering most of the foreground. Sheet bears just two thin perpendicular unnumbered pencil axes, x horizontal and y vertical, blank. EXACTLY THREE OBVIOUS COMPACT SPATIALLY SEPARATED groups of small circular wood game tokens on this one2D paper area: one at lower left, one at upper center, one at lower right. Huge clean unoccupied space between these three clusters. Use the SAME plain pale honey-colored circular tokens in all3 groups, no labels, fruit symbols or preassigned category colors. The cup is empty; no stray extra tokens outside those three groups. Chameleon LEFT and Raymond CENTER lean over actual paper examining positions. Chameleon traces with one finger near the left group's soft empty surrounding area and Raymond's pointer rests beside the middle group, without covering tokens. LUPP's large pencil has drawn only one very faint loose light-gray partial oval around lower-right group to tentatively propose grouping by neighborhood, the other groups need no boundary, no movement from them. This is unsupervised grouping by spatial proximity, and no actual class labels or categories are supplied. All three subjects readily recognizable and no other characters. Bird's-eye-enough angle to see distinct clusters but faces still close and expressive; tokens uniform size, no synthetic scatterplot UI, just actual woodpieces and pencil paper.",
+  "references": [
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/lupp/lupp-game-design.png",
+      "sha256": "00ec8dcd805bdff2c695ddd38c1e8fc34804f57efb79d435f1a2e5352dea54a5"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond-lupp-klynger.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3057364,
+    "sha256": "267d5d15acaf22c8ed7f9d065171b9a4c78ba0588c75430d4e1a0d8c84e9e729"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond-lupp-klynger.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 102998,
+    "sha256": "f37d08e62be5e4a65ad6b4a2a82feb14ebb6101a5658bf8e55f21e8a75cb4b5c"
+  }
+}

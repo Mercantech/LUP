@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "kamaeleonen-raymond-vatson-regression",
+  "alt": "Vatson og Kamæleonen sammenligner tre forudsigelser med målingerne. Raymond peger på den røde række, hvor afstanden mellem de to mærker er størst.",
+  "generator": "Indbygget ImageGen",
+  "generation": "exec-b9f9102c-0c95-46f1-92df-4377550656f3.png",
+  "prompt": "One finished standalone LUP curriculum story illustration at native1536x1024 landscape3:2, tactile hand-painted gouache/oil with colored-pencil detail, luminous natural warm light, charming workshop storytelling. Use three attached portraits as exact identity references for EXACTLY THREE recognizable mascots, each doing one meaningful role in the same teaching activity. Faces, silhouettes, natural anatomy and interaction readable. No text, words, labels, letters, numerals, logos, watermark, collage or synthetic interface. Focus on tangible physical teaching props, with all key distinctions clear at half-size. Kamæleonen is exactly the olive/yellow-green friendly luthier chameleon, orange-edged crest, large warm brown turret eyes, cream rolled linen sleeves, copper-brown leather apron, natural little green hands and curled tail. Raymond is the exact friendly blue elephant professor with large blue ears, swept tuft, bronze round spectacles, warm brown eyes, natural softly curled trunk, cream cable-knit cardigan over blue shirt and brown trousers, two true blue elephant hands. Vatson is exact white floating legless robot with white rounded rectangular radio-cabinet head, black face with happy cyan pixel crescent eyes and smile, spring antenna ending in white ball, white tapered floating body with blue hover rim, two black ribbed arms with small white grippers and an open teal binder. A warm wooden shop calibration bench with amber metal lamp, shelves with measuring tools and a homely rainy window. All3 characters gather around a single slanted wooden measurement board in foreground. Board has exactly THREE PARALLEL horizontal physical ruler tracks of IDENTICAL visible length and the SAME tick spacing (unnumbered). Each has exactly two clearly different little peg markers: circular TEAL peg for prediction and triangular OCHRE peg for actual. First row circular peg near midpoint and triangle just barely next to it; a short gray connector string between. Second row pair also very close together, connector short. THIRD row circular peg near LEFT quarter and triangle near RIGHT quarter so the gap is dramatically LONGER than the first2. This third row's physical track border and taut connector thread are RED to emphasize the much larger error, but keep its two distinct peg shapes teal circle and ochre triangle. Two tiny generic shape tokens circle and triangle as legend okay, no writing. Vatson LEFT floats, one gripper places a teal peg on first row, binder in other. Chameleon CENTER leans attentively, holding a short real unnumbered ruler alongside the short second-row gap. Raymond RIGHT points gently with wooden pointer to the LONG red third-row gap and looks at the others, pencil notebook sits aside with no visible text. The story introduces absolute prediction error and one large outlier; no false equation, no squares/ratios calculated in art, no numbers. Slight elevated view keeps all3 rows the same scale and longer red gap evident. Coherent hands and all3 faces unobscured, actual rulers in a believable crafted apparatus.",
+  "references": [
+    {
+      "path": "assets/characters/chameleon/reference.png",
+      "sha256": "78a410962bf9f01f8eda28e8451bc8295a7d43785d1e7e13e42d669dcbd6c936"
+    },
+    {
+      "path": "web/wwwroot/images/characters/raymond/professor.webp",
+      "sha256": "c1e69dfda26d3223874ac58d5241f7fbd086dbb98569b55d9aedc120891750f1"
+    },
+    {
+      "path": "web/wwwroot/images/characters/vatson/vatson.webp",
+      "sha256": "1e0e087fb2a56c6e0a018d893f1c95b75c37599687d57df55d6066165ced0c4f"
+    }
+  ],
+  "png": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond-vatson-regression.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3202247,
+    "sha256": "f326c480a3c661610b635dbfba995afe8cf31a4f01e9aaac0d4d7902bd676959"
+  },
+  "webp": {
+    "path": "web/wwwroot/images/characters/collaborations/kamaeleonen-raymond-vatson-regression.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 138490,
+    "sha256": "308a17e5f1492fc970e063c2c1d9b15323b7020fc415181e08d5a8ae2d4a39b5"
+  },
+  "initialGeneration": "exec-307fb2e7-0cdd-40b5-8dbb-c49b815f0525.png",
+  "initialSourceSha256": "c42b38b2976b2382eee249b18413a6bf1ac4010e8dc01b339d27902d3336bfcb",
+  "editPrompt": "Make a very precise local correction to this finished warm painted illustration, preserving the entire 1536x1024 composition, every character identity, anatomy, lighting, materials, all existing ruler tick scales and three row arrangement. In the TOP ruler row, remove ONLY the extra turquoise round measurement marker directly below the white robot's gripper at approximately x596,y548. This marker is left of the existing connected pair at approximately x730 and x790. The robot's gripper must now be empty and just point toward that existing top-row pair. Keep exactly TWO markers on each ruler row: one teal circle and one ochre triangle. Preserve the existing short connected gap on the first row, short connected gap on second row, and long red connected gap on third row. Do not shift, remove, add or reinterpret any other objects. No words or numbers. Preserve beautiful brush texture and warm light."
+}

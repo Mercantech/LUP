@@ -1,0 +1,34 @@
+{
+  "id": "bilbo-gummianden-raev-http-svar",
+  "generator": "ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    },
+    {
+      "path": "web/wwwroot/images/about/fox.webp",
+      "sha256": "55d546057d613594f8ad44a6ea1c5aaa4899b753fcdeff4c80a33b17ccefdbd5"
+    }
+  ],
+  "alt": "Bilbo, Gummianden og Ræv gennemgår tre tests ved syltetøjsbordet. Kortene viser en oprettet bestilling, et mangelfuldt skema og en tom hylde.",
+  "prompt": "ONE standalone complete 1536×1024 landscape (3:2), richly detailed warm painted LUP storybook scene with gouache and softly brushed oil on textured paper. Use exact canonical mascot likenesses from attached local references, exactly THREE main characters with natural plausible limbs and readable faces. Concrete learning activity rather than a text chart. No readable text, headings, digits, fake code, watermark, external logo, borders or multiple panels. Teach three ordinary HTTP API response outcomes through three distinct visible test case props at one warm jam-order workbench, not a user hacking or security story. Autumn sun through a greenhouse pantry window, dried herbs, amber wood, quiet violet shadows. On the center workbench EXACTLY THREE separate thick upright result cards on little stands left to right, each clearly readable through illustrations alone. LEFT card is green-bordered showing a created blackberry JAM JAR with a small receipt curling next to it and a plain check mark at top, success case. MIDDLE card is red-bordered showing an ordinary paper order checklist with one filled square and one conspicuously EMPTY required field, plus a small plain red cross at top, bad-input case. RIGHT card is amber-bordered showing a small perfectly EMPTY two-level order rack and a magnifying glass over its empty opening, missing-resource case, no clock or retry arrows. Exactly these three cases, no extra result cards or numeric statuses. A single actual finished jam jar stands near left card, a blank empty order rack sits behind right card. Bilbo from first ref short round adult hobbit, dense chestnut curls, pointed ears, flushed face and tiny chin tuft, exact moss-green velvet waistcoat brass buttons, cream rolled sleeves, russet cropped trousers and hairy bare feet visible, stands left holding a pencil and thoughtfully studying success card with exactly two natural arms. Gummianden from second ref is literal glossy bright yellow molded rubber duck with orange bill, black oval eyes, tuft, terracotta knitted cardigan and round pale wooden button, simple orange molded feet and natural wings, stands on a book at center behind cards listening with one wing near head, faces and body unobstructed, no feathers or drawn pupils. Ræv from third ref red fox with cream muzzle/chest and white-tipped large tail, brick-red jacket, cuffed brown trousers and boots, stands at right with small test notebook plain unlettered lines, points to the right case with pencil held in natural paw. Cooperative learning, keep cases large enough at thumbnail, bright clearly separated green/red/amber borders with different pictograms. No laptop screen, weird apparatus, fake writing or extra characters.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-gummianden-raev-http-svar.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3512355,
+    "sha256": "b5fa0b04cdbc96ee413ca8d3f33fda6bd0e145116b3c6e428bf7668690ff7347"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/bilbo-gummianden-raev-http-svar.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 172992,
+    "sha256": "f323094a1fef744ad3507c1a509e1d72a2b2036e3ce6bbf3b611b0b532c75168"
+  }
+}

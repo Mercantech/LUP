@@ -1,0 +1,34 @@
+{
+  "id": "naesebladet-baever-gummianden-millis",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/bat/portrait.webp",
+      "sha256": "5c15516ee9e4755d31081e62a9b62e09aa6c99b3af15a2f537991568107941fc"
+    },
+    {
+      "path": "web/wwwroot/images/characters/beaver/portrait.png",
+      "sha256": "06f8d79d325707cd36dca2022c0d58e354a0248c7b2b0f2245035c8436c0ff37"
+    },
+    {
+      "path": "web/wwwroot/images/characters/gummianden/portrait-transparent.webp",
+      "sha256": "056b2fdae02f37312ec30679704134f98f4e02814c9c54d804f161337cda5113"
+    }
+  ],
+  "prompt": "A new LUP educational storybook illustration, 3:2 landscape 1536x1024, warm rich painterly gouache, exact recognizable portraits provided in the declared order. Coherent readable scene with all figures cooperating, expressive gazes, correct hands and prop interaction, no logos, printed words, equations, letters, watermarks, third party mascots or extra faces. Exactly three mascots. In Næsebladet's rehearsal loft behind burgundy curtains at evening, a giant antique circular wooden counter dial has one conspicuous seam at top where a deep amber tick interval begins a fresh lap. Show a very short elapsed arc straddling that top seam: two endpoint pegs (old left, current right) and a short curved glowing arc crossing the seam, on a single dial, not a second hand. No digits or tick labels. Exact velvet bat Næsebladet with notch in right ear and two attached wing-claws watches the start; blue jacket Bæver with native broad flat tail and neat natural hands sets the current marker while yellow rubber Gummianden with orange bill and terracotta cardigan listens and looks at the short path. Real scenic warmth, clear counter seam, natural thoughtful expressions. The prop is a visual model of unsigned time counter wraparound, not a real analog clock, design clearly centered on returning to the start and counting the short interval. No additional figures or text.",
+  "alt": "Næsebladet, Bæver og Gummianden følger et kort interval mellem to knopper på hver sin side af tællerens samling.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-baever-gummianden-millis.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 3200097,
+    "sha256": "f82c4d22a3a2307ecbe33389d4fe70b777ad95e3a472881c857d1156cd24fbf3"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/naesebladet-baever-gummianden-millis.webp",
+    "width": 768,
+    "height": 512,
+    "bytes": 132740,
+    "sha256": "de77f066d815a426bb4faff14918570e0fa83ee705b5b54c787e31cae9555b8b"
+  }
+}
