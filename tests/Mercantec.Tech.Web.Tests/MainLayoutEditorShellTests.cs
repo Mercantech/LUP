@@ -94,7 +94,7 @@ public sealed class MainLayoutEditorShellTests
         layout.WaitForAssertion(() => Assert.False(layout.Find("a.brand").HasAttribute("aria-current")));
         Assert.Equal("Min profil", Assert.Single(layout.FindAll(".lup-account a[href='/profile']")).TextContent.Trim());
         Assert.Empty(layout.FindAll(".lup-account a[href='/universe'], .lup-account a[href='/settings']"));
-        Assert.Empty(layout.FindComponents<Stub<ThemePicker>>());
+        Assert.Single(layout.FindComponents<Stub<ThemePicker>>());
     }
 
     [Fact]
@@ -113,6 +113,7 @@ public sealed class MainLayoutEditorShellTests
         Assert.Equal("E", layout.Find(".lup-account .avatar").TextContent.Trim());
         Assert.Empty(layout.FindAll(".lup-account a[href='/profile'], .lup-account a[href='/universe'], .lup-account a[href='/settings']"));
         Assert.Contains(layout.FindAll(".lup-account button"), button => button.TextContent.Trim() == "Afslut elev-visning");
+        Assert.Single(layout.FindComponents<Stub<ThemePicker>>());
     }
 
     [Fact]
