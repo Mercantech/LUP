@@ -56,7 +56,7 @@ public partial class Index
     private string _status = "connecting", _statusDetail = "", _ownerName = "";
     private int _total, _generation;
     private bool _busy, _loading = true, _mounted, _needsMount, _disposed, _refreshing;
-    private bool _creating, _showJournal, _showComments, _showShares, _showGraph, _usersSearched;
+    private bool _showJournal, _showComments, _showShares, _showGraph, _usersSearched;
     private string _templateSearch = "";
     private CancellationTokenSource? _filterRequest;
     private bool _filtering;
@@ -333,7 +333,9 @@ public partial class Index
         _showGraph = true;
         if (_sidebarMobile) SetSidebarOpen(false);
     }
-    private void BeginCreate(bool child) => BeginCreateAt(child ? _current?.DocumentId : null);
+    protected override bool ShortcutCanCreatePage => CanUse && !_loading && !_busy && (TemplateMode ? IsTeacher : Own);
+    protected override bool ShortcutCanCreateChild => ShortcutCanCreatePage && !TemplateMode && Editing;
+    protected override void BeginCreate(bool child) => BeginCreateAt(child ? _current?.DocumentId : null);
     private void BeginCreateAt(Guid? parent)
     {
         if (!Own && !TemplateMode) return;

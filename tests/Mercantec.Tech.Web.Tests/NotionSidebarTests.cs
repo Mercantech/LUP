@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Bunit;
 using Mercantec.Tech.Contracts;
+using Mercantec.Tech.Web.Components;
 using Mercantec.Tech.Web.Emojis;
 using Mercantec.Tech.Web.Notion;
 using Microsoft.AspNetCore.Components;
@@ -109,6 +110,24 @@ public sealed class NotionSidebarTests
     }
 
     [Fact]
+    public async Task Keyboard_navigation_uses_logical_tree_order_across_the_pinned_page_and_virtual_rows()
+    {
+        var extraIds = Enumerable.Range(0, 75).Select(_ => Guid.NewGuid()).ToArray();
+        using var api = new SidebarApi { ExtraPageIds = extraIds };
+        var javascript = new SidebarJavascript();
+        using var context = await CreateContext(api, javascript);
+        var page = context.Render<NotionPage>(p => p.Add(x => x.PageId, api.ActiveId));
+        page.WaitForAssertion(() => Assert.Single(page.FindAll(".notion-current-page .notion-page[aria-current=page]")), Timeout);
+
+        Assert.Equal(new NotebookTreeTarget(api.DatabaseId, 0), page.Instance.GetNotebookTreeTarget("", "Home"));
+        Assert.Equal(new NotebookTreeTarget(api.ActiveId, -1), page.Instance.GetNotebookTreeTarget(api.IntroductionId.ToString(), "ArrowUp"));
+        Assert.Equal(new NotebookTreeTarget(api.IntroductionId, 2), page.Instance.GetNotebookTreeTarget(api.ActiveId.ToString(), "ArrowDown"));
+        var last = page.Instance.GetNotebookTreeTarget("", "End");
+        Assert.Equal(extraIds[^1], last?.Id);
+        Assert.True(last!.Index >= 60);
+    }
+
+    [Fact]
     public async Task Empty_search_results_keep_the_current_document_and_allow_clearing()
     {
         using var api = new SidebarApi();
@@ -205,6 +224,9 @@ public sealed class NotionSidebarTests
         Assert.Empty(page.FindAll("[aria-label='Tilbagelinks']"));
         Assert.DoesNotContain("/api/references/backlinks", api.Requests);
         Assert.Equal(1, javascript.Editor.Mounts);
+        await page.InvokeAsync(() => page.Instance.OnNotebookShortcut("new-page"));
+        await page.InvokeAsync(() => page.Instance.OnNotebookShortcut("new-child"));
+        Assert.Empty(page.FindAll("form.notion-create"));
     }
 
     [Fact]
@@ -291,7 +313,7 @@ public sealed class NotionSidebarTests
         Assert.Equal("true", page.Find(".notion-sidebar-toggle").GetAttribute("aria-expanded"));
         Assert.Equal("dialog", page.Find("#notion-sidebar").GetAttribute("role"));
         Assert.Equal("true", page.Find("#notion-sidebar").GetAttribute("aria-modal"));
-        page.Find(".notion-create input").Change("Ny underside om databaser");
+        page.Find(".notion-create input").Input("Ny underside om databaser");
         await page.Find(".notion-create").SubmitAsync(EventArgs.Empty);
 
         var created = Assert.Single(api.CreateRequests);
@@ -482,6 +504,7 @@ public sealed class NotionSidebarTests
         public Guid CssId { get; } = Guid.NewGuid();
         public Guid IntroductionId { get; } = Guid.NewGuid();
         public Guid CreatedId { get; } = Guid.NewGuid();
+        public Guid[] ExtraPageIds { get; init; } = [];
         private NotionPageSummary? _createdPage;
         public bool Teacher { get; init; } = true;
         public bool Global { get; init; }
@@ -498,6 +521,7 @@ public sealed class NotionSidebarTests
             Summary(WebId, "Webudvikling"),
             Summary(CssId, "CSS layout", WebId),
             Summary(IntroductionId, "Introduktion"),
+            ..ExtraPageIds.Select((id, index) => Summary(id, $"Zoologi {index:D2}")),
             ..(_createdPage is { } created ? new[] { created } : [])
         ];
 

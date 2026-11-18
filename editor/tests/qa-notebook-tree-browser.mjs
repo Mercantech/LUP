@@ -161,7 +161,65 @@ async function treeFlow({ page, who, path, rootButton, readPages, apiPagePath, l
     'accessible move action returns the page to the chosen branch');
   await trashAndRestore(page, rootTitle, readPages, who, apiPagePath, rootId, childId);
   process.stdout.write(`PASS ${label}: right-click, drag, independent roots, keyboard move, branch trash and restore\n`);
-  return { rootId, rootTitle };
+  return { rootId, rootTitle, childId, childTitle };
+}
+
+async function waitForFocus(locator) {
+  await locator.waitFor();
+  await until(() => locator.evaluate(element => element === document.activeElement),
+    Boolean, 'keyboard focus should move to the requested control');
+}
+
+async function shortcutCreate(page, key, title, readPages, expectedParentId) {
+  await page.keyboard.press(key);
+  const form = sidebar(page).locator('form').filter({ has: page.getByRole('button', { name: 'Opret', exact: true }) });
+  await waitForFocus(form.getByRole('textbox'));
+  await page.keyboard.insertText(title);
+  await page.keyboard.press('Enter');
+  const created = await until(async () => (await readPages()).find(item => item.title === title),
+    Boolean, 'keyboard-created page is saved');
+  assert.equal(created.parentPageId, expectedParentId);
+  await page.waitForURL(url => url.pathname.endsWith('/' + created.id));
+  await form.waitFor({ state: 'hidden' });
+  return created.id;
+}
+
+async function keyboardFlow(page, rootPath, branch, label, readPages) {
+  await openSidebar(page, rootPath + branch.rootId);
+  const panel = sidebar(page), search = panel.getByRole('searchbox', { name: 'Find en side', exact: true });
+  await page.locator('.notion-workspace[data-sidebar-ready=true]').waitFor();
+  const toggle = page.locator('.notion-sidebar-toggle');
+  await toggle.focus();
+  await page.keyboard.press('ControlOrMeta+b');
+  await panel.waitFor({ state: 'hidden' });
+  await page.keyboard.press('ControlOrMeta+p');
+  await waitForFocus(search);
+  await page.keyboard.insertText(branch.childTitle);
+  const child = row(page, branch.childTitle).locator('.notion-page');
+  await child.waitFor();
+  await page.keyboard.press('ArrowDown');
+  await waitForFocus(child);
+  await page.keyboard.press('Enter');
+  await page.waitForURL(url => url.pathname.endsWith('/' + branch.childId));
+  const editor = page.locator('.bn-editor[contenteditable=true]').first();
+  await editor.waitFor();
+  await editor.focus();
+  await page.keyboard.press('ControlOrMeta+Shift+e');
+  await waitForFocus(panel.locator('.notion-page[aria-current=page]'));
+  await page.keyboard.press('F1');
+  const help = page.getByRole('dialog', { name: 'Tastaturgenveje', exact: true });
+  await help.waitFor();
+  await page.keyboard.press('Escape');
+  await help.waitFor({ state: 'hidden' });
+  await waitForFocus(panel.locator('.notion-page[aria-current=page]'));
+  await page.keyboard.press('Escape');
+  await until(() => page.locator('.notion-document').evaluate(doc => doc.contains(document.activeElement)),
+    Boolean, 'Escape should return focus to the document');
+  const id = await shortcutCreate(page, 'ControlOrMeta+Alt+n', label + ' genvejsnote ' + suffix, readPages, null);
+  await editor.waitFor();
+  await editor.focus();
+  await shortcutCreate(page, 'ControlOrMeta+Alt+Shift+n', label + ' genvejsunderside ' + suffix, readPages, id);
+  process.stdout.write('PASS ' + label + ': shortcuts navigate, search, show help and create a page and subpage\n');
 }
 
 async function editRestoredPage(page, path, text) {
@@ -169,8 +227,10 @@ async function editRestoredPage(page, path, text) {
   const editor = page.locator('.notion-blocknote-host .bn-editor[contenteditable=true]').first();
   await editor.waitFor({ timeout: 60000 });
   await editor.click();
+  await page.keyboard.press('ControlOrMeta+b');
   await page.keyboard.insertText(text);
-  await editor.getByText(text, { exact: true }).waitFor();
+  await page.keyboard.press('ControlOrMeta+b');
+  await editor.locator('strong, b, [data-style-type="bold"]').filter({ hasText: text }).first().waitFor();
   // Reload until the collaboration service has durably persisted the new revision.
   await page.getByRole('status').filter({ hasText: 'Gemt i skyen' }).first().waitFor();
   await page.reload();
@@ -181,13 +241,37 @@ async function mobileActions(who, id, title) {
   const page = await client(who, { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   await page.goto(new URL('/notebook/' + id, base).href);
   const toggle = page.locator('.notion-sidebar-toggle');
-  await toggle.waitFor();
-  if (!await sidebar(page).isVisible()) await toggle.tap();
+  await page.locator('.notion-workspace[data-sidebar-ready=true]').waitFor();
+  await toggle.focus();
+  await page.keyboard.press('ControlOrMeta+p');
+  await waitForFocus(sidebar(page).getByRole('searchbox', { name: 'Find en side' }));
+  await page.keyboard.press('Escape');
+  await sidebar(page).waitFor({ state: 'hidden' });
+  await toggle.tap();
   await actions(page, title).tap();
   const dialog = page.getByRole('dialog', { name: 'Sidehandlinger', exact: true });
   await dialog.getByRole('button', { name: 'Flyt til', exact: true }).waitFor();
   await dialog.getByRole('button', { name: 'Luk', exact: true }).tap();
   await dialog.waitFor({ state: 'hidden' });
+}
+
+async function checkSharedReader(notebookId, pageId) {
+  await json('pupil', '/api/notebooks/' + notebookId + '/shares', { recipientSub: identities.peer.sub, pageId });
+  const reader = await client('peer');
+  await openSidebar(reader, '/notebook/' + pageId);
+  await reader.locator('.notion-workspace[data-sidebar-ready=true][data-can-create-page=false]').waitFor();
+  await reader.locator('.notion-sidebar-toggle').focus();
+  await reader.keyboard.press('ControlOrMeta+Alt+n');
+  await reader.keyboard.press('ControlOrMeta+Alt+Shift+n');
+  await reader.keyboard.press('F1');
+  const help = reader.getByRole('dialog', { name: 'Tastaturgenveje' });
+  await help.waitFor();
+  assert.equal(await help.getByText(/^Opret (note|side|underside)$/).count(), 0);
+  assert.equal(await sidebar(reader).locator('.nb-create-form').count(), 0);
+  await reader.keyboard.press('Escape');
+  await reader.keyboard.press('ControlOrMeta+p');
+  await waitForFocus(sidebar(reader).getByRole('searchbox', { name: 'Find en side' }));
+  process.stdout.write('PASS shared reader can search and open help without write commands\n');
 }
 
 try {
@@ -203,6 +287,7 @@ try {
   assert.equal(await teacher.getByRole('combobox', { name: 'Vælg hold', exact: true }).count(), 0);
   await editRestoredPage(teacher, '/notion/' + lesson.rootId, 'QA restaureret undervisningsside ' + suffix);
   process.stdout.write('PASS restored teaching page accepts fresh content\n');
+  await keyboardFlow(teacher, '/notion/', lesson, 'Forløb', () => json('teacher', '/api/notion/pages?collectionId=' + collection.id));
 
   const personal = await json('pupil', '/api/notebooks/mine', {});
   const note = await treeFlow({
@@ -211,7 +296,9 @@ try {
     apiPagePath: id => '/api/notebooks/pages/' + id + '/context', label: 'Personlig notesbog',
   });
   await editRestoredPage(pupil, '/notebook/' + note.rootId, 'QA restaureret note ' + suffix);
+  await keyboardFlow(pupil, '/notebook/', note, 'Personlig notesbog', async () => (await json('pupil', '/api/notebooks/' + personal.id + '/pages')).items);
   await mobileActions('pupil', note.rootId, note.rootTitle);
+  await checkSharedReader(personal.id, note.rootId);
   process.stdout.write('PASS restored personal note accepts fresh content and exposes touch actions\n');
   assert.deepEqual(errors, []);
 } finally {

@@ -69,6 +69,136 @@ function focus(element) {
     if (element?.isConnected && typeof element.focus === 'function') element.focus({ preventScroll: true });
 }
 
+function shortcutCommand(state, event) {
+    const key = event.key.toLowerCase();
+    if (key === 'f1' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) return 'help';
+    if (event.getModifierState?.('AltGraph')) return null;
+    const primary = state.mac ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey;
+    if (!primary) return null;
+    if (event.altKey) {
+        // Option+N can report "Dead" on macOS, even while Command is held.
+        if (key !== 'n' && !(state.mac && event.code === 'KeyN')) return null;
+        if (event.shiftKey) return state.root.dataset.canCreateChild === 'true' ? 'new-child' : null;
+        return state.root.dataset.canCreatePage === 'true' ? 'new-page' : null;
+    }
+    if (event.shiftKey) return key === 'e' ? 'explorer' : null;
+    if (key === 'p') return 'search';
+    if (key === 'b' && !event.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]'))
+        return 'toggle-sidebar';
+    return null;
+}
+
+function canUseShortcut(state, target) {
+    if (target !== document.body && !state.root.contains(target)) return false;
+    const panel = state.root.querySelector('#notion-sidebar');
+    const dialog = target?.closest?.('[role="dialog"],dialog[open]');
+    if (dialog && dialog !== panel) return false;
+    if (target?.closest?.('[role="menu"],[role="listbox"],[role="combobox"][aria-expanded="true"]')) return false;
+    if (state.mobile && state.open && !state.focused && !panel?.contains(target)) return false;
+    return ![...document.querySelectorAll('dialog[open],[role="dialog"][aria-modal="true"]')]
+        .some(element => element !== panel && element.getClientRects().length > 0);
+}
+
+export function focusShortcutTarget(root, command) {
+    const state = workspaces.get(root);
+    if (!state?.active) return;
+    let element;
+    if (command === 'search') element = root.querySelector('#notion-page-search');
+    if (command === 'explorer') {
+        element = root.querySelector('#notion-sidebar .notion-page[aria-current="page"]')
+            ?? root.querySelector('#notion-sidebar .notion-page') ?? root.querySelector('#notion-page-search');
+    }
+    if (command === 'new-page' || command === 'new-child') {
+        element = root.querySelector('.notion-create input:not([type="hidden"]),.nb-create-form input:not([type="hidden"])');
+    }
+    focus(element);
+    element?.scrollIntoView?.({ block: 'nearest' });
+    if (command === 'search') element?.select();
+}
+
+function cancelTreeNavigation(state) {
+    state.navigationVersion++;
+    state.navigationObserver?.disconnect();
+    state.navigationObserver = null;
+}
+
+function observeTree(state, elements, apply) {
+    const observer = new MutationObserver(() => {
+        if (apply()) {
+            observer.disconnect();
+            if (state.navigationObserver === observer) state.navigationObserver = null;
+        }
+    });
+    state.navigationObserver = observer;
+    observer.observe(elements, { subtree: true, childList: true, attributes: true, attributeFilter: ['aria-busy', 'data-page-id'] });
+}
+
+async function moveTreeFocus(state, origin, id, key, open) {
+    const version = state.navigationVersion;
+    const searchValue = origin.value;
+    const list = () => state.root.querySelector('.notion-page-list');
+    const valid = () => state.active && state.open && !state.focused && state.navigationVersion === version
+        && origin.value === searchValue && (document.activeElement === origin
+            || (!origin.isConnected && document.activeElement === document.body));
+    if (list()?.getAttribute('aria-busy') === 'true') {
+        observeTree(state, state.root, () => {
+            if (!valid()) return true;
+            if (list()?.getAttribute('aria-busy') === 'true') return false;
+            void moveTreeFocus(state, origin, id, key, open);
+            return true;
+        });
+        return;
+    }
+    const target = await invoke(state, 'GetNotebookTreeTarget', id, key);
+    if (!target?.id || !valid()) return;
+    const apply = () => {
+        if (!valid()) return true;
+        // The target id is a Guid from the authorized page list.
+        const row = state.root.querySelector(`[data-page-id="${target.id}"] .notion-page`);
+        if (!row || row.disabled) return false;
+        focus(row);
+        row.scrollIntoView({ block: 'nearest' });
+        if (open) row.click();
+        return true;
+    };
+    if (apply() || target.index < 0 || !list()) return;
+    // Virtualize renders a 44px row only after the list reaches its position.
+    const viewport = list();
+    const pinned = viewport.querySelector('.notion-current-page');
+    observeTree(state, viewport, apply);
+    viewport.scrollTop = target.index * 44 + (pinned?.offsetHeight ?? 0);
+}
+
+function handleTreeKey(state, event) {
+    if (!state.open || state.focused || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return false;
+    const { target, key } = event;
+    const search = target?.id === 'notion-page-search';
+    if (search) {
+        if (!(key === 'ArrowDown' || key === 'ArrowUp' || (key === 'Enter' && target.value.trim()))) return false;
+        event.preventDefault();
+        void moveTreeFocus(state, target, '', key === 'ArrowUp' ? 'End' : 'Home', key === 'Enter');
+        return true;
+    }
+    if (!target?.matches?.('.notion-page,.notion-branch-toggle')) return false;
+    if (key === 'Escape' && !state.mobile) {
+        event.preventDefault();
+        focus(state.root.querySelector('.notion-document .bn-editor[contenteditable="true"]')
+            ?? state.root.querySelector('.notion-document'));
+        return true;
+    }
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) return false;
+    const row = target.closest('.notion-page-row');
+    if (!row) return false;
+    const id = row.closest('[data-page-id]')?.dataset.pageId;
+    if (!id) return false;
+    event.preventDefault();
+    const branch = row.querySelector('.notion-branch-toggle');
+    if (branch && (key === 'ArrowRight' && branch.getAttribute('aria-expanded') === 'false'
+        || key === 'ArrowLeft' && branch.getAttribute('aria-expanded') === 'true')) branch.click();
+    else void moveTreeFocus(state, target, id, key, false);
+    return true;
+}
+
 function hiddenByClosedDetails(element) {
     for (let parent = element.parentElement; parent; parent = parent.parentElement) {
         if (parent.localName !== 'details' || parent.open) continue;
@@ -120,8 +250,10 @@ export function mount(root, callbacks) {
     destroy(root);
     if (!root?.querySelector) return null;
     const media = window.matchMedia(breakpoint);
+    const mac = /Mac|iPhone|iPad|iPod/i.test(window.navigator?.userAgentData?.platform ?? window.navigator?.platform ?? '');
+    root.dataset.shortcutPlatform = mac ? 'mac' : 'pc';
     const state = {
-        root, callbacks, media, active: true,
+        root, callbacks, media, mac, active: true, navigationVersion: 0,
         mobile: media.matches, desktopOpen: readDesktopOpen(),
         open: false, applied: false, modal: null, closing: false,
         focused: root.dataset?.focusMode === 'true', preferredWidth: readWidth(), width: 268, maxWidth: 420, drag: null, frame: 0,
@@ -131,8 +263,24 @@ export function mount(root, callbacks) {
         state.closing = true;
         void invoke(state, 'CloseNotionSidebar').finally(() => { state.closing = false; });
     };
+    // Claim workspace commands before editor plugins, including BlockNote's Cmd/Ctrl+Shift+E.
+    // Native text editing and nested dialogs retain their own shortcuts.
+    const commandKeydown = event => {
+        if (!state.active || event.defaultPrevented || event.isComposing) return;
+        const command = shortcutCommand(state, event);
+        if (!command || !canUseShortcut(state, event.target)) return;
+        cancelTreeNavigation(state);
+        event.preventDefault();
+        event.stopPropagation();
+        if (!event.repeat) void invoke(state, 'OnNotebookShortcut', command);
+    };
     const keydown = event => {
         if (!state.active || event.defaultPrevented || event.isComposing) return;
+        // Before the first click the workspace's event target may still be the body.
+        if (event.target === document.body) commandKeydown(event);
+        if (event.defaultPrevented) return;
+        cancelTreeNavigation(state);
+        if (state.root.contains(event.target) && handleTreeKey(state, event)) return;
         if (event.key === 'Escape' && state.drag) { event.preventDefault(); releaseResize(state, true); return; }
         if (event.target?.closest?.('.notion-sidebar-resize') && !state.mobile && !state.focused) {
             const step = event.shiftKey ? 40 : 20;
@@ -177,6 +325,7 @@ export function mount(root, callbacks) {
     };
     const click = event => {
         if (!state.active) return;
+        cancelTreeNavigation(state);
         const more = root.querySelector('.notion-document-more[open]');
         if (!more) return;
         const menu = event.target?.closest?.('.notion-document-menu');
@@ -194,6 +343,8 @@ export function mount(root, callbacks) {
         void invoke(state, 'OnNotionSidebarViewport', state.mobile, state.desktopOpen);
     };
     state.keydown = keydown;
+    state.commandKeydown = commandKeydown;
+    root.addEventListener?.('keydown', commandKeydown, true);
     state.click = click;
     state.changed = changed;
     if (media.addEventListener) media.addEventListener('change', changed);
@@ -299,11 +450,13 @@ export function destroy(root) {
     const state = workspaces.get(root);
     if (!state) return;
     state.active = false;
+    cancelTreeNavigation(state);
     releaseResize(state);
     releaseModal(state);
     if (state.media.removeEventListener) state.media.removeEventListener('change', state.changed);
     else state.media.removeListener(state.changed);
     document.removeEventListener('keydown', state.keydown);
+    root.removeEventListener?.('keydown', state.commandKeydown, true);
     document.removeEventListener('click', state.click);
     root.removeEventListener?.('pointerdown', state.down);
     root.removeEventListener?.('notion-layout-reveal', state.reveal);

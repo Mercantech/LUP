@@ -133,6 +133,30 @@ public sealed class NotebookUiTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Create_shortcuts_respect_the_open_notebooks_write_access(bool reader)
+    {
+        using var api = new NotebookApi { Reader = reader };
+        await using var context = await CreateContext(api);
+        var page = context.Render<NotebookPage>(p => p.Add(x => x.PageId, api.Page.Id));
+        page.WaitForAssertion(() => Assert.Single(page.FindAll(".notion-page[aria-current=page]")));
+
+        await page.InvokeAsync(() => page.Instance.OnNotebookShortcut("new-child"));
+        if (reader)
+        {
+            await page.InvokeAsync(() => page.Instance.OnNotebookShortcut("new-page"));
+            Assert.Empty(page.FindAll(".nb-create-form"));
+        }
+        else
+        {
+            Assert.Equal("Ny underside", page.Find(".nb-create-form h3").TextContent);
+            Assert.Single(page.FindAll(".nb-create-form input"));
+        }
+        Assert.Empty(api.Unexpected);
+    }
+
+    [Theory]
     [InlineData("/journal", false)]
     [InlineData("/teacher/notebook-templates", true)]
     public async Task Journal_and_templates_use_the_page_explorer_and_keep_their_own_actions(string route, bool teacher)
@@ -145,6 +169,13 @@ public sealed class NotebookUiTests
         page.WaitForAssertion(() => Assert.Single(page.FindAll("#notion-sidebar #notion-page-search")));
         Assert.Contains(teacher ? api.Template.Title : api.Child.Title, page.Find("#notion-sidebar .notion-page-list").TextContent);
         Assert.Single(page.FindAll(teacher ? ".nb-template-status" : ".nb-journal-library"));
+        if (teacher)
+        {
+            await page.InvokeAsync(() => page.Instance.OnNotebookShortcut("new-child"));
+            Assert.Empty(page.FindAll(".nb-create-form"));
+            await page.InvokeAsync(() => page.Instance.OnNotebookShortcut("new-page"));
+            Assert.Equal("Ny skabelon", page.Find(".nb-create-form h3").TextContent);
+        }
         Assert.Empty(page.FindAll("[aria-label='Tilbagelinks']"));
         Assert.Empty(api.Unexpected);
     }

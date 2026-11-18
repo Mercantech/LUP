@@ -65,7 +65,7 @@ public partial class Index
     private int _totalPages, _listVersion;
     private string? _account, _loadedRoute, _error, _notice;
     private string _title = "", _newTitle = "", _status = "connecting", _statusDetail = "";
-    private bool _loading = true, _busy, _creating, _needsMount, _mounted, _disposed, _showGroups;
+    private bool _loading = true, _busy, _needsMount, _mounted, _disposed, _showGroups;
     private bool _savingTitle;
     private Guid? _codexHistoryPageId;
     private Task<bool>? _titleSaveTask;
@@ -395,7 +395,9 @@ public partial class Index
         if (_sidebarMobile) SetSidebarOpen(false);
         Nav.NavigateTo(href);
     }
-    private void BeginCreate(bool child) => BeginCreateAt(child ? _current?.PageId : null);
+    protected override bool ShortcutCanCreatePage => CanUse && Authoring && !_loading && !_busy;
+    protected override bool ShortcutCanCreateChild => ShortcutCanCreatePage && IsEditing;
+    protected override void BeginCreate(bool child) => BeginCreateAt(child ? _current?.PageId : null);
     private void BeginCreateAt(Guid? parent) { if (!Authoring) return; SetSidebarOpen(true); _newParent = parent; _newTitle = ""; _creating = true; }
     private async Task CreatePage()
     {
