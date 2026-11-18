@@ -1,0 +1,118 @@
+name: stage-hjem-20261118
+
+services:
+  issuer:
+    build:
+      context: ../..
+      dockerfile: tests/HomeGame.StagingQa/issuer.Dockerfile
+    environment:
+      LUP_HOME_STAGING_QA: synthetic-only-20261118
+    read_only: true
+    tmpfs:
+      - /tls:mode=0700,size=16m
+      - /tmp:size=16m
+    volumes:
+      - qa-ca:/public-ca
+    networks:
+      staging:
+        aliases:
+          - home-game-qa-issuer
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('https').get('https://home-game-qa-issuer:9443/health',{ca:require('fs').readFileSync('/public-ca/qa-ca.pem')},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: lup_home_qa_20261118
+      POSTGRES_USER: lup_home_qa
+      POSTGRES_PASSWORD: synthetic-staging-database-only-20261118
+    volumes:
+      - qa-db:/var/lib/postgresql/data
+    networks:
+      - staging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lup_home_qa -d lup_home_qa_20261118"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    image: ${LUP_HOME_QA_API_IMAGE:?Set the exact candidate API image}
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: Host=db;Database=lup_home_qa_20261118;Username=lup_home_qa;Password=synthetic-staging-database-only-20261118
+      AUTH_ISSUER: https://home-game-qa-issuer:9443
+      AUTH_AUDIENCE: lup-home-game-qa-only
+      SSL_CERT_FILE: /qa-ca/qa-ca.pem
+      HomeGame__Enabled: "true"
+      Cors__SpaOrigins: http://web:3000
+      ObjectStorage__Endpoint: ""
+      Azure__ClientSecret: ""
+      OpenAI__ApiKey: ""
+      OPENAI_API_KEY: ""
+      Lectio__BaseUrl: http://127.0.0.1:1/
+    volumes:
+      - qa-ca:/qa-ca:ro
+      - stage-worker:/run/lup-home-game:ro
+    networks:
+      staging:
+        aliases:
+          - lup-api-internal
+          - mercantec-tech-api
+      runner-control: {}
+    depends_on:
+      issuer:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
+  web:
+    image: ${LUP_HOME_QA_WEB_IMAGE:?Set the exact candidate web image}
+    networks:
+      - staging
+    depends_on:
+      - api
+
+  browser:
+    profiles: ["verify"]
+    build:
+      context: ../..
+      dockerfile: tests/HomeGame.StagingQa/browser.Dockerfile
+    environment:
+      LUP_HOME_STAGING_QA: synthetic-only-20261118
+      HOME_QA_ORIGIN: http://web:3000
+      NODE_EXTRA_CA_CERTS: /qa-ca/qa-ca.pem
+      HOME_QA_EXPECTED_REVISION: ${HOME_QA_EXPECTED_REVISION:-}
+    volumes:
+      - qa-ca:/qa-ca:ro
+      - qa-artifacts:/artifacts
+    networks:
+      - staging
+    depends_on:
+      issuer:
+        condition: service_healthy
+      web:
+        condition: service_started
+    shm_size: 256mb
+
+networks:
+  staging:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${LUP_HOME_QA_SUBNET:-10.42.94.48/28}
+  runner-control:
+    external: true
+    name: lup-home-runner-control
+
+volumes:
+  qa-db: {}
+  qa-ca: {}
+  qa-artifacts: {}
+  stage-worker:
+    external: true
+    name: lup-hjem-stage-connection-20261118
