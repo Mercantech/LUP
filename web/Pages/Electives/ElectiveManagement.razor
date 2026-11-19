@@ -141,7 +141,11 @@
                                 }
                                 @if (item.Status != "template")
                                 {
-                                    <span> · @item.EnrollmentCount @(item.Capacity is { } capacity ? $"af {capacity} pladser optaget" : "pladser optaget")</span>
+                                    <span> · @ElectiveDisplay.EnrollmentLabel(item)</span>
+                                    @if (item.Capacity is { } capacity)
+                                    {
+                                        <span> · @item.EnrollmentCount af @capacity pladser optaget</span>
+                                    }
                                 }
                             </p>
                         </div>

@@ -7,11 +7,42 @@
         <div class="package-intro-copy">
             <h1 id="package-title">@Package.Title</h1>
             <p>@Package.Summary</p>
+            @if (Offerings.Length > 0)
+            {
+                <a class="action package-next" href="@($"{Package.Href}#package-offerings-title")">Se aktuelle hold <UiIcon Name="arrow" /></a>
+            }
         </div>
         <img src="@Package.ImageUrl" alt="" class="package-image" width="600" height="400" />
     </header>
 
     <div class="package-content">
+        <section class="package-information" aria-labelledby="package-information-title">
+            <h2 id="package-information-title">Det lærer du</h2>
+            <ul class="package-outcomes">
+                @foreach (var outcome in Package.Outcomes)
+                {
+                    <li><UiIcon Name="check" /><span>@outcome</span></li>
+                }
+            </ul>
+            <h3>Fag i pakken</h3>
+            <p class="package-subjects">@Package.Subjects</p>
+            @if (!string.IsNullOrWhiteSpace(Template.Schedule))
+            {
+                @LinkedText(Template.Schedule)
+            }
+            @if (!string.IsNullOrWhiteSpace(Template.Description))
+            {
+                <details class="package-description">
+                    <summary>Læs fagbeskrivelsen</summary>
+                    @LinkedText(Template.Description)
+                </details>
+            }
+            @if (ElectiveDisplay.SafeSourceUrl(Template.SourceUrl) is { } source)
+            {
+                <a class="package-source" href="@source" target="_blank" rel="noopener noreferrer">Åbn den oprindelige fagbeskrivelse <UiIcon Name="external" /></a>
+            }
+        </section>
+
         <section class="package-offerings" aria-labelledby="package-offerings-title">
             <h2 id="package-offerings-title">Aktuelle hold</h2>
             @if (Offerings.Length == 0)
@@ -31,25 +62,6 @@
             @if (CanManage)
             {
                 <a class="secondary package-create" href="@($"/valgfag?vis=administrer&fag={Template.Id:D}")"><UiIcon Name="plus" /> Opret hold</a>
-            }
-        </section>
-
-        <section class="package-information" aria-labelledby="package-information-title">
-            <h2 id="package-information-title">Om fagpakken</h2>
-            @if (!string.IsNullOrWhiteSpace(Template.Schedule))
-            {
-                @LinkedText(Template.Schedule)
-            }
-            @if (!string.IsNullOrWhiteSpace(Template.Description))
-            {
-                <details class="package-description">
-                    <summary>Læs fagbeskrivelsen</summary>
-                    @LinkedText(Template.Description)
-                </details>
-            }
-            @if (ElectiveDisplay.SafeSourceUrl(Template.SourceUrl) is { } source)
-            {
-                <a class="package-source" href="@source" target="_blank" rel="noopener noreferrer">Åbn den oprindelige fagbeskrivelse <UiIcon Name="external" /></a>
             }
         </section>
     </div>
