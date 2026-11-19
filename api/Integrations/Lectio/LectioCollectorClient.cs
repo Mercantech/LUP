@@ -54,6 +54,30 @@ public class LectioCollectorClient(HttpClient http, ILogger<LectioCollectorClien
         return await res.Content.ReadFromJsonAsync<JsonElement>(JsonOptions, ct);
     }
 
+    public async Task<byte[]?> GetStudentPhotoAsync(string elevId, string bearerToken, CancellationToken ct = default)
+    {
+        const int maxBytes = 2 * 1024 * 1024;
+        using var req = CreateRequest(HttpMethod.Get, $"people/students/{Uri.EscapeDataString(elevId)}/photo", bearerToken);
+        using var res = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+        if (res.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+        if (!res.IsSuccessStatusCode)
+            throw new LectioCollectorException((int)res.StatusCode, "lectio_photo_unavailable");
+        var type = res.Content.Headers.ContentType?.MediaType?.ToLowerInvariant();
+        if (type is not ("image/jpeg" or "image/png" or "image/webp") || res.Content.Headers.ContentLength > maxBytes)
+            throw new LectioCollectorException(502, "invalid_lectio_photo");
+        await using var input = await res.Content.ReadAsStreamAsync(ct);
+        using var output = new MemoryStream();
+        var chunk = new byte[81920];
+        int read;
+        while ((read = await input.ReadAsync(chunk, ct)) > 0)
+        {
+            if (output.Length + read > maxBytes)
+                throw new LectioCollectorException(502, "invalid_lectio_photo");
+            await output.WriteAsync(chunk.AsMemory(0, read), ct);
+        }
+        return output.Length == 0 ? null : output.ToArray();
+    }
+
     public async Task<JsonElement> GetTrackedHoldsAsync(string bearerToken, CancellationToken ct = default)
     {
         using var req = CreateRequest(HttpMethod.Get, "holds/tracked", bearerToken);

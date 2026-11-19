@@ -17,7 +17,34 @@ public sealed class ProfilePhotoClient(HttpClient http)
 
     public async Task<string?> Photo(Guid sub, CancellationToken ct)
     {
-        using var response = await http.GetAsync($"student-photos/{sub:D}", ct);
+        return await ReadPhoto($"student-photos/{sub:D}", ct);
+    }
+
+    public Task<string?> LectioPhoto(string lectioId, CancellationToken ct) =>
+        ReadPhoto($"lectio/students/{Uri.EscapeDataString(lectioId)}/photo", ct);
+
+    public async Task<string?> OwnLectioId(CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(5));
+        try
+        {
+            using var response = await http.GetAsync("lectio/me", timeout.Token);
+            if (!response.IsSuccessStatusCode) return null;
+            var me = await response.Content.ReadFromJsonAsync<JsonElement>(timeout.Token);
+            return me.ValueKind == JsonValueKind.Object && me.TryGetProperty("lectio", out var lectio)
+                && lectio.ValueKind == JsonValueKind.Object && lectio.TryGetProperty("lectioId", out var id)
+                && id.ValueKind == JsonValueKind.String ? id.GetString() : null;
+        }
+        catch (HttpRequestException) { return null; }
+        catch (JsonException) { return null; }
+        catch (NotSupportedException) { return null; }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested) { return null; }
+    }
+
+    private async Task<string?> ReadPhoto(string path, CancellationToken ct)
+    {
+        using var response = await http.GetAsync(path, ct);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
         response.EnsureSuccessStatusCode();
         var type = response.Content.Headers.ContentType?.MediaType;
