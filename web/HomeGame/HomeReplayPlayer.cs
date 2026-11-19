@@ -13,7 +13,7 @@ internal sealed class HomeReplayPlayer(HomeRunReplay replay)
     public int Tick => _simulation?.Tick ?? 0;
     public int LastTick => ScenarioIndex < 0 ? 0 : Math.Min(Scenarios[ScenarioIndex].Ticks,
         ScenarioIndex == replay.Run.ScenarioIndex ? replay.Run.Snapshot?.Tick ?? 0 : Scenarios[ScenarioIndex].Ticks);
-    public HomeWorldSnapshot? Snapshot => _simulation?.Snapshot(includeLightMap: true);
+    public HomeWorldSnapshot? Snapshot { get; private set; }
 
     public void Seek(int scenarioIndex, int target)
     {
@@ -58,5 +58,7 @@ internal sealed class HomeReplayPlayer(HomeRunReplay replay)
             _simulation.BeginTick();
             _simulation.Fault(fault);
         }
+        Snapshot = _simulation.Snapshot(includeLightMap: true);
+        if (replay.Run.Snapshot?.Resident is null) Snapshot = Snapshot with { Resident = null };
     }
 }

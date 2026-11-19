@@ -28,7 +28,15 @@ public static class HomeRoomArt
             or HomeCatalog.ArmchairId or HomeCatalog.BookcaseId or HomeCatalog.CoffeeTableId
             or HomeCatalog.PlanterId or HomeCatalog.MoistureId;
         var angle = directional ? rotation : 0;
-        var view = angle switch { 180 => "-back", 90 or 270 => "-side", _ => "" };
+        // The desk accessories, pump and lampshade have genuinely different
+        // near and far sides; a horizontal mirror would keep them at one end.
+        var view = angle switch
+        {
+            180 => "-back",
+            270 when definition is HomeCatalog.DeskId or HomeCatalog.PlanterId or HomeCatalog.LampId => "-side-reverse",
+            90 or 270 => "-side",
+            _ => ""
+        };
         return $"images/home-workshop/{sprite}{view}.webp";
     }
 }

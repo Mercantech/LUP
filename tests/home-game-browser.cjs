@@ -180,6 +180,28 @@ async function main() {
         const tile = (x, y) => board.locator(`[data-x="${x}"][data-y="${y}"]`);
         assert.equal(await board.locator("button[data-x][data-y]").count(), 120);
         await board.locator('.resident[data-avatar-id="lupp"]').waitFor();
+        const resident = page.getByTestId("home-resident");
+        const intent = page.getByTestId("resident-intent");
+        const locationOf = element => element.evaluate(node => [node.dataset.cellX, node.dataset.cellY].join(","));
+        const life = page.getByTestId("resident-life");
+        assert.equal(await life.getAttribute("data-source"), "room");
+        assert.equal(await intent.inputValue(), "auto");
+        assert.equal(await life.getByRole("meter").count(), 2);
+        const initialCell = await locationOf(resident);
+        await page.waitForFunction(cell => {
+            const { cellX, cellY } = document.querySelector('[data-testid="home-resident"]').dataset;
+            return cell !== [cellX, cellY].join(",");
+        }, initialCell);
+        await intent.selectOption("idle");
+        await resident.locator('.avatar-sheet[data-animation="idle"]').waitFor();
+        const idleCell = await locationOf(resident);
+        await page.reload({ waitUntil: "domcontentloaded" });
+        await resident.locator('.avatar-sheet[data-animation="idle"]').waitFor();
+        assert.equal(await intent.inputValue(), "idle");
+        assert.equal(await locationOf(resident), idleCell);
+        await intent.selectOption("auto");
+        await resident.locator('.avatar-sheet[data-animation="walk"]').waitFor();
+        await page.getByRole("button", { name: "Indret", exact: true }).click();
         assert.equal(await page.locator(".task-label").count(), 0);
         if (output) await page.screenshot({ path: path.join(output, "home-initial.png"), fullPage: true });
         await page.getByRole("listitem").filter({hasText:"Gulvlampe"}).getByRole("button",{name:"Placér",exact:true}).click();
@@ -215,15 +237,22 @@ async function main() {
         await page.getByRole("button", { name: "Programmér", exact: true }).click();
         assert.equal(await page.getByLabel("Controllerens program").inputValue(), program);
         await page.getByRole("button", { name: "Afprøv", exact: true }).click();
+        await intent.selectOption("idle");
+        await resident.locator('.avatar-sheet[data-animation="idle"]').waitFor();
+        const homeBeforeExperiment = await locationOf(resident);
         await page.getByRole("button", { name: "Kør kode", exact: true }).click();
         await page.getByRole("button", { name: "Pause", exact: true }).click();
         await page.getByRole("button", { name: "Genoptag", exact: true }).waitFor();
         const pausedTick = run.snapshot.tick;
+        assert.equal(await life.getAttribute("data-source"), "run");
+        await life.getByText("Kodekørsel").waitFor();
         await page.waitForTimeout(300);
         assert.equal(run.snapshot.tick, pausedTick);
         await page.getByRole("button", { name:"Genoptag", exact:true }).click();
         await page.getByText("Forsøg gennemført", { exact: true }).waitFor();
         assert.equal(run.run.status, "completed");
+        assert.equal(await life.getAttribute("data-source"), "room");
+        assert.equal(await locationOf(resident), homeBeforeExperiment);
         assert.equal(state.gold, 100);
         await page.getByText("Log (1)", { exact: true }).click();
         assert.equal(await page.locator(".run-log").textContent(), hostileLog);
@@ -232,11 +261,19 @@ async function main() {
         assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("378 lux"));
         if (output) await page.screenshot({ path: path.join(output, "home-result.png"), fullPage: true });
         await page.getByRole("button", { name: "Genafspil forsøg" }).click();
+        assert.equal(await life.getAttribute("data-source"), "replay");
+        assert.equal(await life.getByRole("meter").count(), 0, "Archived runs without needs preserve the original recording");
         await page.getByRole("slider", { name: /^Tick/ }).fill("300");
         await page.getByText("Din avatar læser", { exact: true }).waitFor();
         assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("378 lux"));
         await page.getByRole("button", { name: "Luk genafspilning" }).click();
+        assert.equal(await locationOf(resident), homeBeforeExperiment);
         await page.setViewportSize({ width: 390, height: 844 });
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await intent.selectOption("auto");
+        await resident.locator('.avatar-sheet[data-animation="walk"]').waitFor();
+        assert.equal(await resident.evaluate(node => getComputedStyle(node).transitionDuration), "0s");
+        assert.equal(await resident.locator(".avatar-sheet").evaluate(node => getComputedStyle(node).animationName), "none");
         await board.waitFor({ state: "visible" });
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         await page.getByTestId("light-panel").waitFor({ state:"visible" });
@@ -258,9 +295,17 @@ async function main() {
         run = undo = null;
         const teacher = await device(browser, teacherSubject, "Teacher");
         const preview = await teacher.newPage();
+        preview.setDefaultTimeout(60000);
+        preview.on("pageerror", error => errors.push(error.message));
         await preview.goto(`${base}/spil/hjem?vis=butik`, { waitUntil: "domcontentloaded" });
         await preview.getByText("Prøvebolig for undervisere", { exact: true }).waitFor();
         await preview.locator('.resident[data-avatar-id="bip01"]').waitFor();
+        await preview.getByTestId("resident-want").waitFor();
+        const emptyCell = await locationOf(preview.getByTestId("home-resident"));
+        await preview.waitForFunction(cell => {
+            const { cellX, cellY } = document.querySelector('[data-testid="home-resident"]').dataset;
+            return cell !== [cellX, cellY].join(",");
+        }, emptyCell);
         assert.equal(await preview.locator(".task-label").count(), 0);
         assert.equal(await preview.locator(".room-shell [data-item-id]").count(), 0);
         await preview.getByRole("button", {name:"Gulv og tapet",exact:true}).click();
@@ -293,8 +338,17 @@ async function main() {
         await preview.getByText("Prøveudstyret er placeret.", { exact: true }).waitFor();
         assert.equal(state.gold, 0);
         assert.equal(state.layout.items.find(item => item.id === "sofa").goldPaid, 0);
+        assert.deepEqual(errors, []);
         await teacher.close();
         console.log("Hjem.exe browser: selected avatars, free simulation, keyboard placement, shared gold, mobile controls and teacher equipment passed.");
+    } catch (error) {
+        for (const context of browser.contexts()) {
+            for (const page of context.pages()) {
+                console.error("Home QA failed on", page.url(), await page.locator("h1, [role=alert], .home-loading").allTextContents());
+                if (output) await page.screenshot({ path: path.join(output, "home-failure.png") });
+            }
+        }
+        throw error;
     } finally {
         await browser.close();
     }

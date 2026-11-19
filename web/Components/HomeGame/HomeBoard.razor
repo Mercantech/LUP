@@ -54,8 +54,10 @@
                     <div @key="item.Id" class="furniture @ObjectClass(item)" style="@ObjectStyle(item)"
                          data-item-id="@item.Id" data-definition="@item.DefinitionId" data-rotation="@item.Placement.Rotation"
                          data-powered="@PowerAttribute(item)" data-moisture="@Moisture(item)">
-                        @Art(item)
-                        @ItemHandle(item)
+                        <div class="floor-visual">
+                            @Art(item)
+                            @ItemHandle(item)
+                        </div>
                     </div>
                 }
             }
@@ -68,8 +70,9 @@
             }
             @if (Avatar is { } avatar)
             {
-                <div class="resident" style="@ResidentStyle(avatar)" role="img" aria-label="@($"Din avatar: {Character.Name}")"
-                     data-avatar-id="@Character.Id" data-activity="@Activity">
+                <div class="resident" style="@ResidentStyle(avatar)" role="img" aria-label="@($"{Character.Name}, felt {avatar.X}, {avatar.Y}")"
+                     data-testid="home-resident" data-avatar-id="@Character.Id" data-activity="@AvatarActivity" data-cell-x="@avatar.X" data-cell-y="@avatar.Y"
+                     data-facing="@_facing" data-step="@(_animateStep ? "true" : "false")">
                     @if (Character.SpriteAssetRoot is not null || Character.Id == AvatarCatalog.StarterId)
                     {
                         <AvatarSprite AvatarId="@Character.Id" Animation="@Animation" Mini="true" Paused="@ReduceMotion" />

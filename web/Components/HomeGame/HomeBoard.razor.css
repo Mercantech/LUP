@@ -158,29 +158,57 @@
 }
 .object-art {
     position: absolute;
-    bottom: 2%;
-    left: 0;
     display: block;
-    width: 100%;
-    height: 160%;
     object-fit: contain;
     object-position: bottom center;
-    filter: drop-shadow(0 1.5px 1px #574a3240);
     user-select: none;
 }
-.rug_basic { z-index: 2; }
-.rug_basic .object-art { height: 98%; width: 98%; inset: 1%; object-fit: fill; filter: none; }
-.lamp_basic .object-art { width: 118%; height: 210%; left: -9%; }
+/* Distances are measured in floor-tile widths. The projected sprite has its
+   own size; turning a three-cell sofa changes its footprint, not its legs. */
+.floor-visual {
+    --tile-width: calc(100cqw / var(--columns));
+    --art-size: var(--front-size, 1);
+    position: absolute;
+    left: 50%;
+    bottom: var(--foot-inset, calc(10% / var(--h)));
+    width: max-content;
+    height: calc(var(--art-size) * var(--tile-width));
+    transform: translateX(-50%);
+}
+.furniture:is([data-rotation="90"],[data-rotation="270"]) .floor-visual {
+    --art-size: var(--side-size, var(--front-size, 1));
+}
+.floor-visual .object-drawing { position: relative; height: 100%; }
+.floor-visual .object-art { position: relative; width: auto; height: 100%; }
+.floor-visual .object-handle { inset: 0; }
+.floor-visual .code-mark { right: 0; bottom: 90%; }
+.floor-visual::before {
+    content: ""; position: absolute; left: 12%; bottom: -1%; width: 76%; height: 8%;
+    border-radius: 50%; background: #62482d2e; filter: blur(.07em);
+}
+.desk_basic { --front-size: 1.04; --side-size: 1.69; }
+.bookcase_low { --front-size: 1.40; --side-size: 2.20; }
+.sofa_basic { --front-size: 1.36; --side-size: 2.31; }
+.armchair { --front-size: 1.07; }
+.coffee_table { --front-size: .82; }
+.lamp_basic { --front-size: 1.48; }
+.lamp_basic[data-rotation="0"] .floor-visual { left: calc(50% - .18 * var(--tile-width)); }
+.lamp_basic[data-rotation="180"] .floor-visual { left: calc(50% + .16 * var(--tile-width)); }
+.planter_pump, .soil_probe {
+    --front-size: 1.30;
+    --foot-inset: calc(50% - 30% / var(--h));
+}
 .lamp_basic.powered .object-art { filter: drop-shadow(0 0 4px #ffe8a1); }
-.furniture:not(.wall-piece,.rug_basic)[data-rotation="90"] .object-art { transform: scaleX(-1); }
-.rug_basic .object-art { transform: rotate(var(--angle)); }
-.rug_basic:is([data-rotation="90"],[data-rotation="270"]) .object-art {
-    width: 70%; height: 142.86%; left: 15%; top: -21.43%;
+.furniture:is(.armchair,.bookcase_low,.coffee_table,.sofa_basic,.soil_probe)[data-rotation="90"] .object-art {
+    transform: scaleX(-1);
 }
-:is(.desk_basic,.bookcase_low,.sofa_basic,.planter_pump):is([data-rotation="90"],[data-rotation="270"]) .object-art {
-    height: calc(100% + .47 * 100cqw / var(--columns));
-    object-fit: fill;
+.rug_basic { z-index: 2; }
+.rug_basic .floor-visual { inset: 0; width: 100%; height: 100%; transform: none; }
+.rug_basic .object-art {
+    position: absolute; inset: 9.5% 4%; width: 92%; height: 81%; object-fit: fill;
+    transform: scaleY(.70) rotate(var(--angle)) scaleY(1.428571);
 }
+.rug_basic .floor-visual::before, .soil_probe .floor-visual::before { display: none; }
 .furniture.ghost { z-index: 70; opacity: .66; }
 .wall-piece {
     --wall-width: calc(100% / var(--columns));
@@ -256,15 +284,16 @@
 .mount-point[data-edge="left"], .mount-point[data-edge="right"] { width: calc(43% / var(--columns)); }
 .mount-point[data-edge="right"] { left: calc((var(--x) + .57) * 100% / var(--columns)); }
 .mount-point:hover, .mount-point:focus-visible { background: #c8e8cba8; outline: 2px solid #24563e; outline-offset: -2px; }
-.soil_probe { pointer-events: none; }
-.soil_probe .object-drawing {
-    inset: auto auto 32% 48%; width: calc(48% / var(--w)); height: calc(85% / var(--h));
+.soil_probe { --front-size: .48; --port-offset: .15; }
+.soil_probe[data-rotation="90"] { --port-offset: -.20; }
+.soil_probe[data-rotation="180"] { --port-offset: -.14; }
+.soil_probe[data-rotation="270"] { --port-offset: .16; }
+.soil_probe .floor-visual {
+    left: calc(50% + var(--port-offset) * var(--tile-width));
+    bottom: calc(var(--foot-inset) + .44 * var(--tile-width));
 }
-.soil_probe .object-art { width: 100%; height: 100%; object-position: bottom center; }
-.soil_probe .object-handle { inset: auto auto 27% 44%; width: calc(68% / var(--w)); height: calc(94% / var(--h)); }
-.soil_probe .code-mark { bottom: 95%; right: 20%; }
 .moisture-reading {
-    position: absolute; bottom: 73%; left: 48%; padding: .10em .28em;
+    position: absolute; bottom: 83%; left: 68%; padding: .10em .28em;
     background: #f7f1da; color: #16473f;
     border: 1px solid #746c51; border-radius: .3em; white-space: nowrap;
     font: 700 clamp(9px, 1.45cqw, 15px)/1.1 system-ui, sans-serif;
@@ -272,13 +301,13 @@
 }
 .moisture-reading span { font-size: .78em; }
 .water-drop {
-    position: absolute; left: 58%; bottom: 112%; width: clamp(4px, .75cqw, 8px);
+    position: absolute; left: 57%; bottom: 79%; width: clamp(4px, .75cqw, 8px);
     aspect-ratio: .7; border-radius: 65% 40% 65% 50%;
     background: #86d9de; border: 1px solid #376e78; transform-origin: center;
     animation: pump-drop .85s ease-in infinite;
 }
-.planter_pump[data-rotation="180"] .water-drop { left: 46%; }
-.planter_pump:is([data-rotation="90"],[data-rotation="270"]) .water-drop { bottom: 86%; }
+.planter_pump[data-rotation="180"] .water-drop { left: 41%; }
+.planter_pump:is([data-rotation="90"],[data-rotation="270"]) .water-drop { left: 48%; bottom: 80%; }
 @keyframes pump-drop {
     0% { opacity: 0; transform: translateY(-35%) scale(.6); }
     20% { opacity: 1; }
@@ -311,8 +340,9 @@
     z-index: var(--depth);
     width: calc(100% / var(--columns));
     height: calc(100% / var(--rows));
-    transition: top .18s linear, left .18s linear;
 }
+.resident[data-step="true"] { transition: top var(--step-ms) linear, left var(--step-ms) linear; }
+.resident[data-facing="left"] { transform: scaleX(-1); }
 .resident::before {
     content: "";
     position: absolute;
@@ -350,13 +380,13 @@
     overflow: hidden;
 }
 .resident ::deep .avatar-face-icon img { object-fit: contain; }
-.motion-reduced .resident { transition: none; }
+.motion-reduced .resident[data-step] { transition: none; }
 .motion-reduced .blind-cloth { transition: none; }
 .motion-reduced .water-drop { animation: none; }
 .motion-reduced .resident[data-activity="reading"] ::deep .avatar-sheet,
 .motion-reduced .resident[data-activity="relaxing"] ::deep .avatar-sheet { animation: none; background-position: 100% 100%; }
 @media (prefers-reduced-motion: reduce) {
-    .resident { transition: none; }
+    .resident[data-step] { transition: none; }
     .blind-cloth { transition: none; }
     .water-drop { animation: none; }
     .resident[data-activity="reading"] ::deep .avatar-sheet,

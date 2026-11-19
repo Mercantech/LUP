@@ -16,7 +16,7 @@ docker network inspect lup-home-runner-control >/dev/null
 docker volume inspect lup-hjem-stage-connection-20261118 >/dev/null
 qa_project=${LUP_HOME_QA_PROJECT:-stage-hjem-workshop}
 case "$qa_project" in
-    stage-hjem-workshop|stage-hjem-indretning) ;;
+    stage-hjem-workshop|stage-hjem-indretning|stage-hjem-beboerliv) ;;
     *) printf '%s\n' 'Unknown synthetic staging project.'; exit 2 ;;
 esac
 if docker volume inspect "${qa_project}_qa-db" >/dev/null 2>&1; then

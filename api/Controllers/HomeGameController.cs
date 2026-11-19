@@ -175,7 +175,7 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
         if (request.Assessment)
             return Failure(400, "ASSESSMENT_UNAVAILABLE", "Åbn Hjem.exe igen for at køre koden i fri afprøvning.");
         if (!HomeGameLanguages.IsKnown(request.Language) || request.Task < 0 || request.Task > HomeCatalog.Tasks.Count
-            || request.Speed is not (1 or 4 or 10) || !KnownIntent(request.Intent)
+            || request.Speed is not (1 or 4 or 10) || !HomeSimulation.IsFreeIntention(request.Intent)
             || request.ScenarioId is { } scenario && scenario != "free" && !HomeCatalog.Scenarios.ContainsKey(scenario))
             return Failure(400, "INVALID_RUN", "Vælg et gyldigt sprog og en kendt afprøvning.");
         var state = await store.GetOrCreate(subject, ct);
@@ -233,7 +233,7 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
     {
         if (Identify(out var subject) is { } rejection) return rejection;
         if (request.Action is not ("pause" or "resume" or "stop" or "input" or "speed")
-            || request.Intent is { } intent && !KnownIntent(intent)
+            || request.Intent is { } intent && !HomeSimulation.IsFreeIntention(intent)
             || request.DaylightLux is < 0 or > 1_000 || request.Speed is not (null or 1 or 4 or 10))
             return Failure(400, "INVALID_CONTROL", "Vælg en gyldig handling til forsøget.");
         var status = await runs.Control(subject, id, request);
@@ -282,7 +282,6 @@ public sealed class HomeGameController(AppDbContext db, HomeGameStore store, Hom
         return null;
     }
 
-    private static bool KnownIntent(string? intent) => intent is "read" or "relax" or "leave" or "idle" or "away";
 
     private static ObjectResult ConflictResult() =>
         Failure(409, "REVISION_CONFLICT", "Hjemmet er ændret et andet sted. Hent den seneste gemte version.");

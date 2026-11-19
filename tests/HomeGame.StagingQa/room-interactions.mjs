@@ -27,9 +27,15 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
         await image.waitFor({state:'visible'});
         const dimensions = await image.evaluate(async image => {
             await image.decode();
-            return [image.naturalWidth, image.getBoundingClientRect().width];
+            const bounds = image.getBoundingClientRect();
+            return [image.naturalWidth, image.naturalHeight, bounds.width, bounds.height];
         });
         assert.ok(dimensions.every(size => size > 0), suffix + ' must decode and be visible');
+        if (!await node.evaluate(el => el.classList.contains('wall-piece'))) {
+            const [width, height, drawnWidth, drawnHeight] = dimensions;
+            assert.ok(Math.abs(width / height - drawnWidth / drawnHeight) < .02,
+                suffix + ' furniture must retain its authored proportions on the floor');
+        }
     }
 
     await button(page, 'Indret').click();
@@ -86,7 +92,7 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
         assert.equal(probe.hostId, pot.id);
         assert.equal(probe.rotation, rotation);
         if (rotation === 180) assert.deepEqual(probe.anchor, {x:pot.placement.anchor.x+1,y:pot.placement.anchor.y});
-        await checkArt('planter_pump','planter'+suffix,rotation);
+        await checkArt('planter_pump',rotation === 270 ? 'planter-side-reverse' : 'planter'+suffix,rotation);
         await checkArt('soil_probe','soil-probe'+suffix,rotation);
     }
     await page.reload({waitUntil:'domcontentloaded'});

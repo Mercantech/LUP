@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { checkRoomInteractions } from './room-interactions.mjs';
+import { checkResidentLife } from './resident-life.mjs';
 
 if (process.env.LUP_HOME_STAGING_QA !== 'synthetic-only-20261118' ||
     process.env.HOME_QA_ORIGIN !== 'http://web:3000')
@@ -204,6 +205,7 @@ async function checkDeviceWorkshop(identity, page) {
         {closedLux,openLux,teacherGold:initialGold});
     await checkRoomInteractions(page, getHome, check);
     home=await getHome();
+    await checkResidentLife(page, home, check, true);
 
     const runProgram = async (language,source) => {
         home=await api(identity,'/api/me/home-game/program','PUT',{revision:home.layout.revision,language,source});
@@ -363,6 +365,8 @@ try {
     });
     await pupilPage.getByRole('button', { name: 'Afprøv', exact: true }).click();
     const status = await finishFreeRun(identities.pupil, pupilRun);
+    assert.equal(status.snapshot.resident?.isAutonomous, true);
+    assert.ok(status.snapshot.resident.destination);
     const expectedLux = status.snapshot.lightMap.find(v => v.cell.x === 6 && v.cell.y === 4).lux;
     const panel = pupilPage.getByTestId('light-panel');
     await panel.waitFor({ state: 'visible' });
@@ -418,6 +422,7 @@ try {
     assert.ok(teacher.layout.items.every(item => item.placement === null));
     assert.equal(await teacherPage.locator('.room-shell .furniture:not(.ghost),.room-ledge').count(), 0);
     await teacherPage.screenshot({path:'/artifacts/workshop-empty.png',fullPage:true});
+    await checkResidentLife(teacherPage, teacher, check, false);
     teacher = await fitReadingCorner(identities.teacher, teacher);
     await teacherPage.reload({ waitUntil:'domcontentloaded' });
     const teachStart=teacherPage.waitForResponse(r=>new URL(r.url()).pathname==='/api/me/home-game/runs' && r.request().method()==='POST');

@@ -20,7 +20,8 @@ public sealed class HomeRoomArtTests
         Assert.Equal(baseName + ".webp", HomeRoomArt.Image(id));
         Assert.Equal(baseName + "-back.webp", HomeRoomArt.Image(id, rotation: 180));
         Assert.Equal(baseName + "-side.webp", HomeRoomArt.Image(id, rotation: 90));
-        Assert.Equal(baseName + "-side.webp", HomeRoomArt.Image(id, rotation: 270));
+        var oppositeSide = id is HomeCatalog.DeskId or HomeCatalog.PlanterId or HomeCatalog.LampId ? "-side-reverse.webp" : "-side.webp";
+        Assert.Equal(baseName + oppositeSide, HomeRoomArt.Image(id, rotation: 270));
     }
 
     [Fact]

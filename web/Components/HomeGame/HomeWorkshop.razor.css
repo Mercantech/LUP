@@ -50,7 +50,6 @@
 .run-strip .action { flex: 1 1 9rem; min-height: 2.65rem; font-weight: 650; }
 .run-clock { margin-left: auto; color: var(--home-muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
 .run-result { padding-block: .25rem .5rem; font-size: .86rem; }
-.resident-activity { margin: .55rem .35rem 0; color: var(--home-muted); font-size: .82rem; }
 .plan-settings { margin: .6rem .35rem 0; color: var(--home-muted); }
 .plan-settings label { display: inline-flex; align-items: center; gap: .35rem; margin: .4rem .65rem 0 0; }
 .overlay-button, .mobile-workspace button { padding: .35rem .55rem; border: 1px solid var(--home-line); border-radius: .3rem; background: transparent; color: var(--home-ink); cursor: pointer; font: inherit; }

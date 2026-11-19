@@ -9,6 +9,7 @@ public sealed class HomeSimulation
     private const int MinAssessmentSamples = 200;
     private readonly HomeLayout _layout;
     private readonly HomeScenario _scenario;
+    private readonly HomeResident? _resident;
     private readonly string _runId;
     private readonly IReadOnlyDictionary<string, HomeItem> _items;
     private readonly IReadOnlyDictionary<HomeCell, string> _rooms;
@@ -30,6 +31,7 @@ public sealed class HomeSimulation
     private IReadOnlyList<HomeCommand> _lastCommands = [];
     private bool _committed;
     private bool _controllerDone;
+    private bool _ambientResident;
     private int _wakeTick;
     private long _energyMicroJ;
     private int _daylight = 40;
@@ -57,6 +59,7 @@ public sealed class HomeSimulation
     {
         _layout = layout;
         _scenario = scenario;
+        _resident = scenario.Free ? new(layout) : null;
         _runId = runId;
         _avatar = avatarStart ?? layout.Grid.Entry;
         SetSwitchState(PrimarySwitchAlias(), true);
@@ -90,6 +93,37 @@ public sealed class HomeSimulation
         }
     }
 
+    public static HomeSimulation ForResident(HomeLayout layout, HomeResidentState? previous = null,
+        HomeCell? previousCell = null, string intent = "auto")
+    {
+        var start = previousCell is { } cell && HomeRules.Reachable(layout).Contains(cell) ? cell : layout.Grid.Entry;
+        var initialIntent = intent switch
+        {
+            "away" when previousCell.HasValue => "leave",
+            _ when IsFreeIntention(intent) => intent,
+            _ => "auto"
+        };
+        var scenario = HomeCatalog.FreeScenario with
+        {
+            Ticks = int.MaxValue / HomeCatalog.TickMs,
+            Events = [new(0, DaylightLux: 40, AmbientLux: 40, Intention: initialIntent, AutoEnabled: true)]
+        };
+        var simulation = new HomeSimulation(layout, scenario, "resident", start) { _controllerDone = true, _ambientResident = true };
+        if (previous is not null) simulation._resident!.Restore(previous);
+        simulation.BeginTick();
+        return simulation;
+    }
+
+    public void SetResidentEnvironment(HomeWorldSnapshot? visible)
+    {
+        if (!_ambientResident) return;
+        _ambient = _daylight = visible?.DaylightLux ?? 40;
+        _ambientByRoom.Clear();
+        _powered.Clear();
+        if (visible is not null)
+            _powered.UnionWith(visible.PoweredAliases.Where(alias => _lamps.ContainsKey(alias) || alias == _blind?.Alias));
+    }
+
     private static string OffTitle(HomeScenario scenario, HomeAssessmentWindow window) => window.Requirement == "day"
         ? "Slukket i dagslys"
         : scenario.Id == "auto_switch" ? "Slukket med autolys deaktiveret" : "Slukket i tom bolig";
@@ -99,8 +133,10 @@ public sealed class HomeSimulation
         if (_openFrame is { } frame) return frame;
         if (Finished) return new(Tick, Tick * HomeCatalog.TickMs, false, _lastSensors);
         ApplyEvents();
+        if (_intention == "auto" && _resident!.State.Want == "lookOutside" && !WindowVisible)
+            _refreshPath = true;
         CompleteMovement();
-        if (_refreshPath) PlanPath();
+        if (_refreshPath || _intention == "auto" && _resident!.Ready(Tick)) PlanPath();
         _lastSensors = ReadSensors();
         _committed = false;
         _openFrame = new(Tick, Tick * HomeCatalog.TickMs, !_controllerDone && Tick >= _wakeTick, _lastSensors);
@@ -179,6 +215,11 @@ public sealed class HomeSimulation
             _soilHundredths[alias] = Math.Clamp(_soilHundredths[alias] + change, 0, 10_000);
         }
         Observe();
+        if (_resident is not null && (Tick + 1) % (1000 / HomeCatalog.TickMs) == 0)
+        {
+            var readingComfort = _activity == "reading" && _avatar is { } cell ? HomeRules.Comfort(LuxAt(cell)) : 0;
+            _resident.AdvanceNeeds(_activity, readingComfort);
+        }
         if (_step is null && _route.TryDequeue(out var next))
         {
             _step = next;
@@ -189,9 +230,11 @@ public sealed class HomeSimulation
         _openFrame = null;
     }
 
+    public static bool IsFreeIntention(string? intention) => intention is "auto" or "read" or "relax" or "idle" or "leave" or "away";
+
     public void SetIntention(string intention)
     {
-        if (_scenario.Free && !Finished && intention is "read" or "relax" or "idle" or "leave" or "away")
+        if (_scenario.Free && !Finished && IsFreeIntention(intention))
             _pendingIntention = intention == "away" ? "leave" : intention;
     }
 
@@ -249,7 +292,9 @@ public sealed class HomeSimulation
 
     private void ApplyIntention(string intention)
     {
+        if (intention == "auto" && (_resident is null || _intention == "auto")) return;
         _intention = intention;
+        if (intention != "auto") _resident?.Manual(intention);
         _refreshPath = true;
         _navigationMessage = null;
         if (intention == "away")
@@ -272,7 +317,7 @@ public sealed class HomeSimulation
         if (_step is not null) return;
         _refreshPath = false;
         _route.Clear();
-        if (_intention is "read" or "relax") _avatar ??= _layout.Grid.Entry;
+        if (_intention is "read" or "relax" or "auto") _avatar ??= _layout.Grid.Entry;
         if (_avatar is not { } avatar)
         {
             _activity = "away";
@@ -281,6 +326,11 @@ public sealed class HomeSimulation
         if (_intention == "idle")
         {
             _activity = "idle";
+            return;
+        }
+        if (_intention == "auto")
+        {
+            Follow(_resident!.Plan(avatar, Tick, _scenario.Seed, WindowVisible));
             return;
         }
         var item = _intention == "read"
@@ -302,6 +352,12 @@ public sealed class HomeSimulation
             };
             return;
         }
+        _resident?.Manual(_intention, _intention is "read" or "relax" ? item?.Alias : null, path[^1]);
+        Follow(path);
+    }
+
+    private void Follow(IReadOnlyList<HomeCell> path)
+    {
         if (path.Count == 1)
         {
             Arrive();
@@ -315,6 +371,7 @@ public sealed class HomeSimulation
     {
         _activity = _intention switch
         {
+            "auto" => _resident!.Arrive(Tick),
             "read" => "reading",
             "relax" => "relaxing",
             "leave" => "away",
@@ -370,10 +427,12 @@ public sealed class HomeSimulation
         return Math.Clamp(lux, 0, 2000);
     }
 
+    private bool WindowVisible => _blind is null || _powered.Contains(_blind.Alias);
+
     private int AmbientAt(HomeCell cell)
     {
         var ambient = _rooms.TryGetValue(cell, out var room) ? _ambientByRoom.GetValueOrDefault(room, _ambient) : _ambient;
-        if (_blind is null || _powered.Contains(_blind.Alias)) return ambient;
+        if (WindowVisible) return ambient;
         return ambient - (ambient * _windowShare.GetValueOrDefault(cell) + 50) / 100;
     }
 
@@ -405,7 +464,8 @@ public sealed class HomeSimulation
             _soilHundredths.Count == 0 ? _lastSensors : ReadSensors(), _lastCommands,
             includeLightMap ? HomeRules.FloorCells(_layout.Grid).Select(cell => new HomeLightCell(cell, LuxAt(cell))).ToArray() : [],
             message, _fault, _deviceCommits.Values.ToArray(),
-            _soilHundredths.Count == 0 ? null : _soilHundredths.Keys.ToDictionary(alias => alias, MoisturePercent));
+            _soilHundredths.Count == 0 ? null : _soilHundredths.Keys.ToDictionary(alias => alias, MoisturePercent),
+            _resident?.State);
     }
 
     public HomeScenarioOutcome Outcome()

@@ -12,9 +12,11 @@ public partial class HomeBoard
     [Inject] private DemoWorld World { get; set; } = default!;
     [Parameter, EditorRequired] public HomeLayout Layout { get; set; } = default!;
     [Parameter] public HomeWorldSnapshot? Snapshot { get; set; }
-    [Parameter] public bool IsLightingPreview { get; set; }
     [Parameter] public HomeCell? Avatar { get; set; }
     [Parameter] public string? AvatarId { get; set; }
+    [Parameter] public string AvatarActivity { get; set; } = "idle";
+    [Parameter] public string ResidentSource { get; set; } = "room";
+    [Parameter] public int WalkSpeed { get; set; } = 1;
     [Parameter] public HomeItem? Selected { get; set; }
     [Parameter] public HomeItem? Ghost { get; set; }
     [Parameter] public HomeCell Cursor { get; set; }
@@ -32,13 +34,19 @@ public partial class HomeBoard
 
     private AvatarDefinition Character => AvatarCatalog.Find(AvatarId) ??
         (World.AvatarProfileReady ? World.SelectedAvatar : AvatarCatalog.All[0]);
-    private string Activity => IsLightingPreview ? "idle" : Snapshot?.Activity ?? "idle";
-    private string Animation => Activity switch
+    private string Animation => AvatarActivity switch
     {
         "walking" => "walk",
         "reading" or "relaxing" => "sit",
+        "resting" => "sleep",
+        "lookingOutside" => "think",
+        "visitingPlant" => "interact",
         _ => "idle"
     };
+    private string _facing = "right";
+    private bool _animateStep;
+    private HomeCell? _lastAvatar;
+    private string? _lastResidentSource;
 
     private readonly Dictionary<HomeCell, HomeItem> _occupants = [];
     private HashSet<HomeCell> _range = [];
@@ -114,6 +122,15 @@ public partial class HomeBoard
 
     protected override void OnParametersSet()
     {
+        if (_lastAvatar != Avatar || _lastResidentSource != ResidentSource)
+        {
+            _animateStep = _lastResidentSource == ResidentSource && ResidentSource != "replay"
+                && _lastAvatar is { } from && Avatar is { } to && Math.Abs(to.X - from.X) + Math.Abs(to.Y - from.Y) == 1;
+            if (_animateStep && Avatar is { } current && _lastAvatar is { } previous && current.X != previous.X)
+                _facing = current.X < previous.X ? "left" : "right";
+            _lastAvatar = Avatar;
+            _lastResidentSource = ResidentSource;
+        }
         if (!ReferenceEquals(Layout, _previousLayout) || Mode != _previousMode)
         {
             _occupants.Clear();
@@ -167,12 +184,12 @@ public partial class HomeBoard
         var bottom = cells.Max(cell => cell.Y);
         var width = cells.Max(cell => cell.X) - x + 1;
         var height = bottom - y + 1;
-        var layerOffset = item.Placement!.HostId is null ? 0 : 4;
+        var layerOffset = item.Placement!.HostId is null ? 0 : 1;
         return $"{CellPosition(new(x, y))};--w:{width};--h:{height};--depth:{10 + bottom * 2 + layerOffset};--angle:{item.Placement.Rotation}deg";
     }
 
     private static string CellPosition(HomeCell cell) => $"--x:{cell.X};--y:{cell.Y}";
-    private static string ResidentStyle(HomeCell cell) => $"{CellPosition(cell)};--depth:{11 + cell.Y * 2}";
+    private string ResidentStyle(HomeCell cell) => $"{CellPosition(cell)};--depth:{11 + cell.Y * 2};--step-ms:{460 / Math.Max(1, WalkSpeed)}ms";
 
     private string CellClass(HomeCell cell)
     {

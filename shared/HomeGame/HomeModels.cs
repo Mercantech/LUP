@@ -117,6 +117,9 @@ public sealed record HomeCommandBatch(
 
 public sealed record HomeLightCell(HomeCell Cell, int Lux);
 
+public sealed record HomeResidentState(
+    int Energy, int Inspiration, string Want, string? TargetAlias, HomeCell? Destination, bool IsAutonomous);
+
 public sealed record HomeWorldSnapshot(
     int Tick,
     int TimeMs,
@@ -135,7 +138,8 @@ public sealed record HomeWorldSnapshot(
     string? Message,
     HomeRuleError? Error,
     IReadOnlyList<HomeCommitObservation>? DeviceCommits = null,
-    IReadOnlyDictionary<string, int>? SoilMoisture = null);
+    IReadOnlyDictionary<string, int>? SoilMoisture = null,
+    HomeResidentState? Resident = null);
 
 public sealed record HomeCriterion(
     string Id, string Title, int Samples, int Matched, int MinSamples, int RequiredPercent, bool Passed);

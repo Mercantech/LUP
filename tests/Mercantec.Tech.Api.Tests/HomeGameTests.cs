@@ -345,9 +345,38 @@ public sealed partial class HomeGameTests : IAsyncLifetime
         return Read(await controller.SaveProgram(new(home.Layout.Revision, "python", "import home\nhome.set('desk_lamp', True)"), default));
     }
 
-    private static async Task<HomeRunStatus> Start(HomeGameController controller, HomeGameState home)
+    [Fact]
+    public async Task Autonomous_run_records_resident_inputs_and_keeps_worker_commands_and_wallet_intact()
     {
-        var run = Read(await controller.Start(new(home.Layout.Revision, "python"), default));
+        await using var scope = services.CreateAsyncScope();
+        var owner = As(scope.ServiceProvider.GetRequiredService<AppDbContext>(), alice);
+        var state = await Prepare(owner);
+        var run = await Start(owner, state, "auto");
+        run = Read(await owner.Step(run.Run.Id, new(run.Sequence, 20), default));
+        Assert.True(run.Snapshot!.Resident!.IsAutonomous);
+        Assert.NotEqual(state.Layout.Grid.Entry, run.Snapshot.AvatarCell);
+        Assert.Contains("desk_lamp", run.Snapshot.PoweredAliases);
+
+        run = Read(await owner.Control(run.Run.Id, new("input", Intent: "read"), default));
+        for (var i = 0; i < 5; i++) run = Read(await owner.Step(run.Run.Id, new(run.Sequence, 20), default));
+        Assert.Equal("reading", run.Snapshot!.Activity);
+        Assert.False(run.Snapshot.Resident!.IsAutonomous);
+        run = Read(await owner.Control(run.Run.Id, new("input", Intent: "auto"), default));
+        run = await Finish(owner, run);
+        Assert.Equal("completed", run.Run.Status);
+        Assert.True(run.Snapshot!.Resident!.IsAutonomous);
+        Assert.Contains("desk_lamp", run.Snapshot.PoweredAliases);
+        Assert.Equal(1, broker.Activations);
+        Assert.Equal(state.Gold, Read(await owner.Get(default)).Gold);
+
+        var replay = Read(await owner.Replay(run.Run.Id, default));
+        Assert.Equal("auto", replay.InitialIntent);
+        Assert.Equal(new[] { "read", "auto" }, replay.Events.Where(e => e.Intent is not null).Select(e => e.Intent));
+    }
+
+    private static async Task<HomeRunStatus> Start(HomeGameController controller, HomeGameState home, string intent = "read")
+    {
+        var run = Read(await controller.Start(new(home.Layout.Revision, "python", Intent: intent), default));
         for (var i = 0; i < 100; i++)
         {
             run = Read(await controller.Status(run.Run.Id, default));

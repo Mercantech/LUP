@@ -52,7 +52,8 @@ else
                     }
                 </div>
                 <div class="room-view @(_roomCollapsed ? "collapsed" : "")" @ref="_roomView">
-                <HomeBoard Layout="@DisplayLayout" Snapshot="@LightingSnapshot" Avatar="@AvatarCell" AvatarId="@_state.SelectedAvatarId" IsLightingPreview="@(Snapshot is null || _manualSnapshot is not null)" Cursor="@_cursor" Selected="@BoardSelection"
+                <HomeBoard Layout="@DisplayLayout" Snapshot="@LightingSnapshot" Avatar="@AvatarCell" AvatarId="@_state.SelectedAvatarId"
+                           AvatarActivity="@(ResidentFrame?.Activity ?? "idle")" ResidentSource="@ResidentSource" WalkSpeed="@(IsActive ? _speed : 1)" Cursor="@_cursor" Selected="@BoardSelection"
                            Mode="@_overlay" Zoom="@_zoom" Ghost="@_ghost" InvalidPreview="@(_previewError is not null)"
                            ShowDevices="@_showDevices" Inspect="Select" ActivateWall="ActivateWallAsync"
                            ReduceMotion="@_reduceMotion" Visit="VisitCell" Activate="ActivateCellAsync" Turn="TurnPreview" Cancel="CancelPlacement" />
@@ -83,10 +84,9 @@ else
                         @if (_showDevices && !RoomItems.Any(IsProgrammable)) { <p>Placér en programmerbar ting fra lageret eller butikken.</p> }
                     </details>
                 }
-                @if (Snapshot is { } world)
-                {
-                    <div class="resident-activity">@ActivityLabel(world.Activity)</div>
-                }
+                <HomeResidentPanel Snapshot="@ResidentFrame" Layout="@DisplayLayout" AvatarId="@_state.SelectedAvatarId"
+                                   Source="@ResidentSource" Intent="@(IsActive ? _runIntent : _intent)" Disabled="@(_working || _replay is not null)"
+                                   ChangeIntent="ChangeIntentAsync" />
                 <details class="plan-settings">
                     <summary>Visning af rummet</summary>
                     <div class="overlay-actions" role="group" aria-label="Visning af boligplan">
@@ -103,7 +103,7 @@ else
                 <div class="work-content">
                     @if (_mode != "build" || BoardSelection?.Placement is not null && _placement is null)
                     {
-                        <HomeLightPanel Reading="@HomeReadingPoint.Measure(DisplayLayout, LightingSnapshot)" Before="@_beforeLight"
+                        <HomeLightPanel Reading="@RoomReading" Before="@_beforeLight"
                                         HasDesk="@HasDesk" OutdoorLux="@LightingSnapshot.DaylightLux" Preview="@(Snapshot is null || _manualSnapshot is not null)" />
                     }
                     @if (BoardSelection is { Placement: not null } inspected && _placement is null)
@@ -401,14 +401,6 @@ else
                                     <option value="1">1×</option>
                                     <option value="4">4×</option>
                                     <option value="10">10×</option>
-                                </select>
-                            </label>
-                            <label>Hvad gør figuren?
-                                <select value="@_intent" @onchange="ChangeIntentAsync">
-                                    <option value="read">Læs ved bordet</option>
-                                    <option value="relax">Slap af på sofaen</option>
-                                    <option value="away">Gå hjemmefra</option>
-                                    <option value="idle">Bliv hjemme</option>
                                 </select>
                             </label>
                             @if (IsActive && Snapshot is not null)

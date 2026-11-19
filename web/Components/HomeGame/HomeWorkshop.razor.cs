@@ -29,6 +29,8 @@ public partial class HomeWorkshop : IAsyncDisposable
     private HomeReplayPlayer? _replay;
     private HomeLayout? _previewLayout;
     private HomeWorldSnapshot? _previewLighting;
+    private HomeWorldSnapshot? _measuredFrame;
+    private (HomeCell Cell, int Lux)? _roomReading;
     private HomeBuildAction? _placement;
     private HomeBuildRequest? _retryBuild;
     private HomeItem? _ghost;
@@ -46,7 +48,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     private string _shelf = "stock";
     private string _overlay = "light";
     private string _language = "python";
-    private string _intent = "read";
+    private string _intent = "auto";
     private int _zoom = 100;
     private int _fontSize = 15;
     private int _speed = 1;
@@ -89,7 +91,20 @@ public partial class HomeWorkshop : IAsyncDisposable
         }
     }
 
-    private HomeCell? AvatarCell => Snapshot is { } snapshot ? snapshot.AvatarCell : DisplayLayout.Grid.Entry;
+    private (HomeCell Cell, int Lux)? RoomReading
+    {
+        get
+        {
+            var frame = LightingSnapshot;
+            if (!ReferenceEquals(_measuredFrame, frame))
+            {
+                _roomReading = HomeReadingPoint.Measure(DisplayLayout, frame);
+                _measuredFrame = frame;
+            }
+            return _roomReading;
+        }
+    }
+
     private HomeItem? Selected => _state?.Layout.Items.FirstOrDefault(item => item.Id == _selectedId);
     private HomeItem? BoardSelection => _replay is null ? Selected : DisplayLayout.Items.FirstOrDefault(item => item.Id == _selectedId);
     private bool HasDesk => DisplayLayout.Items.Any(item => item.Role == HomeCatalog.PrimaryDeskRole && item.Placement is not null);
@@ -118,7 +133,9 @@ public partial class HomeWorkshop : IAsyncDisposable
     private string DeviceState(HomeItem item)
     {
         if (IsOutput(item)) return IsOn(item) ? Labels(item.DefinitionId).Active : Labels(item.DefinitionId).Inactive;
-        var reading = LightingSnapshot.Sensors.FirstOrDefault(sensor => sensor.Alias == item.Alias);
+        var frame = item.DefinitionId == HomeCatalog.PresenceId && ResidentSource == "room" && _residentFrame is not null
+            ? _residentFrame : LightingSnapshot;
+        var reading = frame.Sensors.FirstOrDefault(sensor => sensor.Alias == item.Alias);
         return reading is null ? "" : $"{ValueText(reading.Value)} {reading.Unit}".TrimEnd();
     }
 
@@ -163,15 +180,6 @@ public partial class HomeWorkshop : IAsyncDisposable
         _ => "Klar"
     };
 
-    private static string ActivityLabel(string activity) => activity switch
-    {
-        "reading" => "Din avatar læser",
-        "walking" => "Din avatar er på vej",
-        "relaxing" => "Din avatar slapper af",
-        "away" => "Din avatar er ikke hjemme",
-        _ => "Din avatar er hjemme"
-    };
-
     private static bool IsUnfinished(string? status) => status is "queued" or "compiling" or "running" or "paused";
 
     protected override Task OnInitializedAsync() => ReloadAsync();
@@ -208,6 +216,14 @@ public partial class HomeWorkshop : IAsyncDisposable
             if (IsActive)
             {
                 _language = current.Run.Language;
+                _runIntent = current.Snapshot?.Resident switch
+                {
+                    { IsAutonomous: true } => "auto",
+                    { Want: "leave" } => "away",
+                    { Want: "rest" } => "relax",
+                    { Want: var want } when IsResidentIntent(want) => want,
+                    _ => "read"
+                };
                 _mode = "test";
             }
         }
@@ -216,6 +232,8 @@ public partial class HomeWorkshop : IAsyncDisposable
             _mode = "test";
             Drive();
         }
+        if (first) await OpenResidentRoomAsync();
+        else ResetResidentRoom();
         UpdatePreview();
     });
 
@@ -460,6 +478,7 @@ public partial class HomeWorkshop : IAsyncDisposable
         var previousGold = _state!.Gold;
         var oldItems = _state!.Layout.Items.Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
         _state = await Client.BuildAsync(Subject, _retryBuild, Token);
+        ResetResidentRoom();
         ResetAudition();
         _retryBuild = null;
         _stale = _run is not null;
@@ -673,8 +692,10 @@ public partial class HomeWorkshop : IAsyncDisposable
         ResetAudition();
         _beforeLight = HomeReadingPoint.Measure(DisplayLayout, PreviewSnapshot());
         await SaveLanguageAsync(language, !_state.Drafts.Any(draft => draft.Language == language));
-        _run = await Client.StartAsync(Subject, new(_state.Layout.Revision, language, Task: 0, Intent: _intent,
+        var experimentIntent = previous is null ? _intent : _runIntent;
+        _run = await Client.StartAsync(Subject, new(_state.Layout.Revision, language, Task: 0, Intent: experimentIntent,
             Assessment: false, ScenarioId: "free", Speed: _speed, RestartRunId: previous?.Run.Id), Token);
+        _runIntent = experimentIntent;
         _language = language;
         _stale = false;
         Drive();
@@ -748,12 +769,6 @@ public partial class HomeWorkshop : IAsyncDisposable
         if (IsActive) await ControlAsync(new("speed", Speed: speed));
     }
 
-    private async Task ChangeIntentAsync(ChangeEventArgs args)
-    {
-        _intent = args.Value?.ToString() ?? "read";
-        if (IsActive) await ControlAsync(new("input", Intent: _intent));
-    }
-
     private Task ChangeLightAsync(ChangeEventArgs args) => int.TryParse(args.Value?.ToString(), out var lux)
         ? ControlAsync(new("input", DaylightLux: lux)) : Task.CompletedTask;
 
@@ -821,6 +836,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     {
         _disposed = true;
         _lifetime.Cancel();
+        await CloseResidentRoomAsync();
         if (_module is not null)
             await _module.DisposeAsync();
         _lifetime.Dispose();
