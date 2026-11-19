@@ -184,6 +184,8 @@ public sealed class StudentDirectoryUiTests
         {
             if (request.Method == HttpMethod.Get)
             {
+                if (request.RequestUri!.AbsolutePath.StartsWith("/api/lectio/students/", StringComparison.Ordinal))
+                    return new(HttpStatusCode.NotFound);
                 Assert.Equal("/api/students", request.RequestUri?.AbsolutePath);
                 Loads++;
                 return new(HttpStatusCode.OK) { Content = JsonContent.Create(new StudentDirectoryResponse(students, true, null)) };

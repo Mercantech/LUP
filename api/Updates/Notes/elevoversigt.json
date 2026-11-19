@@ -1,5 +1,5 @@
 {
   "date": "2026-11-19",
   "title": "Samlet overblik over eleverne",
-  "description": "Undervisere kan søge og filtrere elever på tværs af hold og se skoleforløb, læreplads og senest beståede skoleforløb. Oplysninger fra Lectio kan suppleres af underviseren. Elever kan uploade et profilfoto, og et klik på fotoet i elevoversigten viser elevens avatar."
+  "description": "Undervisere kan søge og filtrere elever på tværs af hold. Alle skoleperioder fra Lectio bruges til at vise, om eleven er på skole eller arbejdsplads. Holdnavne som 1H og 2H vises som H1 og H2. Elevens Lectio-foto bruges, når det er tilgængeligt; et eget upload har forrang. Klik på billedet for at se elevens avatar. Oplysninger og bekræftede beståelser kan suppleres af underviseren."
 }
