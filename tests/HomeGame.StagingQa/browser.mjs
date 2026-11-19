@@ -324,7 +324,7 @@ try {
         .getByRole('button', { name: '30 guld', exact: true }).click();
     await pupilPage.locator('.home-board [data-x="10"][data-y="2"]').click();
     await pupilPage.getByTestId('confirm-placement').click();
-    await pupilPage.getByText('Køb og placering gemt.', { exact: true }).waitFor();
+    await pupilPage.getByText(/^Køb og placering gemt\. Din saldo er 10 guld\./).waitFor();
     assert.equal((await homeFor(identities.pupil)).gold, 10);
     assert.equal((await avatarFor(identities.pupil)).gold, 10);
     await pupilPage.reload({ waitUntil: 'domcontentloaded' });

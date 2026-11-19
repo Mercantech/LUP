@@ -232,14 +232,6 @@ else
                                     <p>@(selected.DefinitionId == "lamp_basic" ? "Lysbidrag" : "Registrering") i op til @definition.Radius felters afstand (@(definition.Radius * HomeCatalog.CellMeters) m).</p>
                                     <button class="secondary" type="button" @onclick='() => _overlay = "range"'>Vis rækkevidde</button>
                                 }
-                                @if (Snapshot?.Sensors.FirstOrDefault(value => value.Alias == selected.Alias) is { } reading)
-                                {
-                                    <p>Sensorværdi <strong>@ValueText(reading.Value) @reading.Unit</strong></p>
-                                }
-                                @if (selected.DefinitionId == "lamp_basic")
-                                {
-                                    <p>Lampe <strong>@(Snapshot?.PoweredAliases.Contains(selected.Alias) == true ? "Tændt" : "Slukket")</strong></p>
-                                }
                                 <div class="inline-actions">
                                     @if (selected.Placement is not null)
                                     {

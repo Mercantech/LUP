@@ -252,6 +252,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     private string ShelfClass(string shelf) => _shelf == shelf ? "secondary on" : "secondary";
     private Task ChooseShelf(string shelf)
     {
+        CancelPlacement();
         _shelf = shelf;
         if (shelf != "shop" || _state?.IsTeacherSandbox != false) return Task.CompletedTask;
         return PerformAsync(async () =>
