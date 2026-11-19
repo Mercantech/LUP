@@ -29,7 +29,7 @@
     {
         if (firstRender)
         {
-            var module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/home-item-actions.js?v=1");
+            var module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/home-item-actions.js?v=2");
             if (_disposed)
             {
                 await module.DisposeAsync();

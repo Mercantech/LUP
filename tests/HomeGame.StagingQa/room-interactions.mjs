@@ -72,6 +72,14 @@ export async function checkContextActions(page, definition, output) {
         else await page.mouse.click(point.x, point.y);
         await visibleControl(button(menu, 'Flyt'));
         await visibleControl(button(menu, 'Drej 90°'));
+        assert.ok(await menu.evaluate(el => {
+            const bounds = el.getBoundingClientRect();
+            const root = document.documentElement;
+            const viewport = visualViewport;
+            const right = Math.min(root.clientWidth, root.getBoundingClientRect().right,
+                viewport ? viewport.offsetLeft + viewport.width : innerWidth);
+            return bounds.left >= (viewport?.offsetLeft ?? 0) && bounds.right <= right + 1;
+        }), 'The whole furniture menu, including its border, fits beside the document scrollbar');
         assert.equal(await menu.getAttribute('data-item-id'), await object.getAttribute('data-item-id'));
         assert.equal(await menu.getAttribute('role'), 'dialog');
         assert.ok((await menu.getAttribute('aria-label')).trim());

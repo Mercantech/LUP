@@ -29,7 +29,9 @@ export function open(panel, itemId, receiver) {
         const rect = trigger.getBoundingClientRect();
         const edge = 8, gap = 7;
         const left = (viewport?.offsetLeft ?? 0) + edge, top = (viewport?.offsetTop ?? 0) + edge;
-        const right = left + (viewport?.width ?? document.documentElement.clientWidth) - edge * 2;
+        const rootRight = document.documentElement.getBoundingClientRect().right;
+        const visibleRight = viewport ? viewport.offsetLeft + viewport.width : window.innerWidth;
+        const right = Math.min(rootRight, visibleRight) - edge;
         const bottom = top + (viewport?.height ?? window.innerHeight) - edge * 2;
         const clip = fromList ? null : scroller.getBoundingClientRect();
         const editing = panel.contains(document.activeElement) && document.activeElement.matches('input, textarea, select');
