@@ -4,6 +4,10 @@ namespace Mercantec.Tech.Web.HomeGame;
 
 public static class HomeRoomArt
 {
+    // First 12 SHA-256 digits of the sorted sha256sum manifest for the item sprites.
+    // Publish changed sprites under a new folder; open rooms may still use the old URLs.
+    private const string ArtDirectory = "images/home-workshop/0108ab341b3c";
+
     public static string? Image(string definition, bool? powered = null, int rotation = 0)
     {
         var sprite = definition switch
@@ -37,6 +41,6 @@ public static class HomeRoomArt
             90 or 270 => "-side",
             _ => ""
         };
-        return $"images/home-workshop/{sprite}{view}.webp";
+        return $"{ArtDirectory}/{sprite}{view}.webp";
     }
 }

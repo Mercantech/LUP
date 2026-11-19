@@ -267,7 +267,7 @@ public partial class HomeBoard
     {
         if (firstRender)
         {
-            _module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/home-game.js");
+            _module = await Js.InvokeAsync<IJSObjectReference>("import", HomeWorkshop.ModulePath);
             await _module.InvokeVoidAsync("keepArrowKeysOnBoard", _board);
             _lighting = await Js.InvokeAsync<IJSObjectReference>("import", "./js/home-room-light.js");
         }

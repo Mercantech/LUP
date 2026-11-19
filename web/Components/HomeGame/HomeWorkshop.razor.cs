@@ -11,6 +11,8 @@ namespace Mercantec.Tech.Web.Components.HomeGame;
 
 public partial class HomeWorkshop : IAsyncDisposable
 {
+    internal const string ModulePath = "./js/home-game.js?v=hjem-beboerliv-20261119";
+
     [Parameter, EditorRequired] public string Subject { get; set; } = "";
     [Parameter] public string? InitialView { get; set; }
     [Inject] private HomeGameClient Client { get; set; } = default!;
@@ -638,7 +640,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     }
 
     private async ValueTask<IJSObjectReference> ModuleAsync() =>
-        _module ??= await Js.InvokeAsync<IJSObjectReference>("import", Token, "./js/home-game.js");
+        _module ??= await Js.InvokeAsync<IJSObjectReference>("import", Token, ModulePath);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

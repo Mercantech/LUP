@@ -1,6 +1,7 @@
 // Runs only against the private synthetic Compose project. Every /api response is real.
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { chromium } from 'playwright';
 import { checkRoomInteractions } from './room-interactions.mjs';
 import { checkResidentLife } from './resident-life.mjs';
@@ -64,6 +65,7 @@ async function contextFor(identity) {
     });
     await context.addInitScript(({ user, expectedOrigin }) => {
         if (location.origin !== expectedOrigin) return;
+        performance.setResourceTimingBufferSize(3500);
         sessionStorage.setItem('mt_access_token', user.token);
         sessionStorage.setItem('mt_refresh_token', '');
         sessionStorage.setItem('mt_expires_at', String(user.expiresAt));
@@ -136,6 +138,32 @@ async function checkAvatar(page, id) {
             return portrait.first().evaluate(img => img.complete && img.naturalWidth > 0);
         return false;
     }, 15000);
+}
+
+async function checkWorkshopAssetUrls(page) {
+    const urls = await page.evaluate(() => {
+        const style = [...document.styleSheets].map(sheet => sheet.href).filter(Boolean)
+            .map(href => new URL(href)).find(url => url.pathname === '/Mercantec.Tech.Web.styles.css');
+        const script = performance.getEntriesByType('resource').map(entry => new URL(entry.name))
+            .find(url => url.pathname === '/js/home-game.js');
+        const boot = performance.getEntriesByType('resource').map(entry => new URL(entry.name))
+            .find(url => /^\/_framework\/dotnet\.[\w-]+\.js$/.test(url.pathname));
+        return [style?.href, script?.href, boot?.href];
+    });
+    const assets = [];
+    for (const href of urls) {
+        assert.ok(href, 'The workshop must load its actual styles and room code');
+        const url = new URL(href);
+        assert.equal(url.origin, origin);
+        assert.ok(url.searchParams.get('v') || /^\/_framework\/dotnet\.[\w-]+\.js$/.test(url.pathname),
+            'Mutable workshop asset URL '+url.pathname);
+        const response = await page.request.get(href);
+        assert.equal(response.status(), 200);
+        const body = await response.body();
+        assert.ok(body.length > 1000);
+        assets.push({path:url.pathname+url.search, sha256:createHash('sha256').update(body).digest('hex')});
+    }
+    check('Normal browser requests loaded versioned room code and styles', {assets});
 }
 
 async function checkDeviceWorkshop(identity, page) {
@@ -345,6 +373,7 @@ try {
     await api(identities.pupil, '/api/me/avatars/selection', 'PUT', { avatarId: 'bip01' });
     await pupilPage.reload({ waitUntil: 'domcontentloaded' });
     await checkAvatar(pupilPage, 'bip01');
+    await checkWorkshopAssetUrls(pupilPage);
 
     await pupilPage.getByRole('button', { name: 'Programmér', exact: true }).click();
     await pupilPage.getByText('Kom i gang', { exact: true }).first().click();

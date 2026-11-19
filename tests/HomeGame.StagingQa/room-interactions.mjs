@@ -23,7 +23,7 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     }
     async function checkArt(id, suffix, rotation) {
         const node = rotation === undefined ? object(id) : object(id).and(page.locator(`[data-rotation="${rotation}"]`));
-        const image = node.locator(`img.object-art[src$="/${suffix}.webp"]`);
+        const image = node.locator(`img.object-art[src="images/home-workshop/0108ab341b3c/${suffix}.webp"]`);
         await image.waitFor({state:'visible'});
         const dimensions = await image.evaluate(async image => {
             await image.decode();
@@ -39,6 +39,10 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     }
 
     await button(page, 'Indret').click();
+    await button(page, 'Butik').click();
+    const shopImage = page.locator('.items li[data-definition="bookcase_low"] img[src="images/home-workshop/0108ab341b3c/bookcase.webp"]');
+    await shopImage.waitFor({state:'visible'});
+    await shopImage.evaluate(image => image.decode());
     await button(page, 'I boligen').click();
     await select('bookcase_low');
     await button(inspector, 'Flyt').click();

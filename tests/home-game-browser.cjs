@@ -40,6 +40,11 @@ async function handler(route) {
     const url = new URL(request.url());
     const fromApi = url.pathname.startsWith("/api/");
     if (!fromApi) {
+        // A returning browser or CDN can still hold the old module and stylesheet URLs.
+        if (url.pathname === "/js/home-game.js" && !url.search)
+            return route.fulfill({contentType: "text/javascript", body: "export function readDraft() { return null; }"});
+        if (url.pathname === "/Mercantec.Tech.Web.styles.css" && (!url.search || url.search === "?v=outlook-aftalevisning-20261119"))
+            return route.fulfill({contentType: "text/css", body: "/* previous room */"});
         if (url.origin === base || url.protocol === "data:" || url.protocol === "blob:") return route.continue();
         return route.fulfill({ status: 200, body: "" });
     }
@@ -180,6 +185,7 @@ async function main() {
         const tile = (x, y) => board.locator(`[data-x="${x}"][data-y="${y}"]`);
         assert.equal(await board.locator("button[data-x][data-y]").count(), 120);
         await board.locator('.resident[data-avatar-id="lupp"]').waitFor();
+        assert.equal(await board.locator(".resident").evaluate(node => getComputedStyle(node).position), "absolute");
         const resident = page.getByTestId("home-resident");
         const intent = page.getByTestId("resident-intent");
         const locationOf = element => element.evaluate(node => [node.dataset.cellX, node.dataset.cellY].join(","));
