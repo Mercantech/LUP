@@ -40,6 +40,7 @@ import { ReferenceProvider, ReferenceView, ReferencePicker, useReferenceSearch, 
 import { legacyReference, entityReference, referenceKindLabel } from './entity-references.mjs';
 import { createLiveClient, liveKinds } from './live-course-api';
 import { LiveActivity, LiveCourseProvider, LivePageBanner, LivePresenterHeader, LiveSessionHistory, useLiveCourse } from './live-course';
+import { enterFullscreen, leaveFullscreen } from './fullscreen.mjs';
 
 export interface EditorContext {
   domain?: 'notion' | 'notebook';
@@ -701,7 +702,12 @@ function SlideContent({blocks,theme}:{blocks:ReturnType<typeof splitSlides>[numb
 function SlideDeck({session}:{session:Session}) {
   const [localIndex,setLocalIndex]=useState(0);
   const [stopFailed,setStopFailed]=useState(false);
+  const [fullscreen,setFullscreen]=useState(false);
+  const [fullscreenFallback,setFullscreenFallback]=useState(false);
   const dialog=useRef<HTMLDialogElement>(null);
+  const screen=useRef<HTMLDivElement>(null);
+  const wasFullscreen=useRef(false);
+  const fullscreenExitedAt=useRef(0);
   const total=session.slides.length;
   const live=useLiveCourse();
   const snapshot=live?.snapshot ?? null;
@@ -717,7 +723,11 @@ function SlideDeck({session}:{session:Session}) {
     setLocalIndex(slideIndex);
   };
   useEffect(()=>{if(liveActive)setLocalIndex(index);},[liveActive,index]);
-  const closeLocal=()=>{session.presenting=false;session.render();};
+  const closeLocal=()=>{void leaveFullscreen(screen.current);session.presenting=false;session.render();};
+  const toggleFullscreen=async()=>{
+    if(document.fullscreenElement===screen.current){await leaveFullscreen(screen.current);return;}
+    setFullscreenFallback(!await enterFullscreen(screen.current));
+  };
   const close=async()=>{
     if(live && snapshot?.mayManage && !await live.command([snapshot.id,'stop'])){
       setStopFailed(true);
@@ -728,32 +738,50 @@ function SlideDeck({session}:{session:Session}) {
   const moderatorRound=snapshot?.round;
   const canModerate=Boolean(liveActive && moderatorRound &&
     (['brainstorm','word-cloud','qa'].includes(moderatorRound.kind) || moderatorRound.pollType==='text'));
+  const manageWords=moderatorRound?.kind==='word-cloud';
   useEffect(()=>{
     const element=dialog.current!;
     element.showModal();
     const previous=document.body.style.overflow; document.body.style.overflow='hidden';
-    return ()=>{element.close();document.body.style.overflow=previous;};
+    const changed=()=>{
+      const active=document.fullscreenElement===screen.current;
+      if(wasFullscreen.current && !active)fullscreenExitedAt.current=performance.now();
+      wasFullscreen.current=active;
+      setFullscreen(active);
+    };
+    document.addEventListener('fullscreenchange',changed);
+    return ()=>{document.removeEventListener('fullscreenchange',changed);void leaveFullscreen(screen.current);element.close();document.body.style.overflow=previous;};
   },[]);
-  return <dialog ref={dialog} className="notion-slide-deck" aria-label="Præsentation" onCancel={event=>{event.preventDefault();void close();}} onKeyDown={event=>{
+  return <dialog ref={dialog} className="notion-slide-deck" aria-label="Præsentation" onCancel={event=>{
+    event.preventDefault();
+    if(document.fullscreenElement===screen.current){void leaveFullscreen(screen.current);return;}
+    if(performance.now()-fullscreenExitedAt.current>300)void close();
+  }} onKeyDown={event=>{
     if(event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey ||
       event.target instanceof HTMLElement && event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
     if(event.key==='ArrowRight' || event.key==='PageDown'){event.preventDefault();move(1);}
     if(event.key==='ArrowLeft' || event.key==='PageUp'){event.preventDefault();move(-1);}
   }}>
+    <div ref={screen} className="notion-slide-screen">
     <header className="notion-slide-header"><strong><EmojiText text={session.context.title} /></strong><span>{index+1} / {total}</span>
       <LivePresenterHeader revision={session.context.publishedRevision ?? undefined} courseId={session.context.courseId}
         canStart={canUseLiveDraft(session)} allowHost={Boolean(session.context.canEdit && session.context.holdId && !session.context.isStudentPreview)} />
-      {canModerate && <button type="button" onClick={closeLocal} title="Sessionen fortsætter, mens du godkender svar">Moderér i editor</button>}
+      <button type="button" onClick={()=>{void toggleFullscreen();}}>{fullscreen ? 'Afslut fuld skærm' : 'Fuld skærm'}</button>
+      {canModerate && <button type="button" onClick={closeLocal} title={manageWords ? 'Sessionen fortsætter, mens du administrerer ord' : 'Sessionen fortsætter, mens du godkender svar'}>
+        {manageWords ? 'Administrér ord i editor' : 'Moderér i editor'}
+      </button>}
       {snapshot?.mayManage && (live?.offline || stopFailed) && <button type="button" onClick={closeLocal}>
         Gå til editor for at afslutte live
       </button>}
       <button type="button" autoFocus disabled={Boolean(snapshot?.mayManage && live?.busy)} onClick={()=>{void close();}}>
         {snapshot?.mayManage ? 'Afslut live og luk' : 'Luk præsentation'}
       </button></header>
+    {fullscreenFallback && <p className="notion-live-fullscreen-note" role="status">Præsentationen vises i hele browservinduet.</p>}
     <article className="notion-slide-paper"><LiveDeck.Provider value={{active:liveActive}}>
       <SlideContent key={index} blocks={session.slides[index]} theme={session.theme} />
     </LiveDeck.Provider></article>
     <nav className="notion-slide-controls" aria-label="Skift slide"><button type="button" disabled={index===0 || liveActive && (live?.busy || live?.offline)} onClick={()=>move(-1)}>‹ Forrige</button><span>Brug piletasterne til at skifte slide</span><button type="button" disabled={index===total-1 || liveActive && (live?.busy || live?.offline)} onClick={()=>move(1)}>Næste ›</button></nav>
+    </div>
   </dialog>;
 }
 class EditorBoundary extends React.Component<{session:Session;children:React.ReactNode},{failed:boolean}> {

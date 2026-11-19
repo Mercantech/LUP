@@ -67,10 +67,13 @@ public sealed partial class LiveCourseController
         var module = round.Module;
         var options = Choices(module);
         var textMode = EffectivePollType(module) == "text";
+        var wordCloud = module.Kind == "word-cloud";
         var visible = round.ShowResults || access.MayManage;
         var answerQuery = db.LiveCourseEntries.AsNoTracking().Where(e => e.RoundId == round.Id);
         var own = await answerQuery.Where(e => e.UserSub == access.UserSub).OrderByDescending(e => e.Slot).FirstOrDefaultAsync(ct);
-        var publicText = !access.MayManage && textMode ? answerQuery.Where(e => e.Approved == true) : answerQuery;
+        var publicText = !access.MayManage && textMode
+            ? answerQuery.Where(e => e.Approved == true || wordCloud && e.Approved == null)
+            : answerQuery;
 
         int[]? counts = null;
         int? total = null;
@@ -88,7 +91,7 @@ public sealed partial class LiveCourseController
             : [];
         return new(round.Id, module.Id, module.BlockId, module.Kind, module.Prompt, options,
             IsOpen(round, now), round.ShowResults, round.DeadlineUtc is DateTime deadline ? Stamp(deadline) : null,
-            own is not null, own?.Choice, own?.Approved == true ? own.Text : null, counts,
+            own is not null, own?.Choice, own is not null && (own.Approved == true || wordCloud && own.Approved is null) ? own.Text : null, counts,
             round.ShowResults && module.Kind == "quiz" ? module.CorrectChoice : null, entries, total, module.PollType);
     }
 
@@ -98,11 +101,12 @@ public sealed partial class LiveCourseController
         if (module.Kind == "word-cloud")
         {
             var words = await query.Where(e => e.Text != null).OrderBy(e => e.Id).ToArrayAsync(ct);
-            var counts = words.Where(e => e.Approved == true)
+            var counts = words.Where(e => e.Approved != false)
                 .GroupBy(e => e.Text!, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
             if (!access.MayManage) words = words.GroupBy(e => e.Text, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToArray();
-            return words.Select(w => EntryView(w, access, w.Approved == true ? access.MayManage ? 1 : counts[w.Text!] : 0, false))
+            return words.Select(w => EntryView(w, access, w.Approved != false ? access.MayManage ? 1 : counts[w.Text!] : 0,
+                    false, w.Approved != false))
                 .OrderByDescending(w => w.Votes).ThenBy(w => w.Text, StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
@@ -112,12 +116,12 @@ public sealed partial class LiveCourseController
             Count = db.LiveCourseVotes.Count(v => v.EntryId == e.Id),
             OwnVote = db.LiveCourseVotes.Any(v => v.EntryId == e.Id && v.UserSub == access.UserSub)
         }).ToArrayAsync(ct);
-        return entries.Select(e => EntryView(e.Entry, access, e.Count, e.OwnVote))
+        return entries.Select(e => EntryView(e.Entry, access, e.Count, e.OwnVote, e.Entry.Approved == true))
             .OrderByDescending(e => e.Votes).ToArray();
     }
 
-    private static LiveCourseEntryView EntryView(LiveCourseEntry answer, PageAccess access, int votes, bool ownVote) =>
-        new(answer.Id, answer.Text!, answer.Approved == true, votes, ownVote, answer.UserSub == access.UserSub,
+    private static LiveCourseEntryView EntryView(LiveCourseEntry answer, PageAccess access, int votes, bool ownVote, bool approved) =>
+        new(answer.Id, answer.Text!, approved, votes, ownVote, answer.UserSub == access.UserSub,
             answer.Approved is not null);
 
     private async Task<LiveCourseRank[]> BuildRanking(Guid sessionId, CancellationToken ct)
