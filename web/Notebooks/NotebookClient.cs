@@ -23,6 +23,11 @@ public sealed class NotebookClient(HttpClient http)
     public Task<NotebookDocumentContext> Context(Guid page, CancellationToken ct, long? knownRevision = null) => Get<NotebookDocumentContext>($"notebooks/pages/{page}/context" + (knownRevision is long revision ? $"?knownRevision={revision}" : ""), ct);
     public Task<NotebookPageSummary> Create(Guid notebook, CreateNotebookPage body, CancellationToken ct) => Post<NotebookPageSummary>($"notebooks/{notebook}/pages", body, ct);
     public Task<NotebookPageSummary> Update(Guid page, UpdateNotebookPage body, CancellationToken ct) => Patch<NotebookPageSummary>($"notebooks/pages/{page}", body, ct);
+    public async Task<NotebookPageSummary> SetPageIcon(Guid page, Guid? iconEmojiId, CancellationToken ct)
+    {
+        using var response = await http.PutAsJsonAsync($"notebooks/pages/{page}/icon", new SetNotebookIcon(iconEmojiId), ct);
+        return await Read<NotebookPageSummary>(response, ct);
+    }
     public Task<NotionPageLink[]> Tree(Guid notebook, CancellationToken ct) => Get<NotionPageLink[]>($"notebooks/{notebook}/tree", ct);
     public async Task MovePage(Guid id, MoveNotebookPage move, CancellationToken ct)
     {

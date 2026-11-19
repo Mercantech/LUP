@@ -12,10 +12,22 @@ public partial class Index
     private Guid? ActiveCollectionId => _current?.CollectionId ?? _collection?.Id;
     private bool CanReorderTree => string.IsNullOrWhiteSpace(_pageSearch);
     private bool CanOpenTrash => ActiveCollectionId is not null || _holdId != Guid.Empty;
-    private NotebookTreeItem[] TreeItems => _pagesById.Values.Select(p => new NotebookTreeItem(p.Id, p.Title, p.ParentPageId, p.CollectionId)).ToArray();
+    private NotebookTreeItem[] TreeItems => _pagesById.Values.Select(p => new NotebookTreeItem(p.Id, p.Title, p.ParentPageId, p.CollectionId, p.IconEmojiId)).ToArray();
     private CancellationToken TreeToken => _requests?.Token ?? _life.Token;
 
     private Task OpenTreeActions(Guid id) => _treeDialogs?.Show(id) ?? Task.CompletedTask;
+    private async Task SetPageIcon(Guid id, Guid? iconEmojiId)
+    {
+        if (!Authoring) return;
+        var ct = TreeToken;
+        var generation = _generation;
+        var updated = await Client.SetPageIcon(id, iconEmojiId, ct);
+        if (!IsCurrent(generation, ct)) return;
+        if (_current?.PageId == id)
+            _current = _current with { IconEmojiId = updated.IconEmojiId, UpdatedAtUtc = updated.UpdatedAtUtc };
+        SetPages(_pages.Select(page => page.Id == id ? updated : page).ToArray());
+        await InvokeAsync(StateHasChanged);
+    }
     protected override NotebookTreeTarget? FindTreeTarget(Guid? current, string key) =>
         CanUse && !_loading
             ? NotebookTreeUi.KeyboardTarget(_pageRows, current, key, r => r.Page.Id, r => r.Page.ParentPageId,

@@ -24,6 +24,7 @@ public sealed class NotebookDocument
     public Notebook? Notebook { get; set; }
     public string Kind { get; set; } = "note";
     public string Title { get; set; } = "";
+    public Guid? IconEmojiId { get; set; }
     public Guid? ParentPageId { get; set; }
     public int? SortOrder { get; set; }
     public DateTimeOffset? DeletedAtUtc { get; set; }

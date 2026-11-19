@@ -1,0 +1,31 @@
+<span class="nb-page-icon" aria-hidden="true">
+    @if (_icon is { } icon)
+    {
+        <img @key="_imageVersion" src="@icon.ContentUrl" alt="" loading="lazy" decoding="async" @onerror="() => ImageFailed(icon)" />
+    }
+    else if (_glyph is not null)
+    {
+        @_glyph
+    }
+    else
+    {
+        <UiIcon Name="@(HasChildren ? "folder" : "file")" />
+    }
+</span>
+<span class="notion-page-label" @key="_imageVersion">@foreach (var part in _parts)
+    {
+        if (part.Emoji is { } inline)
+        {
+            <img class="custom-emoji" src="@inline.ContentUrl" alt="@EmojiLabel(inline)" loading="lazy" decoding="async" @onerror="() => ImageFailed(inline)" />
+        }
+        else
+        {
+            @part.Text
+        }
+    }
+    @if (_glyphOnly)
+    {
+        <span class="notion-visually-hidden">@_glyph</span>
+    }
+    @ChildContent
+</span>
