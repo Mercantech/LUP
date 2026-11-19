@@ -150,21 +150,87 @@ public sealed class LiveCourseTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task OrdskyShowsTheCountOfApprovedWordsWithoutDoubleCountingOccurrences()
+    public async Task OrdskyShowsIncomingWordsImmediatelyWithoutDoubleCountingOccurrences()
     {
         var module = await Save("ordsky", "word-cloud");
         var session = await Start();
         var round = await Open(session.Id, module);
-        await As(pupil).Answer(pageId, session.Id, round.Id, new(null, " API "), default);
+        Assert.True(round.ShowResults);
+        var answered = Session(await As(pupil).Answer(pageId, session.Id, round.Id, new(null, " API "), default)).Round!;
+        Assert.Equal("API", answered.YourText);
+        Assert.True(Assert.Single(answered.Entries).Approved);
+        Assert.Equal(1, Assert.Single(Session(await As(peer).Get(pageId, default)).Round!.Entries).Votes);
         await As(peer).Answer(pageId, session.Id, round.Id, new(null, "api"), default);
-        foreach (var entry in Session(await As(teacher).Get(pageId, default)).Round!.Entries)
-            await As(teacher).Moderate(pageId, session.Id, round.Id, entry.Id, new(true), default);
-        Assert.Empty(Session(await As(peer).Get(pageId, default)).Round!.Entries);
-        var presenter = await Control(session.Id, round.Id, "show");
+        var presenter = Session(await As(teacher).Get(pageId, default)).Round!;
+        Assert.All(presenter.Entries, entry => Assert.True(entry.Approved));
         Assert.Equal(2, presenter.Entries.Sum(item => item.Votes));
         var studentWord = Assert.Single(Session(await As(peer).Get(pageId, default)).Round!.Entries);
         Assert.Equal("api", studentWord.Text, StringComparer.OrdinalIgnoreCase);
         Assert.Equal(2, studentWord.Votes);
+
+        await Control(session.Id, round.Id, "hide");
+        var hidden = Session(await As(peer).Get(pageId, default)).Round!;
+        Assert.False(hidden.ShowResults);
+        Assert.Empty(hidden.Entries);
+        Assert.Null(hidden.TotalAnswers);
+        await Control(session.Id, round.Id, "show");
+        Assert.Equal(2, Assert.Single(Session(await As(peer).Get(pageId, default)).Round!.Entries).Votes);
+    }
+
+    [Fact]
+    public async Task OrdskyShowsLegacyPendingWordsWhileKeepingExplicitlyHiddenWordsHidden()
+    {
+        var module = await Save("ordsky", "word-cloud");
+        var session = await Start();
+        var round = await Open(session.Id, module);
+        var legacy = new LiveCourseEntry
+        {
+            Id = Guid.NewGuid(), RoundId = round.Id, UserSub = pupil, Text = "API", Approved = null,
+            UpdatedAtUtc = clock.Now.UtcDateTime
+        };
+        var hidden = new LiveCourseEntry
+        {
+            Id = Guid.NewGuid(), RoundId = round.Id, UserSub = peer, Text = "api", Approved = false,
+            UpdatedAtUtc = clock.Now.UtcDateTime
+        };
+        db.LiveCourseEntries.AddRange(legacy, hidden);
+        await db.SaveChangesAsync();
+
+        var visible = Session(await As(peer).Get(pageId, default)).Round!;
+        Assert.Equal(1, visible.TotalAnswers);
+        var word = Assert.Single(visible.Entries);
+        Assert.Equal(legacy.Id, word.Id);
+        Assert.True(word.Approved);
+        Assert.Equal(1, word.Votes);
+        Assert.Null(visible.YourText);
+        Assert.Equal("API", Session(await As(pupil).Get(pageId, default)).Round!.YourText);
+        var presenter = Session(await As(teacher).Get(pageId, default)).Round!;
+        Assert.Equal(1, presenter.Entries.Sum(entry => entry.Votes));
+        Assert.True(Assert.Single(presenter.Entries, entry => entry.Id == legacy.Id).Approved);
+        Assert.False(Assert.Single(presenter.Entries, entry => entry.Id == hidden.Id).Approved);
+
+        await As(teacher).Moderate(pageId, session.Id, round.Id, legacy.Id, new(false), default);
+        Assert.Empty(Session(await As(peer).Get(pageId, default)).Round!.Entries);
+        await As(pupil).Answer(pageId, session.Id, round.Id, new(null, "API"), default);
+        Assert.Empty(Session(await As(peer).Get(pageId, default)).Round!.Entries);
+    }
+
+    [Fact]
+    public async Task TextPollStillRequiresApprovalWhenResultsAreShown()
+    {
+        var module = await Save("text-poll", "poll", pollType: "text");
+        var session = await Start();
+        var round = await Open(session.Id, module);
+        Assert.False(round.ShowResults);
+        var answered = Session(await As(pupil).Answer(pageId, session.Id, round.Id, new(null, "Mit svar"), default)).Round!;
+        Assert.Null(answered.YourText);
+        await Control(session.Id, round.Id, "show");
+        Assert.Empty(Session(await As(peer).Get(pageId, default)).Round!.Entries);
+        var pending = Assert.Single(Session(await As(teacher).Get(pageId, default)).Round!.Entries);
+        Assert.False(pending.Approved);
+        Assert.False(pending.Moderated);
+        await As(teacher).Moderate(pageId, session.Id, round.Id, pending.Id, new(true), default);
+        Assert.Equal("Mit svar", Assert.Single(Session(await As(peer).Get(pageId, default)).Round!.Entries).Text);
     }
 
     [Fact]
