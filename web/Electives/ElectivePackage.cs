@@ -28,7 +28,7 @@ public sealed record ElectivePackage(Guid Id, string Title, string ImageUrl, str
                 "Planlæg et simpelt 3D-multiplayerspil, og programmér figurer med simpel AI."
             ], "lupp"),
         new(new("9a0e18a7-983b-499d-8e17-3a797ce0624c"), "Machine Learning",
-            "/images/valgfag/machine-learning.webp",
+            "/images/valgfag/machine-learning.webp?v=20261119",
             "Kan en model genkende en kategori eller forudsige et tal? Byg og test din egen i Python på et konkret datasæt.",
             "Machine Learning",
             [
