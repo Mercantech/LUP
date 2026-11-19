@@ -147,7 +147,7 @@ else
         @if (Authoring)
         {
             <NotebookTreeDialogs @ref="_treeDialogs" Items="@TreeItems" Reorder="CanReorderTree"
-                                 OnCreateChild="CreateTreeChild" MovePage="MoveTreePage" PreviewDelete="PreviewTreeDelete"
+                                 OnCreateChild="CreateTreeChild" SetPageIcon="SetPageIcon" MovePage="MoveTreePage" PreviewDelete="PreviewTreeDelete"
                                  DeletePage="DeleteTreePage" ListTrash="ListTreeTrash" RestorePage="RestoreTreePage" />
         }
         @if (IsEditing && _codexHistoryPageId is Guid historyPageId && _current?.PageId == historyPageId)
@@ -169,7 +169,12 @@ else
           OnActions="OpenTreeActions" OnDragStart="StartTreeDrag" OnDragEnd="EndTreeDrag" OnDrop="DropTreePage">
         <div class="notion-page-row" style="--page-depth:@item.Depth">
         @if (_pagesWithChildren.Contains(item.Page.Id) && _pageSearch.Trim().Length == 0) { <button type="button" class="notion-branch-toggle @(_expandedPages.Contains(item.Page.Id) ? "is-expanded" : null)" aria-expanded="@(_expandedPages.Contains(item.Page.Id) ? "true" : "false")" aria-label="@($"Fold {item.Page.Title} {(_expandedPages.Contains(item.Page.Id) ? "sammen" : "ud")}")" @onclick="() => ToggleBranch(item.Page.Id)"><UiIcon Name="chevron" /></button> } else { <span class="notion-branch-spacer" aria-hidden="true"></span> }
-        <button type="button" class="notion-page @(item.Page.Id == _current?.PageId ? "is-current" : null)" aria-current="@(item.Page.Id == _current?.PageId ? "page" : null)" title="@item.Page.Title" disabled="@_busy" @onclick="() => OpenPage(item.Page.Id)"><UiIcon Name="@(_pagesWithChildren.Contains(item.Page.Id) ? "folder" : "file")" /><span class="notion-page-label"><EmojiText Text="@item.Page.Title" />@if (_pageSearch.Trim().Length > 0 && ParentTitle(item.Page) is string parent) { <small class="notion-page-parent"><EmojiText Text="@parent" /></small> }</span>@if (Authoring && (item.Page.PublishedAtUtc is null || item.Page.HasUnpublishedChanges)) { <span class="notion-draft-dot" title="@(item.Page.PublishedAtUtc is null ? "Kladde" : "Ny kladde")"><span class="notion-visually-hidden">@(item.Page.PublishedAtUtc is null ? "Kladde" : "Ny kladde")</span></span> }</button>
+        <button type="button" class="notion-page @(item.Page.Id == _current?.PageId ? "is-current" : null)" aria-current="@(item.Page.Id == _current?.PageId ? "page" : null)" title="@item.Page.Title" disabled="@_busy" @onclick="() => OpenPage(item.Page.Id)">
+            <NotebookPageLabel Title="@item.Page.Title" IconEmojiId="item.Page.IconEmojiId" HasChildren="_pagesWithChildren.Contains(item.Page.Id)">
+                @if (_pageSearch.Trim().Length > 0 && ParentTitle(item.Page) is string parent) { <small class="notion-page-parent"><EmojiText Text="@parent" /></small> }
+            </NotebookPageLabel>
+            @if (Authoring && (item.Page.PublishedAtUtc is null || item.Page.HasUnpublishedChanges)) { <span class="notion-draft-dot" title="@(item.Page.PublishedAtUtc is null ? "Kladde" : "Ny kladde")"><span class="notion-visually-hidden">@(item.Page.PublishedAtUtc is null ? "Kladde" : "Ny kladde")</span></span> }
+        </button>
         </div>
     </NotebookTreeRow>;
 }

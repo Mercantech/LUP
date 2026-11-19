@@ -67,6 +67,27 @@ public sealed class NotebooksControllerTests : IAsyncLifetime
     private static T Value<T>(IActionResult action) => Assert.IsType<T>(Assert.IsType<OkObjectResult>(action).Value);
 
     [Fact]
+    public async Task PageIconPersistsInPersonalTreeAndOnlyTheOwnerCanChangeIt()
+    {
+        var editor = As(owner);
+        var icon = CharacterEmojiCatalog.All[0].Id;
+        await editor.GrantShare(notebook.Id, new(reader, child.Id), default);
+        Assert.IsType<NotFoundResult>(await As(reader).SetPageIcon(child.Id, new(icon), default));
+        Assert.IsType<NotFoundResult>(await As(teacher, "Underviser").SetPageIcon(child.Id, new(icon), default));
+        Assert.IsType<BadRequestObjectResult>(await editor.SetPageIcon(child.Id, new(Guid.Empty), default));
+        var updated = Value<NotebookPageSummary>(await editor.SetPageIcon(child.Id, new(icon), default));
+        Assert.Equal(icon, updated.IconEmojiId);
+        Assert.Equal(child.Title, updated.Title);
+        Assert.Equal(child.Revision, updated.Revision);
+        var tree = Value<NotionPageLink[]>(await As(reader).Tree(notebook.Id, default));
+        Assert.Equal(icon, Assert.Single(tree).IconEmojiId);
+        var context = Value<NotebookDocumentContext>(await As(reader).Context(child.Id, default, knownRevision: child.Revision));
+        Assert.Equal(icon, context.IconEmojiId);
+        Assert.Null(context.StateBase64);
+        Assert.Null(Value<NotebookPageSummary>(await editor.SetPageIcon(child.Id, new(null), default)).IconEmojiId);
+    }
+
+    [Fact]
     public async Task Only_owner_can_reorder_trash_and_restore_shared_pages()
     {
         var editor = As(owner);

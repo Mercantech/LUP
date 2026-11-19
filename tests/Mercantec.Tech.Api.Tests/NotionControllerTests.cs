@@ -76,6 +76,36 @@ public sealed class NotionControllerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task PageIconIsEditableByTeachersAndPublishedWithTheDocumentSnapshot()
+    {
+        var page = await Create();
+        var editor = As(teacher, true);
+        var icon = CharacterEmojiCatalog.All[0].Id;
+        Assert.IsType<NotFoundResult>(await As(student).SetPageIcon(page.Id, new(icon), default));
+        Assert.IsType<BadRequestObjectResult>(await editor.SetPageIcon(page.Id, new(Guid.NewGuid()), default));
+        Assert.IsType<OkObjectResult>(await Storage(body: [1, 2, 3]).WriteState(page.Id, default));
+        var revision = Value<NotionPageContext>(await editor.Context(page.Id, default)).DraftRevision;
+        Assert.Equal(icon, Value<NotionPageSummary>(await editor.SetPageIcon(page.Id, new(icon), default)).IconEmojiId);
+        Assert.IsType<OkObjectResult>(await editor.Publish(page.Id, new(revision, Fingerprint, []), default));
+        Assert.True(Value<NotionPageSummary>(await editor.SetPageIcon(page.Id, new(null), default)).HasUnpublishedChanges);
+
+        var draft = Value<NotionPageContext>(await editor.Context(page.Id, default));
+        Assert.Equal(revision, draft.DraftRevision);
+        Assert.Null(draft.IconEmojiId);
+        Assert.Equal(icon, draft.PublishedIconEmojiId);
+        Assert.Null(Assert.Single(draft.Pages!).IconEmojiId);
+        var published = Value<NotionPageContext>(await As(student).Context(page.Id, default));
+        Assert.Equal(icon, published.IconEmojiId);
+        Assert.Equal(icon, Assert.Single(published.Pages!).IconEmojiId);
+        var list = Value<List<NotionPageSummary>>(await editor.List(holdId, default, publishedOnly: true));
+        Assert.Equal(icon, Assert.Single(list).IconEmojiId);
+        Assert.False(list[0].HasUnpublishedChanges);
+
+        Assert.False(Value<NotionPageSummary>(await editor.Publish(page.Id, new(revision, Fingerprint, []), default)).HasUnpublishedChanges);
+        Assert.Null(Value<NotionPageContext>(await As(student).Context(page.Id, default)).IconEmojiId);
+    }
+
+    [Fact]
     public async Task TeacherPublishedPageListKeepsPublishedTitleWhileDraftChanges()
     {
         var page = await Create();

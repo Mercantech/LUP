@@ -119,7 +119,7 @@ public sealed partial class NotebooksController
     private async Task<NotionPageLink[]> ReadTreeLinks(Guid notebook, CancellationToken ct)
     {
         var pages = await access.ReadableDocuments(User).AsNoTracking().Where(d => d.NotebookId == notebook)
-            .Select(d => new NotionPageLink(d.Id, d.Title, d.ParentPageId, d.SortOrder)).ToArrayAsync(ct);
+            .Select(d => new NotionPageLink(d.Id, d.Title, d.ParentPageId, d.SortOrder, d.IconEmojiId)).ToArrayAsync(ct);
         var visible = pages.Select(p => p.Id).ToHashSet();
         return pages.Select(p => p.ParentPageId is Guid parent && !visible.Contains(parent)
             ? p with { ParentPageId = null } : p).OrderBy(p => p.Title).ToArray();

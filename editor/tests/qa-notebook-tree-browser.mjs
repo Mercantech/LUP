@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const base = new URL('http://localhost:9098');
-const apiBase = 'http://127.0.0.1:8088';
+const base = new URL('http://localhost:' + Number(process.env.NOTEBOOK_BROWSER_QA_WEB_PORT || 9098));
+const apiBase = new URL('http://127.0.0.1:' + Number(process.env.NOTEBOOK_BROWSER_QA_API_PORT || 8088)).origin;
 const health = await fetch(apiBase + '/_qa/health');
 assert.equal((await health.json()).fixture, 'fictional-notebook-browser-qa');
 const identities = Object.fromEntries((await (await fetch(apiBase + '/_qa/identities')).json())
@@ -255,6 +255,66 @@ async function mobileActions(who, id, title) {
   await dialog.waitFor({ state: 'hidden' });
 }
 
+async function pageIcons(page, path, createPage, screenshot) {
+  const folder = await createPage('Deployment');
+  const file = await createPage('Compose, porte og netværk', folder.id);
+  const marked = await createPage(':qa-1f4bb: Aspire :qa-1f4bb:');
+  const trailing = await createPage('AppHost :qa-1f4bb:');
+  const glyph = await createPage('🐳 Docker');
+  const itemRow = item => sidebar(page).locator(`[data-page-id="${item.id}"]`);
+  const button = item => itemRow(item).locator('.notion-page');
+  const slot = item => button(item).locator('.nb-page-icon');
+  const menu = page.getByRole('dialog', { name: 'Sidehandlinger', exact: true });
+  const picker = page.getByRole('dialog', { name: 'Vælg emoji', exact: true });
+  async function choose(item, name) {
+    await itemRow(item).getByRole('button', { name: 'Sidehandlinger: ' + item.title, exact: true }).click();
+    await menu.getByRole('button', { name: 'Vælg sideikon', exact: true }).click();
+    if (name) {
+      await picker.getByRole('searchbox').fill(name);
+      await picker.getByRole('option', { name: ':' + name + ':', exact: true }).click();
+    } else {
+      await picker.getByRole('button', { name: 'Brug automatisk ikon', exact: true }).click();
+    }
+    await menu.waitFor({ state: 'hidden' });
+  }
+  async function imagePath(item) {
+    const image = slot(item).locator('img');
+    await image.waitFor();
+    await image.evaluate(element => element.decode());
+    return image.evaluate(element => new URL(element.src).pathname);
+  }
+  await openSidebar(page, path + file.id);
+  const folderShape = await slot(folder).locator('svg path').getAttribute('d');
+  const fileShape = await slot(file).locator('svg path').getAttribute('d');
+  assert.notEqual(folderShape, fileShape, 'branches and leaves have different default icons');
+  const automatic = await imagePath(marked);
+  assert.equal(await imagePath(trailing), automatic);
+  assert.equal(await button(marked).locator('.notion-page-label').innerText(), 'Aspire');
+  assert.equal(await button(marked).locator('.notion-page-label img').count(), 0);
+  assert.equal(await button(trailing).locator('.notion-page-label').innerText(), 'AppHost');
+  assert.equal((await slot(glyph).innerText()).trim(), '🐳');
+  assert.equal(await button(glyph).locator('.notion-page-label').innerText(), 'Docker');
+
+  await choose(folder, 'qa-custom-sticker');
+  const selected = await imagePath(folder);
+  assert.notEqual(selected, automatic);
+  if (screenshot) await sidebar(page).screenshot({ path: screenshot });
+  await choose(marked, 'qa-custom-sticker');
+  assert.equal(await imagePath(marked), selected, 'explicit icon takes precedence over the title');
+  await openSidebar(page, path + file.id);
+  assert.equal(await imagePath(folder), selected, 'folder icon persisted across a full navigation');
+  assert.equal(await imagePath(marked), selected, 'explicit icon persisted with the original title');
+  assert.equal(await button(marked).locator('.notion-page-label').innerText(), 'Aspire');
+  assert.equal(await button(marked).locator('.notion-page-label img').count(), 0, 'replaced title icons stay hidden');
+  await choose(folder, null);
+  await choose(marked, null);
+  await openSidebar(page, path + file.id);
+  assert.equal(await slot(folder).locator('svg path').getAttribute('d'), folderShape);
+  assert.equal(await imagePath(marked), automatic);
+  assert.equal(await button(marked).getAttribute('title'), marked.title, 'choosing an icon preserves the stored title');
+  process.stdout.write('PASS ' + path + ' page icons: folder/file, title emoji, override, reload and reset\n');
+}
+
 async function checkSharedReader(notebookId, pageId) {
   await json('pupil', '/api/notebooks/' + notebookId + '/shares', { recipientSub: identities.peer.sub, pageId });
   const reader = await client('peer');
@@ -274,11 +334,17 @@ async function checkSharedReader(notebookId, pageId) {
   process.stdout.write('PASS shared reader can search and open help without write commands\n');
 }
 
-try {
+async function run() {
   const teacher = await client('teacher');
   const pupil = await client('pupil');
   const collection = await json('teacher', '/api/notion/collections',
     { title: 'QA forløb ' + suffix, holdId: '22222222-aaaa-4222-8222-222222222222' });
+  const personal = await json('pupil', '/api/notebooks/mine', {});
+  await pageIcons(teacher, '/notion/', (title, parentPageId) => json('teacher', '/api/notion/pages',
+    { collectionId: collection.id, atRoot: !parentPageId, title, parentPageId }), process.env.NOTEBOOK_ICON_QA_SCREENSHOT);
+  await pageIcons(pupil, '/notebook/', (title, parentPageId) => json('pupil', '/api/notebooks/' + personal.id + '/pages',
+    { title, parentPageId }));
+  if (process.argv.includes('--icons-only')) return;
   const lesson = await treeFlow({
     page: teacher, who: 'teacher', path: '/notion/collections/' + collection.id, rootButton: 'Ny side',
     readPages: () => json('teacher', '/api/notion/pages?collectionId=' + collection.id),
@@ -289,7 +355,6 @@ try {
   process.stdout.write('PASS restored teaching page accepts fresh content\n');
   await keyboardFlow(teacher, '/notion/', lesson, 'Forløb', () => json('teacher', '/api/notion/pages?collectionId=' + collection.id));
 
-  const personal = await json('pupil', '/api/notebooks/mine', {});
   const note = await treeFlow({
     page: pupil, who: 'pupil', path: '/notebook', rootButton: 'Ny note',
     readPages: async () => (await json('pupil', '/api/notebooks/' + personal.id + '/pages')).items,
@@ -300,6 +365,10 @@ try {
   await mobileActions('pupil', note.rootId, note.rootTitle);
   await checkSharedReader(personal.id, note.rootId);
   process.stdout.write('PASS restored personal note accepts fresh content and exposes touch actions\n');
+}
+
+try {
+  await run();
   assert.deepEqual(errors, []);
 } finally {
   await browser.close();

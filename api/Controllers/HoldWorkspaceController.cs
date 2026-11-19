@@ -31,7 +31,7 @@ public sealed class HoldWorkspaceController(AppDbContext db, CourseAccess access
         var pages = await db.NotionPages.AsNoTracking()
             .Where(p => p.HoldId == hold.Id && (manage || p.PublishedAtUtc != null))
             .Select(p => new { p.Id, p.Title, p.PublishedTitle, p.UpdatedAtUtc, p.PublishedAtUtc,
-                p.PublishedRevision, p.DraftRevision }).ToListAsync(ct);
+                p.PublishedRevision, p.DraftRevision, p.IconEmojiId, p.PublishedIconEmojiId }).ToListAsync(ct);
         var questQuery = db.LearningQuests.AsNoTracking().Where(q => q.HoldId == hold.Id && (manage || q.Published));
         if (!actualManage) questQuery = new QuestAudienceAccess(db).Readable(questQuery, sub);
         var quests = await questQuery.ToListAsync(ct);
@@ -59,7 +59,7 @@ public sealed class HoldWorkspaceController(AppDbContext db, CourseAccess access
             reviews.Count, quests.Count, quests.Count(q => !q.Published),
             pages.OrderByDescending(p => p.UpdatedAtUtc).Select(p => new WorkspacePage(p.Id,
                 manage ? p.Title : p.PublishedTitle ?? p.Title, p.UpdatedAtUtc, p.PublishedAtUtc,
-                manage && p.PublishedAtUtc != null && p.PublishedRevision != p.DraftRevision)).ToArray(), agenda,
+                manage && p.PublishedAtUtc != null && (p.PublishedRevision != p.DraftRevision || p.IconEmojiId != p.PublishedIconEmojiId))).ToArray(), agenda,
             reviews.GroupBy(r => r.QuestId).Select(g => new WorkspaceReview(g.Key, g.First().Title, g.Count()))
                 .OrderByDescending(r => r.Count).ToArray(),
             hold.LectioSources.Select(s => s.LectioHoldKey)

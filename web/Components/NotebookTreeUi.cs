@@ -2,7 +2,7 @@ using Mercantec.Tech.Contracts;
 
 namespace Mercantec.Tech.Web.Components;
 
-public sealed record NotebookTreeItem(Guid Id, string Title, Guid? ParentId, Guid? ScopeId = null);
+public sealed record NotebookTreeItem(Guid Id, string Title, Guid? ParentId, Guid? ScopeId = null, Guid? IconEmojiId = null);
 public sealed record NotebookTreeTarget(Guid Id, int Index);
 
 public static class NotebookTreeUi
