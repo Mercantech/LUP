@@ -1,0 +1,4 @@
+.photo-editor{display:flex;gap:1.25rem;align-items:flex-start;scroll-margin-top:6rem;margin:1.5rem 0;padding:1.5rem}
+.photo-editor-body{min-width:0;flex:1}.photo-editor h2{font-size:1.15rem;margin:0 0 .5rem}.photo-editor p{margin:.45rem 0;line-height:1.5}.photo-hint{font-size:.9rem;color:var(--muted,#63728b)}
+.photo-controls{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-top:1rem}.photo-input-label{display:grid;gap:.4rem;font-size:.9rem;font-weight:600}.photo-input-label ::deep input{max-width:100%;font:inherit}.selected-photo{overflow-wrap:anywhere;font-size:.9rem}.photo-error{color:var(--danger,#a11935)}
+@media(max-width:520px){.photo-editor{gap:.8rem;padding:1rem;flex-direction:column}.photo-editor-body{width:100%}.photo-controls{align-items:flex-start;flex-direction:column}}

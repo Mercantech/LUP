@@ -1,0 +1,2 @@
+.student-photo{display:inline-flex;flex:none;align-items:center;justify-content:center;overflow:hidden;border-radius:50%;background:var(--surface-2,#e9eef7);color:var(--text,#17243b);font-weight:700;font-size:1em;vertical-align:middle}
+.student-photo img{display:block;width:100%;height:100%;object-fit:cover}

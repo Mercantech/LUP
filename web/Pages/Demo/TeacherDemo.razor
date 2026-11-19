@@ -1,5 +1,4 @@
 @page "/teacher/reviews"
-@page "/teacher/students"
 @page "/teacher/content"
 @page "/teacher/badges"
 @using Mercantec.Tech.Web.Demo
@@ -35,16 +34,6 @@ else if (PathKey == "teacher/reviews")
             <button type="button" class="secondary" disabled>Giv feedback</button>
         </div>
     </article>
-}
-else if (PathKey == "teacher/students")
-{
-    <header class="page-title"><div><h1>Elever</h1><p>Følg eleverne og deres faglige udvikling. Find holdets medlemskaber under Lectio.</p></div></header>
-    <p><a class="action" href="/lectio">Åbn Lectio</a></p>
-    <div class="panel">
-        <div class="row"><span class="mark"><span class="mark-glyph">AJ</span></span><div><h3>Alex Jensen</h3><p>H3 · level 7 · 5 badges</p></div></div>
-        <div class="row"><span class="mark"><span class="mark-glyph">MH</span></span><div><h3>Maja Holm</h3><p>Game Design · har kommenteret Rune Run</p></div></div>
-        <div class="row"><span class="mark"><span class="mark-glyph">NB</span></span><div><h3>Noah Berg</h3><p>Game Design · highscore 1.495</p></div></div>
-    </div>
 }
 else if (PathKey == "teacher/content")
 {
@@ -88,7 +77,6 @@ else if (PathKey == "teacher/badges")
     private string Title => PathKey switch
     {
         "teacher/reviews" => "Afleveringer",
-        "teacher/students" => "Elever",
         "teacher/content" => "Fagligt indhold",
         "teacher/badges" => "Tildel badges",
         _ => "Afstemninger"

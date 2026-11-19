@@ -57,6 +57,8 @@ builder.Services.AddScoped<Mercantec.Tech.Web.Emojis.EmojiClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Extensions.ExtensionAccessClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Calendar.TeacherCalendarClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Updates.PlatformUpdatesClient>();
+builder.Services.AddScoped<Mercantec.Tech.Web.Students.StudentDirectoryClient>();
+builder.Services.AddScoped<Mercantec.Tech.Web.Students.ProfilePhotoClient>();
 
 builder.Services.AddScoped<TokenStore>();
 builder.Services.AddScoped<AuthService>();

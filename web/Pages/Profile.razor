@@ -1,5 +1,6 @@
 @page "/profile"
 @using Mercantec.Tech.Web.Characters
+@using Mercantec.Tech.Web.Students
 @inject AuthService Auth
 @inject AuthRedirect Redirect
 @inject NavigationManager Nav
@@ -36,6 +37,7 @@
             <nav aria-label="På profilsiden" class="profile-jump-links">
                 <a href="/profile#mit-univers"><UiIcon Name="folder" />Mit univers</a>
                 <a href="/profile#indstillinger"><UiIcon Name="sliders" />Indstillinger</a>
+                <a href="/profile#profilfoto"><UiIcon Name="people" />Profilfoto</a>
             </nav>
         </header>
 
@@ -59,6 +61,8 @@
                 </div>
             </div>
         </section>
+
+        <ProfilePhotoEditor @key="Auth.Subject" />
 
         <section id="mit-univers" class="profile-section" tabindex="-1" aria-labelledby="profile-universe-title">
             <h2 id="profile-universe-title">Mit univers</h2>
@@ -169,7 +173,7 @@
 
         _scrollLocation = location;
         var fragment = Nav.ToAbsoluteUri(location).Fragment;
-        if (fragment is "#mit-univers" or "#indstillinger")
+        if (fragment is "#mit-univers" or "#indstillinger" or "#profilfoto")
             await Js.InvokeVoidAsync("lupProfileUi.scrollToSection", fragment[1..]);
     }
 
