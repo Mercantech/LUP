@@ -116,13 +116,16 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     await shopImage.waitFor({state:'visible'});
     await shopImage.evaluate(image => image.decode());
     await button(page, 'I boligen').click();
-    await checkContextActions(page, 'bookcase_low', artifactDir);
-    const menuModule = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => new URL(entry.name))
-        .find(url => url.origin === location.origin && url.pathname === '/js/home-item-actions.js')?.href);
-    assert.ok(menuModule && new URL(menuModule).searchParams.get('v'), 'The real furniture menu must load its versioned module');
-    const moduleResponse = await page.request.get(menuModule);
+    const [moduleResponse] = await Promise.all([
+        page.waitForResponse(response => {
+            const url = new URL(response.url());
+            return url.origin === new URL(page.url()).origin && url.pathname === '/js/home-item-actions.js';
+        }),
+        checkContextActions(page, 'bookcase_low', artifactDir)
+    ]);
     assert.equal(moduleResponse.status(),200);
-    const moduleUrl = new URL(menuModule);
+    const moduleUrl = new URL(moduleResponse.url());
+    assert.ok(moduleUrl.searchParams.get('v'), 'The real furniture menu must load its versioned module');
     check('Furniture action menu works without scrolling on desktop and mobile', {
         path:moduleUrl.pathname+moduleUrl.search, sha256:createHash('sha256').update(await moduleResponse.body()).digest('hex')
     });
