@@ -11,7 +11,39 @@ async function visibleControl(control) {
         return r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1 &&
             (hit === el || el.contains(hit));
     });
-    assert.ok(reachable, (await control.innerText()) + ' should be on screen and clickable');
+    assert.ok(reachable, (await control.getAttribute('aria-label') || await control.innerText()) + ' should be on screen and clickable');
+}
+
+// Artwork can overlap another sprite. Use an actual exposed point on the chosen
+// handle, just as a pupil would, and wait for responsive layout after resizing.
+async function exposedPoint(handle) {
+    return handle.evaluate(async el => {
+        const object = el.closest('[data-definition]');
+        const end = performance.now() + 2500;
+        let diagnostic;
+        do {
+            await new Promise(requestAnimationFrame);
+            const rect = el.getBoundingClientRect();
+            const left = Math.max(0, rect.left), right = Math.min(innerWidth, rect.right);
+            const top = Math.max(0, rect.top), bottom = Math.min(innerHeight, rect.bottom);
+            const fractions = [.5, .25, .75, .1, .9];
+            if (left < right && top < bottom) {
+                for (const fy of fractions) for (const fx of fractions) {
+                    const x = left + (right - left) * fx, y = top + (bottom - top) * fy;
+                    const hit = document.elementFromPoint(x, y);
+                    if (hit && (hit === el || el.contains(hit))) return {x, y};
+                    if (fx === .5 && fy === .5) diagnostic = {
+                        hit:hit?.tagName, class:hit?.className,
+                        coveringObject:hit?.closest('[data-definition]')?.dataset.definition
+                    };
+                }
+            }
+            diagnostic = {...diagnostic, object:object?.dataset.definition,
+                rect:rect.toJSON(), viewport:[innerWidth,innerHeight], pageScroll:[scrollX,scrollY],
+                room:el.closest('.room-shell')?.getBoundingClientRect().toJSON()};
+        } while (performance.now() < end);
+        throw Error('Furniture has no exposed click target: ' + JSON.stringify(diagnostic));
+    });
 }
 
 export async function checkContextActions(page, definition, output) {
@@ -32,10 +64,12 @@ export async function checkContextActions(page, definition, output) {
     const activate = control => touch ? control.tap() : control.click();
     for (const viewport of viewports) {
         await page.setViewportSize(viewport);
+        await object.locator('img.object-art').evaluate(image => image.decode());
         await handle.evaluate(el => el.scrollIntoView({block:'center', inline:'nearest', behavior:'instant'}));
-        await visibleControl(handle);
+        const point = await exposedPoint(handle);
         const before = await scrollOffsets();
-        await activate(handle);
+        if (touch) await page.touchscreen.tap(point.x, point.y);
+        else await page.mouse.click(point.x, point.y);
         await visibleControl(button(menu, 'Flyt'));
         await visibleControl(button(menu, 'Drej 90°'));
         assert.equal(await menu.getAttribute('data-item-id'), await object.getAttribute('data-item-id'));
@@ -49,7 +83,10 @@ export async function checkContextActions(page, definition, output) {
         if (touch) await button(menu,'Luk handlinger').tap();
         else await page.keyboard.press('Escape');
         await menu.waitFor({state:'hidden'});
-        if (touch) await handle.tap();
+        if (touch) {
+            const again = await exposedPoint(handle);
+            await page.touchscreen.tap(again.x, again.y);
+        }
         else {
             assert.ok(await handle.evaluate(el => document.activeElement === el), 'Escape returns focus to the furniture');
             await handle.press('Enter');
