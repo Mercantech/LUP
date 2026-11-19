@@ -69,7 +69,10 @@ async function openSidebar(page, path) {
   await page.goto(new URL(path, base).href);
   const toggle = page.locator('.notion-sidebar-toggle');
   await toggle.waitFor();
-  if (!await sidebar(page).isVisible()) await toggle.click();
+  if (!await sidebar(page).isVisible()) {
+    if (!await toggle.isVisible()) await page.locator('.notion-document-more > summary').click();
+    await toggle.click();
+  }
   await sidebar(page).waitFor();
 }
 
@@ -189,8 +192,9 @@ async function keyboardFlow(page, rootPath, branch, label, readPages) {
   await openSidebar(page, rootPath + branch.rootId);
   const panel = sidebar(page), search = panel.getByRole('searchbox', { name: 'Find en side', exact: true });
   await page.locator('.notion-workspace[data-sidebar-ready=true]').waitFor();
+  const more = page.locator('.notion-document-more > summary');
   const toggle = page.locator('.notion-sidebar-toggle');
-  await toggle.focus();
+  await (await more.isVisible() ? more : toggle).focus();
   await page.keyboard.press('ControlOrMeta+b');
   await panel.waitFor({ state: 'hidden' });
   await page.keyboard.press('ControlOrMeta+p');
