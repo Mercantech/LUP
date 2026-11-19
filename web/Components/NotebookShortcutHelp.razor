@@ -1,10 +1,13 @@
 @inject IJSRuntime Js
 @implements IAsyncDisposable
 
-<button class="shortcut-trigger" type="button" title="Tastaturgenveje (F1)"
-        aria-label="Tastaturgenveje" aria-haspopup="dialog" aria-keyshortcuts="F1" @onclick="OpenAsync">
-    <UiIcon Name="keyboard" />
-</button>
+@if (!HideTrigger)
+{
+    <button class="shortcut-trigger" type="button" title="Tastaturgenveje (F1)"
+            aria-label="Tastaturgenveje" aria-haspopup="dialog" aria-keyshortcuts="F1" @onclick="OpenAsync">
+        <UiIcon Name="keyboard" />
+    </button>
+}
 <dialog @ref="_dialog" class="notebook-shortcut-help" aria-labelledby="notebook-shortcuts-title">
     <header>
         <h2 id="notebook-shortcuts-title">Tastaturgenveje</h2>
@@ -46,6 +49,7 @@
 @code {
     [Parameter] public bool CanCreatePage { get; set; }
     [Parameter] public bool CanCreateChild { get; set; }
+    [Parameter] public bool HideTrigger { get; set; }
     [Parameter] public bool Templates { get; set; }
     [Parameter] public string CreateLabel { get; set; } = "Opret side";
 

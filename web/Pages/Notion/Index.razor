@@ -60,11 +60,7 @@ else
             <section class="notion-document" tabindex="-1" aria-label="@(IsEditing ? "Dokumenteditor" : "Udgivet dokument")">
                 <div class="notion-document-toolbar">
                     <h1 class="notion-visually-hidden">@(_current?.Title ?? (_holdId == Guid.Empty ? "Teorinotesbog" : "Holdets indhold"))</h1>
-                    <div class="notion-toolbar-nav">
-                        <button type="button" class="notion-sidebar-toggle" aria-controls="notion-sidebar" aria-keyshortcuts="Control+b Meta+b" aria-expanded="@(_sidebarOpen && !_workspaceFocused ? "true" : "false")" aria-label="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" title="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" @onclick="ToggleSidebar"><UiIcon Name="panel" /><span>Sider</span></button>
-                        <button type="button" class="notion-focus-toggle" disabled="@(!SidebarEnhanced)" aria-pressed="@_workspaceFocused.ToString().ToLowerInvariant()" aria-label="@(_workspaceFocused ? "Afslut fokus" : "Fokus")" title="@(_workspaceFocused ? "Gendan sidekolonnerne" : "Skjul sidekolonnerne og fokusér på dokumentet")" @onclick="ToggleWorkspaceFocus"><UiIcon Name="screen" /><span>@(_workspaceFocused ? "Afslut fokus" : "Fokus")</span></button>
-                        <NotebookShortcutHelp @ref="_shortcutHelp" CanCreatePage="ShortcutCanCreatePage" CanCreateChild="ShortcutCanCreateChild" />
-                    </div>
+                    <NotebookShortcutHelp @ref="_shortcutHelp" HideTrigger="true" CanCreatePage="ShortcutCanCreatePage" CanCreateChild="ShortcutCanCreateChild" />
                     @if (_current is not null)
                     {
                         @if (IsEditing)
@@ -88,15 +84,18 @@ else
                             else { <span class="notion-save-status saved"><i aria-hidden="true"></i><span class="notion-save-label">Udgivet @(_current.PublishedAtUtc?.ToLocalTime().ToString("d. MMM"))</span></span> }
                         }
                         <span class="notion-ai-toggle-slot"></span>
-                        @if (_current is not null)
+                        @if (IsEditing && _current is not null)
                         {
-                            @if (IsEditing)
-                            {
-                                <button type="button" class="action notion-publish-button" aria-label="@(_current.PublishedAtUtc is null ? (_holdId == Guid.Empty ? "Udgiv til LUP" : "Udgiv til holdet") : "Opdatér udgivelsen")" disabled="@(_busy || !_mounted || _status is "connecting" or "offline" or "error")" @onclick="PublishPage">@(_current.PublishedAtUtc is null ? "Udgiv" : "Opdatér")</button>
-                            }
-                            <details class="notion-document-more">
-                                <summary aria-label="Flere sidehandlinger"><UiIcon Name="more" /><span>Mere</span></summary>
-                                <div class="notion-document-menu">
+                            <button type="button" class="action notion-publish-button" aria-label="@(_current.PublishedAtUtc is null ? (_holdId == Guid.Empty ? "Udgiv til LUP" : "Udgiv til holdet") : "Opdatér udgivelsen")" disabled="@(_busy || !_mounted || _status is "connecting" or "offline" or "error")" @onclick="PublishPage">@(_current.PublishedAtUtc is null ? "Udgiv" : "Opdatér")</button>
+                        }
+                        <details class="notion-document-more">
+                            <summary aria-label="Flere sidehandlinger"><UiIcon Name="more" /><span>Mere</span></summary>
+                            <div class="notion-document-menu">
+                        <button type="button" class="notion-sidebar-toggle" aria-controls="notion-sidebar" aria-keyshortcuts="Control+b Meta+b" aria-expanded="@(_sidebarOpen && !_workspaceFocused ? "true" : "false")" aria-label="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" title="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" @onclick="ToggleSidebar"><UiIcon Name="panel" /><span>@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")</span></button>
+                        <button type="button" class="notion-focus-toggle" disabled="@(!SidebarEnhanced)" aria-pressed="@_workspaceFocused.ToString().ToLowerInvariant()" aria-label="@(_workspaceFocused ? "Afslut fokus" : "Fokus")" title="@(_workspaceFocused ? "Gendan sidekolonnerne" : "Skjul sidekolonnerne og fokusér på dokumentet")" @onclick="ToggleWorkspaceFocus"><UiIcon Name="screen" /><span>@(_workspaceFocused ? "Afslut fokus" : "Fokus")</span></button>
+                                <button type="button" aria-haspopup="dialog" aria-keyshortcuts="F1" @onclick="() => _shortcutHelp?.OpenAsync() ?? Task.CompletedTask"><UiIcon Name="keyboard" />Tastaturgenveje</button>
+                                @if (_current is not null)
+                                {
                                     <p class="notion-publication-status">@(_current.PublishedAtUtc is null ? "Kladde" : $"Udgivet {_current.PublishedAtUtc.Value.ToLocalTime():d. MMM HH:mm}")</p>
                                     <nav class="breadcrumbs notion-toolbar-breadcrumbs" aria-label="Brødkrummer"><a href="/notes">Notesbøger</a><span>›</span><a href="@WorkspaceHref()">Undervisning</a><span>›</span><span>@(_holdId == Guid.Empty ? "Teori" : "Holdets indhold")</span></nav>
                                     <button type="button" disabled="@(!_mounted)" @onclick="PresentPage"><UiIcon Name="screen" />Præsenter</button>
@@ -118,9 +117,9 @@ else
                                         <button type="button" disabled="@_busy" @onclick="Retry"><UiIcon Name="loop" />Opdatér siden</button>
                                         @if (CanManageHold) { <a href="@PageHref(_current.PageId, false)"><UiIcon Name="code" />Til kladden</a> }
                                     }
-                                </div>
-                            </details>
-                        }
+                                }
+                            </div>
+                        </details>
                     </div>
                 </div>
                 @PageFeedback
