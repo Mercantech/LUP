@@ -18,6 +18,13 @@
 
     @if (Item.Status != "template")
     {
+        @if (!IsHistorical || Item.EnrollmentCount > Item.ReservedSeats)
+        {
+            <div class="elective-count">
+                <UiIcon Name="people" />
+                <strong>@ElectiveDisplay.EnrollmentLabel(Item)</strong>
+            </div>
+        }
         var period = ElectiveDisplay.Period(Item.StartsOn, Item.EndsOn);
         var enrollmentPeriod = ElectiveDisplay.EnrollmentPeriod(Item.RegistrationOpensOn, Item.RegistrationClosesOn);
         <dl class="elective-facts">
@@ -31,7 +38,14 @@
             }
             @if (!IsHistorical && Item.Capacity is int capacity)
             {
-                <div><dt>Pladser</dt><dd>@Item.EnrollmentCount af @capacity optaget</dd></div>
+                <div>
+                    <dt>Pladser</dt>
+                    <dd>@Item.EnrollmentCount af @capacity optaget</dd>
+                </div>
+            }
+            @if (!IsHistorical && Item.ReservedSeats > 0)
+            {
+                <div><dt>Reserveret uden navn</dt><dd>@Item.ReservedSeats</dd></div>
             }
         </dl>
     }
@@ -68,7 +82,7 @@
     else if (CanManage)
     {
         <div class="elective-actions">
-            <a class="secondary" href="@($"/valgfag?vis=administrer&id={Item.Id:D}&deltagere=true")"><UiIcon Name="people" /> Deltagere (@(Item.EnrollmentCount - Item.ReservedSeats))</a>
+            <a class="secondary" href="@($"/valgfag?vis=administrer&id={Item.Id:D}&deltagere=true")"><UiIcon Name="people" /> Deltagere</a>
         </div>
     }
     else if (Item.CanEnroll || Item.CanWithdraw)

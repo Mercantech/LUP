@@ -1,6 +1,6 @@
 {
-  "date": "2026-11-18",
+  "date": "2026-11-19",
   "title": "Se, hvem der deltager på et valgfag",
-  "description": "Undervisere kan tilføje elever fra Lectio til et valgfagshold og se deltagerlisten. En reserveret plads kan knyttes til en elev. Holdene bruger fagpakkernes forsidebilleder, så de er nemme at kende i oversigten og på deltagerlisten.",
+  "description": "Undervisere kan tilføje elever fra Lectio til et valgfagshold og se deltagerlisten. En reserveret plads kan knyttes til en elev. Holdkortet viser, hvor mange der er tilmeldt. Fagpakkerne viser, hvad du kommer til at bygge og lære.",
   "authors": ["Mathias"]
 }

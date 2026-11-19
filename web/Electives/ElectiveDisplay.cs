@@ -16,6 +16,12 @@ internal static partial class ElectiveDisplay
     public static string DateTime(DateTimeOffset value) =>
         TimeZoneInfo.ConvertTime(value, Copenhagen).ToString("d. MMM yyyy 'kl.' HH:mm", Danish);
 
+    public static string EnrollmentLabel(ElectiveView item)
+    {
+        var enrolled = item.EnrollmentCount - item.ReservedSeats;
+        return enrolled == 1 ? "1 tilmeldt" : $"{enrolled} tilmeldte";
+    }
+
     public static string StartLabel(ElectiveView? offering) => offering switch
     {
         null => "Ingen aktuelle hold",
