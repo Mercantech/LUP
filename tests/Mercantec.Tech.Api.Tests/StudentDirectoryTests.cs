@@ -94,7 +94,7 @@ public sealed class StudentDirectoryTests
             {"students":[
               {"lectioId":"current","name":"På skole","h6":{"name":"Programmering","level":"H2","startDate":"2026-11-19","endDate":"2026-11-19"}},
               {"lectioId":"ended","name":"Afsluttet","h6":{"level":"H1","startDate":"2026-10-01","endDate":"2026-11-18","passed":false},"workplace":{"name":"Firma"}},
-              {"lectioId":"work","name":"På læreplads","workplace":{"name":"Firma","isCurrent":true}},
+              {"lectioId":"work","name":"På læreplads","workplace":{"name":"Firma"},"schoolPeriods":[]},
               {"lectioId":"passed","name":"Bestået","schoolPeriods":[{"name":"Web","level":"H1","endDate":"2026-11-01","passed":true},{"level":"H2","endDate":"2026-11-18","passed":false}]}
             ]}
             """;
@@ -131,6 +131,77 @@ public sealed class StudentDirectoryTests
         Assert.Equal("GF2", after.LastPassedSchoolPeriod);
         Assert.True(after.HasTeacherOverrides);
         Assert.Equal(student, (await fixture.Db.StudentDirectoryDetails.SingleAsync()).UserSub);
+    }
+
+    [Theory]
+    [InlineData("10-11-2026", "20-11-2026", "school")]
+    [InlineData("01-11-2026", "03-11-2026", "workplace")]
+    [InlineData("20-11-2026", "01-12-2026", "workplace")]
+    [InlineData("2026-11-19", "2026-11-19", "school")]
+    public async Task Full_plan_uses_current_period_instead_of_future_capstone_and_Danish_dates(
+        string start, string end, string expectedPlacement)
+    {
+        await using var fixture = await Fixture.Create();
+        fixture.Handler.Students = JsonSerializer.Serialize(new
+        {
+            students = new[] { new
+            {
+                lectioId = "early-period", name = "Elev på H1",
+                h6 = new { name = "H6", startDate = "01-01-2029", endDate = "01-03-2029" },
+                schoolPeriods = new[]
+                {
+                    new { name = "H1", startDate = start, endDate = end },
+                    new { name = "H6", startDate = "01-01-2029", endDate = "01-03-2029" }
+                }
+            } }
+        });
+
+        var student = Assert.Single((await fixture.Service.ListAsync("fixture-token")).Students);
+
+        Assert.Equal(expectedPlacement, student.Placement);
+        Assert.Equal(expectedPlacement == "school" ? "H1" : null, student.CurrentSchoolPeriod);
+        Assert.Null(student.LastPassedSchoolPeriod);
+    }
+
+    [Theory]
+    [InlineData("[]", "workplace")]
+    [InlineData("null", "unknown")]
+    [InlineData("[{\"name\":\"H1\",\"startDate\":\"unknown\",\"endDate\":\"20-11-2026\"}]", "unknown")]
+    public async Task Known_empty_plan_means_workplace_but_unavailable_or_invalid_dates_do_not(string plan, string placement)
+    {
+        await using var fixture = await Fixture.Create();
+        fixture.Handler.Students = "{\"students\":[{\"lectioId\":\"111\",\"name\":\"Elev\",\"schoolPeriods\":" + plan + "}]}";
+
+        var student = Assert.Single((await fixture.Service.ListAsync("fixture-token")).Students);
+
+        Assert.Equal(placement, student.Placement);
+        Assert.Null(student.CurrentSchoolPeriod);
+        Assert.Null(student.LastPassedSchoolPeriod);
+    }
+
+    [Theory]
+    [InlineData("1H", "H1")]
+    [InlineData("2H", "H2")]
+    [InlineData("Data 1h", "H1")]
+    [InlineData("Dt2H", "H2")]
+    [InlineData("H2", "H2")]
+    public async Task Hold_names_identify_the_current_main_period_but_do_not_prove_passing(string holdName, string periodName)
+    {
+        await using var fixture = await Fixture.Create();
+        fixture.Handler.Students = JsonSerializer.Serialize(new
+        {
+            students = new[] { new
+            {
+                lectioId = "111", name = "Elev",
+                schoolPeriods = new[] { new { name = holdName, startDate = "02-11-2026", endDate = "20-11-2026" } }
+            } }
+        });
+
+        var student = Assert.Single((await fixture.Service.ListAsync("fixture-token")).Students);
+
+        Assert.Equal("school", student.Placement);
+        Assert.Equal(periodName, student.CurrentSchoolPeriod);
+        Assert.Null(student.LastPassedSchoolPeriod);
     }
 
     [Fact]

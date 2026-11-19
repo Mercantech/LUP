@@ -149,7 +149,7 @@ else
                                 <th scope="row" class="directory-identity">
                                     <div class="directory-person">
                                         <button type="button" class="directory-photo" aria-label="Se avatar for @student.DisplayName" aria-haspopup="dialog" @onclick="() => OpenAvatar(student)">
-                                            <StudentPhoto @key="(_generation, student.Key)" UserSub="student.UserSub" DisplayName="@student.DisplayName" Size="44" HasCustomPhoto="student.HasCustomPhoto" />
+                                            <StudentPhoto @key="(_generation, student.Key)" UserSub="student.UserSub" LectioId="@student.LectioId" DisplayName="@student.DisplayName" Size="44" HasCustomPhoto="student.HasCustomPhoto" />
                                         </button>
                                         <div><strong>@student.DisplayName</strong>
                                             @if (!string.IsNullOrWhiteSpace(student.ClassName)) { <span class="directory-meta">@student.ClassName</span> }

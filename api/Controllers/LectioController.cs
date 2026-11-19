@@ -3,6 +3,7 @@ using System.Text.Json;
 using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Integrations.Lectio;
 using Mercantec.Tech.Api.Services;
+using Mercantec.Tech.Api.Students;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace Mercantec.Tech.Api.Controllers;
 [Authorize]
 public class LectioController(LectioCollectorClient lectio, MembershipClaimService claims) : ControllerBase
 {
+    private static readonly SemaphoreSlim PhotoNormalization = new(2, 2);
     [HttpGet("me")]
     public Task<IActionResult> Me(CancellationToken ct) =>
         ProxyAsync(() => lectio.GetMeAsync(RequireBearer(), ct), ct);
@@ -71,6 +73,49 @@ public class LectioController(LectioCollectorClient lectio, MembershipClaimServi
         }
 
         return await ProxyAsync(() => lectio.GetStudieplanAsync(elevId, RequireBearer(), ct), ct);
+    }
+
+    [HttpGet("students/{elevId}/photo")]
+    public async Task<IActionResult> StudentPhoto(string elevId, CancellationToken ct)
+    {
+        Response.Headers.CacheControl = "private, no-store";
+        Response.Headers["X-Content-Type-Options"] = "nosniff";
+        if (UserClaims.GetSub(User) is null) return Unauthorized();
+        if (elevId.Length is 0 or > 40 || elevId.Any(c => c is < '0' or > '9'))
+            return BadRequest(new { error = "invalid_lectio_id" });
+        try
+        {
+            var bearer = RequireBearer();
+            if (!UserClaims.IsTeacher(User))
+            {
+                var ownId = await ResolveOwnLectioIdAsync(ct);
+                if (!string.Equals(ownId, elevId, StringComparison.Ordinal)) return Forbid();
+            }
+            var source = await lectio.GetStudentPhotoAsync(elevId, bearer, ct);
+            if (source is null) return NotFound();
+            await PhotoNormalization.WaitAsync(ct);
+            byte[]? image;
+            try { image = await ProfilePhotoImages.NormalizeAsync(source, ct); }
+            finally { PhotoNormalization.Release(); }
+            if (image is null) return StatusCode(502, new { error = "invalid_lectio_photo" });
+            return File(image, "image/jpeg");
+        }
+        catch (UnauthorizedAccessException) { return Unauthorized(new { error = "missing_bearer" }); }
+        catch (LectioCollectorException ex)
+        {
+            return ex.StatusCode switch
+            {
+                401 => Unauthorized(),
+                403 => Forbid(),
+                404 => NotFound(),
+                _ => StatusCode(503, new { error = "lectio_photo_unavailable" })
+            };
+        }
+        catch (HttpRequestException) { return StatusCode(503, new { error = "lectio_photo_unavailable" }); }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return StatusCode(503, new { error = "lectio_photo_unavailable" });
+        }
     }
 
     [HttpGet("holds/tracked")]
