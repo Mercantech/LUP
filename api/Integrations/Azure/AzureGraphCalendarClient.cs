@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using AngleSharp.Html.Parser;
 using Mercantec.Tech.Contracts;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,10 @@ public sealed class AzureGraphCalendarClient(
     ILogger<AzureGraphCalendarClient> logger)
 {
     private const string EventFields = "id,subject,start,end,isAllDay,location,sensitivity,isOnlineMeeting,onlineMeeting,webLink,isCancelled,showAs";
+
+    private static readonly Regex DuplicateMailtoAnnotation = new(
+        @"(?<address>[^@\s<>]+@[^@\s<>]+)[ \t]*<mailto:(?<target>[^<>\s]+)>",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -117,7 +122,7 @@ public sealed class AzureGraphCalendarClient(
             }
         }
 
-        return new TeacherCalendarEventDetails(summary, DescriptionText(item.Body) ?? NullIfEmpty(item.BodyPreview),
+        return new TeacherCalendarEventDetails(summary, DescriptionText(item.Body) ?? PlainDescriptionText(item.BodyPreview),
             MapPerson(item.Organizer?.EmailAddress), attendees, hideAttendees);
     }
 
@@ -133,7 +138,7 @@ public sealed class AzureGraphCalendarClient(
         if (body?.Content is not { } content || string.IsNullOrWhiteSpace(content))
             return null;
         if (string.Equals(body.ContentType, "text", StringComparison.OrdinalIgnoreCase))
-            return content.Trim();
+            return PlainDescriptionText(content);
         if (!string.Equals(body.ContentType, "html", StringComparison.OrdinalIgnoreCase))
             return null;
 
@@ -148,6 +153,19 @@ public sealed class AzureGraphCalendarClient(
 
         return NullIfEmpty(string.Join('\n',
             documentBody.TextContent.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)));
+    }
+
+    private static string? PlainDescriptionText(string? value)
+    {
+        if (NullIfEmpty(value) is not { } text)
+            return null;
+
+        // Outlook's plain-text conversion can append the link target to an already visible email address.
+        return DuplicateMailtoAnnotation.Replace(text, static match =>
+        {
+            var address = match.Groups["address"].Value;
+            return address == match.Groups["target"].Value ? address : match.Value;
+        });
     }
 
     private async Task<string> GetAccessTokenAsync(CancellationToken ct)
