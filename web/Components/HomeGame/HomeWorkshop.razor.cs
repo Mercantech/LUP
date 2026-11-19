@@ -61,6 +61,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     private string? _sellId;
     private string? _previewError;
     private string? _error;
+    private const string LayoutSaved = "Indretningen er gemt.";
     private string? _notice;
     private string _itemName = "";
     private string _itemAlias = "";
@@ -538,7 +539,7 @@ public partial class HomeWorkshop : IAsyncDisposable
             "undo" => "Seneste byggehandling fortrudt.",
             "sell" when _state.Gold > previousGold => "Genstanden er solgt. Guldet er tilbage på din LUP-saldo.",
             "sell" => "Genstanden er fjernet fra dit hjem.",
-            _ => "Indretningen er gemt."
+            _ => LayoutSaved
         };
         if (_state.Gold != previousGold)
             await World.ReloadAvatarProfileAsync();

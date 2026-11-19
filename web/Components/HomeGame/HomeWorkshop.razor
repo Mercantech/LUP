@@ -30,7 +30,8 @@ else
                 }
             </div>
         </header>
-        @if (_error is not null || _notice is not null)
+        <span class="save-announcement" role="status">@(_notice == LayoutSaved ? LayoutSaved : null)</span>
+        @if (_error is not null || (_notice is not null && _notice != LayoutSaved))
         {
             <div class="home-message @(_error is not null ? "failure" : "")" role="@(_error is not null ? "alert" : "status")">
                 <span>@(_error ?? _notice)</span>

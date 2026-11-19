@@ -118,7 +118,12 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
         const expected = await object(id).getAttribute('data-item-id');
         if (await inspector.isVisible() && await inspector.getAttribute('data-item-id') === expected) return;
         if (fromList) await page.locator(`.items li[data-definition="${id}"] .item-label`).click();
-        else await object(id).locator('.object-handle').click();
+        else {
+            const handle = object(id).locator('.object-handle');
+            await handle.scrollIntoViewIfNeeded();
+            const point = await exposedPoint(handle);
+            await page.mouse.click(point.x, point.y);
+        }
         await inspector.and(page.locator(`[data-item-id="${expected}"]`)).waitFor({state:'visible'});
     };
 
@@ -274,7 +279,10 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     await checkArt('flip_sign','flip-sign');
     await button(page,'Indret').click();
     await button(page,'I boligen').click();
-    await select('planter_pump', true); // The embedded probe shares this pot's hit area.
+    await select('soil_probe');
+    await page.keyboard.press('Escape');
+    await inspector.waitFor({state:'hidden'});
+    await select('planter_pump');
     await device.getByTestId('device-off').click();
     const dry = Number(await object('soil_probe').getAttribute('data-moisture'));
     assert.equal(await object('planter_pump').locator('.water-drop').count(),0);

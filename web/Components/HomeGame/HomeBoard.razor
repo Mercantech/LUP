@@ -127,9 +127,9 @@
                 {
                     <span class="water-drop"></span>
                 }
-                @if (item.DefinitionId == HomeCatalog.MoistureId && Moisture(item) is int percent)
+                @if (Ghost is not null)
                 {
-                    <span class="moisture-reading">@percent<span>%</span></span>
+                    @MoistureReading(item)
                 }
             </div>
         }
@@ -150,7 +150,14 @@
                     aria-pressed="@(Selected?.Id == item.Id ? "true" : "false")"
                     aria-haspopup="@(ItemActions is null ? null : "dialog")"
                     aria-expanded="@(ItemActions is null ? null : ShowItemActions && Selected?.Id == item.Id ? "true" : "false")"
-                    @onclick="() => InspectItemAsync(item)"></button>
+                    @onclick="() => InspectItemAsync(item)">@MoistureReading(item)</button>
+        }
+    </text>;
+
+    private RenderFragment MoistureReading(HomeItem item) => @<text>
+        @if (item.DefinitionId == HomeCatalog.MoistureId && Moisture(item) is int percent)
+        {
+            <span class="moisture-reading" aria-hidden="true">@percent<span>%</span></span>
         }
     </text>;
 

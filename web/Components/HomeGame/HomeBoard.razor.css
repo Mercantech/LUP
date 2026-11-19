@@ -303,6 +303,10 @@
     left: calc(50% + var(--port-offset) * var(--tile-width));
     bottom: calc(var(--foot-inset) + .44 * var(--tile-width));
 }
+/* Place the plant's focus outline on the pot, clear of its mounted probe.
+   The upper half of the sprite still accepts a click on the leaves or spout. */
+.planter_pump .floor-visual .object-handle { top: 50%; }
+.planter_pump .object-handle::before { content: ""; position: absolute; inset: -100% 0 100%; }
 .moisture-reading {
     position: absolute; bottom: 83%; left: 68%; padding: .10em .28em;
     background: #f7f1da; color: #16473f;
@@ -311,6 +315,11 @@
     font-variant-numeric: tabular-nums;
 }
 .moisture-reading span { font-size: .78em; }
+.object-handle .moisture-reading::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    min-width: 24px; min-height: 24px; width: 100%; height: 100%;
+    transform: translate(-50%, -50%);
+}
 .water-drop {
     position: absolute; left: 57%; bottom: 79%; width: clamp(4px, .75cqw, 8px);
     aspect-ratio: .7; border-radius: 65% 40% 65% 50%;
