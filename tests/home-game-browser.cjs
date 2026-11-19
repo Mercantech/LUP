@@ -65,7 +65,7 @@ async function handler(route) {
     if (endpoint === "/build") {
         assert.equal(body.revision, state.layout.revision);
         const { action } = body;
-        const previous = structuredClone({ items: state.layout.items, gold: state.gold });
+        const previous = structuredClone({ items: state.layout.items, gold: state.gold, floorStyle: state.layout.floorStyle, wallpaperStyle: state.layout.wallpaperStyle });
         if (action.kind === "place") {
             state.layout.items.find(item => item.id === action.itemId).placement = action.placement;
         } else if (action.kind === "buy") {
@@ -73,9 +73,13 @@ async function handler(route) {
             const goldPaid = state.isTeacherSandbox ? 0 : 90;
             state.layout.items.push(piece("sofa", "sofa_basic", "sofa_basic", "Sofa", action.placement, { starter: false, goldPaid }));
             state.gold -= goldPaid;
+        } else if (["floorStyle", "wallpaperStyle"].includes(action.kind)) {
+            state.layout[action.kind] = action.value;
         } else if (action.kind === "undo") {
             state.layout.items = undo.items;
             state.gold = undo.gold;
+            state.layout.floorStyle = undo.floorStyle;
+            state.layout.wallpaperStyle = undo.wallpaperStyle;
         } else throw new Error(`Unexpected build action ${action.kind}`);
         undo = action.kind === "undo" ? null : previous;
         state.canUndo = undo !== null;
@@ -174,7 +178,7 @@ async function main() {
         const board = page.locator(".home-board");
         await board.waitFor();
         const tile = (x, y) => board.locator(`[data-x="${x}"][data-y="${y}"]`);
-        assert.equal(await board.getByRole("button").count(), 120);
+        assert.equal(await board.locator("button[data-x][data-y]").count(), 120);
         await board.locator('.resident[data-avatar-id="lupp"]').waitFor();
         assert.equal(await page.locator(".task-label").count(), 0);
         if (output) await page.screenshot({ path: path.join(output, "home-initial.png"), fullPage: true });
@@ -189,10 +193,14 @@ async function main() {
         await page.getByRole("listitem").filter({ hasText: "Sofa" }).getByRole("button").click();
         await tile(6, 3).hover();
         await page.getByText(/optager allerede feltet/i).waitFor();
-        assert.equal(await page.getByRole("button", { name: "Placér", exact: true }).isDisabled(), true);
+        assert.equal(await page.getByTestId("confirm-placement").isDisabled(), true);
         assert.equal(state.gold, 100);
         await tile(1, 1).click();
-        await page.getByText("Køb og placering gemt.").waitFor();
+        assert.equal(state.gold, 100);
+        const purchase = page.getByTestId("confirm-placement");
+        assert.equal(await purchase.innerText(), "Placér · 90 guld");
+        await purchase.click();
+        await page.getByText("Køb og placering gemt. Din saldo er 10 guld.").waitFor();
         assert.equal(state.gold, 10);
         await page.getByRole("button", { name: "Fortryd" }).click();
         await page.getByText("Seneste byggehandling fortrudt.").waitFor();
@@ -227,16 +235,24 @@ async function main() {
         assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("378 lux"));
         await page.getByRole("button", { name: "Luk genafspilning" }).click();
         await page.setViewportSize({ width: 390, height: 844 });
-        await page.getByRole("button", { name: "Rum", exact: true }).click();
         await board.waitFor({ state: "visible" });
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-        await page.getByRole("button", { name: "Værktøjer", exact: true }).click();
         await page.getByTestId("light-panel").waitFor({ state:"visible" });
+        await page.getByText("Vælg en genstand", {exact:true}).click();
+        await page.locator("[data-inspect-alias=desk_lamp]").click();
+        await page.getByTestId("device-off").click();
+        assert.equal(await page.getByTestId("device-inspector").locator(".device-state").innerText(), "Slukket");
+        await page.getByTestId("device-on").click();
+        assert.equal(await page.getByTestId("device-inspector").locator(".device-state").innerText(), "Tændt");
+        assert.match(await page.getByTestId("reading-lux").innerText(), /378/);
+        assert.ok(await board.isVisible());
         if (output) await page.screenshot({ path: path.join(output, "home-mobile.png"), fullPage: true });
         assert.deepEqual(errors, []);
         await context.close();
 
         Object.assign(state, homeGameFixture({ gold: 0, isTeacherSandbox: true, selectedAvatarId:"bip01" }));
+        for (const item of state.layout.items) item.placement = null;
+        state.layout.items.push(piece("blind-starter", "roller_blind", "mit_gardin", "Rullegardin"));
         run = undo = null;
         const teacher = await device(browser, teacherSubject, "Teacher");
         const preview = await teacher.newPage();
@@ -244,8 +260,34 @@ async function main() {
         await preview.getByText("Prøvebolig for undervisere", { exact: true }).waitFor();
         await preview.locator('.resident[data-avatar-id="bip01"]').waitFor();
         assert.equal(await preview.locator(".task-label").count(), 0);
+        assert.equal(await preview.locator(".room-shell [data-item-id]").count(), 0);
+        await preview.getByRole("button", {name:"Gulv og tapet",exact:true}).click();
+        await preview.getByLabel("Gulv", {exact:true}).selectOption("slate");
+        await preview.locator(".room-shell[data-floor=slate]").waitFor();
+        await preview.getByLabel("Tapet", {exact:true}).selectOption("sage");
+        await preview.locator(".room-shell[data-wallpaper=sage]").waitFor();
+        await preview.getByRole("button",{name:"Lager",exact:true}).click();
+        await preview.locator(".items [data-definition=roller_blind]").getByRole("button",{name:"Placér",exact:true}).click();
+        await preview.getByTestId("confirm-placement").click();
+        await preview.locator(".room-shell [data-item-id=blind-starter]").waitFor();
+        await preview.getByRole("button",{name:"Lager",exact:true}).click();
+        await preview.locator(".items [data-definition=desk_basic]").getByRole("button",{name:"Placér",exact:true}).click();
+        await preview.locator('.home-board button[data-x="6"][data-y="3"]').click();
+        await preview.locator(".room-shell [data-item-id=desk]").waitFor();
+        await preview.getByText("Vælg en genstand", {exact:true}).click();
+        await preview.locator("[data-inspect-alias=mit_gardin]").click();
+        const readLux = async () => Number(await preview.getByTestId("reading-lux").getAttribute("data-lux"));
+        await preview.getByTestId("device-off").click();
+        const closedLux=await readLux();
+        await preview.getByTestId("device-on").click();
+        assert.ok(await readLux() > closedLux);
+        assert.match(await preview.locator(".outdoor").innerText(), /40 lux/);
+        await preview.getByTestId("device-inspector").getByText("Se kodeidé", {exact:true}).click();
+        assert.match(await preview.getByTestId("device-inspector").locator("pre").innerText(), /home\.set\("mit_gardin", True\)/);
+        await preview.getByRole("button",{name:"Butik",exact:true}).click();
         await preview.getByRole("listitem").filter({ hasText: "Sofa" }).getByRole("button", { name: "Tilføj gratis" }).click();
         await preview.locator('.home-board [data-x="1"][data-y="1"]').click();
+        await preview.getByRole("button",{name:"Placér gratis",exact:true}).click();
         await preview.getByText("Prøveudstyret er placeret.", { exact: true }).waitFor();
         assert.equal(state.gold, 0);
         assert.equal(state.layout.items.find(item => item.id === "sofa").goldPaid, 0);

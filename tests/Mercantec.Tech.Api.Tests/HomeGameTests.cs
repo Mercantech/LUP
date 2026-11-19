@@ -331,9 +331,17 @@ public sealed partial class HomeGameTests : IAsyncLifetime
     private static async Task<HomeGameState> Prepare(HomeGameController controller)
     {
         var home = Read(await controller.Get(default));
-        var lamp = home.Layout.Items.Single(item => item.DefinitionId == HomeCatalog.LampId);
-        home = Read(await controller.Build(new(Guid.NewGuid(), home.Layout.Revision,
-            new("place", lamp.Id, Placement: new(new(5, 4)))), default));
+        foreach (var (definition, placement) in new (string, HomePlacement)[]
+        {
+            (HomeCatalog.ControllerId, new(new(9, 0), 180, new(9, 0, true))),
+            (HomeCatalog.DeskId, new(new(6, 3))),
+            (HomeCatalog.LampId, new(new(5, 4)))
+        })
+        {
+            var item = home.Layout.Items.Single(item => item.DefinitionId == definition);
+            home = Read(await controller.Build(new(Guid.NewGuid(), home.Layout.Revision,
+                new("place", item.Id, Placement: placement)), default));
+        }
         return Read(await controller.SaveProgram(new(home.Layout.Revision, "python", "import home\nhome.set('desk_lamp', True)"), default));
     }
 

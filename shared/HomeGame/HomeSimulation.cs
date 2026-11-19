@@ -16,6 +16,10 @@ public sealed class HomeSimulation
     private readonly HomeItem[] _sensors;
     private readonly Dictionary<string, IReadOnlyDictionary<HomeCell, int>> _lamps;
     private readonly Dictionary<string, IReadOnlySet<HomeCell>> _presence;
+    private readonly HomeItem? _blind;
+    private readonly IReadOnlyDictionary<HomeCell, int> _windowShare;
+    private readonly Dictionary<string, int> _soilHundredths;
+    private readonly Dictionary<string, string> _probePots;
     private readonly HashSet<string> _powered = new(StringComparer.Ordinal);
     private readonly HashSet<string> _enabledSwitches = new(StringComparer.Ordinal);
     private readonly Dictionary<string, HomeCommitObservation> _deviceCommits = new(StringComparer.Ordinal);
@@ -48,7 +52,8 @@ public sealed class HomeSimulation
     public bool Finished => _fault is not null || Tick >= _scenario.Ticks;
     public bool ControllerFinished => _controllerDone;
 
-    public HomeSimulation(HomeLayout layout, HomeScenario scenario, string runId, HomeCell? avatarStart = null)
+    public HomeSimulation(HomeLayout layout, HomeScenario scenario, string runId, HomeCell? avatarStart = null,
+        bool manualControl = false)
     {
         _layout = layout;
         _scenario = scenario;
@@ -59,14 +64,21 @@ public sealed class HomeSimulation
         _rooms = layout.Grid.Rooms.SelectMany(room => room.Value.Select(cell => (Cell: cell, Room: room.Key)))
             .ToDictionary(pair => pair.Cell, pair => pair.Room);
         var installed = layout.Items.Where(item => item.Placement is not null).ToArray();
-        _controllerDone = !installed.Any(item => item.DefinitionId == HomeCatalog.ControllerId);
+        _controllerDone = !manualControl && !installed.Any(item => item.DefinitionId == HomeCatalog.ControllerId);
         _sensors = installed.Where(item => HomeCatalog.Definition(item.DefinitionId)?.Kind is
-            "daylight" or "presence" or "switch" or "indoorLight").ToArray();
+            "daylight" or "presence" or "switch" or "indoorLight" or "moisture").ToArray();
         _lamps = installed.Where(item => HomeCatalog.Definition(item.DefinitionId)?.Kind == "lamp")
             .ToDictionary(item => item.Alias, item => HomeRules.LightContribution(layout, item), StringComparer.Ordinal);
         _presence = _sensors.Where(item => HomeCatalog.Definition(item.DefinitionId)?.Kind == "presence")
             .ToDictionary(item => item.Alias, item => (IReadOnlySet<HomeCell>)HomeRules.Range(layout, item).ToHashSet(),
                 StringComparer.Ordinal);
+        _blind = installed.FirstOrDefault(item => item.DefinitionId == HomeCatalog.BlindId);
+        _windowShare = WindowDaylightShare(layout, _blind);
+        var pots = installed.Where(item => item.DefinitionId == HomeCatalog.PlanterId)
+            .ToDictionary(item => item.Id, item => item.Alias, StringComparer.Ordinal);
+        _soilHundredths = pots.Values.ToDictionary(alias => alias, _ => 2500, StringComparer.Ordinal);
+        _probePots = _sensors.Where(item => item.DefinitionId == HomeCatalog.MoistureId)
+            .ToDictionary(item => item.Alias, item => pots[item.Placement!.HostId!], StringComparer.Ordinal);
         _events = new(scenario.Events.OrderBy(e => e.Tick));
         for (var i = 0; i < scenario.Windows.Count; i++)
         {
@@ -112,7 +124,7 @@ public sealed class HomeSimulation
                 return Fault(new("UNKNOWN_ALIAS", $"Kodealiasset {command?.Alias} findes ikke i boligen.", []));
             if (target.Placement is null)
                 return Fault(new("DEVICE_NOT_INSTALLED", $"Placér {target.Name} fra lageret.", []));
-            if (!_lamps.ContainsKey(command.Alias) || command.Action != "setPower")
+            if (!HomeCatalog.IsOutput(HomeCatalog.Definition(target.DefinitionId)?.Kind) || command.Action != "setPower")
                 return Fault(new("INVALID_COMMAND", $"{target.Name} understøtter ikke denne kommando.", []));
             final[command.Alias] = command;
         }
@@ -152,8 +164,19 @@ public sealed class HomeSimulation
         foreach (var alias in _powered)
         {
             var definition = HomeCatalog.Definition(_items[alias].DefinitionId)!;
-            var milliWatts = 8000 * definition.BrightnessPercent / 100;
+            var milliWatts = definition.Kind switch
+            {
+                "lamp" => 8000 * definition.BrightnessPercent / 100,
+                "pump" => 2000,
+                _ => 0
+            };
             _energyMicroJ += milliWatts * HomeCatalog.TickMs;
+        }
+        foreach (var alias in _soilHundredths.Keys)
+        {
+            // A running pump adds five percentage points per simulated second. Soil slowly dries otherwise.
+            var change = _powered.Contains(alias) ? 50 : -2;
+            _soilHundredths[alias] = Math.Clamp(_soilHundredths[alias] + change, 0, 10_000);
         }
         Observe();
         if (_step is null && _route.TryDequeue(out var next))
@@ -263,7 +286,7 @@ public sealed class HomeSimulation
         var item = _intention == "read"
             ? _layout.Items.FirstOrDefault(furniture => furniture.Role == HomeCatalog.PrimaryDeskRole)
             : _layout.Items.FirstOrDefault(furniture =>
-                furniture.DefinitionId == HomeCatalog.SofaId && furniture.Placement is not null);
+                HomeCatalog.Definition(furniture.DefinitionId)?.Kind == "relaxing" && furniture.Placement is not null);
         var goals = _intention == "leave"
             ? new[] { _layout.Grid.Entry }
             : item is null ? [] : HomeRules.AccessibleInteractions(_layout, item);
@@ -274,7 +297,7 @@ public sealed class HomeSimulation
             _navigationMessage = _intention switch
             {
                 "read" => "Avataren kan ikke komme frem til skrivebordet.",
-                "relax" => "Avataren kan ikke komme frem til en sofa.",
+                "relax" => "Placér en sofa eller lænestol, som avataren kan komme frem til.",
                 _ => "Avataren kan ikke komme frem til indgangen."
             };
             return;
@@ -311,21 +334,48 @@ public sealed class HomeSimulation
                 "boolean", null, Tick * HomeCatalog.TickMs),
             "indoorLight" => new(item.Id, item.Alias, JsonSerializer.SerializeToElement(LuxAt(item.Placement!.Anchor)),
                 "number", "lux", Tick * HomeCatalog.TickMs),
+            "moisture" => MoistureReading(item),
             _ => new(item.Id, item.Alias, JsonSerializer.SerializeToElement(_daylight),
                 "number", "lux", Tick * HomeCatalog.TickMs)
         }).ToArray();
     }
 
+    private int MoisturePercent(string planterAlias) => (_soilHundredths[planterAlias] + 50) / 100;
+
+    private HomeSensor MoistureReading(HomeItem probe) => new(probe.Id, probe.Alias,
+        JsonSerializer.SerializeToElement(MoisturePercent(_probePots[probe.Alias])), "number", "%", Tick * HomeCatalog.TickMs);
+
+    private IReadOnlyDictionary<HomeCell, int> WindowDaylightShare(HomeLayout layout, HomeItem? blind)
+    {
+        var share = new Dictionary<HomeCell, int>();
+        if (blind?.Placement is not { } window) return share;
+        var room = _rooms[window.Anchor];
+        var walls = HomeRules.ClosedEdges(layout.Grid);
+        var blockers = HomeRules.SightBlockers(layout);
+        foreach (var cell in layout.Grid.Rooms[room])
+        {
+            if (!HomeRules.HasSight(window.Anchor, cell, walls, blockers)) continue;
+            // Percentage of the ambient light coming directly from this window.
+            var distance = Math.Abs(cell.X - window.Anchor.X) + Math.Abs(cell.Y - window.Anchor.Y);
+            share[cell] = Math.Max(20, 90 - 4 * distance);
+        }
+        return share;
+    }
+
     private int LuxAt(HomeCell cell)
     {
         var lux = AmbientAt(cell);
-        foreach (var alias in _powered) lux += _lamps[alias].GetValueOrDefault(cell);
+        foreach (var alias in _powered)
+            if (_lamps.TryGetValue(alias, out var light)) lux += light.GetValueOrDefault(cell);
         return Math.Clamp(lux, 0, 2000);
     }
 
-    private int AmbientAt(HomeCell cell) => _rooms.TryGetValue(cell, out var room)
-        ? _ambientByRoom.GetValueOrDefault(room, _ambient)
-        : _ambient;
+    private int AmbientAt(HomeCell cell)
+    {
+        var ambient = _rooms.TryGetValue(cell, out var room) ? _ambientByRoom.GetValueOrDefault(room, _ambient) : _ambient;
+        if (_blind is null || _powered.Contains(_blind.Alias)) return ambient;
+        return ambient - (ambient * _windowShare.GetValueOrDefault(cell) + 50) / 100;
+    }
 
     private void Observe()
     {
@@ -334,7 +384,7 @@ public sealed class HomeSimulation
             if (Tick < criterion.Window.Start || Tick >= criterion.Window.End) continue;
             if (criterion.Kind == "comfort" && (_activity != "reading" || _avatar is null)) continue;
             criterion.Samples++;
-            if (criterion.Kind == "off" ? _powered.Count == 0 : LuxAt(_avatar!.Value) is >= 300 and <= 600)
+            if (criterion.Kind == "off" ? !_powered.Any(_lamps.ContainsKey) : LuxAt(_avatar!.Value) is >= 300 and <= 600)
                 criterion.Matched++;
         }
     }
@@ -352,9 +402,10 @@ public sealed class HomeSimulation
         return new(Tick, Tick * HomeCatalog.TickMs, _avatar, _activity, _daylight, AmbientAt(_avatar ?? _layout.Grid.Entry),
             lux, comfort,
             _energyMicroJ, _enabledSwitches.Contains(PrimarySwitchAlias()), _powered.Order(StringComparer.Ordinal).ToArray(),
-            _lastSensors, _lastCommands,
+            _soilHundredths.Count == 0 ? _lastSensors : ReadSensors(), _lastCommands,
             includeLightMap ? HomeRules.FloorCells(_layout.Grid).Select(cell => new HomeLightCell(cell, LuxAt(cell))).ToArray() : [],
-            message, _fault, _deviceCommits.Values.ToArray());
+            message, _fault, _deviceCommits.Values.ToArray(),
+            _soilHundredths.Count == 0 ? null : _soilHundredths.Keys.ToDictionary(alias => alias, MoisturePercent));
     }
 
     public HomeScenarioOutcome Outcome()

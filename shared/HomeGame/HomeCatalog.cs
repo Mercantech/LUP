@@ -15,6 +15,26 @@ public static class HomeCatalog
     public const string PresenceId = "presence_sensor";
     public const string SwitchId = "switch_basic";
     public const string ControllerId = "home_controller";
+    public const string BlindId = "roller_blind";
+    public const string ArmchairId = "armchair";
+    public const string BookcaseId = "bookcase_low";
+    public const string CoffeeTableId = "coffee_table";
+    public const string CorkboardId = "corkboard";
+    public const string SignId = "flip_sign";
+    public const string PlanterId = "planter_pump";
+    public const string MoistureId = "soil_probe";
+    public static HomeEdge WindowEdge { get; } = new(2, 0, true);
+
+    public static IReadOnlyDictionary<string, string> FloorStyles { get; } = new Dictionary<string, string>
+    {
+        ["oak"] = "Egeplanker", ["parquet"] = "Sildebensparket", ["slate"] = "Skifer"
+    };
+    public static IReadOnlyDictionary<string, string> WallpaperStyles { get; } = new Dictionary<string, string>
+    {
+        ["linen"] = "Lyst hør", ["sage"] = "Salviegrøn", ["stripe"] = "Stribet tapet"
+    };
+
+    public static bool IsOutput(string? kind) => kind is "lamp" or "blind" or "sign" or "pump";
 
     public static IReadOnlyList<HomeItemDefinition> Items { get; } = Array.AsReadOnly<HomeItemDefinition>(
     [
@@ -29,7 +49,17 @@ public static class HomeCatalog
         new(DaylightId, "Dagslyssensor", "daylight", "wall", 1, 1, 20),
         new(PresenceId, "Tilstedeværelsessensor", "presence", "wall", 1, 1, 20, Radius: 4),
         new(SwitchId, "Kontakt", "switch", "wall", 1, 1, 10),
-        new(ControllerId, "Hjemmecontroller", "controller", "wall", 1, 1, 0, Purchasable: false)
+        new(ControllerId, "Hjemmecontroller", "controller", "wall", 1, 1, 0, Purchasable: false),
+        new(BlindId, "Rullegardin", "blind", "wall", 1, 1, 35),
+        new(ArmchairId, "Lænestol", "relaxing", "floor", 1, 1, 45, BlocksWalk: true,
+            InteractionCells: [new(0, 1)]),
+        new(BookcaseId, "Lav bogreol", "bookcase", "floor", 2, 1, 50, BlocksWalk: true),
+        new(CoffeeTableId, "Rundt sofabord", "table", "floor", 1, 1, 30, BlocksWalk: true),
+        new(CorkboardId, "Opslagstavle", "corkboard", "wall", 1, 1, 20),
+        new(SignId, "Vendeskilt", "sign", "wall", 1, 1, 25),
+        new(PlanterId, "Plantekasse med pumpe", "pump", "floor", 2, 1, 45, BlocksWalk: true,
+            Ports: new Dictionary<string, HomeCell> { ["soil"] = new(0, 0) }),
+        new(MoistureId, "Jordfugtføler", "moisture", "surface", 1, 1, 15)
     ]);
 
     // Geometry and SDK fixtures. Kept out of the pilot store and inventory.
@@ -55,11 +85,12 @@ public static class HomeCatalog
     {
         return new(1,
         [
-            Starter(DeskId, "reading_desk", new(new(6, 3)), PrimaryDeskRole),
-            Starter(ControllerId, "home_controller", new(new(9, 0), 180, new(9, 0, true))),
-            Starter(LampId, "desk_lamp", new(new(5, 4))),
-            Starter(SofaId, "sofa", new(new(1, 8))),
-            Starter(RugId, "rug", new(new(2, 8))),
+            Starter(DeskId, "reading_desk", PrimaryDeskRole),
+            Starter(ControllerId, "home_controller"),
+            Starter(LampId, "desk_lamp"),
+            Starter(SofaId, "sofa"),
+            Starter(RugId, "rug"),
+            Starter(BlindId, "roller_blind"),
             Starter(DaylightId, "daylight"),
             Starter(PresenceId, "presence"),
             Starter(SwitchId, "auto_enabled")
@@ -67,8 +98,8 @@ public static class HomeCatalog
     }
 
     private static HomeItem Starter(
-        string definition, string alias, HomePlacement? placement = null, string? role = null) =>
-        new(Guid.NewGuid().ToString("N"), definition, alias, Definitions[definition].Name, placement,
+        string definition, string alias, string? role = null) =>
+        new(Guid.NewGuid().ToString("N"), definition, alias, Definitions[definition].Name, null,
             Starter: true, Role: role);
 
     private static HomeGrid CreateStarterGrid()

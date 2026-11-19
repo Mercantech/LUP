@@ -11,6 +11,15 @@ public static partial class HomeRules
     public static HomeBuildResult Apply(
         HomeLayout layout, HomeBuildAction action, HomeCell? avatarCell = null, bool freePurchase = false)
     {
+        if (action.Kind is "floorStyle" or "wallpaperStyle")
+        {
+            var floor = action.Kind == "floorStyle";
+            var styles = floor ? HomeCatalog.FloorStyles : HomeCatalog.WallpaperStyles;
+            if (action.Value is null || !styles.ContainsKey(action.Value))
+                return Reject("INVALID_STYLE", "Vælg en overflade fra udvalget.");
+            var decorated = floor ? layout with { FloorStyle = action.Value } : layout with { WallpaperStyle = action.Value };
+            return new(decorated with { Revision = checked(layout.Revision + 1) }, 0, null);
+        }
         var items = layout.Items.ToList();
         var goldDelta = 0;
         if (action.Kind == "buy")
@@ -70,7 +79,16 @@ public static partial class HomeRules
             }
         }
         var next = layout with { Revision = checked(layout.Revision + 1), Items = NormalizeMounts(items) };
-        return Validate(next, avatarCell) is { } error ? new(null, 0, error) : new(next, goldDelta, null);
+        if (Validate(next, avatarCell) is { } error) return new(null, 0, error);
+        if (action.Kind is ("buy" or "place" or "move" or "rotate") && action.Placement?.Wall == HomeCatalog.WindowEdge)
+        {
+            var mounted = next.Items.Single(item => item.Placement?.Wall == HomeCatalog.WindowEdge);
+            // Older homes could mount an ordinary wall device at this edge. Keep it until the owner moves it.
+            if (mounted.DefinitionId != HomeCatalog.BlindId &&
+                !layout.Items.Any(item => item.Id == mounted.Id && item.Placement?.Wall == HomeCatalog.WindowEdge))
+                return Reject("INVALID_MOUNT", "Vinduet er til rullegardinet. Vælg et frit vægstykke.");
+        }
+        return new(next, goldDelta, null);
     }
 
     public static bool ValidAlias(string? alias) => alias is { Length: > 0 and <= 48 } && AliasPattern().IsMatch(alias);
@@ -119,6 +137,11 @@ public static partial class HomeRules
             hostPlacement.Rotation, HostId: host.Id, PortId: portId);
     }
 
+    public static bool AcceptsPort(string definitionId, HomeItem host, string? portId) =>
+        PortPlacement(host, portId) is not null &&
+        (definitionId == HomeCatalog.MoistureId ? host.DefinitionId == HomeCatalog.PlanterId && portId == "soil"
+            : host.DefinitionId != HomeCatalog.PlanterId);
+
     public static HomeRuleError? Validate(HomeLayout layout, HomeCell? avatarCell = null)
     {
         var cells = new HashSet<(string Layer, HomeCell Cell)>();
@@ -149,15 +172,18 @@ public static partial class HomeRules
                     return new("INVALID_MOUNT", "Vælg en vægkant, og lad enheden vende ind i rummet.", [placement.Anchor]);
                 if (!wallSlots.Add(wall))
                     return new("OCCUPIED", "Vægpladsen har allerede en enhed.", [placement.Anchor]);
+                if (item.DefinitionId == HomeCatalog.BlindId && wall != HomeCatalog.WindowEdge)
+                    return new("INVALID_MOUNT", "Montér rullegardinet på vinduet.", [placement.Anchor]);
                 continue;
             }
 
             if (definition.Layer == "surface")
             {
                 var host = layout.Items.FirstOrDefault(candidate => candidate.Id == placement.HostId);
-                if (host is null || placement.PortId is null || PortPlacement(host, placement.PortId) != placement)
+                if (host is null || !AcceptsPort(item.DefinitionId, host, placement.PortId) ||
+                    PortPlacement(host, placement.PortId) != placement)
                     return new("INVALID_MOUNT", "Vælg en monteringsport på et placeret møbel.", [placement.Anchor]);
-                if (!surfaceSlots.Add((host.Id, placement.PortId)))
+                if (!surfaceSlots.Add((host.Id, placement.PortId!)))
                     return new("OCCUPIED", "Monteringsporten har allerede en enhed.", [placement.Anchor]);
                 continue;
             }

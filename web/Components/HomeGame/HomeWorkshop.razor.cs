@@ -34,7 +34,14 @@ public partial class HomeWorkshop : IAsyncDisposable
     private HomeItem? _ghost;
     private HomeCell _cursor = new(0, 4);
     private string _mode = "test";
-    private string _mobilePane = "plan";
+    private bool _showDevices;
+    private bool _roomCollapsed;
+    private HomeSimulation? _manualSimulation;
+    private HomeWorldSnapshot? _manualSnapshot;
+    private (HomeCell Cell, int Lux)? _beforeLight;
+    private string _exampleChoice = "on";
+    private ElementReference _roomView;
+    private bool _focusPlacement;
     private string _shelf = "stock";
     private string _overlay = "light";
     private string _language = "python";
@@ -68,6 +75,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     {
         get
         {
+            if (_manualSnapshot is { } manual) return manual;
             if (Snapshot is { } snapshot) return snapshot;
             if (_previewLighting is null || !ReferenceEquals(_previewLayout, DisplayLayout))
             {
@@ -84,15 +92,53 @@ public partial class HomeWorkshop : IAsyncDisposable
     private HomeItem? Selected => _state?.Layout.Items.FirstOrDefault(item => item.Id == _selectedId);
     private HomeItem? BoardSelection => _replay is null ? Selected : DisplayLayout.Items.FirstOrDefault(item => item.Id == _selectedId);
     private bool HasDesk => DisplayLayout.Items.Any(item => item.Role == HomeCatalog.PrimaryDeskRole && item.Placement is not null);
-    private string Alias(string definition, string fallback) => DisplayLayout.Items
-        .Where(item => item.DefinitionId == definition).OrderByDescending(item => item.Placement is not null)
-        .ThenByDescending(item => item.Starter).Select(item => item.Alias).FirstOrDefault() ?? fallback;
+    private string Alias(string definition, string fallback) =>
+        Selected is { } selected && selected.DefinitionId == definition ? selected.Alias :
+        DisplayLayout.Items.Where(item => item.DefinitionId == definition).OrderByDescending(item => item.Placement is not null)
+            .ThenByDescending(item => item.Starter).Select(item => item.Alias).FirstOrDefault() ?? fallback;
     private string LampAlias => Alias(HomeCatalog.LampId, "desk_lamp");
     private string DaylightAlias => Alias(HomeCatalog.DaylightId, "daylight");
     private string LampExample => HomeCodeGuide.Lamp(_language, LampAlias);
     private string DaylightExample => HomeCodeGuide.Daylight(_language, LampAlias, DaylightAlias);
 
     private IEnumerable<HomeItemDefinition> ShopItems => HomeCatalog.Items.Where(item => item.Purchasable);
+    private IEnumerable<HomeItem> RoomItems => DisplayLayout.Items.Where(item => item.Placement is not null);
+    private static bool IsOutput(HomeItem item) => HomeCatalog.IsOutput(HomeCatalog.Definition(item.DefinitionId)?.Kind);
+    private static bool IsProgrammable(HomeItem item) => IsOutput(item) || HomeCatalog.Definition(item.DefinitionId)?.Kind is "presence" or "daylight" or "switch" or "moisture" or "indoorLight";
+    private static (string On, string Off, string Active, string Inactive) Labels(string definition) => definition switch
+    {
+        HomeCatalog.BlindId => ("Åbn", "Luk", "Åbent", "Lukket"),
+        HomeCatalog.SignId => ("Vis sol", "Vis måne", "Sol", "Måne"),
+        HomeCatalog.PlanterId => ("Start pumpen", "Stop pumpen", "Vander", "Pumpe stoppet"),
+        _ => ("Tænd", "Sluk", "Tændt", "Slukket")
+    };
+
+    private bool IsOn(HomeItem item) => LightingSnapshot.PoweredAliases.Contains(item.Alias);
+    private string DeviceState(HomeItem item)
+    {
+        if (IsOutput(item)) return IsOn(item) ? Labels(item.DefinitionId).Active : Labels(item.DefinitionId).Inactive;
+        var reading = LightingSnapshot.Sensors.FirstOrDefault(sensor => sensor.Alias == item.Alias);
+        return reading is null ? "" : $"{ValueText(reading.Value)} {reading.Unit}".TrimEnd();
+    }
+
+    private HomeItem? RuleSensor(HomeItem output) => output.DefinitionId switch
+    {
+        HomeCatalog.PlanterId => RoomItems.FirstOrDefault(i => i.DefinitionId == HomeCatalog.MoistureId && i.Placement?.HostId == output.Id),
+        HomeCatalog.SignId => RoomItems.FirstOrDefault(i => i.DefinitionId == HomeCatalog.PresenceId),
+        HomeCatalog.LampId or HomeCatalog.BlindId => RoomItems.FirstOrDefault(i => i.DefinitionId == HomeCatalog.DaylightId),
+        _ => null
+    };
+
+    private string DeviceExample(HomeItem item)
+    {
+        if (!IsOutput(item)) return HomeCodeGuide.SensorExample(_language, item.Alias, item.DefinitionId is HomeCatalog.SwitchId or HomeCatalog.PresenceId);
+        if (_exampleChoice == "rule" && RuleSensor(item) is { } sensor)
+        {
+            var kind = item.DefinitionId switch { HomeCatalog.BlindId => "blind", HomeCatalog.SignId => "sign", HomeCatalog.PlanterId => "pump", _ => "lamp" };
+            return HomeCodeGuide.Rule(_language, item.Alias, sensor.Alias, kind);
+        }
+        return HomeCodeGuide.Output(_language, item.Alias, _exampleChoice != "off");
+    }
     private IEnumerable<HomeItem> ShelfItems => DisplayLayout.Items.Where(item => (item.Placement is null) == (_shelf == "stock"));
     private bool HasSwitch => DisplayLayout.Items.Any(item => item.DefinitionId == HomeCatalog.SwitchId && item.Placement is not null);
     private bool HasController => _state?.Layout.Items.Any(item => item.DefinitionId == HomeCatalog.ControllerId && item.Placement is not null) == true;
@@ -133,6 +179,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     {
         var first = _state is null;
         _state = await Client.LoadAsync(Subject, Token);
+        ResetAudition();
         _conflict = false;
         _reflection = _state.Reflection;
         _helpHold = _state.Classrooms.FirstOrDefault()?.HoldId ?? Guid.Empty;
@@ -142,8 +189,8 @@ public partial class HomeWorkshop : IAsyncDisposable
             {
                 _mode = "build";
                 _shelf = "shop";
-                _mobilePane = "work";
             }
+            else if (!RoomItems.Any()) _mode = "build";
             var suggestedLanguage = _state.Classrooms.FirstOrDefault()?.SuggestedLanguage ?? _state.LastRun?.Language;
             if (suggestedLanguage is not null && Languages.Contains(suggestedLanguage))
                 _language = suggestedLanguage;
@@ -214,18 +261,14 @@ public partial class HomeWorkshop : IAsyncDisposable
         });
     }
 
-    private async Task ChangeModeAsync(string mode)
+    private Task ChangeModeAsync(string mode)
     {
-        if (mode == "build" && IsAdvancing)
-        {
-            await ControlAsync(new("pause"));
-            if (IsAdvancing) return;
-        }
         if (mode != "build") CancelPlacement();
         if (mode != "test") _replay = null;
         _mode = mode;
         _overlay = mode == "build" ? "normal" : "light";
-        _mobilePane = "work";
+        _roomCollapsed = false;
+        return Task.CompletedTask;
     }
 
     private bool CanBuy(HomeItemDefinition definition) => _state!.IsTeacherSandbox || _state.Gold >= definition.Price;
@@ -236,11 +279,20 @@ public partial class HomeWorkshop : IAsyncDisposable
         return CanBuy(definition) ? $"{definition.Price} guld" : $"Mangler {definition.Price - _state.Gold} guld";
     }
 
-    private static string SizeLabel(HomeItemDefinition definition) => definition.Layer == "wall"
-        ? "Monteres på væg" : $"{definition.Width} × {definition.Height} felter";
+    private static string SizeLabel(HomeItemDefinition definition) => definition.Id switch
+    {
+        HomeCatalog.BlindId => "Monteres ved vinduet på bagvæggen",
+        HomeCatalog.MoistureId => "Sættes i en plantekasse",
+        _ when definition.Layer == "wall" => "Monteres på væg",
+        _ => $"{definition.Width} × {definition.Height} felter"
+    };
+    private string PlacementLabel => _placement is { Kind: "buy", DefinitionId: { } id } && HomeCatalog.Definition(id) is { } definition
+        ? _state!.IsTeacherSandbox ? "Placér gratis" : $"Placér · {definition.Price} guld"
+        : "Placér";
 
     private void Select(HomeItem item)
     {
+        if (_selectedId != item.Id) _exampleChoice = "on";
         _selectedId = item.Id;
         _itemName = item.Name;
         _itemAlias = item.Alias;
@@ -250,19 +302,15 @@ public partial class HomeWorkshop : IAsyncDisposable
     private async Task ActivateCellAsync(HomeCell cell)
     {
         VisitCell(cell);
-        if (_replay is not null) return;
         if (_placement is not null)
         {
-            await ConfirmPlacementAsync();
+            if (_placement.Kind != "buy") await ConfirmPlacementAsync();
             return;
         }
         var item = DisplayLayout.Items.LastOrDefault(item => item.Placement is { } placed &&
             (placed.Anchor == cell || HomeRules.Footprint(item).Contains(cell)));
         if (item is null) return;
-        await ChangeModeAsync("build");
-        if (_mode != "build") return;
         Select(item);
-        _shelf = "room";
     }
 
     private void VisitCell(HomeCell cell)
@@ -277,18 +325,65 @@ public partial class HomeWorkshop : IAsyncDisposable
         _selectedId = null;
         _rotation = 0;
         _placement = new("buy", DefinitionId: definition.Id);
-        _mobilePane = "plan";
+        _focusPlacement = true;
+        _cursor = InitialPlacementCell(definition, _cursor);
+        _roomCollapsed = false;
         UpdatePreview();
+    }
+
+    private async Task MoveInspectedAsync(HomeItem item)
+    {
+        await ChangeModeAsync("build");
+        _shelf = "room";
+        StartPlacement(item);
     }
 
     private void StartPlacement(HomeItem item)
     {
         Select(item);
         _rotation = item.Placement?.Rotation ?? 0;
-        _cursor = item.Placement?.Anchor ?? _cursor;
+        _cursor = item.Placement?.Anchor ?? InitialPlacementCell(HomeCatalog.Definition(item.DefinitionId)!, _cursor);
         _placement = new("place", item.Id, item.DefinitionId);
-        _mobilePane = "plan";
+        _focusPlacement = true;
+        _roomCollapsed = false;
         UpdatePreview();
+    }
+
+    private HomeCell InitialPlacementCell(HomeItemDefinition definition, HomeCell current)
+    {
+        if (definition.Id == HomeCatalog.BlindId) return new(HomeCatalog.WindowEdge.X, HomeCatalog.WindowEdge.Y);
+        if (definition.Id == HomeCatalog.MoistureId && RoomItems.FirstOrDefault(i => i.DefinitionId == HomeCatalog.PlanterId &&
+            !RoomItems.Any(probe => probe.Placement?.HostId == i.Id && probe.Placement?.PortId == "soil")) is { } host)
+            return HomeRules.PortPlacement(host, "soil")?.Anchor ?? current;
+        if (definition.Layer == "wall")
+        {
+            var candidate = HomeRules.FloorCells(DisplayLayout.Grid).FirstOrDefault(cell =>
+                HomeRules.FindWall(DisplayLayout, cell) is { } edge && edge != HomeCatalog.WindowEdge &&
+                !RoomItems.Any(i => i.Placement?.Wall == edge));
+            return candidate;
+        }
+        return current;
+    }
+
+    private Task ActivateWallAsync(HomeEdge edge)
+    {
+        var grid = DisplayLayout.Grid;
+        var cell = new HomeCell(Math.Min(edge.X, grid.Columns - 1), Math.Min(edge.Y, grid.Rows - 1));
+        if (_placement is not null && HomeRules.WallRotation(cell, edge) is int rotation)
+        {
+            _cursor = cell;
+            _rotation = rotation;
+            UpdatePreview();
+        }
+        return ActivateCellAsync(cell);
+    }
+
+    private bool CanTurnPreview => _placement is { DefinitionId: { } id } && CanRotate(id, _cursor);
+    private bool CanRotate(string id, HomeCell anchor)
+    {
+        var layer = HomeCatalog.Definition(id)?.Layer;
+        if (layer == "surface" || id == HomeCatalog.BlindId) return false;
+        return layer != "wall" || new[] { 0, 90, 180, 270 }.Count(r => HomeRules.FindWall(DisplayLayout, anchor, r) is not null) > 1;
     }
 
     private Task RotateItemAsync(HomeItem item)
@@ -301,12 +396,20 @@ public partial class HomeWorkshop : IAsyncDisposable
     private void TurnPreview()
     {
         if (_placement is null) return;
-        _rotation = (_rotation + 90) % 360;
+        if (!CanTurnPreview) return;
+        var rotation = _ghost?.Placement?.Rotation ?? _rotation;
+        if (HomeCatalog.Definition(_placement.DefinitionId)?.Layer == "wall")
+        {
+            _rotation = new[] { 90, 180, 270 }.Select(delta => (rotation + delta) % 360)
+                .FirstOrDefault(r => HomeRules.FindWall(DisplayLayout, _cursor, r) is not null, rotation);
+        }
+        else _rotation = (rotation + 90) % 360;
         UpdatePreview();
     }
 
     private void CancelPlacement()
     {
+        _focusPlacement = false;
         _placement = null;
         _ghost = null;
         _previewError = null;
@@ -326,6 +429,9 @@ public partial class HomeWorkshop : IAsyncDisposable
             rotation = mount is { } wall ? HomeRules.WallRotation(_cursor, wall) ?? rotation : rotation;
         }
         var placement = new HomePlacement(_cursor, rotation, mount);
+        if (definition.Id == HomeCatalog.MoistureId && RoomItems.FirstOrDefault(item =>
+                item.DefinitionId == HomeCatalog.PlanterId && HomeRules.Footprint(item).Contains(_cursor)) is { } planter)
+            placement = HomeRules.PortPlacement(planter, "soil") ?? placement;
         _placement = action with { Placement = placement };
         _ghost = new("preview", definition.Id, "", Selected?.Name ?? definition.Name, placement);
         var result = HomeRules.Apply(DisplayLayout, _placement, avatarCell: IsActive ? AvatarCell : null, freePurchase: _state.IsTeacherSandbox);
@@ -347,6 +453,7 @@ public partial class HomeWorkshop : IAsyncDisposable
         var previousGold = _state!.Gold;
         var oldItems = _state!.Layout.Items.Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
         _state = await Client.BuildAsync(Subject, _retryBuild, Token);
+        ResetAudition();
         _retryBuild = null;
         _stale = _run is not null;
         _sellId = null;
@@ -355,7 +462,6 @@ public partial class HomeWorkshop : IAsyncDisposable
             Select(bought);
         if (action.Kind is "place" or "buy")
         {
-            _mobilePane = "work";
             _shelf = "room";
             if (Selected?.DefinitionId is HomeCatalog.LampId or HomeCatalog.PresenceId)
                 _overlay = "range";
@@ -364,7 +470,7 @@ public partial class HomeWorkshop : IAsyncDisposable
         _notice = action.Kind switch
         {
             "buy" when _state.IsTeacherSandbox => "Prøveudstyret er placeret.",
-            "buy" => "Køb og placering gemt.",
+            "buy" => $"Køb og placering gemt. Din saldo er {_state.Gold} guld.",
             "undo" => "Seneste byggehandling fortrudt.",
             "sell" when _state.Gold > previousGold => "Genstanden er solgt. Guldet er tilbage på din LUP-saldo.",
             "sell" => "Genstanden er fjernet fra dit hjem.",
@@ -375,7 +481,15 @@ public partial class HomeWorkshop : IAsyncDisposable
     });
 
     private string SavedSource(string language) => _state?.Drafts.FirstOrDefault(draft => draft.Language == language)?.Source
-        ?? HomeCodeGuide.Lamp(language, LampAlias);
+        ?? InitialSource(language);
+
+    private string InitialSource(string language)
+    {
+        var output = RoomItems.FirstOrDefault(i => i.DefinitionId == HomeCatalog.LampId) ?? RoomItems.FirstOrDefault(IsOutput);
+        return output is not null
+            ? HomeCodeGuide.Output(language, output.Alias, true)
+            : HomeCodeGuide.ReadClock(language);
+    }
     private string DraftSource(string language) => _drafts.GetValueOrDefault(language) ?? SavedSource(language);
     private bool IsDirty() => !string.Equals(Source, SavedSource(_language), StringComparison.Ordinal);
     private Task ChooseLanguageAsync(ChangeEventArgs args)
@@ -474,7 +588,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     {
         await ChangeModeAsync("code");
         if (Source == source) return;
-        if (Source != LampExample &&
+        if ((_state!.Drafts.Any(d => d.Language == _language) || _drafts.ContainsKey(_language)) &&
             !await Js.InvokeAsync<bool>("confirm", Token, "Erstat koden i editoren med den valgte starterkode?"))
             return;
         await EditSourceAsync(source);
@@ -499,6 +613,14 @@ public partial class HomeWorkshop : IAsyncDisposable
     private async ValueTask<IJSObjectReference> ModuleAsync() =>
         _module ??= await Js.InvokeAsync<IJSObjectReference>("import", Token, "./js/home-game.js");
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_focusPlacement || _placement is null) return;
+        _focusPlacement = false;
+        try { await (await ModuleAsync()).InvokeVoidAsync("focusPlacement", Token, _roomView, _cursor.X, _cursor.Y); }
+        catch (JSException) { }
+    }
+
     private Task SaveReflectionAsync() => PerformAsync(async () =>
     {
         _state = await Client.ReflectAsync(Subject, new(_state!.Layout.Revision, _reflection), Token);
@@ -522,7 +644,7 @@ public partial class HomeWorkshop : IAsyncDisposable
         await ChangeModeAsync("build");
         _shelf = "stock";
         if (DisplayLayout.Items.FirstOrDefault(item => item.DefinitionId == HomeCatalog.ControllerId) is { } item)
-            Select(item);
+            StartPlacement(item);
     }
 
     private Task StartAsync(HomeRunStatus? previous = null) => PerformAsync(async () =>
@@ -530,7 +652,7 @@ public partial class HomeWorkshop : IAsyncDisposable
         CancelPlacement();
         _replay = null;
         _overlay = "light";
-        _mobilePane = "work";
+        _roomCollapsed = false;
         if (!HasController)
             throw new HomeGameRequestException("Placér hjemmecontrolleren fra lageret for at køre kode.");
         if (!_state!.RunnerAvailable)
@@ -541,6 +663,8 @@ public partial class HomeWorkshop : IAsyncDisposable
         }
         var language = previous?.Run.Language ?? _language;
         if (IsActive) await SendControlAsync(new("stop"));
+        ResetAudition();
+        _beforeLight = HomeReadingPoint.Measure(DisplayLayout, PreviewSnapshot());
         await SaveLanguageAsync(language, !_state.Drafts.Any(draft => draft.Language == language));
         _run = await Client.StartAsync(Subject, new(_state.Layout.Revision, language, Task: 0, Intent: _intent,
             Assessment: false, ScenarioId: "free", Speed: _speed, RestartRunId: previous?.Run.Id), Token);
@@ -548,6 +672,50 @@ public partial class HomeWorkshop : IAsyncDisposable
         _stale = false;
         Drive();
     });
+
+    private HomeWorldSnapshot PreviewSnapshot()
+    {
+        var sim = new HomeSimulation(DisplayLayout, HomeCatalog.FreeScenario, "room-preview");
+        sim.BeginTick();
+        return sim.Snapshot(includeLightMap: true);
+    }
+
+    private void ResetAudition()
+    {
+        _manualSimulation = null;
+        _manualSnapshot = null;
+        _beforeLight = null;
+    }
+
+    private void TryDevice(HomeItem item, bool value)
+    {
+        if (IsActive || _replay is not null || !IsOutput(item) || item.Placement is null) return;
+        const string id = "manual-preview";
+        if (_manualSimulation is null || _manualSimulation.Finished)
+        {
+            _manualSimulation = new HomeSimulation(DisplayLayout, HomeCatalog.FreeScenario, id, manualControl: true);
+            if (Snapshot is { } last)
+            {
+                _manualSimulation.SetDaylight(last.DaylightLux);
+                // Start the audition with the visible outputs from the latest real run.
+                var first = _manualSimulation.BeginTick();
+                var commands = last.PoweredAliases.Where(alias => RoomItems.Any(i => i.Alias == alias && IsOutput(i)))
+                    .Select(alias => new HomeCommand(alias, "setPower", true)).ToArray();
+                var seedError = _manualSimulation.Commit(new(id, first.Tick, _manualSimulation.NextSequence, commands, 100));
+                if (seedError is not null) { _error = seedError.Message; ResetAudition(); return; }
+                _manualSimulation.AdvanceTick();
+            }
+        }
+        var sim = _manualSimulation;
+        var frame = sim.BeginTick();
+        _beforeLight = HomeReadingPoint.Measure(DisplayLayout, sim.Snapshot(includeLightMap: true));
+        var error = sim.Commit(new(id, frame.Tick, sim.NextSequence, [new(item.Alias, "setPower", value)], 1000));
+        if (error is not null) { _error = error.Message; ResetAudition(); return; }
+        for (int i = 0; i < 10 && !sim.Finished; i++) sim.AdvanceTick();
+        sim.BeginTick();
+        _manualSnapshot = sim.Snapshot(includeLightMap: true);
+        _overlay = "light";
+    }
 
     private async Task ReloadAvailabilityAsync()
     {
@@ -587,6 +755,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     private Task OpenReplayAsync() => PerformAsync(async () =>
     {
         if (_run is not { } run || IsActive) return;
+        ResetAudition();
         _replay = new(await Client.ReplayAsync(Subject, run.Run.Id, Token));
         _replay.Seek(0, 0);
     });

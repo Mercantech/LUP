@@ -8,7 +8,7 @@ public sealed class HomeGameSimulationTests
     [Fact]
     public void Desk_rotation_transforms_the_footprint_and_external_interaction_cells()
     {
-        var desk = HomeCatalog.CreateStarter().Items.Single(item => item.DefinitionId == HomeCatalog.DeskId);
+        var desk = FurnishedFixture().Items.Single(item => item.DefinitionId == HomeCatalog.DeskId);
         var rotated = desk with { Placement = desk.Placement! with { Rotation = 90 } };
 
         Assert.Equal(new HomeCell[] { new(6, 3), new(6, 4) }, HomeRules.Footprint(rotated));
@@ -18,7 +18,7 @@ public sealed class HomeGameSimulationTests
     [Fact]
     public void Invalid_purchase_keeps_the_entry_furniture_access_items_and_coins_unchanged()
     {
-        var layout = HomeCatalog.CreateStarter();
+        var layout = FurnishedFixture();
         var outside = HomeRules.Apply(layout, Buy(HomeCatalog.SofaId, 11, 9));
         var atEntry = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 0, 4));
         var blocksDesk = HomeRules.Apply(layout, Buy(HomeCatalog.SofaId, 6, 4));
@@ -34,13 +34,13 @@ public sealed class HomeGameSimulationTests
             Assert.Equal(0, failed.GoldDelta);
         });
         Assert.Equal(1, layout.Revision);
-        Assert.Equal(8, layout.Items.Count);
+        Assert.Equal(9, layout.Items.Count);
     }
 
     [Fact]
     public void Rug_overlaps_a_sofa_on_its_own_layer_and_does_not_change_navigation()
     {
-        var layout = HomeCatalog.CreateStarter();
+        var layout = FurnishedFixture();
         var sofa = HomeRules.Apply(layout, Buy(HomeCatalog.SofaId, 2, 1));
         var rug = HomeRules.Apply(Assert.IsType<HomeLayout>(sofa.Layout), Buy(HomeCatalog.RugId, 2, 1));
         var duplicateRug = HomeRules.Apply(Assert.IsType<HomeLayout>(rug.Layout), Buy(HomeCatalog.RugId, 3, 1));
@@ -55,7 +55,7 @@ public sealed class HomeGameSimulationTests
     [Fact]
     public void Mounted_fixture_tracks_its_host_through_move_rotate_and_storage()
     {
-        var layout = HomeCatalog.CreateStarter();
+        var layout = FurnishedFixture();
         var desk = layout.Items.Single(item => item.DefinitionId == HomeCatalog.DeskId);
         var sensor = new HomeItem("fixture_light", "fixture_indoor_sensor", "indoor_light", "Lysføler",
             HomeRules.PortPlacement(desk, "right"));
@@ -76,7 +76,7 @@ public sealed class HomeGameSimulationTests
     [Fact]
     public void Presence_includes_radius_boundary_and_wall_blocks_sight()
     {
-        var layout = HomeCatalog.CreateStarter();
+        var layout = FurnishedFixture();
         var sensor = layout.Items.Single(item => item.DefinitionId == HomeCatalog.PresenceId)
             with { Placement = new(new(2, 2)) };
         Assert.Contains(new HomeCell(6, 2), HomeRules.Range(layout, sensor));
@@ -92,7 +92,7 @@ public sealed class HomeGameSimulationTests
     [Fact]
     public void Supercover_blocks_light_and_presence_through_a_corner_touch()
     {
-        var layout = HomeCatalog.CreateStarter();
+        var layout = FurnishedFixture();
         var cabinet = new HomeItem("cabinet", "fixture_cabinet", "cabinet", "Skab", new(new(2, 3)));
         var blockedByCell = layout with { Items = [.. layout.Items, cabinet] };
         var blockedByEdge = layout with
@@ -157,7 +157,7 @@ public sealed class HomeGameSimulationTests
     [Fact]
     public void Breadth_first_navigation_chooses_north_then_east_and_keeps_the_source_for_five_ticks()
     {
-        var layout = HomeCatalog.CreateStarter();
+        var layout = FurnishedFixture();
         Assert.Equal(new HomeCell[] { new(0, 4), new(0, 3), new(1, 3) },
             HomeRules.FindPath(layout, new(0, 4), [new(1, 3)]));
         var simulation = new HomeSimulation(layout, HomeCatalog.FreeScenario, "walking");
@@ -223,7 +223,7 @@ public sealed class HomeGameSimulationTests
     [Fact]
     public void Aliases_are_unique_including_storage_and_survive_cosmetic_renaming()
     {
-        var layout = HomeCatalog.CreateStarter();
+        var layout = FurnishedFixture();
         var result = HomeRules.Apply(layout, Buy(HomeCatalog.LampId, 4, 2));
         var next = Assert.IsType<HomeLayout>(result.Layout);
         var lamp = next.Items.Single(item => item.Alias == HomeCatalog.LampId);
@@ -270,7 +270,7 @@ public sealed class HomeGameSimulationTests
     [Fact]
     public void Device_placement_stays_valid_for_existing_simulation_fixtures()
     {
-        var home = HomeCatalog.CreateStarter();
+        var home = FurnishedFixture();
         var deskId = home.Items.Single(item => item.Role == HomeCatalog.PrimaryDeskRole).Id;
         var lightId = home.Items.Single(item => item.DefinitionId == HomeCatalog.LampId).Id;
         var daylight = home.Items.Single(item => item.DefinitionId == HomeCatalog.DaylightId);
@@ -344,7 +344,7 @@ public sealed class HomeGameSimulationTests
 
     private static HomeLayout ReferenceLayout()
     {
-        var home = HomeCatalog.CreateStarter();
+        var home = FurnishedFixture();
         home = Place(home, HomeCatalog.LampId, new(new(5, 4)));
         home = Place(home, HomeCatalog.DaylightId, new(new(7, 0), 180, new(7, 0, true)));
         home = Place(home, HomeCatalog.PresenceId, new(new(6, 0), 180, new(6, 0, true)));
@@ -352,9 +352,20 @@ public sealed class HomeGameSimulationTests
             with { LayoutVersion = "reference_home_v1" };
     }
 
+    // Preserve the arrangement of homes saved before empty rooms became the default.
+    private static HomeLayout FurnishedFixture()
+    {
+        var home = HomeCatalog.CreateStarter();
+        home = Place(home, HomeCatalog.ControllerId, new(new(9, 0), 180, new(9, 0, true)));
+        home = Place(home, HomeCatalog.DeskId, new(new(6, 3)));
+        home = Place(home, HomeCatalog.LampId, new(new(5, 4)));
+        home = Place(home, HomeCatalog.SofaId, new(new(1, 8)));
+        return Place(home, HomeCatalog.RugId, new(new(2, 8))) with { Revision = 1 };
+    }
+
     private static HomeLayout MovedDeskLayout()
     {
-        var home = Place(HomeCatalog.CreateStarter(), HomeCatalog.DeskId, new(new(2, 6)));
+        var home = Place(FurnishedFixture(), HomeCatalog.DeskId, new(new(2, 6)));
         return Place(home, HomeCatalog.LampId, new(new(3, 7))) with { LayoutVersion = "p02_reference_home_v1" };
     }
 

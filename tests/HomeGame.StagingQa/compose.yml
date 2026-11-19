@@ -1,4 +1,4 @@
-name: stage-hjem-workshop
+name: ${LUP_HOME_QA_PROJECT:-stage-hjem-workshop}
 
 services:
   issuer:

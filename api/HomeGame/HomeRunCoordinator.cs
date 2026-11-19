@@ -458,7 +458,15 @@ public sealed class HomeRunCoordinator(IServiceScopeFactory scopes, HomeRunnerCl
     {
         if (item.Placement is null) return "uninstalled";
         var kind = HomeCatalog.Definition(item.DefinitionId)?.Kind;
-        return kind is "lamp" or "daylight" or "presence" or "switch" ? kind : "unsupported";
+        // The v1 wire protocol identifies a boolean setPower output as "lamp" and
+        // accepts "brightness" for numeric reads. The simulator owns device-specific effects and units.
+        if (HomeCatalog.IsOutput(kind)) return "lamp";
+        return kind switch
+        {
+            "moisture" or "indoorLight" => "brightness",
+            "daylight" or "presence" or "switch" => kind,
+            _ => "unsupported"
+        };
     }
 
     private sealed class LiveRun(Guid subject, HomeStartRunRequest request, HomeLayout layout,

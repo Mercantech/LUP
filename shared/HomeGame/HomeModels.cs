@@ -35,7 +35,8 @@ public sealed record HomeItem(
     string? Role = null);
 
 public sealed record HomeLayout(
-    int Revision, IReadOnlyList<HomeItem> Items, HomeGrid Grid, string LayoutVersion = HomeCatalog.StarterLayoutId);
+    int Revision, IReadOnlyList<HomeItem> Items, HomeGrid Grid, string LayoutVersion = HomeCatalog.StarterLayoutId,
+    string FloorStyle = "oak", string WallpaperStyle = "linen");
 
 public sealed record HomeItemDefinition(
     string Id,
@@ -133,7 +134,8 @@ public sealed record HomeWorldSnapshot(
     IReadOnlyList<HomeLightCell> LightMap,
     string? Message,
     HomeRuleError? Error,
-    IReadOnlyList<HomeCommitObservation>? DeviceCommits = null);
+    IReadOnlyList<HomeCommitObservation>? DeviceCommits = null,
+    IReadOnlyDictionary<string, int>? SoilMoisture = null);
 
 public sealed record HomeCriterion(
     string Id, string Title, int Samples, int Matched, int MinSamples, int RequiredPercent, bool Passed);

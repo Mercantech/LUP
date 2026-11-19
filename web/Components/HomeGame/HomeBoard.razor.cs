@@ -22,8 +22,11 @@ public partial class HomeBoard
     [Parameter] public int Zoom { get; set; } = 100;
     [Parameter] public bool InvalidPreview { get; set; }
     [Parameter] public bool ReduceMotion { get; set; }
+    [Parameter] public bool ShowDevices { get; set; }
     [Parameter] public EventCallback<HomeCell> Visit { get; set; }
     [Parameter] public EventCallback<HomeCell> Activate { get; set; }
+    [Parameter] public EventCallback<HomeItem> Inspect { get; set; }
+    [Parameter] public EventCallback<HomeEdge> ActivateWall { get; set; }
     [Parameter] public EventCallback Turn { get; set; }
     [Parameter] public EventCallback Cancel { get; set; }
 
@@ -55,12 +58,40 @@ public partial class HomeBoard
     private IJSObjectReference? _module;
     private IJSObjectReference? _lighting;
 
+    private bool MountingWall => Ghost is not null && HomeCatalog.Definition(Ghost.DefinitionId)?.Layer == "wall";
+
+    private IEnumerable<HomeEdge> MountableWalls => Layout.Grid.Walls
+        .Where(boundary => !boundary.Open).Select(boundary => boundary.Edge)
+        .Where(edge => (edge == HomeCatalog.WindowEdge) == (Ghost?.DefinitionId == HomeCatalog.BlindId));
+
+    private static bool IsOnBackWall(HomeItem item) => item.Placement?.Wall is { Horizontal: true, Y: 0 };
+
+    private HomeCell WallCell(HomeEdge edge)
+    {
+        var inside = new HomeCell(edge.X, edge.Y);
+        if (HomeRules.OnFloor(Layout.Grid, inside)) return inside;
+        return edge.Horizontal ? new(edge.X, edge.Y - 1) : new(edge.X - 1, edge.Y);
+    }
+
+    private static string WallFace(HomeEdge edge, HomeCell cell) =>
+        edge.Horizontal ? (edge.Y == cell.Y ? "back" : "front") : (edge.X == cell.X ? "left" : "right");
+
+    private Task ChooseWallAsync(HomeEdge edge) => ActivateWall.HasDelegate
+        ? ActivateWall.InvokeAsync(edge) : Activate.InvokeAsync(WallCell(edge));
+
+    private Task InspectItemAsync(HomeItem item) => Inspect.HasDelegate
+        ? Inspect.InvokeAsync(item) : Activate.InvokeAsync(item.Placement!.Anchor);
+
+    private static bool IsProgrammable(HomeItem item) => HomeCatalog.Definition(item.DefinitionId)?.Kind is
+        "lamp" or "blind" or "sign" or "pump" or "moisture" or "daylight" or "presence" or "switch" or "indoorLight";
+
     private IEnumerable<HomeItem> VisibleItems
     {
         get
         {
             foreach (var item in Layout.Items)
-                if (item.Placement is not null) yield return item;
+                if (item.Placement is not null && !(Ghost is not null && Selected?.Id == item.Id
+                    && Ghost.DefinitionId == item.DefinitionId)) yield return item;
             if (Ghost?.Placement is not null) yield return Ghost;
         }
     }
@@ -124,15 +155,20 @@ public partial class HomeBoard
         _ => ""
     };
 
-    private static string ObjectStyle(HomeItem item)
+    private string ObjectStyle(HomeItem item)
     {
-        var cells = Cells(item);
+        // A probe is embedded in the pot. A rotating two-cell planter can move
+        // its soil port to the far tile, so draw both against the host's bounds.
+        var host = item.DefinitionId == HomeCatalog.MoistureId && item.Placement?.HostId is { } hostId
+            ? Layout.Items.FirstOrDefault(candidate => candidate.Id == hostId && candidate.Placement is not null) : null;
+        var cells = Cells(host ?? item);
         var x = cells.Min(cell => cell.X);
         var y = cells.Min(cell => cell.Y);
         var bottom = cells.Max(cell => cell.Y);
         var width = cells.Max(cell => cell.X) - x + 1;
         var height = bottom - y + 1;
-        return $"{CellPosition(new(x, y))};--w:{width};--h:{height};--depth:{10 + bottom * 2};--angle:{item.Placement!.Rotation}deg";
+        var layerOffset = item.Placement!.HostId is null ? 0 : 4;
+        return $"{CellPosition(new(x, y))};--w:{width};--h:{height};--depth:{10 + bottom * 2 + layerOffset};--angle:{item.Placement.Rotation}deg";
     }
 
     private static string CellPosition(HomeCell cell) => $"--x:{cell.X};--y:{cell.Y}";
@@ -159,6 +195,7 @@ public partial class HomeBoard
         if (item is not null) details.Add(item.Name);
         if (cell == Avatar) details.Add($"Din avatar: {Character.Name}");
         if (cell == Layout.Grid.Entry) details.Add("Indgang");
+        if (cell == WallCell(HomeCatalog.WindowEdge)) details.Add("Vindue på bagvæggen");
         if (Mode == "light" && lux is not null) details.Add($"{lux} lux");
         if (_range.Contains(cell)) details.Add("Inden for rækkevidde");
         if (Mode == "walk" && _blocked.Contains(cell)) details.Add("Blokeret");
@@ -168,6 +205,40 @@ public partial class HomeBoard
     }
 
     private bool IsPowered(HomeItem item) => Snapshot?.PoweredAliases.Contains(item.Alias) == true;
+
+    private string PowerAttribute(HomeItem item) => IsPowered(item) ? "true" : "false";
+
+    private string ObjectClass(HomeItem item) => string.Join(' ', new[]
+    {
+        item.DefinitionId,
+        item.Id == Selected?.Id ? "selected" : "",
+        IsPowered(item) ? "powered" : "",
+        item == Ghost ? "ghost" : ""
+    });
+
+    private int? Moisture(HomeItem item)
+    {
+        if (item.DefinitionId == HomeCatalog.PlanterId && Snapshot?.SoilMoisture is { } levels
+            && levels.TryGetValue(item.Alias, out var level)) return level;
+        if (item.DefinitionId == HomeCatalog.MoistureId && Snapshot?.Sensors.FirstOrDefault(sensor =>
+                sensor.Alias == item.Alias)?.Value is { ValueKind: System.Text.Json.JsonValueKind.Number } value
+            && value.TryGetInt32(out var reading)) return reading;
+        return null;
+    }
+
+    private string ObjectLabel(HomeItem item)
+    {
+        var state = item.DefinitionId switch
+        {
+            HomeCatalog.BlindId => IsPowered(item) ? "Åbent" : "Lukket",
+            HomeCatalog.LampId => IsPowered(item) ? "Tændt" : "Slukket",
+            HomeCatalog.SignId => IsPowered(item) ? "Sol" : "Måne",
+            HomeCatalog.PlanterId => IsPowered(item) ? "Vander" : "Pumpe slukket",
+            HomeCatalog.MoistureId when Moisture(item) is int percent => $"{percent} procent jordfugt",
+            _ => null
+        };
+        return state is null ? item.Name : $"{item.Name}. {state}";
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

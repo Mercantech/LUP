@@ -24,6 +24,8 @@ public sealed class HomeReadingPointTests
     public void A_seated_reader_uses_the_measured_avatar_position_even_if_another_desk_cell_is_closer_to_the_entry()
     {
         var layout = HomeCatalog.CreateStarter();
+        var desk = layout.Items.Single(item => item.Role == HomeCatalog.PrimaryDeskRole);
+        layout = HomeRules.Apply(layout, new("place", desk.Id, Placement: new(new(6, 3)))).Layout!;
         var atDesk = new HomeCell(7, 4);
         var sim = new HomeSimulation(layout, HomeCatalog.FreeScenario, "seated-reader");
         var reading = sim.Snapshot() with { Activity = "reading", AvatarCell = atDesk, AvatarLux = 368 };

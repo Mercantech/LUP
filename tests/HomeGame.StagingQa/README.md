@@ -2,7 +2,7 @@
 
 Denne test bruger de samme API- og webimages som kandidaten til udgivelse. API'ets almindelige startup kører EF-migreringer på en frisk PostgreSQL-database. Test-issuerens RS256-token valideres af API'ets almindelige HTTPS OIDC/JWKS-konfiguration, og alle spil-, quest- og rettighedskontroller kører gennem rigtige HTTP-kald. Browseren får hverken mockede API-svar eller adgang til produktionsdata.
 
-Compose-projektet hedder `stage-hjem-workshop`. Database, web, browser og testissuer bruger ét internt netværk med egne volumes. Ingen service publicerer en hostport. Kun API'et tilsluttes desuden `lup-home-runner-control` og får read-only adgang til den særskilte worker-konfiguration `lup-hjem-stage-connection-20261118`.
+Compose-projektet hedder som standard `stage-hjem-workshop`. Med `LUP_HOME_QA_PROJECT=stage-hjem-indretning` og et ledigt `LUP_HOME_QA_SUBNET` kan indretningen prøves med egne testvolumes. Database, web, browser og testissuer deler et internt netværk. Kun API'et tilsluttes desuden `lup-home-runner-control` og får læseadgang til den særskilte worker-konfiguration `lup-hjem-stage-connection-20261118`.
 
 ## Forudsætninger
 
@@ -28,9 +28,9 @@ Det forventede fælles releasefingerprint kan sættes med `HOME_QA_EXPECTED_REVI
 
 ## Dækning
 
-En syntetisk elev køber BIP-01 og fem tæpper. Et køb til 30 guld afvises ved saldo 20. Efter elevens aflevering og underviserens godkendelse stiger saldoen til 40. Eleven køber endnu et tæppe i spillet og har derefter 10 guld i både boligen og avatarsamlingen.
+En syntetisk elev starter i et tomt rum, indretter en læseplads og køber BIP-01 og fem tæpper. Et køb til 30 guld afvises ved saldo 20. Efter elevens aflevering og underviserens godkendelse stiger saldoen til 40. Eleven køber et rundt sofabord i spillet og har derefter 10 guld i både boligen og avatarsamlingen.
 
-Testen kontrollerer den valgte karakter i rummet efter et skift. Eleven kører lampeeksemplet fra guiden. Både kortets målepunkt og lyspanelet kontrolleres mod simulationens faktiske lux ved læsefeltet. Alle tre sprog gennemløber kodeworkeren. Underviserens prøvebolig afprøves med avatarsamlingens figurer. Testen omfatter også mobilvisning, adgang til hold og afvisning af forsøg på at starte en gammel opgavevurdering.
+Testen kontrollerer den valgte karakter i rummet efter et skift. Eleven kører lampeeksemplet fra guiden. Både kortets målepunkt og lyspanelet kontrolleres mod simulationens faktiske lux ved læsefeltet. I underviserens gratis prøvebolig afprøves også gulv, tapet, vægmontering, rullegardin, møbelrotation og fugtfølerens tilknytning til plantekassen. Kodeworkeren kører Python, C# og Arduino, som styrer gardinet, vendeskiltet og pumpen. Testen omfatter også mobilvisning, adgang til hold og afvisning af gamle opgavevurderinger.
 
 Rapport og billeder ligger i det separate volume `stage-hjem-workshop_qa-artifacts`. Rapporten indeholder fiktive ID'er, anmodningsstier, statuskoder og releasefingerprint. Tokens, privatnøgler og workerens forbindelse skrives ikke til rapporten.
 

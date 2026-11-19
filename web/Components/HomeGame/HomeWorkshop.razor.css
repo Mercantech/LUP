@@ -91,12 +91,32 @@
 .measurements dt { color: var(--home-muted); font-size: .75rem; }
 .measurements dd { margin: 0; font-weight: 650; }
 .replay-controls { margin-block: .6rem; }
-.mobile-workspace { display: none; }
+.room-tools, .manual-actions, .finish-picker, .manual-caption { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.room-tools { margin: 0 0 .6rem; }
+.room-toggle { display: none; }
+.room-devices { margin-bottom: .25rem; }
+.room-devices .secondary { text-align: left; }
+.room-devices small { display: block; font-size: .72rem; font-weight: normal; }
+.home-workshop .secondary[aria-pressed=true] { background: var(--home-accent); color: #fff; }
+.object-panel { padding: .85rem 1rem; color: var(--home-ink); border-inline-start: .2rem solid #79957a; background: #f2f2e5; border-radius: .25rem; margin: 0 0 .85rem; }
+.object-panel header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .35rem; }
+.object-panel h2 { font-size: 1.3rem; margin: 0; line-height: 1.4; overflow-wrap: anywhere; }
+.object-panel code { overflow-wrap: anywhere; }
+.device-state, .manual-caption { font-size: .8rem; }
+.manual-actions { margin: .7rem 0; }
+.manual-actions button { flex: 1; }
+.device-code { border-top: 1px solid var(--home-line); margin-top: .6rem; }
+.text-action { background: transparent; border: 0; color: var(--home-accent); padding: .38rem 0; text-decoration: underline; text-underline-offset: .2em; }
+.first-placement { line-height: 1.45; padding-inline-start: .7rem; border-inline-start: 3px solid #9cae87; }
+.finish-picker { align-items: end; padding-block: 1rem; }
+.finish-picker label { flex: 1 1 8rem; }
 @media (max-width: 800px) {
     .workspace { grid-template-columns: 1fr; }
     .work-panel { border-inline-start: 0; border-top: 1px solid var(--home-line); }
-    .mobile-workspace { display: flex; gap: .35rem; padding: .45rem .6rem 0; }
-    .workspace[data-pane=plan] .work-panel, .workspace[data-pane=work] .plan-panel { display: none; }
+    .room-toggle { display: inline-block; }
+    .room-view.collapsed { display: none; }
+    .room-tools { justify-content: space-between; }
+    .home-workshop :is(button.action, button.secondary, summary) { min-height: 2.75rem; }
     .home-heading { grid-template-columns: 1fr auto; }
     .home-heading h1, .home-wallet { padding-block: .65rem; }
     .home-wallet { grid-row: 1; grid-column: 2; }

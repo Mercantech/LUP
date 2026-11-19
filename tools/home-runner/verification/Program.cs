@@ -5,6 +5,8 @@ using Mercantec.Tech.Contracts.HomeGame;
 Console.InputEncoding = Console.OutputEncoding = new UTF8Encoding(false);
 var json = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 var home = HomeCatalog.CreateStarter();
+home = Place(home, HomeCatalog.DeskId, new(new(6, 3)));
+home = Place(home, HomeCatalog.ControllerId, new(new(9, 0), 180, new(9, 0, true)));
 var passed = true;
 
 foreach (var task in HomeCatalog.Tasks)

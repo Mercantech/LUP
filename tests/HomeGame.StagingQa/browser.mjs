@@ -74,7 +74,19 @@ const build = (identity, home, action, operationId = crypto.randomUUID(), expect
 const homeFor = identity => api(identity, '/api/me/home-game');
 const avatarFor = identity => api(identity, '/api/me/avatars');
 const installed = (home, definition) => home.layout.items.find(item => item.definitionId === definition);
-async function finishFreeRun(identity, initial) {
+const floor = (x, y, rotation = 0) => ({ anchor: { x, y }, rotation });
+const backWall = x => ({ ...floor(x, 0, 180), wall: { x, y: 0, horizontal: true } });
+async function fitReadingCorner(identity, home) {
+    for (const [definition, placement] of [
+        ['home_controller', backWall(9)], ['desk_basic', floor(6, 3)], ['lamp_basic', floor(5, 4)]
+    ]) {
+        const item = installed(home, definition);
+        assert.equal(item.placement, null);
+        home = await build(identity, home, { kind:'place', itemId:item.id, placement });
+    }
+    return home;
+}
+async function finishFreeRun(identity, initial, checkLamp = true) {
     let run = initial;
     const end = Date.now() + 180000;
     while (['queued', 'compiling', 'running'].includes(run.run.status)) {
@@ -91,9 +103,11 @@ async function finishFreeRun(identity, initial) {
     assert.equal(run.run.task, 0);
     assert.equal(run.run.assessment, false);
     assert.equal(run.goldAwarded, 0);
-    assert.ok(run.snapshot.poweredAliases.includes('desk_lamp'));
-    const reading = run.snapshot.lightMap.find(v => v.cell.x === 6 && v.cell.y === 4);
-    assert.ok(reading && reading.lux > run.snapshot.ambientLux);
+    if (checkLamp) {
+        assert.ok(run.snapshot.poweredAliases.includes('desk_lamp'));
+        const reading = run.snapshot.lightMap.find(v => v.cell.x === 6 && v.cell.y === 4);
+        assert.ok(reading && reading.lux > run.snapshot.ambientLux);
+    }
     return run;
 }
 
@@ -120,6 +134,102 @@ async function checkAvatar(page, id) {
             return portrait.first().evaluate(img => img.complete && img.naturalWidth > 0);
         return false;
     }, 15000);
+}
+
+async function checkDeviceWorkshop(identity, page) {
+    const getHome = () => homeFor(identity);
+    let home = await getHome();
+    const initialGold = home.gold;
+    const goldUnchanged = async () => assert.equal((await getHome()).gold, initialGold);
+    await page.getByRole('button',{name:'Indret',exact:true}).click();
+    await page.getByRole('button',{name:'Lager',exact:true}).click();
+    await page.locator('li[data-definition="roller_blind"]').getByRole('button',{name:'Placér',exact:true}).click();
+    await page.getByRole('button',{name:'Montér ved vinduet',exact:true}).click();
+    await waitUntil(async () => installed(await getHome(),'roller_blind').placement?.wall?.x===2,10000);
+    await page.getByRole('button',{name:'Gulv og tapet',exact:true}).click();
+    await page.getByRole('combobox',{name:'Gulv',exact:true}).selectOption('parquet');
+    await page.locator('.room-shell[data-floor="parquet"]').waitFor();
+    await page.getByRole('combobox',{name:'Tapet',exact:true}).selectOption('stripe');
+    await page.locator('.room-shell[data-wallpaper="stripe"]').waitFor();
+    await page.reload();
+    await page.locator('.room-shell[data-floor="parquet"][data-wallpaper="stripe"]').waitFor();
+    const blind=page.locator('.wall-piece[data-definition="roller_blind"]');
+    await blind.getByRole('button').click();
+    const inspector=page.getByTestId('device-inspector');
+    await inspector.getByTestId('device-off').click();
+    const readLux=async () => Number(await page.locator('.reading-probe').getAttribute('data-lux'));
+    await page.locator('.reading-probe').waitFor();
+    const closedLux=await readLux();
+    await inspector.getByTestId('device-on').click();
+    await waitUntil(async () => (await readLux()) > closedLux,10000);
+    const openLux=await readLux();
+    assert.ok((await page.getByTestId('reading-lux').innerText()).includes(String(openLux)));
+    await goldUnchanged();
+
+    home=await getHome();
+    const add=async (id,placement) => {
+        home=await build(identity,home,{kind:'buy',definitionId:id,placement});
+        return installed(home,id);
+    };
+    const invalid=async (id,placement) => {
+        const result=await build(identity,home,{kind:'buy',definitionId:id,placement},crypto.randomUUID(),422);
+        assert.ok(result.code);
+        assert.equal((await getHome()).layout.revision,home.layout.revision);
+    };
+    await invalid('corkboard',floor(5,6));
+    await invalid('roller_blind',backWall(8));
+    await invalid('soil_probe',floor(5,6));
+    await invalid('armchair',backWall(8));
+    await add('armchair',floor(3,7));
+    const shelf=await add('bookcase_low',floor(7,7));
+    home=await build(identity,home,{kind:'rotate',itemId:shelf.id,placement:floor(7,7,90)});
+    await add('coffee_table',floor(5,8));
+    await add('corkboard',backWall(7));
+    const sign=await add('flip_sign',backWall(5));
+    const pot=await add('planter_pump',floor(3,2));
+    const probe=await add('soil_probe',{...floor(3,2),hostId:pot.id,portId:'soil'});
+    const desk=installed(home,'desk_basic');
+    await invalid('soil_probe',{...floor(6,3),hostId:desk.id,portId:'left'});
+    home=await build(identity,home,{kind:'rotate',itemId:pot.id,placement:floor(3,2,90)});
+    const rotated=installed(home,'soil_probe').placement;
+    assert.equal(rotated.hostId,pot.id);
+    assert.equal(rotated.rotation,90);
+    home=await build(identity,home,{kind:'place',itemId:installed(home,'daylight_sensor').id,placement:backWall(11)});
+    await page.reload();
+    await page.locator('.furniture[data-definition="bookcase_low"][data-rotation="90"]').waitFor();
+    await page.locator('.wall-piece[data-definition="flip_sign"]').waitFor();
+    await goldUnchanged();
+    check('Blind and finishes persisted, illegal mounts rejected, furniture rotated and probe followed its planter',
+        {closedLux,openLux,teacherGold:initialGold});
+
+    const runProgram = async (language,source) => {
+        home=await api(identity,'/api/me/home-game/program','PUT',{revision:home.layout.revision,language,source});
+        const start=await api(identity,'/api/me/home-game/runs','POST',{revision:home.layout.revision,language,task:0,speed:10});
+        return finishFreeRun(identity,start,false);
+    };
+    const closed=await runProgram('python','import home\nhome.set("roller_blind", False)\n');
+    const atDesk=snap=>snap.lightMap.find(value=>value.cell.x===6 && value.cell.y===4).lux;
+    const programs={
+        python:'import home\nhome.set("roller_blind", home.read("daylight") > 0)\nhome.set("'+pot.alias+'", home.read("'+probe.alias+'") < 50)\nhome.set("'+sign.alias+'", True)\n',
+        csharp:'using HomeSdk;\nHome.Set("roller_blind", Home.Read("daylight") > 0);\nHome.Set("'+pot.alias+'", Home.Read("'+probe.alias+'") < 50);\nHome.Set("'+sign.alias+'", true);\n',
+        arduino:'#include <VirtualHome.h>\nvoid setup() { home.begin(); home.set("roller_blind", home.read("daylight") > 0); home.set("'+pot.alias+'", home.read("'+probe.alias+'") < 50); home.set("'+sign.alias+'", true); }\nvoid loop() {}\n'
+    };
+    for(const [language,source] of Object.entries(programs)){
+        const result=await runProgram(language,source);
+        const snap=result.snapshot;
+        for(const alias of ['roller_blind',sign.alias,pot.alias])assert.ok(snap.poweredAliases.includes(alias),alias);
+        assert.equal(snap.sensors.find(s=>s.alias==='daylight').value,closed.snapshot.daylightLux);
+        assert.equal(snap.daylightLux,closed.snapshot.daylightLux);
+        assert.ok(atDesk(snap)>atDesk(closed.snapshot));
+        const moisture=snap.sensors.find(s=>s.alias===probe.alias);
+        assert.ok(moisture.value>25 && moisture.value<=100);
+        assert.equal(moisture.value,snap.soilMoisture[pot.alias]);
+        check('Real device program opened blind, flipped sign and watered the linked plant',
+            {language,closedLux:atDesk(closed.snapshot),openLux:atDesk(snap),outdoorLux:snap.daylightLux,moisture:moisture.value});
+    }
+    await page.reload();
+    await page.locator('.room-shell[data-floor="parquet"]').waitFor();
+    await page.screenshot({path:'/artifacts/workshop-teacher.png',fullPage:true});
 }
 
 try {
@@ -156,7 +266,12 @@ try {
     assert.equal((await avatarFor(identities.pupil)).gold, 320);
     assert.equal(pupilHome.isTeacherSandbox, false);
     assert.equal(pupilHome.selectedAvatarId, 'starter');
-    assert.ok(installed(pupilHome, 'lamp_basic').placement);
+    assert.ok(pupilHome.layout.items.length >= 9);
+    assert.ok(pupilHome.layout.items.every(item => item.placement === null));
+    assert.equal(pupilHome.layout.floorStyle, 'oak');
+    assert.equal(pupilHome.layout.wallpaperStyle, 'linen');
+    check('New student room opened completely empty with free equipment in inventory');
+    pupilHome = await fitReadingCorner(identities.pupil, pupilHome);
     await api(identities.pupil, '/api/me/avatars/bip01/unlock', 'POST', {});
     pupilHome = await homeFor(identities.pupil);
     assert.equal(pupilHome.selectedAvatarId, 'bip01');
@@ -166,7 +281,7 @@ try {
         pupilHome = await build(identities.pupil, pupilHome, { kind: 'buy', definitionId: 'rug_basic',
             placement: { anchor: { x, y }, rotation: 0 } });
     assert.equal(pupilHome.gold, 20);
-    const purchase = { kind: 'buy', definitionId: 'rug_basic', placement: { anchor: { x: 10, y: 2 }, rotation: 0 } };
+    const purchase = { kind: 'buy', definitionId: 'coffee_table', placement: floor(10, 2) };
     await build(identities.pupil, pupilHome, purchase, crypto.randomUUID(), 422);
     assert.equal((await homeFor(identities.pupil)).gold, 20);
     check('A student equipped BIP-01 and bought five rugs; a purchase exceeding their 20 gold was rejected');
@@ -205,9 +320,10 @@ try {
     phase = 'browser-quest-gold-purchase';
     await pupilPage.goto(origin + '/spil/hjem?vis=butik', { waitUntil: 'domcontentloaded' });
     await pupilPage.locator('.gold-balance').getByText('40', { exact: true }).waitFor();
-    await pupilPage.getByRole('listitem').filter({ hasText: 'Tæppe' })
+    await pupilPage.getByRole('listitem').filter({ hasText: 'Rundt sofabord' })
         .getByRole('button', { name: '30 guld', exact: true }).click();
     await pupilPage.locator('.home-board [data-x="10"][data-y="2"]').click();
+    await pupilPage.getByTestId('confirm-placement').click();
     await pupilPage.getByText('Køb og placering gemt.', { exact: true }).waitFor();
     assert.equal((await homeFor(identities.pupil)).gold, 10);
     assert.equal((await avatarFor(identities.pupil)).gold, 10);
@@ -292,10 +408,14 @@ try {
         await teacherPage.reload({ waitUntil:'domcontentloaded' });
         await checkAvatar(teacherPage,id);
     }
-    const teacher = await homeFor(identities.teacher);
+    let teacher = await homeFor(identities.teacher);
     assert.equal(teacher.isTeacherSandbox, true);
     assert.equal(teacher.gold, 320);
     assert.deepEqual(teacher.progress, []);
+    assert.ok(teacher.layout.items.every(item => item.placement === null));
+    assert.equal(await teacherPage.locator('.room-shell .furniture:not(.ghost),.room-ledge').count(), 0);
+    teacher = await fitReadingCorner(identities.teacher, teacher);
+    await teacherPage.reload({ waitUntil:'domcontentloaded' });
     const teachStart=teacherPage.waitForResponse(r=>new URL(r.url()).pathname==='/api/me/home-game/runs' && r.request().method()==='POST');
     await teacherPage.getByRole('button',{name:'Kør kode',exact:true}).click();
     const trial = await teachStart;
@@ -305,6 +425,8 @@ try {
     await teacherPage.getByText('Forsøg gennemført',{exact:true}).waitFor();
     assert.equal((await homeFor(identities.teacher)).gold,320);
     await teacherPage.screenshot({ path: '/artifacts/workshop-teacher.png', fullPage:true });
+    phase='room-placement-finishes-and-real-devices';
+    await checkDeviceWorkshop(identities.teacher,teacherPage);
     await api(identities.outsider, '/api/holds/' + holdId + '/home-game', 'GET', undefined, 404);
     await api(identities.peer, '/api/me/home-game/runs/' + status.run.id, 'GET', undefined, 404);
     await pupilPage.setViewportSize({ width:390,height:844 });

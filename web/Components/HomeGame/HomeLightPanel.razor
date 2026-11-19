@@ -21,10 +21,14 @@
         }
     </div>
     <div class="scale-labels" aria-hidden="true"><span>0</span><span>1.000 lux</span></div>
-    <p>Læseområde <strong>300–600 lux</strong></p>
+    @if (Reading is { } now && Before is { } previous && now.Cell == previous.Cell)
+    {
+        <p class="comparison" data-testid="light-change">Før <strong>@previous.Lux</strong> → nu <strong>@now.Lux lux</strong></p>
+    }
+    <p class="outdoor">Udendørs <strong>@OutdoorLux lux</strong><span>Læseområde 300–600 lux</span></p>
     @if (Preview && Reading is not null)
     {
-        <small>Beregnede lysforhold før kodekørsel.</small>
+        <small>Beregnet forhåndsvisning</small>
     }
     @if (Reading is null)
     {
@@ -34,6 +38,8 @@
 
 @code {
     [Parameter] public (HomeCell Cell, int Lux)? Reading { get; set; }
+    [Parameter] public (HomeCell Cell, int Lux)? Before { get; set; }
+    [Parameter] public int OutdoorLux { get; set; }
     [Parameter] public bool Preview { get; set; }
     [Parameter] public bool HasDesk { get; set; }
 }

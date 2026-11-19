@@ -8,7 +8,7 @@ public static class HomeGameLanguages
 
 public static class HomeGameVersion
 {
-    public const string Simulator = "hjem-v1";
+    public const string Simulator = "hjem-v2";
     public const string Sdk = "virtual-home-v1";
     public const string Content = "hjem-pilot-v1";
     public const int MaxSourceBytes = 128 * 1024;

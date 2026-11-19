@@ -4,10 +4,23 @@
 @inject IJSRuntime Js
 
 <div class="home-board-scroll">
-    <div class="room-shell" style="@GridStyle">
-        <div class="room-wall" aria-hidden="true">
-            <img class="room-window" src="images/home-workshop/window.webp" alt="" />
-            <img class="room-ledge" src="images/home-workshop/ledge.webp" alt="" />
+    <div class="room-shell @(ReduceMotion ? "motion-reduced" : "")" style="@GridStyle"
+         data-floor="@Layout.FloorStyle" data-wallpaper="@Layout.WallpaperStyle">
+        <div class="room-wall" role="group" aria-label="Bagvæg">
+            <div class="window-opening" style="@CellPosition(new(HomeCatalog.WindowEdge.X, 0))" aria-hidden="true">
+                <img src="images/home-workshop/window.webp" alt="" draggable="false" />
+            </div>
+            @foreach (var item in VisibleItems.Where(IsOnBackWall))
+            {
+                @WallPiece(item)
+            }
+            @if (MountingWall)
+            {
+                @foreach (var wall in MountableWalls.Where(wall => wall.Horizontal && wall.Y == 0))
+                {
+                    @MountPoint(wall)
+                }
+            }
         </div>
         <div class="home-board @(ReduceMotion ? "motion-reduced" : "") @(Ghost is not null ? "placing" : "")"
              @ref="_board" role="group" aria-label="Boligens grid. Brug piletasterne til at skifte felt.">
@@ -30,21 +43,28 @@
                     </button>
                 }
             }
-            @foreach (var item in VisibleItems)
+            @foreach (var item in VisibleItems.Where(item => !IsOnBackWall(item)))
             {
-                var preview = item == Ghost;
-                var sprite = HomeRoomArt.Image(item.DefinitionId);
-                <div @key="item.Id" class="furniture @item.DefinitionId @(item.Id == Selected?.Id ? "selected" : "") @(IsPowered(item) ? "powered" : "") @(preview ? "ghost" : "")"
-                     data-item-id="@item.Id" data-rotation="@item.Placement!.Rotation" style="@ObjectStyle(item)" aria-hidden="true">
-                    @if (sprite is not null)
-                    {
-                        <img class="object-art" src="@sprite" alt="" draggable="false" />
-                    }
-                    else
-                    {
-                        <span class="wall-device"><span class="device-signal">@DeviceMark(item.DefinitionId)</span></span>
-                    }
-                </div>
+                @if (item.Placement!.Wall is not null)
+                {
+                    @WallPiece(item)
+                }
+                else
+                {
+                    <div @key="item.Id" class="furniture @ObjectClass(item)" style="@ObjectStyle(item)"
+                         data-item-id="@item.Id" data-definition="@item.DefinitionId" data-rotation="@item.Placement.Rotation"
+                         data-powered="@PowerAttribute(item)" data-moisture="@Moisture(item)">
+                        @Art(item)
+                        @ItemHandle(item)
+                    </div>
+                }
+            }
+            @if (MountingWall)
+            {
+                @foreach (var wall in MountableWalls.Where(wall => !wall.Horizontal || wall.Y != 0))
+                {
+                    @MountPoint(wall)
+                }
             }
             @if (Avatar is { } avatar)
             {
@@ -70,3 +90,58 @@
         </div>
     </div>
 </div>
+
+@code {
+    private RenderFragment WallPiece(HomeItem item) => @<div @key="item.Id"
+        class="furniture wall-piece @ObjectClass(item)" style="@ObjectStyle(item)"
+        data-edge="@WallFace(item.Placement!.Wall!.Value, item.Placement.Anchor)"
+        data-item-id="@item.Id" data-definition="@item.DefinitionId" data-rotation="@item.Placement.Rotation"
+        data-powered="@PowerAttribute(item)">
+        @Art(item)
+        @ItemHandle(item)
+    </div>;
+
+    private RenderFragment Art(HomeItem item) => @<text>
+        @if (item.DefinitionId == HomeCatalog.BlindId && IsOnBackWall(item))
+        {
+            <span class="blind-installation" aria-hidden="true"><span class="blind-cloth"></span><span class="blind-motor"></span></span>
+        }
+        else if (HomeRoomArt.Image(item.DefinitionId, IsPowered(item), item.Placement!.Rotation) is { } sprite)
+        {
+            <div class="object-drawing" aria-hidden="true">
+                <img class="object-art" src="@sprite" alt="" draggable="false" />
+                @if (item.DefinitionId == HomeCatalog.PlanterId && IsPowered(item))
+                {
+                    <span class="water-drop"></span>
+                }
+                @if (item.DefinitionId == HomeCatalog.MoistureId && Moisture(item) is int percent)
+                {
+                    <span class="moisture-reading">@percent<span>%</span></span>
+                }
+            </div>
+        }
+        else
+        {
+            <span class="wall-device" aria-hidden="true"><span class="device-signal">@DeviceMark(item.DefinitionId)</span></span>
+        }
+        @if (ShowDevices && IsProgrammable(item))
+        {
+            <span class="code-mark" aria-hidden="true">&lt;/&gt;</span>
+        }
+    </text>;
+
+    private RenderFragment ItemHandle(HomeItem item) => @<text>
+        @if (Ghost is null)
+        {
+            <button type="button" class="object-handle" title="@ObjectLabel(item)" aria-label="@ObjectLabel(item)"
+                    aria-pressed="@(Selected?.Id == item.Id ? "true" : "false")" @onclick="() => InspectItemAsync(item)"></button>
+        }
+    </text>;
+
+    private RenderFragment MountPoint(HomeEdge edge) => @<button @key="edge" type="button" class="mount-point"
+        style="@CellPosition(WallCell(edge))" data-edge="@WallFace(edge, WallCell(edge))"
+        aria-label="@(edge == HomeCatalog.WindowEdge ? "Montér ved vinduet" : $"Montér på væggen ved felt {WallCell(edge).X}, {WallCell(edge).Y}")"
+        @onfocus="() => Visit.InvokeAsync(WallCell(edge))" @onclick="() => ChooseWallAsync(edge)">
+        <span aria-hidden="true"></span>
+    </button>;
+}

@@ -42,26 +42,46 @@ else
             </div>
         }
 
-        <nav class="mobile-workspace" aria-label="Synligt arbejdsområde">
-            <button type="button" aria-pressed="@(_mobilePane == "plan" ? "true" : "false")" @onclick='() => _mobilePane = "plan"'>Rum</button>
-            <button type="button" aria-pressed="@(_mobilePane == "work" ? "true" : "false")" @onclick='() => _mobilePane = "work"'>Værktøjer</button>
-        </nav>
-        <div class="workspace" data-pane="@_mobilePane">
+        <div class="workspace">
             <section class="plan-panel" aria-label="Din bolig">
-                <HomeBoard Layout="@DisplayLayout" Snapshot="@LightingSnapshot" Avatar="@AvatarCell" AvatarId="@_state.SelectedAvatarId" IsLightingPreview="@(Snapshot is null)" Cursor="@_cursor" Selected="@BoardSelection"
+                <div class="room-tools">
+                    <button type="button" class="secondary code-markers" aria-pressed="@(_showDevices ? "true" : "false")" @onclick="() => _showDevices = !_showDevices">Vis ting med kode</button>
+                    @if (_mode == "code")
+                    {
+                        <button type="button" class="secondary room-toggle" aria-expanded="@(!_roomCollapsed ? "true" : "false")" @onclick="() => _roomCollapsed = !_roomCollapsed">@(_roomCollapsed ? "Vis rum" : "Fold rum sammen")</button>
+                    }
+                </div>
+                <div class="room-view @(_roomCollapsed ? "collapsed" : "")" @ref="_roomView">
+                <HomeBoard Layout="@DisplayLayout" Snapshot="@LightingSnapshot" Avatar="@AvatarCell" AvatarId="@_state.SelectedAvatarId" IsLightingPreview="@(Snapshot is null || _manualSnapshot is not null)" Cursor="@_cursor" Selected="@BoardSelection"
                            Mode="@_overlay" Zoom="@_zoom" Ghost="@_ghost" InvalidPreview="@(_previewError is not null)"
+                           ShowDevices="@_showDevices" Inspect="Select" ActivateWall="ActivateWallAsync"
                            ReduceMotion="@_reduceMotion" Visit="VisitCell" Activate="ActivateCellAsync" Turn="TurnPreview" Cancel="CancelPlacement" />
+                </div>
                 @if (_placement is not null)
                 {
                     <div class="placement-bar">
                         <span aria-live="polite"><strong>@PlacementName</strong> ved (@_cursor.X, @_cursor.Y)<br />
                             @(_previewError ?? "Klar til at placere")</span>
                         <div class="inline-actions">
-                            <button type="button" class="secondary" @onclick="TurnPreview">Drej</button>
+                            @if (CanTurnPreview) { <button type="button" class="secondary" @onclick="TurnPreview">Drej 90°</button> }
                             <button type="button" class="secondary" @onclick="CancelPlacement">Annullér</button>
-                            <button type="button" class="action" disabled="@(_previewError is not null || _working)" @onclick="ConfirmPlacementAsync">Placér</button>
+                            <button type="button" class="action" data-testid="confirm-placement" disabled="@(_previewError is not null || _working)" @onclick="ConfirmPlacementAsync">@PlacementLabel</button>
                         </div>
                     </div>
+                }
+                @if (RoomItems.Any())
+                {
+                    <details class="plan-settings room-devices">
+                        <summary>Vælg en genstand</summary>
+                        <div class="inline-actions">
+                            @foreach (var item in RoomItems.Where(i => !_showDevices || IsProgrammable(i)))
+                            {
+                                <button type="button" class="secondary" aria-pressed="@(item.Id == _selectedId ? "true" : "false")"
+                                        data-inspect-alias="@item.Alias" @onclick="() => Select(item)">@item.Name <small>@item.Alias</small></button>
+                            }
+                        </div>
+                        @if (_showDevices && !RoomItems.Any(IsProgrammable)) { <p>Placér en programmerbar ting fra lageret eller butikken.</p> }
+                    </details>
                 }
                 @if (Snapshot is { } world)
                 {
@@ -81,9 +101,61 @@ else
             </section>
             <section class="work-panel" aria-label="Arbejdsområde">
                 <div class="work-content">
+                    @if (_mode != "build" || BoardSelection?.Placement is not null && _placement is null)
+                    {
+                        <HomeLightPanel Reading="@HomeReadingPoint.Measure(DisplayLayout, LightingSnapshot)" Before="@_beforeLight"
+                                        HasDesk="@HasDesk" OutdoorLux="@LightingSnapshot.DaylightLux" Preview="@(Snapshot is null || _manualSnapshot is not null)" />
+                    }
+                    @if (BoardSelection is { Placement: not null } inspected && _placement is null)
+                    {
+                        <section class="object-panel" data-testid="device-inspector" aria-label="Valgt i rummet">
+                            <header><h2>@inspected.Name</h2><strong class="device-state">@DeviceState(inspected)</strong></header>
+                            @if (IsProgrammable(inspected))
+                            {
+                                <code>@inspected.Alias</code>
+                                @if (inspected.DefinitionId == HomeCatalog.PlanterId && LightingSnapshot.SoilMoisture?.TryGetValue(inspected.Alias, out var moisture) == true)
+                                {
+                                    <p>Jordfugt <strong>@moisture %</strong></p>
+                                }
+                                @if (IsOutput(inspected) && !IsActive && _replay is null)
+                                {
+                                    var labels = Labels(inspected.DefinitionId);
+                                    <div class="manual-actions" role="group" aria-label="Afprøv i rummet">
+                                        <button type="button" class="secondary" data-testid="device-on" aria-pressed="@(IsOn(inspected) ? "true" : "false")" @onclick="() => TryDevice(inspected, true)">@labels.On</button>
+                                        <button type="button" class="secondary" data-testid="device-off" aria-pressed="@(!IsOn(inspected) ? "true" : "false")" @onclick="() => TryDevice(inspected, false)">@labels.Off</button>
+                                    </div>
+                                }
+                                @if (_manualSnapshot is not null)
+                                {
+                                    <div class="manual-caption"><small>Manuel afprøvning · beregnet i rummet</small><button type="button" class="text-action" @onclick="ResetAudition">Afslut afprøvning</button></div>
+                                }
+                                <details class="device-code" @key="inspected.Id">
+                                    <summary>Se kodeidé</summary>
+                                    @if (IsOutput(inspected))
+                                    {
+                                        <label>Handling<select @bind="_exampleChoice">
+                                            <option value="on">@Labels(inspected.DefinitionId).On</option>
+                                            <option value="off">@Labels(inspected.DefinitionId).Off</option>
+                                            @if (RuleSensor(inspected) is { } sensor) { <option value="rule">Styr med @sensor.Name</option> }
+                                        </select></label>
+                                    }
+                                    <pre>@DeviceExample(inspected)</pre>
+                                    <button type="button" class="secondary" @onclick="() => ApplyExampleAsync(DeviceExample(inspected))">Brug i editor</button>
+                                </details>
+                            }
+                            @if (_replay is null && _mode != "build")
+                            {
+                                <button type="button" class="text-action" @onclick="() => MoveInspectedAsync(inspected)">Flyt genstanden</button>
+                            }
+                        </section>
+                    }
                     @if (_mode == "build")
                     {
                         <h2>Indretning</h2>
+                        @if (!RoomItems.Any() && _shelf == "stock")
+                        {
+                            <p class="first-placement">Dit rum er tomt. Vælg <strong>Placér</strong> ved en ting fra dit gratis startsæt. Rullegardinet passer i vinduet.</p>
+                        }
                         @if (_state.IsTeacherSandbox && _shelf == "shop")
                         {
                             <p class="quiet">Du kan prøve alt udstyret gratis i din prøvebolig.</p>
@@ -92,14 +164,26 @@ else
                             <button type="button" class="@ShelfClass("stock")" @onclick='() => ChooseShelf("stock")'>Lager</button>
                             <button type="button" class="@ShelfClass("shop")" @onclick='() => ChooseShelf("shop")'>Butik</button>
                             <button type="button" class="@ShelfClass("room")" @onclick='() => ChooseShelf("room")'>I boligen</button>
+                            <button type="button" class="@ShelfClass("finishes")" @onclick='() => ChooseShelf("finishes")'>Gulv og tapet</button>
                             <button type="button" class="secondary undo" disabled="@(!_state.CanUndo || _working)" @onclick='() => BuildAsync(new("undo"))'>Fortryd</button>
                         </div>
-                        @if (_shelf == "shop")
+                        @if (_shelf == "finishes")
+                        {
+                            <div class="finish-picker">
+                                <label>Gulv<select value="@_state.Layout.FloorStyle" disabled="@_working" @onchange='e => BuildAsync(new("floorStyle", Value: e.Value?.ToString()))'>
+                                    @foreach (var style in HomeCatalog.FloorStyles) { <option value="@style.Key">@style.Value</option> }
+                                </select></label>
+                                <label>Tapet<select value="@_state.Layout.WallpaperStyle" disabled="@_working" @onchange='e => BuildAsync(new("wallpaperStyle", Value: e.Value?.ToString()))'>
+                                    @foreach (var style in HomeCatalog.WallpaperStyles) { <option value="@style.Key">@style.Value</option> }
+                                </select></label>
+                            </div>
+                        }
+                        else if (_shelf == "shop")
                         {
                             <ul class="items">
                                 @foreach (var item in ShopItems)
                                 {
-                                    <li>
+                                    <li data-definition="@item.Id">
                                         @if (HomeRoomArt.Image(item.Id) is { } thumbnail)
                                         {
                                             <img class="item-thumbnail" src="@thumbnail" alt="" width="44" height="40" />
@@ -117,7 +201,7 @@ else
                             <ul class="items">
                                 @foreach (var item in ShelfItems)
                                 {
-                                    <li class="@(item.Id == _selectedId ? "picked" : "")">
+                                    <li class="@(item.Id == _selectedId ? "picked" : "")" data-definition="@item.DefinitionId">
                                         @if (HomeRoomArt.Image(item.DefinitionId) is { } thumbnail)
                                         {
                                             <img class="item-thumbnail" src="@thumbnail" alt="" width="44" height="40" />
@@ -135,7 +219,7 @@ else
                             </ul>
                             @if (!ShelfItems.Any()) { <p>Der ligger ingen genstande her.</p> }
                         }
-                        @if (Selected is { } selected)
+                        @if (Selected is { } selected && _shelf is "room" or "stock")
                         {
                             <section class="inspector" aria-label="Valgt genstand">
                                 <header><h3>@selected.Name</h3><code>@selected.Alias</code></header>
@@ -160,10 +244,13 @@ else
                                     @if (selected.Placement is not null)
                                     {
                                         <button class="secondary" type="button" disabled="@_working" @onclick="() => StartPlacement(selected)">Flyt</button>
-                                        <button class="secondary" type="button" disabled="@_working" @onclick="() => RotateItemAsync(selected)">Drej på stedet</button>
+                                        @if (CanRotate(selected.DefinitionId, selected.Placement.Anchor))
+                                        {
+                                            <button class="secondary" type="button" disabled="@_working" @onclick="() => RotateItemAsync(selected)">Drej på stedet</button>
+                                        }
                                         <button class="secondary" type="button" disabled="@_working" @onclick='() => BuildAsync(new("store", selected.Id))'>Læg på lager</button>
                                     }
-                                    @if (selected.DefinitionId is not ("desk_basic" or "sofa_basic" or "rug_basic"))
+                                    @if (IsProgrammable(selected))
                                     {
                                         <button class="secondary" type="button" @onclick='() => ChangeModeAsync("code")'>Åbn kode</button>
                                     }
@@ -239,10 +326,6 @@ else
                             <button type="button" class="secondary" @onclick="UseSavedCodeAsync">Åbn seneste gemte kode</button>
                         }
                     }
-                    @if (_mode == "test")
-                    {
-                        <HomeLightPanel Reading="@HomeReadingPoint.Measure(DisplayLayout, LightingSnapshot)" HasDesk="@HasDesk" Preview="@(Snapshot is null)" />
-                    }
                     @if (_mode != "build")
                     {
                         <div class="run-strip">
@@ -293,7 +376,6 @@ else
                     }
                     @if (_mode == "code")
                     {
-                        <HomeLightPanel Reading="@HomeReadingPoint.Measure(DisplayLayout, LightingSnapshot)" HasDesk="@HasDesk" Preview="@(Snapshot is null)" />
                         <details class="help-details">
                             <summary>SDK til @HomeCodeGuide.Label(_language)</summary>
                             <dl class="sdk">
@@ -395,12 +477,12 @@ else
                                         </dl>
                                     </details>
                                 }
-                                <details open>
-                                    <summary>Kommandoer og lamper</summary>
+                                <details>
+                                    <summary>Kommandoer og enheder</summary>
                                     <dl class="signals">
-                                        @foreach (var lamp in DisplayLayout.Items.Where(item => item.DefinitionId == "lamp_basic" && item.Placement is not null))
+                                        @foreach (var device in RoomItems.Where(IsOutput))
                                         {
-                                            <dt><code>@lamp.Alias</code></dt><dd>@(Snapshot.PoweredAliases.Contains(lamp.Alias) ? "Tændt" : "Slukket")</dd>
+                                            <dt><code>@device.Alias</code></dt><dd>@(Snapshot.PoweredAliases.Contains(device.Alias) ? Labels(device.DefinitionId).Active : Labels(device.DefinitionId).Inactive)</dd>
                                         }
                                     </dl>
                                     @if (Snapshot.DeviceCommits is { Count: > 0 } commits)
@@ -409,7 +491,7 @@ else
                                         <ul>
                                             @foreach (var command in commits)
                                             {
-                                                <li><code>@command.Alias</code> fik besked på at @(command.Value ? "tænde" : "slukke") ved tick @command.Tick. @(command.StateChanged ? "Tilstanden blev ændret." : "Tilstanden var allerede rigtig.")</li>
+                                                <li><code>@command.Alias</code> modtog <code>@(command.Value ? "true" : "false")</code> ved tick @command.Tick.</li>
                                             }
                                         </ul>
                                     }
@@ -421,15 +503,11 @@ else
                             </details>
                         }
                     }
-                    @if (_mode == "build")
-                    {
-                        <HomeLightPanel Reading="@HomeReadingPoint.Measure(DisplayLayout, LightingSnapshot)" HasDesk="@HasDesk" Preview="@(Snapshot is null)" />
-                    }
                     <details class="start-guide help-details">
                         <summary>Kom i gang</summary>
-                        <p>Du kan styre lyset i din bolig med kode. Prøv med gulvlampen først.</p>
+                        <p>Vælg en ting i rummet, og åbn <strong>Se kodeidé</strong>. Gardinet kan åbne og lukke, vendeskiltet skifter symbol, og en fugtføler kan styre plantekassens pumpe.</p>
                         <ol>
-                            <li>Vælg <strong>Indret</strong>. Stil en gulvlampe ved skrivebordet. Ligger den på lager, så vælg <strong>Placér</strong> og tryk på et felt i rummet.</li>
+                            <li>Åbn <strong>Indret</strong> og placér skrivebordet og gulvlampen fra lageret. Montér hjemmecontrolleren på en væg for at køre kode.</li>
                             <li>Åbn <strong>Programmér</strong> og vælg dit sprog. Her er et eksempel med lampens kodealias.</li>
                         </ol>
                         <pre class="guide-example">@LampExample</pre>

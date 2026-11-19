@@ -16,6 +16,14 @@ export function focusCell(board, x, y) {
     board.querySelector(`[data-x="${x}"][data-y="${y}"]`)?.focus({ preventScroll: true });
 }
 
+export function focusPlacement(room, x, y) {
+    const cell = room.querySelector(`button[data-x="${x}"][data-y="${y}"]`);
+    if (cell) {
+        room.scrollIntoView({block: "nearest"});
+        cell.focus({preventScroll: true});
+    }
+}
+
 export function keepArrowKeysOnBoard(board) {
     board.addEventListener("keydown", event => {
         if (["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(event.key)) {
