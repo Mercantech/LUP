@@ -1,0 +1,13 @@
+@page "/notion"
+@page "/notion/{*LegacyPath}"
+@inject NavigationManager Nav
+
+@code {
+    [Parameter] public string? LegacyPath { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var relative = Nav.ToBaseRelativePath(Nav.Uri);
+        Nav.NavigateTo("/notes" + relative["notion".Length..], replace: true);
+    }
+}

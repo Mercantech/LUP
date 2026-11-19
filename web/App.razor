@@ -15,7 +15,8 @@
                     <LupLoading Message="@(_restoring ? "Genopretter login…" : "Indlæser…")" />
                 </LayoutView>
             }
-            else if (!Auth.IsAuthenticated && !PublicPageAccess.Allows(Nav.ToBaseRelativePath(Nav.Uri))
+            else if (!Auth.IsAuthenticated && routeData.PageType != typeof(Pages.Notion.LegacyNotesRoute)
+                && !PublicPageAccess.Allows(Nav.ToBaseRelativePath(Nav.Uri))
                 && !ExtensionEmojiDraft.IsImportPath(Nav.ToBaseRelativePath(Nav.Uri)))
             {
                 @if (Auth.SessionRecoveryPending)

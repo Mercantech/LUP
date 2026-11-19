@@ -164,7 +164,7 @@
                             <textarea rows="2" maxlength="2400" value="@question.Explanation" @onchange="e => Update(position, q => q with { Explanation = Text(e) })"></textarea>
                         </label>
                         <label class="field">Link til stoffet
-                            <input maxlength="1500" value="@question.LearnMoreUrl" @onchange="e => Update(position, q => q with { LearnMoreUrl = Text(e) })" placeholder="/notion/… eller https://…" />
+                            <input maxlength="1500" value="@question.LearnMoreUrl" @onchange="e => Update(position, q => q with { LearnMoreUrl = Text(e) })" placeholder="/notes/… eller https://…" />
                         </label>
                         @if (!string.IsNullOrWhiteSpace(question.LearnMoreUrl))
                         {

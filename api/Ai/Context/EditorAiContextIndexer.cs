@@ -23,7 +23,7 @@ public sealed class EditorAiContextIndexer(AppDbContext db, NotionAiProjectionCl
             ? blocks.SelectMany(x => EditorAiText.Chunks(x.Text, x.Heading ?? x.Id)).Select(x => (x.Text, (string?)x.Location)).ToArray()
             : EditorAiText.Chunks(projection.PlainText).Select(x => (x.Text, (string?)x.Location)).ToArray();
         await ReplaceAsync("notion-page", id.ToString(), id, page.HoldId, page.CollectionId, page.Title,
-            $"/notion/{id}", fingerprint, content, ct, page.UpdatedAtUtc);
+            $"/notes/{id}", fingerprint, content, ct, page.UpdatedAtUtc);
     }
 
     public async Task IndexCatalogAsync(CancellationToken ct)

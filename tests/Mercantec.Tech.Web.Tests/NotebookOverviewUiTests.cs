@@ -54,7 +54,31 @@ public sealed class NotebookOverviewUiTests
         page.WaitForAssertion(() => Assert.NotNull(api.Created));
         Assert.Null(api.Created!.HoldId);
         Assert.Equal("Ny fælles teori", api.Created.Title);
-        Assert.EndsWith("/notion/collections/" + api.NewRoot, context.Services.GetRequiredService<NavigationManager>().Uri, StringComparison.Ordinal);
+        Assert.EndsWith("/notes/collections/" + api.NewRoot, context.Services.GetRequiredService<NavigationManager>().Uri, StringComparison.Ordinal);
+        Assert.Empty(api.Unexpected);
+    }
+
+    [Fact]
+    public async Task Teacher_can_choose_a_short_address_for_a_new_or_existing_collection()
+    {
+        using var api = new OverviewApi();
+        await using var context = await Create(api, teacher: true);
+        var page = context.Render<Home>();
+        page.WaitForAssertion(() => Assert.Equal(4, page.FindAll(".books-card").Count));
+
+        page.Find("[data-kind=hold] .books-card-actions button").Click();
+        page.Find(".books-address input").Input("ml2027");
+        page.Find(".books-address").Submit();
+        Assert.Empty(api.Unexpected);
+        Assert.Equal("ml2027", api.SavedAddress?.Slug);
+        page.WaitForAssertion(() => Assert.Equal("/notes/ml2027", page.Find("[data-kind=hold] h2 a").GetAttribute("href")));
+
+        Button(page, "Ny notesbog").Click();
+        page.Find(".books-create input[required]").Input("Ny teori");
+        page.Find(".books-create input[placeholder=ml2027]").Input("ny-teori");
+        page.Find(".books-create").Submit();
+        page.WaitForAssertion(() => Assert.EndsWith("/notes/ny-teori", context.Services.GetRequiredService<NavigationManager>().Uri));
+        Assert.Equal("ny-teori", api.Created!.Slug);
         Assert.Empty(api.Unexpected);
     }
 
@@ -89,7 +113,7 @@ public sealed class NotebookOverviewUiTests
         await using var context = await Create(api, teacher: false);
         var page = context.Render<Home>();
         page.WaitForAssertion(() => Assert.Contains("Fælles SQL-teori", page.Markup));
-        Assert.DoesNotContain(page.FindAll("button"), button => button.TextContent.Trim() is "Ny notesbog" or "Elevnotesbøger");
+        Assert.DoesNotContain(page.FindAll("button"), button => button.TextContent.Trim() is "Ny notesbog" or "Elevnotesbøger" or "Skift adresse");
         Assert.Equal(0, api.StudentRequests);
         Assert.Empty(api.Unexpected);
     }
@@ -101,11 +125,12 @@ public sealed class NotebookOverviewUiTests
     private sealed class OverviewApi : HttpMessageHandler
     {
         public bool NoHolds;
-        private readonly Guid hold = Guid.NewGuid(), own = Guid.NewGuid();
+        private readonly Guid hold = Guid.NewGuid(), own = Guid.NewGuid(), holdCollection = Guid.NewGuid();
         public Guid NewRoot { get; } = Guid.NewGuid();
         private static readonly DateTimeOffset Updated = new(2026, 11, 10, 12, 0, 0, TimeSpan.Zero);
         public NotebookPageSummary Shared { get; } = new(Guid.NewGuid(), Guid.NewGuid(), "Kun den delte side", null, "note", [], null, null, null, Updated.AddDays(-1), 1);
         public CreateNotionCollection? Created;
+        public SetNotionCollectionSlug? SavedAddress;
         public int StudentRequests;
         public List<string> Unexpected { get; } = [];
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -114,12 +139,17 @@ public sealed class NotebookOverviewUiTests
             if (path == "/api/notion/collections" && request.Method == HttpMethod.Post)
             {
                 Created = await request.Content!.ReadFromJsonAsync<CreateNotionCollection>(cancellationToken);
-                return Json(new NotionCollectionView(NewRoot, NewRoot, Created!.Title, Created.HoldId, null, true, DateTimeOffset.UtcNow));
+                return Json(new NotionCollectionView(NewRoot, NewRoot, Created!.Title, Created.HoldId, null, true, DateTimeOffset.UtcNow, Slug: Created.Slug));
+            }
+            if (path == $"/api/notion/collections/{holdCollection}/slug" && request.Method == HttpMethod.Patch)
+            {
+                SavedAddress = await request.Content!.ReadFromJsonAsync<SetNotionCollectionSlug>(cancellationToken);
+                return Json(SavedAddress!);
             }
             if (path == "/api/notebooks/teacher") { StudentRequests++; return Json(new[] { new TeacherNotebookView(Guid.NewGuid(), Guid.NewGuid(), "Elev Anna", ["H1"], null, DateTimeOffset.UtcNow) }); }
             return path switch
             {
-                "/api/notion/collections" => Json(new[] { new NotionCollectionView(Guid.NewGuid(), Guid.NewGuid(), "Fælles SQL-teori", null, null, false, Updated.AddDays(-2)) }.Concat(NoHolds ? [] : new[] { new NotionCollectionView(Guid.NewGuid(), Guid.NewGuid(), "H1 undervisning", hold, "H1", true, Updated, LastEditedByName: "Berit") }).ToArray()),
+                "/api/notion/collections" => Json(new[] { new NotionCollectionView(Guid.NewGuid(), Guid.NewGuid(), "Fælles SQL-teori", null, null, false, Updated.AddDays(-2)) }.Concat(NoHolds ? [] : new[] { new NotionCollectionView(holdCollection, Guid.NewGuid(), "H1 undervisning", hold, "H1", true, Updated, LastEditedByName: "Berit") }).ToArray()),
                 "/api/notion/holds" => Json(NoHolds ? Array.Empty<NotionHold>() : new[] { new NotionHold(hold, "H1", true) }),
                 "/api/notebooks/mine" => Json(new NotebookInfo(own, LearningUiTestContext.AccountId, "Mit navn", true, true)),
                 "/api/notebooks/shared" => Json(new[] { Shared }),

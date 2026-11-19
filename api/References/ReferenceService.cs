@@ -104,7 +104,7 @@ public sealed partial class ReferenceService(AppDbContext db)
             .Select(m => new { m.Id, m.HoldId, m.DisplayName, HoldName = m.Hold.Name }).ToArrayAsync(ct);
         return new(subject, profile.DisplayName, profile.IsTeacher, members.Select(m => new ResolvedReference(
             Ref("member", m.Id), m.DisplayName ?? profile.DisplayName,
-            $"/notion/holds/{m.HoldId:D}/students/{m.Id:D}", m.HoldName, m.HoldId)).ToArray());
+            $"/notes/holds/{m.HoldId:D}/students/{m.Id:D}", m.HoldName, m.HoldId)).ToArray());
     }
 
     private async Task<ResolvedReference[]> MentionStatusesAsync(ResolvedReference[] items, ResolvedReference? source,
@@ -207,7 +207,7 @@ public sealed partial class ReferenceService(AppDbContext db)
         {
             var edit = !publishedOnly && (p.HoldId is Guid h ? manageSet.Contains(h) : UserClaims.IsTeacher(user));
             var title = edit ? p.Title : p.PublishedTitle!;
-            var href = $"/notion/{p.Id:D}" + (edit ? "" : "?published=true");
+            var href = $"/notes/{p.Id:D}" + (edit ? "" : "?published=true");
             Add("notion-page", p.Id, title, href, p.HoldId, p.CollectionId, edit);
             if (!pagesOnly && p.CollectionId is null && p.ParentPageId is null)
                 Add("collection", p.Id, title, href, p.HoldId, p.Id, edit);
@@ -223,14 +223,14 @@ public sealed partial class ReferenceService(AppDbContext db)
                 .Where(c => visibleCollections.Contains(c.Id)
                     || (wanted == null || requestedCollections.Contains(c.Id))
                     && !publishedOnly && (c.HoldId == null ? canEditTheory : editableHolds.Contains(c.HoldId.Value)))
-                .Select(c => new { c.Id, c.HoldId, c.Title, c.PublishedTitle,
+                .Select(c => new { c.Id, c.HoldId, c.Title, c.PublishedTitle, c.Slug,
                     HasActiveRoot = db.NotionPages.Any(p => p.Id == c.Id) }).ToArrayAsync(ct);
             foreach (var c in collections)
             {
                 var edit = !publishedOnly && (c.HoldId is Guid h ? manageSet.Contains(h) : canEditTheory);
                 var root = byId.GetValueOrDefault(c.Id);
                 var title = edit ? root?.Title ?? c.Title : root?.PublishedTitle ?? (c.HasActiveRoot ? null : c.PublishedTitle);
-                Add("collection", c.Id, title ?? "Samling", $"/notion/collections/{c.Id:D}" + (edit ? "" : "?published=true"),
+                Add("collection", c.Id, title ?? "Samling", NotesRoutes.Collection(c.Id, c.Slug) + (edit ? "" : "?published=true"),
                     c.HoldId, c.Id, edit && root is not null);
             }
         }
@@ -285,7 +285,7 @@ public sealed partial class ReferenceService(AppDbContext db)
         if (!contentOnly && Includes("member"))
         foreach (var m in await Only(db.Memberships.AsNoTracking().Where(m => holdIds.Contains(m.HoldId)), "member", m => m.Id)
             .Select(m => new { m.Id, m.HoldId, m.DisplayName }).ToArrayAsync(ct))
-            Add("member", m.Id, m.DisplayName ?? "Elev", $"/notion/holds/{m.HoldId:D}/students/{m.Id:D}", m.HoldId);
+            Add("member", m.Id, m.DisplayName ?? "Elev", $"/notes/holds/{m.HoldId:D}/students/{m.Id:D}", m.HoldId);
 
         if (Includes("teaching-course"))
         foreach (var c in await Only(db.TeachingCourses.AsNoTracking().Where(c => holdIds.Contains(c.HoldId)
@@ -387,7 +387,7 @@ public sealed partial class ReferenceService(AppDbContext db)
             {
                 var edit = !publishedOnly && (p.HoldId is Guid h ? manageSet.Contains(h) : UserClaims.IsTeacher(user));
                 if (edit || DrawingManifestContains(p.PublishedDrawingsJson, drawing.Id)) Add("drawing", drawing.Id, "Tegning · " + (edit ? p.Title : p.PublishedTitle),
-                    $"/notion/{page:D}?drawing={drawing.Id:D}" + (edit ? "" : "&published=true"), p.HoldId, p.CollectionId);
+                    $"/notes/{page:D}?drawing={drawing.Id:D}" + (edit ? "" : "&published=true"), p.HoldId, p.CollectionId);
             }
             else if (drawing.NotebookDocumentId is Guid note && noteAccess.TryGetValue(note, out var d))
                 Add("drawing", drawing.Id, "Tegning · " + d.Title, $"/notebook/{note:D}?drawing={drawing.Id:D}", d.HoldId, d.NotebookId);

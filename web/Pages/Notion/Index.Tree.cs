@@ -66,8 +66,8 @@ public partial class Index
             var collection = ActiveCollectionId;
             await Unmount();
             _current = null;
-            if (collection is Guid collectionId && CollectionId == collectionId) await Load();
-            else Nav.NavigateTo(collection is Guid scope ? $"/notion/collections/{scope}" : WorkspaceNavigation.Editor(_holdId));
+            if (IsCollectionRoute && _collection?.Id == collection) await Load();
+            else Nav.NavigateTo(collection is Guid scope ? NotesRoutes.Collection(scope) : WorkspaceNavigation.Editor(_holdId));
         }
         else await RetryNavigation();
         _notice = "Siden er flyttet til papirkurven.";

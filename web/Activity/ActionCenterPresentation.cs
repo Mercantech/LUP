@@ -48,6 +48,6 @@ public static class ActionCenterPresentation
     };
     public static string Icon(ActionCenterItem item) => item.Kind switch { "poll" => "chart", "review" => "check", "gift" => "gift", "feedback" or "notebook-comment" or "mention" => "message", "notebook-share" => "book", "calendar-change" => "calendar", _ => "target" };
     public static bool SafeMentionHref(string? href) => href is not null && !href.Any(char.IsControl) && !href.Contains('\\') &&
-        (href.StartsWith("/notion/", StringComparison.Ordinal) || href.StartsWith("/notebook/", StringComparison.Ordinal));
+        (href.StartsWith("/notes/", StringComparison.Ordinal) || href.StartsWith("/notion/", StringComparison.Ordinal) || href.StartsWith("/notebook/", StringComparison.Ordinal));
     public static string DateLabel(DateTimeOffset deadline) => TimeZoneInfo.ConvertTime(deadline, Copenhagen).ToString("d. MMM yyyy 'kl.' HH:mm", Danish);
 }

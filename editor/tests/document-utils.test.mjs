@@ -39,11 +39,11 @@ test('teaching links preserve only typed workspace, course and hold context', ()
     returnUrl: 'https://untrusted.example/'
   };
   const query = '?workspace=' + context.workspaceId + '&course=' + context.courseId + '&hold=' + context.holdId;
-  assert.equal(pageUrl(page, true, context), '/notion/' + page + query + '&published=true');
+  assert.equal(pageUrl(page, true, context), '/notes/' + page + query + '&published=true');
   assert.equal(pollUrl(page, true, context), '/teacher/polls/' + page + '/present' + query);
   assert.equal(pollCreateUrl(context), '/teacher/polls/new' + query);
   assert.equal(pollCreateUrl({workspaceId:'https://untrusted.example/'}), '/teacher/polls/new');
-  assert.equal(studentUrl(context.holdId, page, context), '/notion/holds/' + context.holdId + '/students/' + page + query);
-  assert.equal(pageUrl(page, false, {workspaceId:'https://untrusted.example/',courseId:context.courseId}), '/notion/' + page);
+  assert.equal(studentUrl(context.holdId, page, context), '/notes/holds/' + context.holdId + '/students/' + page + query);
+  assert.equal(pageUrl(page, false, {workspaceId:'https://untrusted.example/',courseId:context.courseId}), '/notes/' + page);
   assert.equal(pollUrl(page, false, {holdId: context.holdId, courseId:context.courseId}), '/polls/' + page + '?course=' + context.courseId + '&hold=' + context.holdId);
 });

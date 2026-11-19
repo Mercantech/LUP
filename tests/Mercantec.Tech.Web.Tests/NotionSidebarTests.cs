@@ -319,7 +319,7 @@ public sealed class NotionSidebarTests
         var created = Assert.Single(api.CreateRequests);
         Assert.Equal(api.ActiveId, created.ParentPageId);
         Assert.Equal("Ny underside om databaser", created.Title);
-        Assert.Contains($"/notion/{api.CreatedId}", navigation.Uri, StringComparison.Ordinal);
+        Assert.Contains($"/notes/{api.CreatedId}", navigation.Uri, StringComparison.Ordinal);
         Assert.Equal("false", page.Find(".notion-sidebar-toggle").GetAttribute("aria-expanded"));
         Assert.Null(page.Find("#notion-sidebar").GetAttribute("aria-modal"));
         Assert.Empty(page.FindAll("#notion-sidebar-backdrop"));

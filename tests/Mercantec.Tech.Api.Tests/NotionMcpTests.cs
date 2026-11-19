@@ -180,6 +180,7 @@ public sealed class NotionMcpTests : IAsyncLifetime
             Assert.Equal("invalid_page_url", (await Assert.ThrowsAsync<NotionMcpException>(() => service.ReadAsync(User(), "token", url, null, 30, default))).Code);
         Assert.Empty(engine.Calls);
         Assert.Equal(page, service.ResolvePage("https://lup.example/notion/" + page + "?readonly=true"));
+        Assert.Equal(page, service.ResolvePage("https://lup.example/notes/" + page + "?readonly=true"));
     }
 
     [Fact]
@@ -212,7 +213,7 @@ public sealed class NotionMcpTests : IAsyncLifetime
         var created = await db.NotionPages.AsNoTracking().SingleAsync(p => p.Id == result.PageId);
         Assert.Equal("SQL joins", created.Title); Assert.Equal(teacher, created.CreatedBySub);
         Assert.Null(created.YjsState); Assert.Null(created.PublishedState); Assert.Null(created.PublishedAtUtc);
-        Assert.Equal(0, created.DraftRevision); Assert.Equal($"/notion/{created.Id}", result.Href);
+        Assert.Equal(0, created.DraftRevision); Assert.Equal($"/notes/{created.Id}", result.Href);
         Assert.Single(await db.NotionMcpPageCreations.ToArrayAsync()); Assert.Empty(engine.Calls);
         hold.Forloeb.CreatedBySub = other; await db.SaveChangesAsync();
         Assert.Equal("page_not_found", (await Assert.ThrowsAsync<NotionMcpException>(() => service.CreatePageAsync(User(), page, "SQL joins", operation, default))).Code);

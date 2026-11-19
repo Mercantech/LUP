@@ -12,7 +12,7 @@ test('notebook links retain stable IDs without entering Notion published routes'
   assert.equal(pageUrl(id, true, 'notebook'), '/notebook/' + id);
   assert.equal(pageUrl(id, true, { domain: 'notebook', workspaceId: id, courseId: id, holdId: id }), '/notebook/' + id);
   assert.equal(pageUrl(id, false, { domain: 'notebook' }), '/notebook/' + id);
-  assert.equal(pageUrl(id, true), '/notion/' + id + '?published=true');
+  assert.equal(pageUrl(id, true), '/notes/' + id + '?published=true');
   assert.equal(pageUrl('not-an-id', false, 'notebook'), null);
 });
 

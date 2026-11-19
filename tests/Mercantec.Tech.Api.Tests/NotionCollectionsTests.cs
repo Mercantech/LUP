@@ -96,6 +96,32 @@ public sealed class NotionCollectionsTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Collection_slug_is_unique_and_obeys_collection_access_and_publication()
+    {
+        var editor = Collections(teacher, true);
+        var collection = Value<NotionCollectionView>(await editor.Create(new("Maskinlæring", Slug: " ML2027 "), default));
+        Assert.Equal("ml2027", collection.Slug);
+        Assert.Equal(collection.Id, Value<NotionCollectionView>(await editor.GetBySlug("ML2027", default)).Id);
+        Assert.IsType<NotFoundResult>(await editor.GetBySlug("ml2027", default, publishedOnly: true));
+        Assert.IsType<NotFoundResult>(await Collections(reader).GetBySlug("ml2027", default));
+        Assert.IsType<NotFoundResult>(await Collections(reader).SetSlug(collection.Id, new("private-test"), default));
+
+        var other = await Create();
+        Assert.IsType<ConflictObjectResult>(await editor.SetSlug(other.Id, new("ML2027"), default));
+        Assert.IsType<ConflictObjectResult>(await editor.Create(new("Dobbelt", Slug: "ml2027"), default));
+        Assert.IsType<BadRequestObjectResult>(await editor.SetSlug(collection.Id, new("connections"), default));
+        Assert.IsType<BadRequestObjectResult>(await editor.SetSlug(collection.Id, new(collection.Id.ToString()), default));
+
+        await Publish(collection.Id);
+        Assert.Equal(collection.Id, Value<NotionCollectionView>(await Collections(reader).GetBySlug("ml2027", default)).Id);
+        Assert.Equal("nyt-link", Value<SetNotionCollectionSlug>(await editor.SetSlug(collection.Id, new("nyt-link"), default)).Slug);
+        Assert.IsType<NotFoundResult>(await editor.GetBySlug("ml2027", default));
+        Assert.Equal(collection.Id, Value<NotionCollectionView>(await editor.GetBySlug("nyt-link", default)).Id);
+        Assert.Null(Value<SetNotionCollectionSlug>(await editor.SetSlug(collection.Id, new(null), default)).Slug);
+        Assert.Equal(collection.Id, Value<NotionCollectionView>(await Collections(reader).Get(collection.Id, default)).Id);
+    }
+
+    [Fact]
     public async Task Collection_icon_can_be_changed_only_by_a_manager_and_is_visible_to_readers()
     {
         var collection = await Create();

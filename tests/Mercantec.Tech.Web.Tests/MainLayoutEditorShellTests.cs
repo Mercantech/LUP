@@ -10,6 +10,7 @@ using Mercantec.Tech.Web.Layout;
 using Mercantec.Tech.Web.Notebooks;
 using Mercantec.Tech.Web.Pages;
 using Mercantec.Tech.Web.ProfileNames;
+using Mercantec.Tech.Web.Students;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,7 +25,9 @@ public sealed class MainLayoutEditorShellTests
     [InlineData("/notion", true, false)]
     [InlineData("/notion/connections", true, false)]
     [InlineData("/notion/holds/11111111-aaaa-4111-8111-111111111111", true, false)]
-    [InlineData("/notion/collections/11111111-aaaa-4111-8111-111111111111", true, true)]
+    [InlineData("/notes/collections/11111111-aaaa-4111-8111-111111111111", true, true)]
+    [InlineData("/notes/ml2027", true, true)]
+    [InlineData("/notes/connections", true, false)]
     [InlineData("/notebook", true, true)]
     [InlineData("/notebook/11111111-aaaa-4111-8111-111111111111", true, true)]
     [InlineData("/journal", true, true)]
@@ -52,11 +55,11 @@ public sealed class MainLayoutEditorShellTests
         using var api = new LayoutApi();
         using var context = await CreateContext(api);
         var navigation = context.Services.GetRequiredService<NavigationManager>();
-        navigation.NavigateTo("/notion/11111111-aaaa-4111-8111-111111111111");
+        navigation.NavigateTo("/notes/11111111-aaaa-4111-8111-111111111111");
         var layout = context.Render<MainLayout>(parameters => parameters.Add(x => x.Body, (RenderFragment)(builder => builder.AddContent(0, "Aktuelt indhold"))));
         Assert.Contains("notion-ide-shell", layout.Find(".lup").ClassList);
 
-        navigation.NavigateTo("/notion/connections");
+        navigation.NavigateTo("/notes/connections");
         layout.WaitForAssertion(() => Assert.DoesNotContain("notion-ide-shell", layout.Find(".lup").ClassList));
         Assert.Contains("Aktuelt indhold", layout.Find("#main-content").TextContent);
     }
@@ -160,6 +163,7 @@ public sealed class MainLayoutEditorShellTests
     {
         using var api = new LayoutApi { ProfileName = "Kasper H." };
         using var context = await CreateContext(api);
+        context.ComponentFactories.AddStub<ProfilePhotoEditor>();
         context.Services.GetRequiredService<NavigationManager>().NavigateTo("/profile");
         var layout = context.Render<MainLayout>(parameters => parameters.Add(x => x.Body, (RenderFragment)(builder =>
         {

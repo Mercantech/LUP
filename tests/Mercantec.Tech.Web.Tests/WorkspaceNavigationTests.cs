@@ -51,10 +51,10 @@ public sealed class WorkspaceNavigationTests
     public void Document_graph_quest_and_poll_routes_preserve_only_typed_navigation_context()
     {
         var query = $"?workspace={WorkspaceId}&course={CourseId}&hold={HoldId}";
-        Assert.Equal($"/notion/{ResourceId}{query}&published=true", WorkspaceNavigation.Page(ResourceId, WorkspaceId, CourseId, true, HoldId));
-        Assert.Equal($"/notion{query}&published=true", WorkspaceNavigation.Editor(HoldId, WorkspaceId, CourseId, true));
-        Assert.Equal($"/notion/graph/{ResourceId}{query}", WorkspaceNavigation.Graph(ResourceId, WorkspaceId, CourseId, holdId: HoldId));
-        Assert.Equal($"/notion/holds/{HoldId}/graph{query}", WorkspaceNavigation.HoldGraph(HoldId, WorkspaceId, CourseId));
+        Assert.Equal($"/notes/{ResourceId}{query}&published=true", WorkspaceNavigation.Page(ResourceId, WorkspaceId, CourseId, true, HoldId));
+        Assert.Equal($"/notes{query}&published=true", WorkspaceNavigation.Editor(HoldId, WorkspaceId, CourseId, true));
+        Assert.Equal($"/notes/graph/{ResourceId}{query}", WorkspaceNavigation.Graph(ResourceId, WorkspaceId, CourseId, holdId: HoldId));
+        Assert.Equal($"/notes/holds/{HoldId}/graph{query}", WorkspaceNavigation.HoldGraph(HoldId, WorkspaceId, CourseId));
         Assert.Equal($"/quests/{ResourceId}{query}&submission={ResourceId}", WorkspaceNavigation.Quest(ResourceId, WorkspaceId, CourseId, HoldId, ResourceId));
         Assert.Equal($"/teacher/polls/{ResourceId}/present{query}", WorkspaceNavigation.Poll(ResourceId, WorkspaceId, CourseId, HoldId, true));
         Assert.Equal($"/holds/{HoldId}/roulette{query}&set={ResourceId}", WorkspaceNavigation.Roulette(HoldId, WorkspaceId, CourseId, ResourceId));

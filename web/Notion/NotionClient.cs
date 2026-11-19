@@ -6,8 +6,15 @@ namespace Mercantec.Tech.Web.Notion;
 public sealed class NotionClient(HttpClient http)
 {
     public Task<NotionCollectionView[]> Collections(CancellationToken ct, bool publishedOnly = false) => Get<NotionCollectionView[]>($"notion/collections?publishedOnly={publishedOnly.ToString().ToLowerInvariant()}", ct);
-    public Task<NotionCollectionView> CreateCollection(string title, Guid? holdId, CancellationToken ct, Guid? iconEmojiId = null) =>
-        Post<NotionCollectionView>("notion/collections", new CreateNotionCollection(title, holdId, iconEmojiId), ct);
+    public Task<NotionCollectionView> CreateCollection(string title, Guid? holdId, CancellationToken ct, Guid? iconEmojiId = null, string? slug = null) =>
+        Post<NotionCollectionView>("notion/collections", new CreateNotionCollection(title, holdId, iconEmojiId, slug), ct);
+    public async Task<SetNotionCollectionSlug> SetCollectionSlug(Guid id, string? slug, CancellationToken ct)
+    {
+        using var response = await http.PatchAsJsonAsync($"notion/collections/{id}/slug", new SetNotionCollectionSlug(slug), ct);
+        return await Read<SetNotionCollectionSlug>(response, ct);
+    }
+    public Task<NotionCollectionView> CollectionBySlug(string slug, CancellationToken ct, bool publishedOnly = false) =>
+        Get<NotionCollectionView>($"notion/collections/by-slug/{Uri.EscapeDataString(slug)}?publishedOnly={publishedOnly.ToString().ToLowerInvariant()}", ct);
     public async Task SetCollectionIcon(Guid id, Guid? iconEmojiId, CancellationToken ct)
     {
         using var response = await http.PatchAsJsonAsync($"notion/collections/{id}/icon", new SetNotebookIcon(iconEmojiId), ct);
@@ -104,6 +111,8 @@ public sealed class NotionClient(HttpClient http)
                 "draft_changed" or "stale_draft" or "publication_conflict" => "Kladden er ændret. Vent på lagring, og prøv at udgive igen.",
                 "invalid_assets" => "En vedhæftning er ikke tilgængelig på denne side. Fjern den, eller upload den igen.",
                 "invalid_knowledge_check_publication" => "Et videnstjek på siden er lukket eller tilhører et andet hold. Vælg en anden udgivelse, eller fjern blokken.",
+                "invalid_collection_slug" => "Brug højst 64 små bogstaver (a-z), tal eller bindestreger. Vælg en adresse, som ikke er reserveret.",
+                "collection_slug_taken" => "Adressen er allerede i brug. Vælg en anden.",
                 "invalid_icon" => "Ikonet er ikke længere tilgængeligt. Vælg et andet.",
                 "invalid_parent" or "parent_cycle" or "invalid_page_position" => "Vælg en anden placering. En side kan ikke flyttes under sig selv eller en underside.",
                 "page_tree_changed" => "Undersiderne er ændret. Åbn slettehandlingen igen, og kontrollér, hvad der bliver slettet.",

@@ -74,16 +74,25 @@ public static partial class YjsPageLinks
 
             var pathEnd = href.IndexOfAny(['?', '#'], pathStart);
             var path = href.AsSpan(pathStart, (pathEnd < 0 ? href.Length : pathEnd) - pathStart);
-            var (kind, prefix) = path.StartsWith("/notion/collections/", StringComparison.Ordinal)
-                ? ("collection", "/notion/collections/")
-                : path.StartsWith("/notion/", StringComparison.Ordinal) ? ("notion-page", "/notion/")
-                : path.StartsWith("/notebook/", StringComparison.Ordinal) ? ("notebook-page", "/notebook/") : (null, "");
-            if (kind is null) return null;
-            var id = path[prefix.Length..];
-            return id.Length == 36 && Guid.TryParseExact(id, "D", out var guid) && guid != Guid.Empty
-                ? new(kind, guid.ToString("D")) : null;
+            var notes = path.StartsWith("/notes/", StringComparison.Ordinal);
+            if (notes || path.StartsWith("/notion/", StringComparison.Ordinal))
+            {
+                var target = path[(notes ? "/notes/".Length : "/notion/".Length)..];
+                const string collectionPrefix = "collections/";
+                return target.StartsWith(collectionPrefix, StringComparison.Ordinal)
+                    ? ReadGuidLink("collection", target[collectionPrefix.Length..])
+                    : ReadGuidLink("notion-page", target);
+            }
+            return path.StartsWith("/notebook/", StringComparison.Ordinal)
+                ? ReadGuidLink("notebook-page", path["/notebook/".Length..]) : null;
         }
         catch (JsonException) { return null; }
+    }
+
+    private static EntityReference? ReadGuidLink(string kind, ReadOnlySpan<char> id)
+    {
+        return id.Length == 36 && Guid.TryParseExact(id, "D", out var guid) && guid != Guid.Empty
+            ? new(kind, guid.ToString("D")) : null;
     }
 
     private readonly record struct Id(ulong Client, ulong Clock);

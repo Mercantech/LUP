@@ -32,9 +32,9 @@ test('invalid publication bytes are rejected without creating an editable blank 
 });
 
 test('page and single pupil links contain stable identifiers and reject executable URLs',()=>{
-  assert.equal(pageUrl(page),'/notion/'+page);
-  assert.equal(pageUrl(page,true),'/notion/'+page+'?published=true');
-  assert.equal(studentUrl(hold,pupil),'/notion/holds/'+hold+'/students/'+pupil);
+  assert.equal(pageUrl(page),'/notes/'+page);
+  assert.equal(pageUrl(page,true),'/notes/'+page+'?published=true');
+  assert.equal(studentUrl(hold,pupil),'/notes/holds/'+hold+'/students/'+pupil);
   assert.equal(pageUrl('javascript:alert(1)'),null);
   assert.equal(studentUrl(hold,'../admin'),null);
 });

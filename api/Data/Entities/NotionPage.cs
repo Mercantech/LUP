@@ -42,6 +42,7 @@ public sealed class NotionPage
 public sealed class NotionCollection
 {
     public Guid Id { get; set; }
+    public string? Slug { get; set; }
     public Guid? IconEmojiId { get; set; }
     public Guid? HoldId { get; set; }
     public Guid CreatedBySub { get; set; }
