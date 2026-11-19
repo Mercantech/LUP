@@ -3,6 +3,7 @@
 @implements IAsyncDisposable
 @inject IJSRuntime Js
 
+<div class="room-stage @(Ghost is not null ? "with-placement" : "")">
 <div class="home-board-scroll">
     <div class="room-shell @(ReduceMotion ? "motion-reduced" : "")" style="@GridStyle"
          data-floor="@Layout.FloorStyle" data-wallpaper="@Layout.WallpaperStyle">
@@ -93,6 +94,15 @@
         </div>
     </div>
 </div>
+    @if (Ghost is not null && PlacementActions is not null)
+    {
+        <div class="placement-dock" data-testid="placement-actions">@PlacementActions</div>
+    }
+    else if (ShowItemActions && Selected is { Placement: not null } chosenItem && ItemActions is not null)
+    {
+        <HomeItemActions @key="chosenItem.Id" Item="chosenItem" Dismiss="DismissActions">@ItemActions(chosenItem)</HomeItemActions>
+    }
+</div>
 
 @code {
     private RenderFragment WallPiece(HomeItem item) => @<div @key="item.Id"
@@ -137,7 +147,10 @@
         @if (Ghost is null)
         {
             <button type="button" class="object-handle" title="@ObjectLabel(item)" aria-label="@ObjectLabel(item)"
-                    aria-pressed="@(Selected?.Id == item.Id ? "true" : "false")" @onclick="() => InspectItemAsync(item)"></button>
+                    aria-pressed="@(Selected?.Id == item.Id ? "true" : "false")"
+                    aria-haspopup="@(ItemActions is null ? null : "dialog")"
+                    aria-expanded="@(ItemActions is null ? null : ShowItemActions && Selected?.Id == item.Id ? "true" : "false")"
+                    @onclick="() => InspectItemAsync(item)"></button>
         }
     </text>;
 

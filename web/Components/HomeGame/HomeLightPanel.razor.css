@@ -1,5 +1,6 @@
 .light-panel { background: #174538; color: #fff9e7; border-radius: .65rem; padding: 1rem 1.2rem; margin: 0 0 .8rem; border-bottom: .23rem solid #9cae87; }
 .light-panel h2 { font-size: 1rem; line-height: 1.28; margin: 0; color: #fff9e7; }
+.light-panel header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem .75rem; }
 .reading-value { display: flex; align-items: baseline; gap: .35rem; margin: .35rem 0 .8rem; font-variant-numeric: tabular-nums; }
 .reading-value strong { font-size: clamp(2.3rem, 3.8vw, 3.7rem); line-height: 1.05; font-weight: 650; letter-spacing: -.055em; }
 .reading-value span { font-size: 1rem; }
@@ -9,7 +10,7 @@
 .lux-scale i { position: absolute; bottom: -.21rem; width: .34rem; height: 1rem; border: 1px solid #1c3828; border-radius: .1rem; background: #ffce77; transform: translateX(-50%); }
 .scale-labels { display: flex; justify-content: space-between; color: #d4e0d2; font-size: .74rem; margin-top: .27rem; }
 .light-panel p { margin: .6rem 0 0; font-size: .85rem; }
-.light-panel small { display: block; margin-top: .4rem; line-height: 1.45; color: #d4e0d2; }
+.light-panel small { line-height: 1.45; color: #d4e0d2; }
 .outdoor { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem; }
 .outdoor span { color: #d4e0d2; margin-left: auto; font-size: .76rem; }
 .comparison { color: #ffe5a5; }

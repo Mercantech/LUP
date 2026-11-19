@@ -2,7 +2,10 @@
 @using Mercantec.Tech.Contracts.HomeGame
 
 <section class="light-panel" data-testid="light-panel" aria-labelledby="home-lux-title">
-    <h2 id="home-lux-title">Lys ved bordet</h2>
+    <header>
+        <h2 id="home-lux-title">Lys ved bordet</h2>
+        @if (Preview && Reading is not null) { <small>Forhåndsvisning</small> }
+    </header>
     <div class="reading-value" data-testid="reading-lux" data-lux="@Reading?.Lux">
         @if (Reading is { } value)
         {
@@ -10,30 +13,22 @@
         }
         else
         {
-            <span class="awaiting-light">Afventer måling</span>
+            <span class="awaiting-light">@(HasDesk ? "Kør koden for at måle lyset." : "Placér et skrivebord for at måle lyset.")</span>
         }
     </div>
-    <div class="lux-scale" aria-hidden="true">
-        <span class="reading-band"></span>
-        @if (Reading is { } sample)
-        {
+    @if (Reading is { } sample)
+    {
+        <div class="lux-scale" aria-hidden="true">
+            <span class="reading-band"></span>
             <i style="@($"left:{Math.Clamp(sample.Lux / 10d, 0, 100).ToString("0.0", CultureInfo.InvariantCulture)}%")"></i>
+        </div>
+        <div class="scale-labels" aria-hidden="true"><span>0</span><span>1.000 lux</span></div>
+        @if (Before is { } previous && sample.Cell == previous.Cell && sample.Lux != previous.Lux)
+        {
+            <p class="comparison" data-testid="light-change">Før <strong>@previous.Lux lux</strong></p>
         }
-    </div>
-    <div class="scale-labels" aria-hidden="true"><span>0</span><span>1.000 lux</span></div>
-    @if (Reading is { } now && Before is { } previous && now.Cell == previous.Cell)
-    {
-        <p class="comparison" data-testid="light-change">Før <strong>@previous.Lux</strong> → nu <strong>@now.Lux lux</strong></p>
     }
-    <p class="outdoor">Udendørs <strong>@OutdoorLux lux</strong><span>Læseområde 300–600 lux</span></p>
-    @if (Preview && Reading is not null)
-    {
-        <small>Beregnet forhåndsvisning</small>
-    }
-    @if (Reading is null)
-    {
-        <small>@(HasDesk ? "Kør din kode for at måle lyset ved læsepladsen." : "Placér skrivebordet i boligen for at måle læselyset.")</small>
-    }
+    <p class="outdoor">Udendørs <strong>@OutdoorLux lux</strong>@if (Reading is not null) { <span>Læseområde 300–600 lux</span> }</p>
 </section>
 
 @code {

@@ -1,0 +1,50 @@
+.item-actions {
+    position: fixed;
+    inset: auto;
+    z-index: 110;
+    visibility: hidden;
+    box-sizing: border-box;
+    width: min(19rem, calc(100vw - 1rem));
+    margin: 0;
+    padding: .55rem .7rem .7rem;
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--home-accent, #284f37);
+    border-radius: .55rem;
+    color: var(--home-ink, #1c3828);
+    background: var(--home-paper, #fbf7eb);
+    box-shadow: 0 .3rem 1.2rem #29362636;
+}
+.item-actions[data-ready] { visibility: visible; }
+.item-actions header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-bottom: .3rem;
+}
+.item-actions strong { min-width: 0; overflow-wrap: anywhere; line-height: 1.25; }
+.close-actions {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    color: inherit;
+    border: 0;
+    border-radius: .35rem;
+    background: transparent;
+    cursor: pointer;
+    font: 1.4rem/1 system-ui, sans-serif;
+}
+.close-actions:hover { background: var(--home-pale, #e3e8d5); }
+.item-actions :is(button, summary):focus-visible, .item-action-content ::deep :is(button, summary):focus-visible {
+    outline: 3px solid #246b81;
+    outline-offset: 2px;
+}
+.item-action-content { min-width: 0; }
+@media (pointer: coarse) {
+    .close-actions, .item-action-content ::deep button { min-height: 2.75rem; }
+    .close-actions { min-width: 2.75rem; }
+}

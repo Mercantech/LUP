@@ -44,44 +44,74 @@ else
 
         <div class="workspace">
             <section class="plan-panel" aria-label="Din bolig">
-                <div class="room-tools">
-                    <button type="button" class="secondary code-markers" aria-pressed="@(_showDevices ? "true" : "false")" @onclick="() => _showDevices = !_showDevices">Vis ting med kode</button>
-                    @if (_mode == "code")
-                    {
-                        <button type="button" class="secondary room-toggle" aria-expanded="@(!_roomCollapsed ? "true" : "false")" @onclick="() => _roomCollapsed = !_roomCollapsed">@(_roomCollapsed ? "Vis rum" : "Fold rum sammen")</button>
-                    }
-                </div>
+                @{ var hasDevices = RoomItems.Any(IsProgrammable); }
+                @if (hasDevices || _mode == "code")
+                {
+                    <div class="room-tools">
+                        @if (hasDevices)
+                        {
+                            <button type="button" class="secondary code-markers" aria-pressed="@(_showDevices ? "true" : "false")" @onclick="() => _showDevices = !_showDevices">Vis ting med kode</button>
+                        }
+                        @if (_mode == "code")
+                        {
+                            <button type="button" class="secondary room-toggle" aria-expanded="@(!_roomCollapsed ? "true" : "false")" @onclick="() => _roomCollapsed = !_roomCollapsed">@(_roomCollapsed ? "Vis rum" : "Fold rum sammen")</button>
+                        }
+                    </div>
+                }
                 <div class="room-view @(_roomCollapsed ? "collapsed" : "")" @ref="_roomView">
                 <HomeBoard Layout="@DisplayLayout" Snapshot="@LightingSnapshot" Avatar="@AvatarCell" AvatarId="@_state.SelectedAvatarId"
                            AvatarActivity="@(ResidentFrame?.Activity ?? "idle")" ResidentSource="@ResidentSource" WalkSpeed="@(IsActive ? _speed : 1)" Cursor="@_cursor" Selected="@BoardSelection"
                            Mode="@_overlay" Zoom="@_zoom" Ghost="@_ghost" InvalidPreview="@(_previewError is not null)"
-                           ShowDevices="@_showDevices" Inspect="Select" ActivateWall="ActivateWallAsync"
-                           ReduceMotion="@_reduceMotion" Visit="VisitCell" Activate="ActivateCellAsync" Turn="TurnPreview" Cancel="CancelPlacement" />
-                </div>
-                @if (_placement is not null)
-                {
-                    <div class="placement-bar">
-                        <span aria-live="polite"><strong>@PlacementName</strong> ved (@_cursor.X, @_cursor.Y)<br />
-                            @(_previewError ?? "Klar til at placere")</span>
+                           ShowDevices="@_showDevices" Inspect="InspectItem" ActivateWall="ActivateWallAsync"
+                           ReduceMotion="@_reduceMotion" Visit="VisitCell" Activate="ActivateCellAsync" Turn="TurnPreview" Cancel="CancelPlacement"
+                           ShowItemActions="@(_itemActionsOpen && _replay is null)" DismissActions="DismissItemActions">
+                    <ItemActions Context="item">
                         <div class="inline-actions">
-                            @if (CanTurnPreview) { <button type="button" class="secondary" @onclick="TurnPreview">Drej 90°</button> }
-                            <button type="button" class="secondary" @onclick="CancelPlacement">Annullér</button>
-                            <button type="button" class="action" data-testid="confirm-placement" disabled="@(_previewError is not null || _working)" @onclick="ConfirmPlacementAsync">@PlacementLabel</button>
+                            <button type="button" class="action" disabled="@_working" @onclick="() => MoveInspectedAsync(item)">Flyt</button>
+                            @if (item.Placement is { } at && CanRotate(item.DefinitionId, at.Anchor))
+                            {
+                                <button type="button" class="secondary" disabled="@_working" @onclick="() => RotateItemAsync(item)">Drej 90°</button>
+                            }
+                            @if (IsOutput(item) && !IsActive)
+                            {
+                                <button type="button" class="secondary" disabled="@_working" @onclick="() => TryDevice(item, !IsOn(item))">@(IsOn(item) ? Labels(item.DefinitionId).Off : Labels(item.DefinitionId).On)</button>
+                            }
                         </div>
-                    </div>
-                }
+                        @if (_itemActionError is not null || _error is not null)
+                        {
+                            <p role="alert">@(_itemActionError ?? _error)</p>
+                        }
+                        <details class="item-more" @key="item.Id">
+                            <summary>Flere muligheder</summary>
+                            @ManagementActions(item)
+                        </details>
+                    </ItemActions>
+                    <PlacementActions>
+                        <div class="placement-bar">
+                            <span aria-live="polite"><strong>@PlacementName</strong>@if (_previewError is not null) { <br />@_previewError }</span>
+                            <div class="inline-actions">
+                                @if (CanTurnPreview) { <button type="button" class="secondary" @onclick="TurnPreview">Drej 90°</button> }
+                                <button type="button" class="secondary" @onclick="CancelPlacement">Annullér</button>
+                                <button type="button" class="action" data-testid="confirm-placement" disabled="@(_previewError is not null || _working)" @onclick="ConfirmPlacementAsync">@PlacementLabel</button>
+                            </div>
+                        </div>
+                    </PlacementActions>
+                </HomeBoard>
+                </div>
                 @if (RoomItems.Any())
                 {
                     <details class="plan-settings room-devices">
                         <summary>Vælg en genstand</summary>
                         <div class="inline-actions">
-                            @foreach (var item in RoomItems.Where(i => !_showDevices || IsProgrammable(i)))
+                            @{ var listedItems = RoomItems.Where(i => !_showDevices || !hasDevices || IsProgrammable(i)).ToLookup(i => i.Name); }
+                            @foreach (var item in listedItems.SelectMany(group => group))
                             {
                                 <button type="button" class="secondary" aria-pressed="@(item.Id == _selectedId ? "true" : "false")"
-                                        data-inspect-alias="@item.Alias" @onclick="() => Select(item)">@item.Name <small>@item.Alias</small></button>
+                                        data-inspect-alias="@item.Alias" @onclick="() => InspectItem(item)">
+                                    @item.Name @if (listedItems[item.Name].Count() > 1) { <small>@item.Alias</small> }
+                                </button>
                             }
                         </div>
-                        @if (_showDevices && !RoomItems.Any(IsProgrammable)) { <p>Placér en programmerbar ting fra lageret eller butikken.</p> }
                     </details>
                 }
                 <HomeResidentPanel Snapshot="@ResidentFrame" Layout="@DisplayLayout" AvatarId="@_state.SelectedAvatarId"
@@ -101,70 +131,57 @@ else
             </section>
             <section class="work-panel" aria-label="Arbejdsområde">
                 <div class="work-content">
-                    @if (_mode != "build" || BoardSelection?.Placement is not null && _placement is null)
+                    @if (ShowLightPanel)
                     {
                         <HomeLightPanel Reading="@RoomReading" Before="@_beforeLight"
                                         HasDesk="@HasDesk" OutdoorLux="@LightingSnapshot.DaylightLux" Preview="@(Snapshot is null || _manualSnapshot is not null)" />
                     }
-                    @if (BoardSelection is { Placement: not null } inspected && _placement is null)
+                    @if (BoardSelection is { Placement: not null } inspected && IsProgrammable(inspected) && _placement is null)
                     {
                         <section class="object-panel" data-testid="device-inspector" aria-label="Valgt i rummet">
                             <header><h2>@inspected.Name</h2><strong class="device-state">@DeviceState(inspected)</strong></header>
-                            @if (IsProgrammable(inspected))
+                            @if (inspected.DefinitionId == HomeCatalog.PlanterId && LightingSnapshot.SoilMoisture?.TryGetValue(inspected.Alias, out var moisture) == true)
                             {
-                                <code>@inspected.Alias</code>
-                                @if (inspected.DefinitionId == HomeCatalog.PlanterId && LightingSnapshot.SoilMoisture?.TryGetValue(inspected.Alias, out var moisture) == true)
-                                {
-                                    <p>Jordfugt <strong>@moisture %</strong></p>
-                                }
-                                @if (IsOutput(inspected) && !IsActive && _replay is null)
-                                {
-                                    var labels = Labels(inspected.DefinitionId);
-                                    <div class="manual-actions" role="group" aria-label="Afprøv i rummet">
-                                        <button type="button" class="secondary" data-testid="device-on" aria-pressed="@(IsOn(inspected) ? "true" : "false")" @onclick="() => TryDevice(inspected, true)">@labels.On</button>
-                                        <button type="button" class="secondary" data-testid="device-off" aria-pressed="@(!IsOn(inspected) ? "true" : "false")" @onclick="() => TryDevice(inspected, false)">@labels.Off</button>
-                                    </div>
-                                }
-                                @if (_manualSnapshot is not null)
-                                {
-                                    <div class="manual-caption"><small>Manuel afprøvning · beregnet i rummet</small><button type="button" class="text-action" @onclick="ResetAudition">Afslut afprøvning</button></div>
-                                }
-                                <details class="device-code" @key="inspected.Id">
-                                    <summary>Se kodeidé</summary>
-                                    @if (IsOutput(inspected))
-                                    {
-                                        <label>Handling<select @bind="_exampleChoice">
-                                            <option value="on">@Labels(inspected.DefinitionId).On</option>
-                                            <option value="off">@Labels(inspected.DefinitionId).Off</option>
-                                            @if (RuleSensor(inspected) is { } sensor) { <option value="rule">Styr med @sensor.Name</option> }
-                                        </select></label>
-                                    }
-                                    <pre>@DeviceExample(inspected)</pre>
-                                    <button type="button" class="secondary" @onclick="() => ApplyExampleAsync(DeviceExample(inspected))">Brug i editor</button>
-                                </details>
+                                <p>Jordfugt <strong>@moisture %</strong></p>
                             }
-                            @if (_replay is null && _mode != "build")
+                            @if (IsOutput(inspected) && !IsActive && _replay is null)
                             {
-                                <button type="button" class="text-action" @onclick="() => MoveInspectedAsync(inspected)">Flyt genstanden</button>
+                                var labels = Labels(inspected.DefinitionId);
+                                <div class="manual-actions" role="group" aria-label="Afprøv i rummet">
+                                    <button type="button" class="secondary" data-testid="device-on" aria-pressed="@(IsOn(inspected) ? "true" : "false")" @onclick="() => TryDevice(inspected, true)">@labels.On</button>
+                                    <button type="button" class="secondary" data-testid="device-off" aria-pressed="@(!IsOn(inspected) ? "true" : "false")" @onclick="() => TryDevice(inspected, false)">@labels.Off</button>
+                                </div>
                             }
+                            @if (_manualSnapshot is not null)
+                            {
+                                <button type="button" class="text-action" @onclick="ResetAudition">Afslut afprøvning</button>
+                            }
+                            <details class="device-code" @key="inspected.Id">
+                                <summary>Se kodeidé</summary>
+                                @if (IsOutput(inspected))
+                                {
+                                    <label>Handling<select @bind="_exampleChoice">
+                                        <option value="on">@Labels(inspected.DefinitionId).On</option>
+                                        <option value="off">@Labels(inspected.DefinitionId).Off</option>
+                                        @if (RuleSensor(inspected) is { } sensor) { <option value="rule">Styr med @sensor.Name</option> }
+                                    </select></label>
+                                }
+                                <pre>@DeviceExample(inspected)</pre>
+                                <button type="button" class="secondary" @onclick="() => ApplyExampleAsync(DeviceExample(inspected))">Brug i editor</button>
+                            </details>
                         </section>
                     }
                     @if (_mode == "build")
                     {
-                        <h2>Indretning</h2>
                         @if (!RoomItems.Any() && _shelf == "stock")
                         {
-                            <p class="first-placement">Dit rum er tomt. Vælg <strong>Placér</strong> ved en ting fra dit gratis startsæt. Rullegardinet passer i vinduet.</p>
-                        }
-                        @if (_state.IsTeacherSandbox && _shelf == "shop")
-                        {
-                            <p class="quiet">Du kan prøve alt udstyret gratis i din prøvebolig.</p>
+                            <p class="first-placement">Vælg <strong>Placér</strong> for at sætte din første ting i rummet.</p>
                         }
                         <div class="section-actions" role="group" aria-label="Indretning">
-                            <button type="button" class="@ShelfClass("stock")" @onclick='() => ChooseShelf("stock")'>Lager</button>
-                            <button type="button" class="@ShelfClass("shop")" @onclick='() => ChooseShelf("shop")'>Butik</button>
-                            <button type="button" class="@ShelfClass("room")" @onclick='() => ChooseShelf("room")'>I boligen</button>
-                            <button type="button" class="@ShelfClass("finishes")" @onclick='() => ChooseShelf("finishes")'>Gulv og tapet</button>
+                            <button type="button" class="@ShelfClass("stock")" aria-pressed="@(_shelf == "stock" ? "true" : "false")" @onclick='() => ChooseShelf("stock")'>Lager</button>
+                            <button type="button" class="@ShelfClass("shop")" aria-pressed="@(_shelf == "shop" ? "true" : "false")" @onclick='() => ChooseShelf("shop")'>Butik</button>
+                            <button type="button" class="@ShelfClass("room")" aria-pressed="@(_shelf == "room" ? "true" : "false")" @onclick='() => ChooseShelf("room")'>I boligen</button>
+                            <button type="button" class="@ShelfClass("finishes")" aria-pressed="@(_shelf == "finishes" ? "true" : "false")" @onclick='() => ChooseShelf("finishes")'>Gulv og tapet</button>
                             <button type="button" class="secondary undo" disabled="@(!_state.CanUndo || _working)" @onclick='() => BuildAsync(new("undo"))'>Fortryd</button>
                         </div>
                         @if (_shelf == "finishes")
@@ -198,17 +215,22 @@ else
                         }
                         else
                         {
+                            var shelf = ShelfItems.ToArray();
+                            var names = shelf.ToLookup(item => item.Name, StringComparer.OrdinalIgnoreCase);
                             <ul class="items">
-                                @foreach (var item in ShelfItems)
+                                @foreach (var item in shelf)
                                 {
                                     <li class="@(item.Id == _selectedId ? "picked" : "")" data-definition="@item.DefinitionId">
                                         @if (HomeRoomArt.Image(item.DefinitionId) is { } thumbnail)
                                         {
                                             <img class="item-thumbnail" src="@thumbnail" alt="" width="44" height="40" />
                                         }
-                                        <button class="item-label" type="button" @onclick="() => Select(item)">
+                                        <button class="item-label" type="button" @onclick="() => InspectItem(item)">
                                             <strong>@item.Name</strong>
-                                            <small>@(item.Placement is { } p ? $"Felt {p.Anchor.X}, {p.Anchor.Y}" : item.Starter ? "Startsæt" : "På lager")</small>
+                                            @if (names[item.Name].Count() > 1)
+                                            {
+                                                <small>@(item.Placement is { } p ? $"Felt {p.Anchor.X}, {p.Anchor.Y}" : item.Alias)</small>
+                                            }
                                         </button>
                                         @if (item.Placement is null)
                                         {
@@ -217,73 +239,18 @@ else
                                     </li>
                                 }
                             </ul>
-                            @if (!ShelfItems.Any()) { <p>Der ligger ingen genstande her.</p> }
+                            @if (shelf.Length == 0) { <p>@(_shelf == "stock" ? "Lageret er tomt." : "Rummet er tomt.")</p> }
                         }
-                        @if (Selected is { } selected && _shelf is "room" or "stock")
+                        @if (Selected is { Placement: null } stored && _shelf == "stock" && _placement is null)
                         {
-                            <section class="inspector" aria-label="Valgt genstand">
-                                <header><h3>@selected.Name</h3><code>@selected.Alias</code></header>
-                                @if (selected.Placement is { } placement)
-                                {
-                                    <p>Felt (@placement.Anchor.X, @placement.Anchor.Y), @placement.Rotation°</p>
-                                }
-                                @if (HomeCatalog.Definition(selected.DefinitionId) is { Radius: > 0 } definition)
-                                {
-                                    <p>@(selected.DefinitionId == "lamp_basic" ? "Lysbidrag" : "Registrering") i op til @definition.Radius felters afstand (@(definition.Radius * HomeCatalog.CellMeters) m).</p>
-                                    <button class="secondary" type="button" @onclick='() => _overlay = "range"'>Vis rækkevidde</button>
-                                }
-                                <div class="inline-actions">
-                                    @if (selected.Placement is not null)
-                                    {
-                                        <button class="secondary" type="button" disabled="@_working" @onclick="() => StartPlacement(selected)">Flyt</button>
-                                        @if (CanRotate(selected.DefinitionId, selected.Placement.Anchor))
-                                        {
-                                            <button class="secondary" type="button" disabled="@_working" @onclick="() => RotateItemAsync(selected)">Drej på stedet</button>
-                                        }
-                                        <button class="secondary" type="button" disabled="@_working" @onclick='() => BuildAsync(new("store", selected.Id))'>Læg på lager</button>
-                                    }
-                                    @if (IsProgrammable(selected))
-                                    {
-                                        <button class="secondary" type="button" @onclick='() => ChangeModeAsync("code")'>Åbn kode</button>
-                                    }
-                                    @if (!selected.Starter)
-                                    {
-                                        <button class="secondary" type="button" disabled="@_working" @onclick='() => ConfirmSale(selected)'>@(selected.GoldPaid > 0 ? "Sælg" : "Fjern")</button>
-                                    }
-                                </div>
-                                @if (_sellId == selected.Id)
-                                {
-                                    <div class="sale-confirm">
-                                        @if (selected.GoldPaid > 0)
-                                        {
-                                            <p>Sælg @selected.Name for @selected.GoldPaid guld?</p>
-                                        }
-                                        else
-                                        {
-                                            <p>Fjern @selected.Name fra dit hjem?</p>
-                                        }
-                                        <button class="action" type="button" @onclick='() => BuildAsync(new("sell", selected.Id))' disabled="@_working">Bekræft</button>
-                                        <button class="secondary" type="button" @onclick="() => _sellId = null">Annullér</button>
-                                    </div>
-                                }
-                                <details>
-                                    <summary>Navn og kodealias</summary>
-                                    <div class="form-line">
-                                        <label>Navn <input maxlength="60" @bind="_itemName" /></label>
-                                        <button class="secondary" type="button" disabled="@_working" @onclick='() => BuildAsync(new("rename", selected.Id, Value: _itemName))'>Gem navn</button>
-                                    </div>
-                                    <p>Hvis du ændrer kodealias, skal du også opdatere dit program.</p>
-                                    <div class="form-line">
-                                        <label>Kodealias <input maxlength="48" @bind="_itemAlias" /></label>
-                                        <button class="secondary" type="button" disabled="@_working" @onclick='() => BuildAsync(new("alias", selected.Id, Value: _itemAlias))'>Gem kodealias</button>
-                                    </div>
-                                </details>
+                            <section class="inspector" aria-label="Valgt på lageret">
+                                <h3>@stored.Name</h3>
+                                @ManagementActions(stored)
                             </section>
                         }
                     }
                     else if (_mode == "code")
                     {
-                        <h2>Controller</h2>
                         <div class="code-controls">
                             <label>Sprog
                                 <select value="@_language" @onchange="ChooseLanguageAsync">
@@ -445,13 +412,12 @@ else
                             @if (Snapshot is not null)
                             {
                                 <dl class="measurements">
-                                    <div><dt>Udendørs</dt><dd>@Snapshot.DaylightLux lux</dd></div>
                                     <div><dt>Ved avataren</dt><dd>@(Snapshot.AvatarLux?.ToString() ?? "–") lux</dd></div>
                                     <div><dt>Energi</dt><dd>@((Snapshot.EnergyMicroJ / 1_000_000d).ToString("0.0")) J</dd></div>
                                 </dl>
                                 @if (Snapshot.Sensors.Count > 0)
                                 {
-                                    <details open>
+                                    <details>
                                         <summary>Sensorer</summary>
                                         <dl class="signals">
                                             @foreach (var reading in Snapshot.Sensors)
@@ -489,14 +455,14 @@ else
                     }
                     <details class="start-guide help-details">
                         <summary>Kom i gang</summary>
-                        <p>Vælg en ting i rummet, og åbn <strong>Se kodeidé</strong>. Gardinet kan åbne og lukke, vendeskiltet skifter symbol, og en fugtføler kan styre plantekassens pumpe.</p>
                         <ol>
-                            <li>Åbn <strong>Indret</strong> og placér skrivebordet og gulvlampen fra lageret. Montér hjemmecontrolleren på en væg for at køre kode.</li>
-                            <li>Åbn <strong>Programmér</strong> og vælg dit sprog. Her er et eksempel med lampens kodealias.</li>
+                            <li>Placér skrivebordet og gulvlampen fra lageret. Montér hjemmecontrolleren på en væg.</li>
+                            <li>Vælg sprog under <strong>Programmér</strong>, og prøv lampeeksemplet.</li>
+                            <li>Vælg <strong>Kør kode</strong>. Flyt lampen for at ændre lyset ved bordet.</li>
                         </ol>
                         <pre class="guide-example">@LampExample</pre>
                         <button type="button" class="secondary" @onclick="() => ApplyExampleAsync(LampExample)">Brug lampeeksempel</button>
-                        <p>Vælg <strong>Kør kode</strong>. Lyspanelet viser lux ved læsepladsen. Flyt lampen tættere på eller længere væk for at se forskellen.</p>
+                        <p>Vælg en programmerbar ting i rummet for at se dens kodeeksempel.</p>
                         <details>
                             <summary>Styr lampen med dagslys</summary>
                             <p>Montér dagslyssensoren på en væg. Eksemplet læser sensoren løbende og tænder lampen ved under 300 lux.</p>
@@ -530,4 +496,47 @@ else
             </section>
         </div>
     </section>
+}
+
+@code {
+    private RenderFragment ManagementActions(HomeItem item) => @<div class="item-management">
+        <div class="inline-actions">
+            @if (item.Placement is not null)
+            {
+                <button class="secondary" type="button" disabled="@_working" @onclick='() => BuildAsync(new("store", item.Id))'>Læg på lager</button>
+                @if (HomeCatalog.Definition(item.DefinitionId) is { Radius: > 0 })
+                {
+                    <button class="secondary" type="button" @onclick='() => { _overlay = "range"; DismissItemActions(); }'>Vis rækkevidde</button>
+                }
+            }
+            @if (IsProgrammable(item))
+            {
+                <button class="secondary" type="button" @onclick='() => ChangeModeAsync("code")'>Åbn kode</button>
+            }
+            @if (!item.Starter)
+            {
+                <button class="secondary" type="button" disabled="@_working" @onclick="() => ConfirmSale(item)">@(item.GoldPaid > 0 ? "Sælg" : "Fjern")</button>
+            }
+        </div>
+        @if (_sellId == item.Id)
+        {
+            <div class="sale-confirm">
+                <p>@(item.GoldPaid > 0 ? $"Sælg {item.Name} for {item.GoldPaid} guld?" : $"Fjern {item.Name} fra dit hjem?")</p>
+                <button class="action" type="button" @onclick='() => BuildAsync(new("sell", item.Id))' disabled="@_working">Bekræft</button>
+                <button class="secondary" type="button" @onclick="() => _sellId = null">Annullér</button>
+            </div>
+        }
+        <details>
+            <summary>Navn og kodealias</summary>
+            <div class="form-line">
+                <label>Navn <input maxlength="60" @bind="_itemName" /></label>
+                <button class="secondary" type="button" disabled="@_working" @onclick='() => BuildAsync(new("rename", item.Id, Value: _itemName))'>Gem navn</button>
+            </div>
+            <div class="form-line">
+                <label>Kodealias <input maxlength="48" @bind="_itemAlias" /></label>
+                <button class="secondary" type="button" disabled="@_working" @onclick='() => BuildAsync(new("alias", item.Id, Value: _itemAlias))'>Gem kodealias</button>
+            </div>
+            <small>Skifter du kodealias, skal det også ændres i dit program.</small>
+        </details>
+    </div>;
 }

@@ -71,7 +71,7 @@ async function handler(route) {
         assert.equal(body.revision, state.layout.revision);
         const { action } = body;
         const previous = structuredClone({ items: state.layout.items, gold: state.gold, floorStyle: state.layout.floorStyle, wallpaperStyle: state.layout.wallpaperStyle });
-        if (action.kind === "place") {
+        if (action.kind === "place" || action.kind === "rotate") {
             state.layout.items.find(item => item.id === action.itemId).placement = action.placement;
         } else if (action.kind === "buy") {
             assert.equal(action.definitionId, "sofa_basic");
@@ -147,8 +147,8 @@ async function handler(route) {
     throw new Error(`Unexpected endpoint ${endpoint}`);
 }
 
-async function device(browser, sub, role) {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: "block" });
+async function device(browser, sub, role, browserOptions = {}) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: "block", ...browserOptions });
     await context.route("**/*", handler);
     await context.addInitScript(({ sub, role }) => {
         const encode = value => btoa(JSON.stringify(value)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
@@ -210,6 +210,39 @@ async function main() {
         await page.getByRole("button", { name: "Indret", exact: true }).click();
         assert.equal(await page.locator(".task-label").count(), 0);
         if (output) await page.screenshot({ path: path.join(output, "home-initial.png"), fullPage: true });
+        const { checkContextActions } = await import("./HomeGame.StagingQa/room-interactions.mjs");
+        await checkContextActions(page, "desk_basic", output);
+        const mobile = await device(browser, subject, "Student", {viewport:{width:375,height:667}, hasTouch:true, isMobile:true});
+        const touchPage = await mobile.newPage();
+        await touchPage.goto(`${base}/spil/hjem`, {waitUntil:"domcontentloaded"});
+        await touchPage.getByRole("button", {name:"Indret",exact:true}).tap();
+        await checkContextActions(touchPage, "desk_basic", output);
+        await mobile.close();
+        const desk = board.locator('[data-item-id="desk"]');
+        const deskState = () => state.layout.items.find(item => item.id === "desk").placement;
+        const menu = page.getByTestId("item-actions");
+        await desk.locator(".object-handle").click();
+        await menu.getByRole("button", {name:"Drej 90°",exact:true}).click();
+        await desk.and(page.locator('[data-rotation="90"]')).waitFor();
+        assert.equal(deskState().rotation, 90);
+        await menu.getByRole("button", {name:"Flyt",exact:true}).click();
+        await tile(9, 6).click();
+        await page.waitForFunction(() => document.querySelector('.furniture[data-item-id="desk"]:not(.ghost)')?.style.getPropertyValue('--x') === '9');
+        await page.reload({waitUntil:"domcontentloaded"});
+        await desk.and(page.locator('[data-rotation="90"]')).waitFor();
+        assert.deepEqual(deskState().anchor, point(9, 6));
+        // Restore the desk so the range and replay checks keep their original reading position.
+        await page.getByRole("button", {name:"Indret",exact:true}).click();
+        await page.getByRole("button", {name:"Fortryd",exact:true}).click();
+        await page.getByText("Seneste byggehandling fortrudt.").waitFor();
+        assert.deepEqual(deskState().anchor, point(6, 3));
+        await desk.locator(".object-handle").click();
+        for (const angle of [180, 270, 0]) {
+            await menu.getByRole("button", {name:"Drej 90°",exact:true}).click();
+            await desk.and(page.locator(`[data-rotation="${angle}"]`)).waitFor();
+        }
+        await page.keyboard.press("Escape");
+        await page.getByRole("button", {name:"Lager",exact:true}).click();
         await page.getByRole("listitem").filter({hasText:"Gulvlampe"}).getByRole("button",{name:"Placér",exact:true}).click();
         await tile(0, 4).focus();
         for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowRight");
@@ -270,7 +303,7 @@ async function main() {
         assert.equal(await life.getAttribute("data-source"), "replay");
         assert.equal(await life.getByRole("meter").count(), 0, "Archived runs without needs preserve the original recording");
         await page.getByRole("slider", { name: /^Tick/ }).fill("300");
-        await page.getByText("Din avatar læser", { exact: true }).waitFor();
+        await life.getByText("Læser", { exact: true }).waitFor();
         assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("378 lux"));
         await page.getByRole("button", { name: "Luk genafspilning" }).click();
         assert.equal(await locationOf(resident), homeBeforeExperiment);

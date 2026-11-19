@@ -28,6 +28,10 @@ public partial class HomeBoard
     [Parameter] public EventCallback<HomeCell> Visit { get; set; }
     [Parameter] public EventCallback<HomeCell> Activate { get; set; }
     [Parameter] public EventCallback<HomeItem> Inspect { get; set; }
+    [Parameter] public bool ShowItemActions { get; set; }
+    [Parameter] public RenderFragment<HomeItem>? ItemActions { get; set; }
+    [Parameter] public EventCallback DismissActions { get; set; }
+    [Parameter] public RenderFragment? PlacementActions { get; set; }
     [Parameter] public EventCallback<HomeEdge> ActivateWall { get; set; }
     [Parameter] public EventCallback Turn { get; set; }
     [Parameter] public EventCallback Cancel { get; set; }

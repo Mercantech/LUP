@@ -14,7 +14,7 @@
         }
         else
         {
-            <label>Hvad gør figuren?
+            <label>Aktivitet
                 <select data-testid="resident-intent" value="@Intent" disabled="@Disabled" @onchange="SelectIntent">
                     <option value="auto">Vælger selv</option>
                     <option value="read">Læs ved bordet</option>
@@ -37,8 +37,11 @@
                 <dd><meter data-need="inspiration" min="0" max="100" value="@resident.Inspiration" aria-labelledby="resident-inspiration"></meter><span>@resident.Inspiration %</span></dd>
             </div>
         </dl>
-        <p class="want" data-testid="resident-want" data-want="@resident.Want" data-target-alias="@resident.TargetAlias"
-           data-destination-x="@resident.Destination?.X" data-destination-y="@resident.Destination?.Y"><strong>@(resident.IsAutonomous ? "Ønske" : "Valgt aktivitet")</strong> @WantText(resident)</p>
+        @if (resident.IsAutonomous || resident.TargetAlias is not null || Source == "replay")
+        {
+            <p class="want" data-testid="resident-want" data-want="@resident.Want" data-target-alias="@resident.TargetAlias"
+               data-destination-x="@resident.Destination?.X" data-destination-y="@resident.Destination?.Y"><strong>@(resident.IsAutonomous ? "Ønske" : "Valgt aktivitet")</strong> @WantText(resident)</p>
+        }
         <details>
             <summary>Hvad hjælper?</summary>
             <p>Et hvil giver energi. Figuren finder inspiration ved planten, ved vinduet og ved at læse. Ved bordet giver 300–600 lux mest inspiration.</p>
@@ -63,15 +66,15 @@
 
     private string ActivityText => Snapshot?.Activity switch
     {
-        "walking" => "Din avatar er på vej",
-        "reading" => "Din avatar læser",
-        "relaxing" => "Din avatar slapper af",
-        "resting" => "Din avatar hviler sig",
-        "lookingOutside" => "Din avatar kigger ud ad vinduet",
-        "visitingPlant" => "Din avatar ser til planten",
-        "exploring" => "Din avatar ser sig omkring",
-        "away" => "Din avatar er ikke hjemme",
-        _ => "Din avatar er hjemme"
+        "walking" => "På vej",
+        "reading" => "Læser",
+        "relaxing" => "Slapper af",
+        "resting" => "Hviler",
+        "lookingOutside" => "Kigger ud ad vinduet",
+        "visitingPlant" => "Ser til planten",
+        "exploring" => "Ser sig omkring",
+        "away" => "Ude",
+        _ => "Hjemme"
     };
 
     private string WantText(HomeResidentState resident)

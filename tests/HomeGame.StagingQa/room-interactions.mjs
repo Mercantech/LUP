@@ -1,5 +1,71 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
+
+// Check visibility before Playwright can scroll the control into view for a click.
+async function visibleControl(control) {
+    await control.waitFor({state: 'visible'});
+    const reachable = await control.evaluate(el => {
+        const r = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1 &&
+            (hit === el || el.contains(hit));
+    });
+    assert.ok(reachable, (await control.innerText()) + ' should be on screen and clickable');
+}
+
+export async function checkContextActions(page, definition, output) {
+    const size = page.viewportSize();
+    const object = page.locator(`.room-shell .furniture:not(.ghost)[data-definition="${definition}"]`);
+    const handle = object.locator('.object-handle');
+    const menu = page.getByTestId('item-actions');
+    const placement = page.getByTestId('placement-actions');
+    const button = (region, name) => region.getByRole('button', {name, exact:true});
+    const scrollOffsets = () => page.locator('.room-shell').evaluate(el => {
+        const offsets = [];
+        for (let parent = el; parent; parent = parent.parentElement) offsets.push([parent.scrollLeft,parent.scrollTop]);
+        return offsets;
+    });
+
+    const touch = await page.evaluate(() => navigator.maxTouchPoints > 0);
+    const viewports = touch ? [size] : [{width:1280,height:800}, {width:375,height:667}];
+    const activate = control => touch ? control.tap() : control.click();
+    for (const viewport of viewports) {
+        await page.setViewportSize(viewport);
+        await handle.evaluate(el => el.scrollIntoView({block:'center', inline:'nearest', behavior:'instant'}));
+        await visibleControl(handle);
+        const before = await scrollOffsets();
+        await activate(handle);
+        await visibleControl(button(menu, 'Flyt'));
+        await visibleControl(button(menu, 'Drej 90°'));
+        assert.equal(await menu.getAttribute('data-item-id'), await object.getAttribute('data-item-id'));
+        assert.equal(await menu.getAttribute('role'), 'dialog');
+        assert.ok((await menu.getAttribute('aria-label')).trim());
+        assert.equal(await menu.locator('details.item-more').evaluate(details => details.open), false,
+            'Secondary actions stay folded until requested');
+        assert.deepEqual(await scrollOffsets(), before, 'Opening the furniture menu scrolled the room');
+        const screen = touch ? 'touch' : viewport.width < 600 ? 'mobile' : 'desktop';
+        if (output) await page.screenshot({path:join(output, `item-actions-${screen}.png`)});
+        if (touch) await button(menu,'Luk handlinger').tap();
+        else await page.keyboard.press('Escape');
+        await menu.waitFor({state:'hidden'});
+        if (touch) await handle.tap();
+        else {
+            assert.ok(await handle.evaluate(el => document.activeElement === el), 'Escape returns focus to the furniture');
+            await handle.press('Enter');
+        }
+        await visibleControl(button(menu,'Flyt'));
+        await activate(button(menu,'Flyt'));
+        await visibleControl(button(placement,'Annullér'));
+        await visibleControl(placement.getByTestId('confirm-placement'));
+        const after = await scrollOffsets();
+        assert.deepEqual(after, before, `Moving a visible item at ${viewport.width}×${viewport.height} scrolled the room from ${JSON.stringify(before)} to ${JSON.stringify(after)}`);
+        await activate(button(placement,'Annullér'));
+        await placement.waitFor({state:'hidden'});
+        if (await menu.isVisible()) await page.keyboard.press('Escape');
+    }
+    await page.setViewportSize(size);
+}
 
 // Called serially in the disposable teacher workshop by browser.mjs. All
 // writes below come from clicks on the real app. getHome verifies persistence.
@@ -10,8 +76,14 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     const button = (container, name) => container.getByRole('button', {name, exact: true});
     const object = id => page.locator(`.room-shell .furniture:not(.ghost)[data-definition="${id}"]`);
     const tile = (x, y) => page.locator(`.home-board button.tile[data-x="${x}"][data-y="${y}"]`);
-    const inspector = page.getByRole('region', {name: 'Valgt genstand', exact: true});
-    const select = id => page.locator(`.items li[data-definition="${id}"] .item-label`).click();
+    const inspector = page.getByTestId('item-actions');
+    const select = async (id, fromList = false) => {
+        const expected = await object(id).getAttribute('data-item-id');
+        if (await inspector.isVisible() && await inspector.getAttribute('data-item-id') === expected) return;
+        if (fromList) await page.locator(`.items li[data-definition="${id}"] .item-label`).click();
+        else await object(id).locator('.object-handle').click();
+        await inspector.and(page.locator(`[data-item-id="${expected}"]`)).waitFor({state:'visible'});
+    };
 
     async function saveByClick(target) {
         const [response] = await Promise.all([
@@ -44,6 +116,17 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     await shopImage.waitFor({state:'visible'});
     await shopImage.evaluate(image => image.decode());
     await button(page, 'I boligen').click();
+    await checkContextActions(page, 'bookcase_low', artifactDir);
+    const menuModule = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => new URL(entry.name))
+        .find(url => url.origin === location.origin && url.pathname === '/js/home-item-actions.js')?.href);
+    assert.ok(menuModule && new URL(menuModule).searchParams.get('v'), 'The real furniture menu must load its versioned module');
+    const moduleResponse = await page.request.get(menuModule);
+    assert.equal(moduleResponse.status(),200);
+    const moduleUrl = new URL(menuModule);
+    check('Furniture action menu works without scrolling on desktop and mobile', {
+        path:moduleUrl.pathname+moduleUrl.search, sha256:createHash('sha256').update(await moduleResponse.body()).digest('hex')
+    });
+    assert.equal(await page.getByTestId('light-panel').isVisible(),false, 'Decorating a bookcase needs no light panel');
     await select('bookcase_low');
     await button(inspector, 'Flyt').click();
     await button(page.locator('.placement-bar'), 'Drej 90°').click();
@@ -52,7 +135,8 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     assert.equal((await getHome()).layout.revision, initial.layout.revision);
 
     for (const [rotation, art] of [[180,'bookcase-back'],[270,'bookcase-side'],[0,'bookcase'],[90,'bookcase-side']]) {
-        const saved = await saveByClick(button(inspector, 'Drej på stedet'));
+        if (rotation === 180) await select('bookcase_low');
+        const saved = await saveByClick(button(inspector, 'Drej 90°'));
         assert.equal(item(saved, 'bookcase_low').placement.rotation, rotation);
         await checkArt('bookcase_low', art, rotation);
         if (rotation === 90 || rotation === 270) {
@@ -75,7 +159,8 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     await object('corkboard').and(page.locator('[data-edge="left"]')).waitFor();
     await checkArt('corkboard', 'pinboard', 90);
 
-    await select('soil_probe');
+    await select('soil_probe', true);
+    await inspector.getByText('Flere muligheder', {exact:true}).click();
     const stored = await saveByClick(button(inspector, 'Læg på lager'));
     assert.equal(item(stored,'soil_probe').placement, null);
     await button(page.locator('.items li[data-definition="soil_probe"]'), 'Placér').click();
@@ -88,10 +173,11 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     assert.equal(item(mounted,'soil_probe').placement.portId, 'soil');
     await checkArt('soil_probe', 'soil-probe-side', 90);
 
-    await select('planter_pump');
+    await select('planter_pump', true);
     const moved = { x: pot.placement.anchor.x + 1, y: pot.placement.anchor.y };
     const bar = page.locator('.placement-bar');
     async function previewMountedMove() {
+        await select('planter_pump', true);
         await button(inspector, 'Flyt').click();
         await tile(moved.x, moved.y).hover();
         await page.waitForFunction(x => document.querySelector('.ghost.planter_pump')?.style.getPropertyValue('--x') === String(x), moved.x);
@@ -121,7 +207,8 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     await checkArt('soil_probe','soil-probe-back',180);
     assert.deepEqual(await object('soil_probe').boundingBox(), await object('planter_pump').boundingBox());
     for (const [rotation, suffix] of [[270,'-side'],[0,'']]) {
-        rotated = await saveByClick(button(inspector, 'Drej på stedet'));
+        if (rotation === 270) await select('planter_pump', true);
+        rotated = await saveByClick(button(inspector, 'Drej 90°'));
         const probe = item(rotated,'soil_probe').placement;
         assert.equal(probe.hostId, pot.id);
         assert.equal(probe.rotation, rotation);
@@ -139,14 +226,15 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     assert.deepEqual(item(restored,'soil_probe').placement, item(rotated,'soil_probe').placement);
 
     const device = page.getByTestId('device-inspector');
-    await object('flip_sign').getByRole('button').click();
-    await device.getByTestId('device-off').click();
+    await select('flip_sign');
+    if (await button(inspector, 'Vis sol').isVisible()) await button(inspector, 'Vis sol').click();
+    await button(inspector, 'Vis måne').click();
     await checkArt('flip_sign','flip-sign-moon');
-    await device.getByTestId('device-on').click();
+    await button(inspector, 'Vis sol').click();
     await checkArt('flip_sign','flip-sign');
     await button(page,'Indret').click();
     await button(page,'I boligen').click();
-    await select('planter_pump'); // The embedded probe shares this pot's hit area.
+    await select('planter_pump', true); // The embedded probe shares this pot's hit area.
     await device.getByTestId('device-off').click();
     const dry = Number(await object('soil_probe').getAttribute('data-moisture'));
     assert.equal(await object('planter_pump').locator('.water-drop').count(),0);

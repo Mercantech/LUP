@@ -2,6 +2,16 @@
     overflow: auto;
     padding: .35rem .25rem .65rem;
 }
+.room-stage.with-placement {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    max-height: min(calc(100dvh - 4.5rem), var(--placement-space, 100dvh));
+}
+.placement-dock {
+    min-width: 0;
+    background: var(--home-paper);
+}
+.placement-dock ::deep .placement-bar { margin: 0; }
 .room-shell {
     box-sizing: border-box;
     container-type: inline-size;

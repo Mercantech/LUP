@@ -60,15 +60,35 @@ export function openResidentRoom(callback, subject, teacher, interval) {
 }
 
 export function focusCell(board, x, y) {
-    board.querySelector(`[data-x="${x}"][data-y="${y}"]`)?.focus({ preventScroll: true });
+    const cell = board.querySelector(`button[data-x="${x}"][data-y="${y}"]`);
+    if (!cell) return;
+    const scroller = cell.closest(".home-board-scroll");
+    if (scroller) {
+        const bounds = scroller.getBoundingClientRect();
+        const tile = cell.getBoundingClientRect();
+        const left = Math.min(0, tile.left - bounds.left) + Math.max(0, tile.right - bounds.right);
+        const top = Math.min(0, tile.top - bounds.top) + Math.max(0, tile.bottom - bounds.bottom);
+        if (left || top) scroller.scrollBy({left, top, behavior: "instant"});
+    }
+    cell.focus({preventScroll: true});
 }
 
 export function focusPlacement(room, x, y) {
-    const cell = room.querySelector(`button[data-x="${x}"][data-y="${y}"]`);
-    if (cell) {
-        room.scrollIntoView({block: "nearest"});
-        cell.focus({preventScroll: true});
+    const stage = room.querySelector(".room-stage.with-placement");
+    if (!stage) return;
+    const viewport = window.visualViewport;
+    const top = viewport?.offsetTop ?? 0;
+    const bottom = top + (viewport?.height ?? window.innerHeight);
+    const dock = stage.querySelector(".placement-dock");
+    const minimum = Math.min(bottom - top, (dock?.offsetHeight ?? 0) + 80);
+    stage.style.removeProperty("--placement-space");
+    const bounds = stage.getBoundingClientRect();
+    if (bounds.bottom < top + minimum || bounds.top > bottom - minimum) {
+        // Opening from the shop or inventory can leave the whole room off screen.
+        stage.scrollIntoView({block: "center", inline: "nearest", behavior: "instant"});
     }
+    stage.style.setProperty("--placement-space", `${bottom - stage.getBoundingClientRect().top}px`);
+    focusCell(stage, x, y);
 }
 
 export function keepArrowKeysOnBoard(board) {

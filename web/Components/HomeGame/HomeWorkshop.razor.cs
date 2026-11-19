@@ -11,7 +11,7 @@ namespace Mercantec.Tech.Web.Components.HomeGame;
 
 public partial class HomeWorkshop : IAsyncDisposable
 {
-    internal const string ModulePath = "./js/home-game.js?v=hjem-beboerliv-20261119";
+    internal const string ModulePath = "./js/home-game.js?v=hjem-genstandsmenu-20261119";
 
     [Parameter, EditorRequired] public string Subject { get; set; } = "";
     [Parameter] public string? InitialView { get; set; }
@@ -56,6 +56,8 @@ public partial class HomeWorkshop : IAsyncDisposable
     private int _speed = 1;
     private int _rotation;
     private string? _selectedId;
+    private bool _itemActionsOpen;
+    private string? _itemActionError;
     private string? _sellId;
     private string? _previewError;
     private string? _error;
@@ -121,6 +123,10 @@ public partial class HomeWorkshop : IAsyncDisposable
 
     private IEnumerable<HomeItemDefinition> ShopItems => HomeCatalog.Items.Where(item => item.Purchasable);
     private IEnumerable<HomeItem> RoomItems => DisplayLayout.Items.Where(item => item.Placement is not null);
+    private bool ShowLightPanel => _mode != "build" || _overlay == "light" ||
+        _placement is null && BoardSelection is { Placement: not null } item &&
+        (item.DefinitionId is HomeCatalog.BlindId or HomeCatalog.LampId or HomeCatalog.DeskId or HomeCatalog.DaylightId ||
+            HomeCatalog.Definition(item.DefinitionId)?.Kind == "indoorLight");
     private static bool IsOutput(HomeItem item) => HomeCatalog.IsOutput(HomeCatalog.Definition(item.DefinitionId)?.Kind);
     private static bool IsProgrammable(HomeItem item) => IsOutput(item) || HomeCatalog.Definition(item.DefinitionId)?.Kind is "presence" or "daylight" or "switch" or "moisture" or "indoorLight";
     private static (string On, string Off, string Active, string Inactive) Labels(string definition) => definition switch
@@ -234,7 +240,11 @@ public partial class HomeWorkshop : IAsyncDisposable
             _mode = "test";
             Drive();
         }
-        if (first) await OpenResidentRoomAsync();
+        if (first)
+        {
+            _overlay = _mode == "build" ? "normal" : "light";
+            await OpenResidentRoomAsync();
+        }
         else ResetResidentRoom();
         UpdatePreview();
     });
@@ -273,6 +283,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     private string ShelfClass(string shelf) => _shelf == shelf ? "secondary on" : "secondary";
     private Task ChooseShelf(string shelf)
     {
+        DismissItemActions();
         CancelPlacement();
         _shelf = shelf;
         if (shelf != "shop" || _state?.IsTeacherSandbox != false) return Task.CompletedTask;
@@ -285,6 +296,7 @@ public partial class HomeWorkshop : IAsyncDisposable
 
     private Task ChangeModeAsync(string mode)
     {
+        DismissItemActions();
         if (mode != "build") CancelPlacement();
         if (mode != "test") _replay = null;
         _mode = mode;
@@ -321,6 +333,21 @@ public partial class HomeWorkshop : IAsyncDisposable
         _sellId = null;
     }
 
+    private void InspectItem(HomeItem item)
+    {
+        Select(item);
+        _itemActionError = null;
+        _itemActionsOpen = _replay is null && item.Placement is not null;
+        if (_itemActionsOpen) _roomCollapsed = false;
+    }
+
+    private void DismissItemActions()
+    {
+        _itemActionsOpen = false;
+        _sellId = null;
+        _itemActionError = null;
+    }
+
     private async Task ActivateCellAsync(HomeCell cell)
     {
         _purchaseSiteSelected = false;
@@ -333,8 +360,8 @@ public partial class HomeWorkshop : IAsyncDisposable
         }
         var item = DisplayLayout.Items.LastOrDefault(item => item.Placement is { } placed &&
             (placed.Anchor == cell || HomeRules.Footprint(item).Contains(cell)));
-        if (item is null) return;
-        Select(item);
+        if (item is null) DismissItemActions();
+        else InspectItem(item);
     }
 
     private void VisitCell(HomeCell cell)
@@ -346,6 +373,7 @@ public partial class HomeWorkshop : IAsyncDisposable
 
     private void StartPurchase(HomeItemDefinition definition)
     {
+        DismissItemActions();
         _purchaseSiteSelected = false;
         _selectedId = null;
         _rotation = 0;
@@ -361,6 +389,7 @@ public partial class HomeWorkshop : IAsyncDisposable
         await ChangeModeAsync("build");
         _shelf = "room";
         StartPlacement(item);
+        _itemActionsOpen = true;
     }
 
     private void StartPlacement(HomeItem item)
@@ -412,24 +441,29 @@ public partial class HomeWorkshop : IAsyncDisposable
         return layer != "wall" || new[] { 0, 90, 180, 270 }.Count(r => HomeRules.FindWall(DisplayLayout, anchor, r) is not null) > 1;
     }
 
-    private Task RotateItemAsync(HomeItem item)
+    private async Task RotateItemAsync(HomeItem item)
     {
-        StartPlacement(item);
-        TurnPreview();
-        return ConfirmPlacementAsync();
+        if (_working || _replay is not null || item.Placement is not { } placement || !CanRotate(item.DefinitionId, placement.Anchor)) return;
+        var angle = NextRotation(item.DefinitionId, placement.Anchor, placement.Rotation);
+        var wall = placement.Wall is null ? null : HomeRules.FindWall(DisplayLayout, placement.Anchor, angle);
+        var action = new HomeBuildAction("rotate", item.Id, Placement: placement with { Rotation = angle, Wall = wall });
+        var preview = HomeRules.Apply(DisplayLayout, action, avatarCell: IsActive ? AvatarCell : null, freePurchase: _state!.IsTeacherSandbox);
+        _itemActionError = preview.Error?.Message;
+        if (_itemActionError is null) await BuildAsync(action);
     }
+
+    private int NextRotation(string definitionId, HomeCell anchor, int rotation) =>
+        HomeCatalog.Definition(definitionId)?.Layer == "wall"
+            ? new[] { 90, 180, 270 }.Select(delta => (rotation + delta) % 360)
+                .FirstOrDefault(r => HomeRules.FindWall(DisplayLayout, anchor, r) is not null, rotation)
+            : (rotation + 90) % 360;
 
     private void TurnPreview()
     {
         if (_placement is null) return;
         if (!CanTurnPreview) return;
         var rotation = _ghost?.Placement?.Rotation ?? _rotation;
-        if (HomeCatalog.Definition(_placement.DefinitionId)?.Layer == "wall")
-        {
-            _rotation = new[] { 90, 180, 270 }.Select(delta => (rotation + delta) % 360)
-                .FirstOrDefault(r => HomeRules.FindWall(DisplayLayout, _cursor, r) is not null, rotation);
-        }
-        else _rotation = (rotation + 90) % 360;
+        _rotation = NextRotation(_placement.DefinitionId!, _cursor, rotation);
         UpdatePreview();
     }
 
@@ -496,6 +530,7 @@ public partial class HomeWorkshop : IAsyncDisposable
                 _overlay = "range";
         }
         if (action.Kind == "store") _shelf = "stock";
+        if (Selected?.Placement is null) DismissItemActions();
         _notice = action.Kind switch
         {
             "buy" when _state.IsTeacherSandbox => "Prøveudstyret er placeret.",
@@ -780,6 +815,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     private Task OpenReplayAsync() => PerformAsync(async () =>
     {
         if (_run is not { } run || IsActive) return;
+        DismissItemActions();
         ResetAudition();
         _replay = new(await Client.ReplayAsync(Subject, run.Run.Id, Token));
         _replay.Seek(0, 0);
