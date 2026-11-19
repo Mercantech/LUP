@@ -31,11 +31,14 @@ public static class CharacterEmojiPolicy
             "gitmejsen" => "Gitmejsen",
             _ => "raymond"
         };
+        var reaction = emoji.Name[(emoji.CharacterSlug.Length + 1)..];
         var subject = emoji.CharacterSlug switch
         {
             "lupp" => new[] { "Game Design", "spil", "gameplay" },
             "raymond" => new[] { "SQL", "database" },
             "chameleon" => new[] { "Machine Learning", "machinelearning", "maskinlæring", "ML", "kamæleon", "kameleon", "data", "model" },
+            "whale" when reaction.StartsWith("aspire_", StringComparison.Ordinal) =>
+                new[] { "Aspire", reaction["aspire_".Length..], "hval", "havnekaptajn", "container", "deploy", "deployment" },
             "whale" => new[] { "hval", "havnekaptajn", "DevNet", "Docker", "container", "Compose", "deploy", "deployment" },
             "gummianden" => new[] { "gummiand", "debugging", "fejlfinding", "rubber duck", "VATek" },
             "bee" => new[] { "cyber", "cybersikkerhed", "sikkerhed", "security", "bi" },
@@ -46,7 +49,6 @@ public static class CharacterEmojiPolicy
         };
         var keywords = EmojiMetadataPolicy.Keywords(new[] { characterName, emoji.CharacterSlug, emoji.Title, "emoji", "reaktion" }
             .Concat(subject).Concat(emoji.Name.Split('_')));
-        var reaction = emoji.Name[(emoji.CharacterSlug.Length + 1)..];
         var category = reaction switch
         {
             "wave" or "hello" or "thumbs_up" or "applause" => "gestures",
@@ -71,6 +73,7 @@ public static class CharacterEmojiPolicy
                 or "container_run" or "compose" or "environment" or "port_mapping" or "volume"
                 or "network" or "health_check" or "logs" or "metrics" or "ci_pipeline"
                 or "staging" or "deploy" or "canary" or "rollout" or "outage"
+                or "aspire_apphost" or "aspire_klar" or "aspire_spor" or "aspire_udrul"
                 when emoji.CharacterSlug == "whale" => "technology",
             "coffee_break" or "tugboat" or "tide_log" when emoji.CharacterSlug == "whale" => "everyday",
             "idea" or "explaining" or "hypothesis" or "pair_debugging"

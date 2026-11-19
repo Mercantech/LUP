@@ -2380,6 +2380,50 @@
       "name": "whale_tide_log"
     },
     {
+      "id": "aspire-apphost",
+      "character": "whale",
+      "title": "Aspire AppHost",
+      "image": "/images/characters/whale/reactions/aspire-apphost.png",
+      "alt": "Docker holder to containere forbundet med et tov. De viser, hvordan AppHost forbinder tjenester i Aspire.",
+      "width": 1254,
+      "height": 1254,
+      "guid": "c10fcb8d-8227-53fe-a8db-713f2798a9f3",
+      "name": "whale_aspire_apphost"
+    },
+    {
+      "id": "aspire-klar",
+      "character": "whale",
+      "title": "Klar til trafik",
+      "image": "/images/characters/whale/reactions/aspire-klar.png",
+      "alt": "Docker løfter en grøn signallygte, når en tjeneste i Aspire er klar til at modtage trafik.",
+      "width": 1254,
+      "height": 1254,
+      "guid": "66ae658e-bef1-52af-b0ac-416545b252b8",
+      "name": "whale_aspire_klar"
+    },
+    {
+      "id": "aspire-spor",
+      "character": "whale",
+      "title": "Følg et kald",
+      "image": "/images/characters/whale/reactions/aspire-spor.png",
+      "alt": "Docker kigger gennem en lup for at følge et kald gennem tjenesterne i et distribueret spor i Aspire.",
+      "width": 1254,
+      "height": 1254,
+      "guid": "47f61e32-cb4a-590e-831a-04e5fb52f8f0",
+      "name": "whale_aspire_spor"
+    },
+    {
+      "id": "aspire-udrul",
+      "character": "whale",
+      "title": "Udrul med Aspire",
+      "image": "/images/characters/whale/reactions/aspire-udrul.png",
+      "alt": "Docker sender en slæbebåd med en orange container af sted som billede på udrulning med Aspire.",
+      "width": 1254,
+      "height": 1254,
+      "guid": "fc6c7ed5-65ae-5644-9c20-d534b0396601",
+      "name": "whale_aspire_udrul"
+    },
+    {
       "id": "wave",
       "character": "gummianden",
       "title": "Hej",

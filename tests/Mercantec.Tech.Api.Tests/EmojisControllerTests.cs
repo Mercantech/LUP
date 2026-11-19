@@ -217,7 +217,7 @@ public sealed class EmojisControllerTests : IAsyncLifetime
         Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "lupp"));
         Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "raymond"));
         Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "chameleon"));
-        Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "whale"));
+        Assert.Equal(52, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "whale"));
         Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "gummianden"));
         Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "bee"));
         Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "bat"));
@@ -300,6 +300,23 @@ public sealed class EmojisControllerTests : IAsyncLifetime
         Assert.Equal("everyday", items.Single(item => item.Name == "bilbo_jam").Category);
         Assert.Empty(await _db.CustomEmojis.ToListAsync());
         Assert.Empty(_storage.Objects);
+    }
+
+    [Theory]
+    [InlineData("apphost", "c10fcb8d-8227-53fe-a8db-713f2798a9f3")]
+    [InlineData("klar", "66ae658e-bef1-52af-b0ac-416545b252b8")]
+    [InlineData("spor", "47f61e32-cb4a-590e-831a-04e5fb52f8f0")]
+    [InlineData("udrul", "fc6c7ed5-65ae-5644-9c20-d534b0396601")]
+    public void AspireWhaleIconsKeepTheirNotebookIdsAndAreSearchableInTechnology(string topic, string stableId)
+    {
+        var emoji = Assert.Single(CharacterEmojiPolicy.Available([]), asset => asset.Id == Guid.Parse(stableId));
+        Assert.Equal($"whale_aspire_{topic}", emoji.Name);
+        Assert.Equal($"/images/characters/whale/reactions/aspire-{topic}.png", emoji.Image);
+        Assert.Equal((1254, 1254), (emoji.Width, emoji.Height));
+        var metadata = CharacterEmojiPolicy.Resolve(emoji);
+        Assert.Equal("technology", metadata.Category);
+        Assert.Contains("aspire", metadata.Keywords);
+        Assert.Contains(topic, metadata.Keywords);
     }
 
     [Theory]
