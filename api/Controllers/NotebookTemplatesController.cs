@@ -263,7 +263,7 @@ public sealed class NotebookTemplatesController(AppDbContext db, NotebookAccess 
     private static NotebookTemplateView View(NotebookTemplate t, NotebookDocument d) => new(t.Id, t.Id, d.Title, t.Cadence, t.IsActive, t.Version, d.UpdatedAtUtc);
     private static NotebookPageSummary PageView(NotebookDocument d) => new(d.Id, d.NotebookId!.Value, d.Title, d.ParentPageId,
         d.Kind, JsonSerializer.Deserialize<string[]>(d.TagsJson) ?? [], d.PeriodStart, d.HoldId, d.TemplateId, d.UpdatedAtUtc, d.Revision,
-        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder);
+        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder, IconEmojiId: d.IconEmojiId);
     private ObjectResult Unavailable() => StatusCode(503, new { error = "document_service_unavailable", message = "Dokumentet kunne ikke oprettes. Prøv igen om lidt." });
     private ObjectResult DrawingFailure(DrawingException error) => StatusCode(error.Status, new { error = error.Code, message = error.Message });
 }

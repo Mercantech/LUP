@@ -65,6 +65,11 @@ public sealed class NotionClient(HttpClient http)
         using var response = await http.PatchAsJsonAsync($"notion/pages/{id}", new { title }, ct);
         return await Read<NotionPageSummary>(response, ct);
     }
+    public async Task<NotionPageSummary> SetPageIcon(Guid id, Guid? iconEmojiId, CancellationToken ct)
+    {
+        using var response = await http.PutAsJsonAsync($"notion/pages/{id}/icon", new SetNotebookIcon(iconEmojiId), ct);
+        return await Read<NotionPageSummary>(response, ct);
+    }
     private async Task<T> Get<T>(string path, CancellationToken ct)
     {
         using var response = await http.GetAsync(path, ct);

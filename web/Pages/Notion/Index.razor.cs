@@ -281,7 +281,7 @@ public partial class Index
     {
         _current = context;
         _pages = ReconcileActivePage(_pages);
-        _current = context with { Pages = _pages.Select(p => new NotionPageLink(p.Id, p.Title, p.ParentPageId)).ToArray() };
+        _current = context with { Pages = _pages.Select(p => new NotionPageLink(p.Id, p.Title, p.ParentPageId, p.SortOrder, p.IconEmojiId)).ToArray() };
         _title = context.Title; _status = "connecting"; _statusDetail = ""; _needsMount = true; _creating = false;
         RebuildPageRows();
     }
@@ -333,14 +333,14 @@ public partial class Index
     {
         pages = ReconcileActivePage(pages);
         _pages = pages; _pagesHold = ActiveCollectionId ?? _holdId; _pagesPublishedOnly = ForceReadOnly;
-        if (_current is not null) _current = _current with { Pages = pages.Select(p => new NotionPageLink(p.Id, p.Title, p.ParentPageId)).ToArray() };
+        if (_current is not null) _current = _current with { Pages = pages.Select(p => new NotionPageLink(p.Id, p.Title, p.ParentPageId, p.SortOrder, p.IconEmojiId)).ToArray() };
         RebuildPageRows();
     }
     private NotionPageSummary[] ReconcileActivePage(NotionPageSummary[] pages) => _current is not { } current ? pages
         : pages.Select(p => p.Id == current.PageId ? p with
         {
-            Title = current.Title, UpdatedAtUtc = current.UpdatedAtUtc, PublishedAtUtc = current.PublishedAtUtc,
-            HasUnpublishedChanges = current.CanEdit && current.PublishedAtUtc is not null && (current.DraftRevision != current.PublishedRevision || current.Title != current.PublishedTitle)
+            Title = current.Title, UpdatedAtUtc = current.UpdatedAtUtc, PublishedAtUtc = current.PublishedAtUtc, IconEmojiId = current.IconEmojiId,
+            HasUnpublishedChanges = current.CanEdit && current.PublishedAtUtc is not null && (current.DraftRevision != current.PublishedRevision || current.Title != current.PublishedTitle || current.IconEmojiId != current.PublishedIconEmojiId)
         } : p).ToArray();
     private async Task PushEditorContext(int generation, CancellationToken ct)
     {
@@ -460,11 +460,7 @@ public partial class Index
         if (!IsCurrent(generation, ct) || _current?.PageId != id) return;
         _current = context with { Members = _current.Members, Polls = _current.Polls, Pages = _current.Pages };
         _title = _title.Trim() == originalTitle || _title.Trim() == context.Title ? context.Title : _title;
-        SetPages(_pages.Select(p => p.Id == id ? p with
-        {
-            Title = context.Title, UpdatedAtUtc = context.UpdatedAtUtc, PublishedAtUtc = context.PublishedAtUtc,
-            HasUnpublishedChanges = context.PublishedAtUtc is not null && (context.DraftRevision != context.PublishedRevision || context.Title != context.PublishedTitle)
-        } : p).ToArray());
+        SetPages(_pages);
         await PushEditorContext(generation, ct);
     }
     private async Task RefreshContext() => await Work(async ct =>
@@ -534,7 +530,7 @@ public partial class Index
     {
         var pages = VisiblePages.OrderBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Title).ThenBy(p => p.Id).ToArray();
         if (_current is not null && !pages.Any(p => p.Id == _current.PageId))
-            pages = [new(_current.PageId, _current.HoldId, _current.Title, null, _current.UpdatedAtUtc, _current.PublishedAtUtc, CollectionId: _current.CollectionId), .. pages];
+            pages = [new(_current.PageId, _current.HoldId, _current.Title, null, _current.UpdatedAtUtc, _current.PublishedAtUtc, CollectionId: _current.CollectionId, IconEmojiId: _current.IconEmojiId), .. pages];
         _parents = pages.ToDictionary(p => p.Id, p => p.ParentPageId);
         _pagesById = pages.ToDictionary(p => p.Id);
         var children = pages.ToLookup(p => p.ParentPageId ?? Guid.Empty);

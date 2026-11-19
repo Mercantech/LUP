@@ -13,10 +13,23 @@ public partial class Index
     private bool HasFilters => !string.IsNullOrWhiteSpace(_search) || !string.IsNullOrWhiteSpace(_tag) || _kind.Length > 0;
     private bool CanReorderTree => !HasFilters;
     private int PageCount => !HasFilters && _current is not null ? _treePages.Length : _total;
-    private NotebookTreeItem[] TreeItems => _treePages.Select(p => new NotebookTreeItem(p.Id, p.Title, p.ParentPageId, _notebookId)).ToArray();
+    private NotebookTreeItem[] TreeItems => _treePages.Select(p => new NotebookTreeItem(p.Id, p.Title, p.ParentPageId, _notebookId, p.IconEmojiId)).ToArray();
     private CancellationToken TreeToken => _requests?.Token ?? _life.Token;
 
     private Task OpenTreeActions(Guid id) => _treeDialogs?.Show(id) ?? Task.CompletedTask;
+    private async Task SetPageIcon(Guid id, Guid? iconEmojiId)
+    {
+        if (!Own) return;
+        var ct = TreeToken;
+        var generation = _generation;
+        var updated = await Client.SetPageIcon(id, iconEmojiId, ct);
+        if (_disposed || generation != _generation || ct.IsCancellationRequested) return;
+        _pages = _pages.Select(page => page.Id == id ? page with { IconEmojiId = updated.IconEmojiId, UpdatedAtUtc = updated.UpdatedAtUtc } : page).ToArray();
+        _treePages = _treePages.Select(page => page.Id == id ? page with { IconEmojiId = updated.IconEmojiId } : page).ToArray();
+        if (_current is { } current)
+            _current = current with { Pages = _treePages, IconEmojiId = current.DocumentId == id ? updated.IconEmojiId : current.IconEmojiId };
+        await InvokeAsync(StateHasChanged);
+    }
     protected override NotebookTreeTarget? FindTreeTarget(Guid? current, string key)
     {
         if (!CanUse || _loading || _filtering) return null;
@@ -56,7 +69,7 @@ public partial class Index
         _rowState = state;
         var summaries = _pages.ToDictionary(p => p.Id);
         var links = !HasFilters && _current is not null ? _treePages
-            : _pages.Select(p => new NotionPageLink(p.Id, p.Title, p.ParentPageId, p.SortOrder)).ToArray();
+            : _pages.Select(p => new NotionPageLink(p.Id, p.Title, p.ParentPageId, p.SortOrder, p.IconEmojiId)).ToArray();
         var sorted = links.OrderBy(p => p.SortOrder ?? int.MaxValue)
             .ThenByDescending(p => summaries.GetValueOrDefault(p.Id)?.PeriodStart).ThenBy(p => p.Title).ThenBy(p => p.Id).ToArray();
         var ids = sorted.Select(p => p.Id).ToHashSet();

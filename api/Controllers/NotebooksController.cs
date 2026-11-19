@@ -129,7 +129,7 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
             .Select(d => new
             {
                 d.Id, d.NotebookId, d.Title, d.Kind, d.UpdatedAtUtc, d.Revision, d.Fingerprint,
-                d.TagsJson, d.PeriodStart, d.HoldId, d.LifecycleVersion,
+                d.TagsJson, d.PeriodStart, d.HoldId, d.LifecycleVersion, d.IconEmojiId,
                 YjsState = knownRevision != null && knownRevision == d.Revision ? null : d.YjsState
             }).SingleOrDefaultAsync(ct);
         if (document is null) return NotFound();
@@ -140,7 +140,7 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
             document.NotebookId is Guid nb && await access.CanShareNotebookAsync(nb, User, ct),
             document.YjsState is { Length: > 0 } bytes ? Convert.ToBase64String(bytes) : null,
             document.UpdatedAtUtc, document.Revision, document.Fingerprint, pages,
-            ReadTags(document.TagsJson), document.PeriodStart, document.HoldId, document.LifecycleVersion));
+            ReadTags(document.TagsJson), document.PeriodStart, document.HoldId, document.LifecycleVersion, document.IconEmojiId));
     }
 
     [HttpPost("{notebookId:guid}/pages")]
@@ -208,6 +208,21 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
         await transaction.CommitAsync(ct);
         NoCache();
         return Ok(PageView(result));
+    }
+
+    [HttpPut("pages/{id:guid}/icon")]
+    public async Task<IActionResult> SetPageIcon(Guid id, SetNotebookIcon input, CancellationToken ct)
+    {
+        if (await FindOwnedNotebook(id, ct) is not Guid notebookId) return NotFound();
+        if (!await NotebookIcon.IsAvailableAsync(db, input.IconEmojiId, ct)) return BadRequest(new { error = "invalid_icon" });
+        var page = db.NotebookDocuments.Where(d => d.Id == id && d.NotebookId == notebookId);
+        var editorName = UserClaims.EditorName(User);
+        await page.Where(d => d.IconEmojiId != input.IconEmojiId).ExecuteUpdateAsync(s => s
+            .SetProperty(d => d.IconEmojiId, input.IconEmojiId).SetProperty(d => d.LastEditedByName, editorName)
+            .SetProperty(d => d.UpdatedAtUtc, DateTimeOffset.UtcNow), ct);
+        var updated = await Project(page).SingleOrDefaultAsync(ct);
+        NoCache();
+        return updated is null ? NotFound() : Ok(View(updated, null));
     }
 
     [HttpGet("pages/{id:guid}/backlinks")]
@@ -385,7 +400,7 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
 
     public static NotebookPageSummary PageView(NotebookDocument d) => new(d.Id, d.NotebookId ?? Guid.Empty,
         d.Title, d.ParentPageId, d.Kind, ReadTags(d.TagsJson), d.PeriodStart, d.HoldId, d.TemplateId, d.UpdatedAtUtc, d.Revision,
-        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder);
+        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder, IconEmojiId: d.IconEmojiId);
 
     public static string[] ReadTags(string? json)
     {
@@ -432,17 +447,17 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
 
     private sealed record PageData(Guid Id, Guid NotebookId, string Title, Guid? ParentPageId, string Kind,
         string TagsJson, DateOnly? PeriodStart, Guid? HoldId, Guid? TemplateId, DateTimeOffset UpdatedAtUtc,
-        long Revision, string SearchText, string? LastEditedByName, int? SortOrder);
+        long Revision, string SearchText, string? LastEditedByName, int? SortOrder, Guid? IconEmojiId);
 
     private static IQueryable<PageData> Project(IQueryable<NotebookDocument> query) => query.Select(d => new PageData(
         d.Id, d.NotebookId!.Value, d.Title, d.ParentPageId, d.Kind, d.TagsJson, d.PeriodStart, d.HoldId,
-        d.TemplateId, d.UpdatedAtUtc, d.Revision, d.SearchText, d.LastEditedByName, d.SortOrder));
+        d.TemplateId, d.UpdatedAtUtc, d.Revision, d.SearchText, d.LastEditedByName, d.SortOrder, d.IconEmojiId));
 
-    private static NotebookPageSummary View(PageData d, HashSet<Guid> visible, string? search = null) => new(d.Id,
-        d.NotebookId, d.Title, d.ParentPageId is Guid parent && visible.Contains(parent) ? parent : null,
+    private static NotebookPageSummary View(PageData d, HashSet<Guid>? visible, string? search = null) => new(d.Id,
+        d.NotebookId, d.Title, d.ParentPageId is Guid parent && (visible is null || visible.Contains(parent)) ? parent : null,
         d.Kind, ReadTags(d.TagsJson), d.PeriodStart, d.HoldId, d.TemplateId, d.UpdatedAtUtc, d.Revision,
         string.IsNullOrWhiteSpace(search) ? null : Snippet(d.SearchText, search),
-        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder);
+        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder, IconEmojiId: d.IconEmojiId);
 
     private static string Snippet(string text, string search)
     {
