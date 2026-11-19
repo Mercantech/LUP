@@ -98,8 +98,13 @@ public partial class HomeBoard
         get
         {
             foreach (var item in Layout.Items)
-                if (item.Placement is not null && !(Ghost is not null && Selected?.Id == item.Id
-                    && Ghost.DefinitionId == item.DefinitionId)) yield return item;
+            {
+                if (item.Placement is not { } placement || item.Id == Ghost?.Id) continue;
+                if (Ghost is { } host && placement.HostId == host.Id &&
+                    HomeRules.PortPlacement(host, placement.PortId) is { } mounted)
+                    yield return item with { Placement = mounted };
+                else yield return item;
+            }
             if (Ghost?.Placement is not null) yield return Ghost;
         }
     }
@@ -176,8 +181,9 @@ public partial class HomeBoard
     {
         // A probe is embedded in the pot. A rotating two-cell planter can move
         // its soil port to the far tile, so draw both against the host's bounds.
-        var host = item.DefinitionId == HomeCatalog.MoistureId && item.Placement?.HostId is { } hostId
-            ? Layout.Items.FirstOrDefault(candidate => candidate.Id == hostId && candidate.Placement is not null) : null;
+        HomeItem? host = null;
+        if (item.DefinitionId == HomeCatalog.MoistureId && item.Placement?.HostId is { } hostId)
+            host = Ghost?.Id == hostId ? Ghost : Layout.Items.FirstOrDefault(candidate => candidate.Id == hostId);
         var cells = Cells(host ?? item);
         var x = cells.Min(cell => cell.X);
         var y = cells.Min(cell => cell.Y);
@@ -230,7 +236,7 @@ public partial class HomeBoard
         item.DefinitionId,
         item.Id == Selected?.Id ? "selected" : "",
         IsPowered(item) ? "powered" : "",
-        item == Ghost ? "ghost" : ""
+        Ghost is not null && (item.Id == Ghost.Id || item.Placement?.HostId == Ghost.Id) ? "ghost" : ""
     });
 
     private int? Moisture(HomeItem item)

@@ -210,6 +210,7 @@
 }
 .rug_basic .floor-visual::before, .soil_probe .floor-visual::before { display: none; }
 .furniture.ghost { z-index: 70; opacity: .66; }
+.soil_probe.ghost { z-index: 71; }
 .wall-piece {
     --wall-width: calc(100% / var(--columns));
     width: var(--wall-width);

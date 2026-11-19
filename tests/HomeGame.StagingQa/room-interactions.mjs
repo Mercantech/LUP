@@ -85,13 +85,42 @@ export async function checkRoomInteractions(page, getHome, check, artifactDir = 
     await checkArt('soil_probe', 'soil-probe-side', 90);
 
     await select('planter_pump');
-    let rotated;
-    for (const [rotation, suffix] of [[180,'-back'],[270,'-side'],[0,'']]) {
+    const moved = { x: pot.placement.anchor.x + 1, y: pot.placement.anchor.y };
+    const bar = page.locator('.placement-bar');
+    async function previewMountedMove() {
+        await button(inspector, 'Flyt').click();
+        await tile(moved.x, moved.y).hover();
+        await page.waitForFunction(x => document.querySelector('.ghost.planter_pump')?.style.getPropertyValue('--x') === String(x), moved.x);
+        await button(bar, 'Drej 90°').click();
+        const preview = page.locator('.furniture.ghost[data-rotation="180"]');
+        const plot = preview.and(page.locator('[data-definition="planter_pump"]'));
+        const sensor = preview.and(page.locator('[data-definition="soil_probe"]'));
+        await sensor.waitFor({state:'visible'});
+        assert.equal(await plot.evaluate(el => el.style.getPropertyValue('--x')), String(moved.x));
+        assert.deepEqual(await sensor.boundingBox(), await plot.boundingBox());
+        assert.equal(await object('soil_probe').count(), 0);
+    }
+    await previewMountedMove();
+    await button(bar, 'Annullér').click();
+    await checkArt('planter_pump','planter-side',90);
+    await checkArt('soil_probe','soil-probe-side',90);
+    assert.equal((await getHome()).layout.revision, mounted.layout.revision);
+    assert.deepEqual(await object('soil_probe').boundingBox(), await object('planter_pump').boundingBox());
+    await previewMountedMove();
+    let rotated = await saveByClick(page.getByTestId('confirm-placement'));
+    assert.deepEqual(item(rotated,'planter_pump').placement.anchor, moved);
+    const movedProbe = item(rotated,'soil_probe').placement;
+    assert.equal(movedProbe.hostId, pot.id);
+    assert.equal(movedProbe.rotation, 180);
+    assert.deepEqual(movedProbe.anchor, { x: moved.x + 1, y: moved.y });
+    await checkArt('planter_pump','planter-back',180);
+    await checkArt('soil_probe','soil-probe-back',180);
+    assert.deepEqual(await object('soil_probe').boundingBox(), await object('planter_pump').boundingBox());
+    for (const [rotation, suffix] of [[270,'-side'],[0,'']]) {
         rotated = await saveByClick(button(inspector, 'Drej på stedet'));
         const probe = item(rotated,'soil_probe').placement;
         assert.equal(probe.hostId, pot.id);
         assert.equal(probe.rotation, rotation);
-        if (rotation === 180) assert.deepEqual(probe.anchor, {x:pot.placement.anchor.x+1,y:pot.placement.anchor.y});
         await checkArt('planter_pump',rotation === 270 ? 'planter-side-reverse' : 'planter'+suffix,rotation);
         await checkArt('soil_probe','soil-probe'+suffix,rotation);
     }

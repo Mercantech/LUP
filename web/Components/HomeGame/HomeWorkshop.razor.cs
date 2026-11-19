@@ -458,7 +458,8 @@ public partial class HomeWorkshop : IAsyncDisposable
                 item.DefinitionId == HomeCatalog.PlanterId && HomeRules.Footprint(item).Contains(_cursor)) is { } planter)
             placement = HomeRules.PortPlacement(planter, "soil") ?? placement;
         _placement = action with { Placement = placement };
-        _ghost = new("preview", definition.Id, "", Selected?.Name ?? definition.Name, placement);
+        _ghost = Selected is { } existing ? existing with { Placement = placement }
+            : new("preview", definition.Id, "", definition.Name, placement);
         var result = HomeRules.Apply(DisplayLayout, _placement, avatarCell: IsActive ? AvatarCell : null, freePurchase: _state.IsTeacherSandbox);
         _previewError = result.Error?.Message;
     }
