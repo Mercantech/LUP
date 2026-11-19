@@ -1,0 +1,390 @@
+@page "/teacher/students"
+@using Mercantec.Tech.Web.Students
+@inject AuthService Auth
+@inject AuthRedirect Redirect
+@inject ViewAsStudentContext ViewAs
+@inject StudentDirectoryClient Directory
+@inject IJSRuntime Js
+@implements IDisposable
+
+<PageTitle>Elever · LUP</PageTitle>
+
+@if (!Auth.IsInitialized)
+{
+    <p role="status">Indlæser…</p>
+}
+else if (!Auth.IsAuthenticated)
+{
+    <header class="page-title"><div><h1>Elever</h1><p>Log ind for at åbne elevoversigten.</p></div></header>
+    <a class="action" href="@Auth.LoginPath()">Log ind</a>
+}
+else if (!CanRead)
+{
+    <header class="page-title"><div><h1>Elever</h1><p>Denne side er for undervisere.</p></div></header>
+    <a class="secondary" href="@Redirect.PostLoginPath()">Til dit overblik</a>
+}
+else
+{
+    <div class="student-directory">
+        <nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/teacher">Overblik</a><span>›</span><span aria-current="page">Elever</span></nav>
+        <header class="page-title">
+            <div><h1>Elever</h1><p>Se elever på tværs af hold og forløb, deres arbejdsplads og senest beståede skoleforløb.</p></div>
+            <button type="button" class="secondary" disabled="@(_loading || _saving || _edit is not null)" @onclick="LoadAsync">Genindlæs</button>
+        </header>
+
+        @if (_loading)
+        {
+            <p class="directory-message" role="status">Henter elever…</p>
+        }
+        else if (_loadError is not null)
+        {
+            <div class="directory-error" role="alert"><p>@_loadError</p><button type="button" class="secondary" @onclick="LoadAsync">Prøv igen</button></div>
+        }
+        else
+        {
+            @if (_warning is not null)
+            {
+                <p class="directory-warning" role="status">@_warning</p>
+            }
+            <div class="directory-filters" role="search" aria-label="Find elever">
+                <label class="directory-search">Søg elever
+                    <input type="search" @ref="_searchInput" @bind="Query" @bind:event="oninput" placeholder="Navn, hold, GF/H-forløb eller arbejdsplads" />
+                </label>
+                <label>Hvor er eleven?
+                    <select @bind="PlacementFilter">
+                        <option value="">Alle placeringer</option>
+                        <option value="school">På skole</option>
+                        <option value="workplace">På arbejdsplads</option>
+                        <option value="unknown">Ikke registreret</option>
+                    </select>
+                </label>
+                <label>Hold
+                    <select @bind="HoldFilter">
+                        <option value="">Alle hold</option>
+                        @foreach (var hold in HoldOptions)
+                        {
+                            <option value="@hold.Id">@hold.Name</option>
+                        }
+                    </select>
+                </label>
+                <label>Skoleforløb
+                    <select @bind="SchoolFilter">
+                        <option value="">Alle skoleforløb</option>
+                        @foreach (var period in SchoolOptions)
+                        {
+                            <option value="@period">@period</option>
+                        }
+                    </select>
+                </label>
+            </div>
+
+            @if (_edit is { } edit)
+            {
+                <section class="directory-editor" aria-labelledby="student-edit-title">
+                    <form @onsubmit="SaveAsync" @onsubmit:preventDefault>
+                        <div class="directory-editor-heading"><h2 id="student-edit-title">Ret oplysninger for @edit.Student.DisplayName</h2><span>Rettelser fra en underviser</span></div>
+                        <div class="directory-editor-fields">
+                            <label>Hvor er eleven?
+                                <select id="student-edit-placement" @ref="_editPlacement" @bind="edit.Placement" disabled="@_saving">
+                                    <option value="unknown">Ikke registreret</option>
+                                    <option value="school">På skole</option>
+                                    <option value="workplace">På arbejdsplads</option>
+                                </select>
+                            </label>
+                            <label>Aktuelt skoleforløb
+                                <input id="student-edit-school" maxlength="160" @bind="edit.CurrentSchoolPeriod" disabled="@_saving" placeholder="Fx H2 eller GF2" />
+                            </label>
+                            <label>Arbejdsplads
+                                <input id="student-edit-workplace" maxlength="200" @bind="edit.WorkplaceName" disabled="@_saving" />
+                            </label>
+                            <label>Sidst beståede skoleforløb
+                                <input id="student-edit-passed" maxlength="120" @bind="edit.LastPassedSchoolPeriod" disabled="@_saving" placeholder="Fx H1" />
+                            </label>
+                        </div>
+                        <p class="directory-editor-help">Registrér kun et skoleforløb som bestået, når resultatet er bekræftet. Tomme felter vises som ikke registreret.</p>
+                        @if (_saveError is not null)
+                        {
+                            <p class="directory-error" role="alert">@_saveError</p>
+                        }
+                        <div class="directory-editor-actions">
+                            <button type="submit" class="action" disabled="@_saving">@(_saving ? "Gemmer…" : "Gem oplysninger")</button>
+                            <button type="button" class="secondary" disabled="@_saving" @onclick="CancelEditAsync">Annuller</button>
+                            @if (edit.Student.HasTeacherOverrides)
+                            {
+                                <button type="button" class="secondary directory-reset" disabled="@_saving" @onclick="ResetAsync">Nulstil til Lectio</button>
+                            }
+                        </div>
+                    </form>
+                </section>
+            }
+            @if (_notice is not null)
+            {
+                <p class="directory-notice" role="status">@_notice</p>
+            }
+
+            var matches = MatchingStudents;
+            <div class="directory-result-heading">
+                <p id="student-result-count" role="status">@matches.Count af @_students.Count elever</p>
+                @if (HasFilters)
+                {
+                    <button type="button" class="directory-clear" @onclick="ClearFilters">Ryd filtre</button>
+                }
+            </div>
+            @if (_students.Count == 0)
+            {
+                <div class="directory-empty"><h2>Ingen elever at vise endnu</h2><p>Elever vises, når de findes i Lectio eller er tilmeldt et hold i LUP.</p><a href="/lectio">Åbn Lectio og hold</a></div>
+            }
+            else if (matches.Count == 0)
+            {
+                <div class="directory-empty"><h2>Ingen elever matcher</h2><p>Prøv et andet navn, hold eller forløb, eller ryd filtrene.</p><button type="button" class="secondary" @onclick="ClearFilters">Ryd filtre</button></div>
+            }
+            else
+            {
+                <table class="directory-table" aria-describedby="student-result-count">
+                    <thead><tr><th scope="col">Elev</th><th scope="col">Hvor er eleven?</th><th scope="col">Aktuelt skoleforløb</th><th scope="col">Arbejdsplads</th><th scope="col">Sidst bestået</th><th scope="col"><span class="visually-hidden">Handlinger</span></th></tr></thead>
+                    <tbody>
+                        @foreach (var student in matches.Skip((_page - 1) * PageSize).Take(PageSize))
+                        {
+                            <tr @key="student.Key" data-student-key="@student.Key">
+                                <th scope="row" class="directory-identity">
+                                    <div class="directory-person">
+                                        <button type="button" class="directory-photo" aria-label="Se avatar for @student.DisplayName" aria-haspopup="dialog" @onclick="() => OpenAvatar(student)">
+                                            <StudentPhoto @key="(_generation, student.Key)" UserSub="student.UserSub" DisplayName="@student.DisplayName" Size="44" HasCustomPhoto="student.HasCustomPhoto" />
+                                        </button>
+                                        <div><strong>@student.DisplayName</strong>
+                                            @if (!string.IsNullOrWhiteSpace(student.ClassName)) { <span class="directory-meta">@student.ClassName</span> }
+                                            <span class="directory-meta">@HoldNames(student)</span>
+                                        </div>
+                                    </div>
+                                </th>
+                                <td data-label="Hvor er eleven?"><span class="directory-placement placement-@NormalizePlacement(student.Placement)">@PlacementLabel(student.Placement)</span>@if (student.HasTeacherOverrides) { <span class="directory-meta">Rettet af underviser</span> }</td>
+                                <td data-label="Aktuelt skoleforløb">@Display(student.CurrentSchoolPeriod)</td>
+                                <td data-label="Arbejdsplads">@Display(student.WorkplaceName)</td>
+                                <td data-label="Sidst bestået">@Display(student.LastPassedSchoolPeriod)</td>
+                                <td class="directory-row-actions"><button type="button" class="secondary" disabled="@(_saving || (_edit is not null && _edit.Student.Key != student.Key))" aria-label="Ret oplysninger for @student.DisplayName" aria-expanded="@(_edit?.Student.Key == student.Key)" @onclick="() => BeginEdit(student)">Ret</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                var pageCount = Math.Max(1, (int)Math.Ceiling(matches.Count / (double)PageSize));
+                <nav class="directory-pagination" aria-label="Sider i elevlisten">
+                    <span>@(((_page - 1) * PageSize) + 1)–@(Math.Min(_page * PageSize, matches.Count)) af @matches.Count elever</span>
+                    <div><button type="button" class="secondary" disabled="@(_page <= 1)" @onclick="() => SetPage(_page - 1)">Forrige</button><span aria-current="page">Side @_page af @pageCount</span><button type="button" class="secondary" disabled="@(_page >= pageCount)" @onclick="() => SetPage(_page + 1)">Næste</button></div>
+                </nav>
+            }
+        }
+
+        <dialog id="@_dialogId" class="directory-avatar-dialog" aria-labelledby="student-avatar-title" @onclose="CloseAvatar">
+            <header><h2 id="student-avatar-title">@(_avatarStudent is null ? "Elevens avatar" : $"{_avatarStudent.DisplayName}s avatar")</h2><form method="dialog"><button class="secondary" autofocus aria-label="Luk avatar"><UiIcon Name="close" /></button></form></header>
+            @if (_avatarStudent is { } avatarStudent)
+            {
+                @if (avatarStudent.UserSub is not null && AvatarCatalog.Find(avatarStudent.SelectedAvatarId ?? "") is { } avatar)
+                {
+                    <div class="directory-avatar-stage"><AvatarIcon AvatarId="@avatar.Id" Size="160" /><p>@avatar.Name</p></div>
+                }
+                else
+                {
+                    <p class="directory-avatar-empty">@(avatarStudent.UserSub is null ? "Eleven har endnu ikke en tilknyttet LUP-bruger." : "Eleven har endnu ikke valgt en avatar.")</p>
+                }
+            }
+        </dialog>
+    </div>
+}
+
+@code {
+    private const int PageSize = 40;
+    private readonly string _dialogId = $"student-avatar-{Guid.NewGuid():N}";
+    private List<StudentDirectoryStudent> _students = [];
+    private StudentDirectoryStudent? _avatarStudent;
+    private EditDraft? _edit;
+    private ElementReference _searchInput, _editPlacement;
+    private CancellationTokenSource? _request;
+    private string? _account, _warning, _loadError, _saveError, _notice;
+    private string _query = "", _placementFilter = "", _holdFilter = "", _schoolFilter = "";
+    private int _page = 1, _generation;
+    private bool _loading, _saving, _openAvatar, _focusEditor, _disposed;
+    private bool CanRead => Auth.IsAuthenticated && Redirect.ShowsTeacherChrome && !ViewAs.IsActive;
+    private bool HasFilters => !string.IsNullOrWhiteSpace(_query) || _placementFilter.Length > 0 || _holdFilter.Length > 0 || _schoolFilter.Length > 0;
+    private string Query { get => _query; set { _query = value; _page = 1; } }
+    private string PlacementFilter { get => _placementFilter; set { _placementFilter = value; _page = 1; } }
+    private string HoldFilter { get => _holdFilter; set { _holdFilter = value; _page = 1; } }
+    private string SchoolFilter { get => _schoolFilter; set { _schoolFilter = value; _page = 1; } }
+    private IEnumerable<StudentDirectoryHold> HoldOptions => _students.SelectMany(student => student.Holds).DistinctBy(hold => hold.Id).OrderBy(hold => hold.Name, StringComparer.CurrentCultureIgnoreCase);
+    private IEnumerable<string> SchoolOptions => _students.Select(student => student.CurrentSchoolPeriod).OfType<string>().Where(value => !string.IsNullOrWhiteSpace(value)).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.CurrentCultureIgnoreCase);
+    private List<StudentDirectoryStudent> MatchingStudents => _students.Where(student =>
+        (_query.Trim().Length == 0 || SearchValues(student).Any(value => value?.Contains(_query.Trim(), StringComparison.CurrentCultureIgnoreCase) == true)) &&
+        (_placementFilter.Length == 0 || NormalizePlacement(student.Placement) == _placementFilter) &&
+        (_holdFilter.Length == 0 || student.Holds.Any(hold => hold.Id.ToString() == _holdFilter)) &&
+        (_schoolFilter.Length == 0 || string.Equals(student.CurrentSchoolPeriod, _schoolFilter, StringComparison.OrdinalIgnoreCase))).ToList();
+
+    protected override Task OnInitializedAsync()
+    {
+        Auth.AuthStateChanged += OnAccountChanged;
+        ViewAs.Changed += OnAccountChanged;
+        return LoadAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusEditor && _edit is not null && CanRead && !_disposed)
+        {
+            _focusEditor = false;
+            await _editPlacement.FocusAsync();
+        }
+        if (_openAvatar && CanRead && !_disposed)
+        {
+            _openAvatar = false;
+            await Js.InvokeVoidAsync("lupGiftUi.open", _dialogId);
+        }
+    }
+
+    private void OnAccountChanged() => _ = InvokeAsync(async () =>
+    {
+        if (_disposed) return;
+        if (_account != (CanRead ? Auth.Subject : null))
+        {
+            var pending = LoadAsync();
+            StateHasChanged();
+            await pending;
+        }
+        StateHasChanged();
+    });
+
+    private async Task LoadAsync()
+    {
+        _request?.Cancel();
+        _request?.Dispose();
+        _request = null;
+        var generation = ++_generation;
+        _students = [];
+        _edit = null;
+        _avatarStudent = null;
+        _openAvatar = false;
+        _focusEditor = false;
+        _warning = _loadError = _saveError = _notice = null;
+        _saving = _loading = false;
+        _account = CanRead ? Auth.Subject : null;
+        ClearFilters();
+        if (_account is null || _disposed) return;
+
+        _request = new();
+        var ct = _request.Token;
+        _loading = true;
+        try
+        {
+            var response = await Directory.GetAsync(ct);
+            if (!IsCurrent(generation, ct)) return;
+            _students = response.Students.GroupBy(Identity, StringComparer.OrdinalIgnoreCase).Select(group =>
+            {
+                var student = group.OrderByDescending(row => row.HasTeacherOverrides).ThenByDescending(row => row.UpdatedAtUtc).First();
+                return student with { Holds = group.SelectMany(row => row.Holds).DistinctBy(hold => hold.Id).ToList() };
+            }).OrderBy(student => student.DisplayName, StringComparer.CurrentCultureIgnoreCase).ToList();
+            _warning = response.Warning ?? (!response.LectioAvailable ? "Lectio kunne ikke hentes. Listen viser de elevoplysninger, der allerede findes i LUP." : null);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (Exception ex) when (ex is StudentDirectoryException or HttpRequestException or OperationCanceledException)
+        {
+            if (IsCurrent(generation, ct)) _loadError = ErrorMessage(ex, saving: false);
+        }
+        finally
+        {
+            if (IsCurrent(generation, ct)) _loading = false;
+        }
+    }
+
+    private void BeginEdit(StudentDirectoryStudent student)
+    {
+        if (_edit?.Student.Key == student.Key)
+        {
+            _focusEditor = true;
+            return;
+        }
+        _edit = new(student);
+        _focusEditor = true;
+        _saveError = _notice = null;
+    }
+
+    private async Task CancelEditAsync()
+    {
+        _edit = null;
+        _saveError = null;
+        await _searchInput.FocusAsync(preventScroll: true);
+    }
+
+    private Task SaveAsync() => SaveDetailsAsync(reset: false);
+    private Task ResetAsync() => SaveDetailsAsync(reset: true);
+
+    private async Task SaveDetailsAsync(bool reset)
+    {
+        if (_edit is not { } edit || _saving || !CanRead || _request is null || _account is not { Length: > 0 } teacherSubject) return;
+        var generation = _generation;
+        var ct = _request.Token;
+        var details = reset
+            ? new UpdateStudentDirectoryDetails(null, null, null, null, ResetToLectio: true)
+            : new(edit.Placement == NormalizePlacement(edit.Student.Placement) ? null : edit.Placement,
+                Changed(edit.CurrentSchoolPeriod, edit.Student.CurrentSchoolPeriod),
+                Changed(edit.WorkplaceName, edit.Student.WorkplaceName),
+                Changed(edit.LastPassedSchoolPeriod, edit.Student.LastPassedSchoolPeriod));
+        if (!reset && details is { Placement: null, CurrentSchoolPeriod: null, WorkplaceName: null, LastPassedSchoolPeriod: null })
+        {
+            _edit = null;
+            _notice = "Der var ingen ændringer at gemme.";
+            return;
+        }
+        _saveError = null;
+        _saving = true;
+        try
+        {
+            var result = await Directory.UpdateAsync(edit.Student.Key, details, teacherSubject, ct);
+            if (!IsCurrent(generation, ct)) return;
+            _students = _students.Select(student => student.Key == edit.Student.Key ? result : student).ToList();
+            _edit = null;
+            _notice = reset ? $"Oplysningerne for {result.DisplayName} følger Lectio igen." : $"Oplysningerne for {result.DisplayName} er gemt.";
+            _page = Math.Min(_page, Math.Max(1, (int)Math.Ceiling(MatchingStudents.Count / (double)PageSize)));
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (Exception ex) when (ex is StudentDirectoryException or HttpRequestException or OperationCanceledException)
+        {
+            if (IsCurrent(generation, ct)) _saveError = ErrorMessage(ex, saving: true);
+        }
+        finally
+        {
+            if (IsCurrent(generation, ct)) _saving = false;
+        }
+    }
+
+    private void OpenAvatar(StudentDirectoryStudent student) { _avatarStudent = student; _openAvatar = true; }
+    private void CloseAvatar() { _avatarStudent = null; _openAvatar = false; }
+    private void SetPage(int page) => _page = Math.Max(1, page);
+    private void ClearFilters() { _query = _placementFilter = _holdFilter = _schoolFilter = ""; _page = 1; }
+    private bool IsCurrent(int generation, CancellationToken ct) => !_disposed && !ct.IsCancellationRequested && generation == _generation && CanRead && _account == Auth.Subject;
+    private static string Identity(StudentDirectoryStudent student) => student.UserSub is Guid sub ? $"user:{sub}" : !string.IsNullOrWhiteSpace(student.LectioId) ? $"lectio:{student.LectioId}" : student.Key;
+    private static string? Changed(string draft, string? original) => string.Equals(draft.Trim(), original?.Trim() ?? "", StringComparison.Ordinal) ? null : draft.Trim();
+    private static string Display(string? value) => string.IsNullOrWhiteSpace(value) ? "Ikke registreret" : value;
+    private static string NormalizePlacement(string? value) => value is "school" or "workplace" ? value : "unknown";
+    private static string PlacementLabel(string? value) => NormalizePlacement(value) switch { "school" => "På skole", "workplace" => "På arbejdsplads", _ => "Ikke registreret" };
+    private static string HoldNames(StudentDirectoryStudent student) => student.Holds.Count == 0 ? "Intet LUP-hold registreret" : string.Join(", ", student.Holds.Select(hold => hold.Name));
+    private static IEnumerable<string?> SearchValues(StudentDirectoryStudent student) => new[] { student.DisplayName, student.ClassName, student.LectioId, student.CurrentSchoolPeriod, student.WorkplaceName, student.LastPassedSchoolPeriod }.Concat(student.Holds.SelectMany(hold => new[] { hold.Name, hold.ForloebName }));
+    private static string ErrorMessage(Exception error, bool saving) => error is StudentDirectoryException ? error.Message : saving
+        ? "Forbindelsen blev afbrudt. Prøv igen; dine rettelser står stadig i felterne."
+        : "Elevlisten kunne ikke hentes. Tjek forbindelsen, og prøv igen.";
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _generation++;
+        Auth.AuthStateChanged -= OnAccountChanged;
+        ViewAs.Changed -= OnAccountChanged;
+        _request?.Cancel();
+        _request?.Dispose();
+    }
+
+    private sealed class EditDraft(StudentDirectoryStudent student)
+    {
+        public StudentDirectoryStudent Student { get; } = student;
+        public string Placement { get; set; } = NormalizePlacement(student.Placement);
+        public string CurrentSchoolPeriod { get; set; } = student.CurrentSchoolPeriod ?? "";
+        public string WorkplaceName { get; set; } = student.WorkplaceName ?? "";
+        public string LastPassedSchoolPeriod { get; set; } = student.LastPassedSchoolPeriod ?? "";
+    }
+}

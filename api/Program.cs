@@ -152,6 +152,7 @@ if (!builder.Configuration.GetValue<bool>("PreviewWorker:Only"))
     builder.Services.AddHostedService<EditorAiContextIndexWorker>();
 }
 builder.Services.AddScoped<MembershipClaimService>();
+builder.Services.AddScoped<Mercantec.Tech.Api.Students.StudentDirectoryService>();
 
 builder.Services.Configure<ObjectStorageOptions>(builder.Configuration.GetSection(ObjectStorageOptions.SectionName));
 builder.Services.AddSingleton(_ => CharacterOriginalCatalog.Load());

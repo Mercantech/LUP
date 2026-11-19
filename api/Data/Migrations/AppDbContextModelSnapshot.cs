@@ -2863,6 +2863,33 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("profile_names", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.ProfilePhoto", b =>
+                {
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StorageKey")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserSub");
+
+                    b.ToTable("profile_photos", (string)null);
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.QuestAudienceGroup", b =>
                 {
                     b.Property<Guid>("QuestId")
@@ -3023,6 +3050,50 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.HasIndex("RecipientSub", "CreatedAtUtc");
 
                     b.ToTable("reference_mention_events", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.StudentDirectoryDetails", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("CurrentSchoolPeriod")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("LastPassedSchoolPeriod")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("LectioId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Placement")
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedBySub")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("WorkplaceName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Key");
+
+                    b.HasIndex("LectioId");
+
+                    b.HasIndex("UserSub");
+
+                    b.ToTable("student_directory_details", (string)null);
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.SubmissionDraftFile", b =>

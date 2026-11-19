@@ -84,6 +84,7 @@
                                 <section class="lup-account-section" aria-label="Undervisning">
                                     <h2>Undervisning</h2>
                                     <NavLink href="/teacher/planner" Match="NavLinkMatch.All">Min kalender</NavLink>
+                                    <NavLink href="/teacher/students">Elever</NavLink>
                                     @foreach (var link in NotebookLinks.Skip(1)) { <NavLink href="@link.Href">@link.Label</NavLink> }
                                     <NavLink href="/teacher/tools">Underviserværktøjer</NavLink>
                                     <NavLink href="/teacher/updates">Nyt i LUP</NavLink>
