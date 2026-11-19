@@ -1,6 +1,7 @@
 // Run after the fictional notebook browser fixture has started (see tests/Notebook.BrowserQa/README.md).
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -334,12 +335,135 @@ async function checkSharedReader(notebookId, pageId) {
   process.stdout.write('PASS shared reader can search and open help without write commands\n');
 }
 
+async function exercisePicker(page, panel, results, screenshot) {
+  const search = panel.getByRole('searchbox');
+  const category = panel.getByRole('combobox', { name: /kategori/i });
+  const first = results.first();
+  await first.waitFor();
+  await waitForFocus(search);
+  const layout = await panel.evaluate(element => {
+    const root = document.documentElement;
+    const rect = element.getBoundingClientRect();
+    const horizontalScrollers = [element, ...element.querySelectorAll('*')].filter(node =>
+      node.clientWidth && node.scrollWidth > node.clientWidth + 1 && /auto|scroll/.test(getComputedStyle(node).overflowX));
+    return { theme: root.dataset.bsTheme, viewport: root.clientWidth, pageWidth: root.scrollWidth,
+      left: rect.left, right: rect.right, horizontalScrollers: horizontalScrollers.map(node => node.className) };
+  });
+  assert.equal(layout.theme, 'dark');
+  assert.ok(layout.left >= -1 && layout.right <= layout.viewport + 1, 'the picker fits in the viewport');
+  assert.ok(layout.pageWidth <= layout.viewport + 1, 'the page has no horizontal scroll');
+  assert.deepEqual(layout.horizontalScrollers, []);
+  const scrollState = () => first.evaluate(element => {
+    let grid = element.parentElement;
+    while (grid && !(grid.scrollHeight > grid.clientHeight && /auto|scroll/.test(getComputedStyle(grid).overflowY))) grid = grid.parentElement;
+    if (!grid) throw new Error('A full catalog needs an independently scrollable result list');
+    return { top: grid.scrollTop, hiddenBar: getComputedStyle(grid).scrollbarWidth === 'none'
+      || getComputedStyle(grid, '::-webkit-scrollbar').display === 'none', pageY: window.scrollY };
+  });
+  const start = await scrollState();
+  assert.ok(start.hiddenBar, 'results can scroll without a visible scrollbar');
+  const touch = await page.evaluate(() => navigator.maxTouchPoints > 0);
+  const activate = control => touch ? control.tap() : control.click();
+  const next = panel.getByRole('button', { name: /rul ned/i });
+  await next.waitFor();
+  assert.ok(await next.evaluate(button => {
+    const rect = button.getBoundingClientRect();
+    return button.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+  }), 'the next-page button is reachable before scrolling the popover');
+  if (screenshot) {
+    if (!touch) await page.mouse.move(0, 0);
+    await panel.locator('img').first().evaluate(image => image.decode());
+    await panel.screenshot({ path: screenshot });
+  }
+  await activate(next);
+  await until(scrollState, state => state.top > start.top && state.pageY === start.pageY, 'scroll only the results');
+  await activate(panel.getByRole('button', { name: /rul op/i }));
+  await until(scrollState, state => state.top <= start.top + 1, 'scroll the results back up');
+
+  const count = await results.count();
+  assert.ok(count >= 40, 'exercise a catalog larger than the visible grid');
+  if (!touch) {
+    const hovered = results.nth(1);
+    await hovered.hover();
+    await panel.getByText(await hovered.getAttribute('aria-label'), { exact: true }).waitFor();
+  }
+  await search.press('ArrowDown');
+  await waitForFocus(first);
+  await page.keyboard.press('End');
+  await waitForFocus(results.last());
+  await panel.getByText(await results.last().getAttribute('aria-label'), { exact: true }).waitFor();
+  assert.ok(await results.last().evaluate(element => {
+    const bounds = element.getBoundingClientRect();
+    return element.contains(document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2));
+  }), 'the final emoji scrolls into view');
+  await page.keyboard.press('Home');
+  await waitForFocus(first);
+  await category.selectOption({ label: 'Hverdag' });
+  await until(() => results.count(), n => n > 0 && n < count, 'last category is reachable');
+  await category.selectOption({ label: 'Egne' });
+  await until(() => results.count(), n => n > 0 && n < count, 'show only custom emoji');
+  await search.fill('ingen-emoji-med-dette-navn');
+  await panel.getByText(/Ingen emojis matcher/).waitFor();
+  await activate(panel.getByRole('button', { name: 'Ryd søgning', exact: true }));
+  await waitForFocus(search);
+  assert.equal(await search.inputValue(), '');
+  assert.equal(await category.inputValue(), 'custom');
+  await search.fill('qa-custom-sticker');
+  await first.waitFor();
+  assert.equal(await first.getAttribute('aria-label'), ':qa-custom-sticker:');
+  await search.press('ArrowDown');
+  await waitForFocus(first);
+  await page.keyboard.press('Enter');
+  await panel.waitFor({ state: 'hidden' });
+}
+
+async function pickerFlow(page, path, item, device) {
+  const capture = process.env.NOTEBOOK_PICKER_QA_OUTPUT;
+  if (capture) await mkdir(capture, { recursive: true });
+  const screenshot = name => capture ? resolve(capture, device + '-' + name + '.png') : undefined;
+  await page.evaluate(() => localStorage.setItem('lup-theme', 'dark'));
+  await openSidebar(page, path + item.id);
+  const row = sidebar(page).locator(`[data-page-id="${item.id}"]`);
+  await row.getByRole('button', { name: 'Sidehandlinger: ' + item.title, exact: true }).click();
+  const menu = page.getByRole('dialog', { name: 'Sidehandlinger', exact: true });
+  await menu.getByRole('button', { name: 'Vælg sideikon', exact: true }).click();
+  const panel = page.getByRole('dialog', { name: 'Vælg emoji', exact: true });
+  const iconOptions = panel.getByRole('listbox', { name: 'Emojis', exact: true }).getByRole('option');
+  await exercisePicker(page, panel, iconOptions, screenshot('sideikon'));
+  await menu.waitFor({ state: 'hidden' });
+  await row.locator('.nb-page-icon img').waitFor();
+  await sidebar(page).getByRole('button', { name: 'Skjul sidemenu', exact: true }).click();
+
+  const editor = page.locator('.notion-blocknote-host .bn-editor[contenteditable=true]').first();
+  await editor.waitFor({ timeout: 60000 });
+  await editor.click();
+  await page.keyboard.press('Control+End');
+  await page.keyboard.type('/callout', { delay: 35 });
+  await page.locator('.bn-suggestion-menu').getByText('Callout', { exact: true }).click();
+  const trigger = page.getByRole('button', { name: 'Skift callout-ikon' });
+  await trigger.click();
+  const reactPanel = page.locator('.notion-callout-icon-picker .notion-emoji-panel');
+  const emojiButtons = reactPanel.getByRole('group', { name: 'Emojis', exact: true }).getByRole('button', { name: /^:.+:$/ });
+  await exercisePicker(page, reactPanel, emojiButtons, screenshot('callout'));
+  await until(() => trigger.getAttribute('title'), title => title?.includes('qa-custom-sticker'), 'applied callout icon');
+  process.stdout.write('PASS ' + device + ': Blazor and React pickers fit, scroll, filter and select with the keyboard\n');
+}
+
 async function run() {
   const teacher = await client('teacher');
   const pupil = await client('pupil');
   const collection = await json('teacher', '/api/notion/collections',
     { title: 'QA forløb ' + suffix, holdId: '22222222-aaaa-4222-8222-222222222222' });
   const personal = await json('pupil', '/api/notebooks/mine', {});
+  if (!process.argv.includes('--icons-only')) {
+    const desktopPage = await json('teacher', '/api/notion/pages',
+      { collectionId: collection.id, atRoot: true, title: 'Emoji på desktop ' + suffix });
+    await pickerFlow(teacher, '/notion/', desktopPage, 'desktop');
+    const mobilePage = await json('pupil', '/api/notebooks/' + personal.id + '/pages', { title: 'Emoji på mobil ' + suffix });
+    const mobile = await client('pupil', { viewport: { width: 360, height: 740 }, hasTouch: true, isMobile: true });
+    await pickerFlow(mobile, '/notebook/', mobilePage, 'mobil');
+    if (process.argv.includes('--picker-only')) return;
+  }
   await pageIcons(teacher, '/notion/', (title, parentPageId) => json('teacher', '/api/notion/pages',
     { collectionId: collection.id, atRoot: !parentPageId, title, parentPageId }), process.env.NOTEBOOK_ICON_QA_SCREENSHOT);
   await pageIcons(pupil, '/notebook/', (title, parentPageId) => json('pupil', '/api/notebooks/' + personal.id + '/pages',

@@ -36,8 +36,12 @@ export function EmojiPicker({ id, emojis, onPick, onClose, onUpload, onAnalyze, 
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
   const [preview, setPreview] = useState<PlatformEmoji | null>(null);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(false);
   const search = useRef<HTMLInputElement>(null);
   const grid = useRef<HTMLDivElement>(null);
+  const lastPointer = useRef<{ x: number; y: number } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const nameInput = useRef<HTMLInputElement>(null);
   const upload = useRef<AbortController | null>(null);
@@ -69,10 +73,28 @@ export function EmojiPicker({ id, emojis, onPick, onClose, onUpload, onAnalyze, 
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisNotice, setAnalysisNotice] = useState('');
   const results = useMemo(() => filterCustomEmojis(emojis, query, category) as PlatformEmoji[], [emojis, query, category]);
-  const activePreview = preview && results.some(item => item.id === preview.id) ? preview : null;
+  const focusedIndex = Math.max(0, results.findIndex(item => item.id === focusedId));
+  const activePreview = preview && results.some(item => item.id === preview.id) ? preview : results[focusedIndex];
 
   useEffect(() => { search.current?.focus({ preventScroll: true }); }, []);
-  useEffect(() => { grid.current?.scrollTo({ top: 0 }); }, [query, category]);
+  useEffect(() => {
+    setFocusedId(null);
+    setPreview(null);
+    grid.current?.scrollTo({ top: 0 });
+  }, [query, category]);
+  useEffect(() => {
+    const list = grid.current;
+    if (!list) return;
+    const update = () => {
+      setCanScrollUp(list.scrollTop > 1);
+      setCanScrollDown(list.scrollTop + list.clientHeight < list.scrollHeight - 1);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(list);
+    list.addEventListener('scroll', update, { passive: true });
+    return () => { observer.disconnect(); list.removeEventListener('scroll', update); };
+  }, [results, file]);
   useEffect(() => { mounted.current = true; return () => {
     mounted.current = false; upload.current?.abort(); analysis.current?.abort();
     backgroundGeneration.current++;
@@ -309,39 +331,46 @@ export function EmojiPicker({ id, emojis, onPick, onClose, onUpload, onAnalyze, 
       void saveUpload();
     }
   };
+  const focusInGrid = (index: number) => {
+    const list = grid.current;
+    const button = list?.querySelectorAll<HTMLButtonElement>('button')[index];
+    if (!list || !button) return;
+    button.focus({ preventScroll: true });
+    const item = button.getBoundingClientRect();
+    const bounds = list.getBoundingClientRect();
+    if (item.top < bounds.top) list.scrollTop += item.top - bounds.top;
+    else if (item.bottom > bounds.bottom) list.scrollTop += item.bottom - bounds.bottom;
+  };
   const moveInGrid = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const buttons = grid.current?.querySelectorAll<HTMLButtonElement>('button');
-    if (!buttons?.length) return;
-    const columns = getComputedStyle(grid.current!).gridTemplateColumns.split(' ').length;
+    if (!grid.current) return;
+    const columns = getComputedStyle(grid.current).gridTemplateColumns.split(' ').length;
     let next: number;
     switch (event.key) {
-      case 'ArrowRight': next = Math.min(buttons.length - 1, index + 1); break;
+      case 'ArrowRight': next = Math.min(results.length - 1, index + 1); break;
       case 'ArrowLeft': next = Math.max(0, index - 1); break;
-      case 'ArrowDown': next = Math.min(buttons.length - 1, index + columns); break;
+      case 'ArrowDown': next = Math.min(results.length - 1, index + columns); break;
       case 'ArrowUp': next = index - columns; break;
       case 'Home': next = 0; break;
-      case 'End': next = buttons.length - 1; break;
+      case 'End': next = results.length - 1; break;
       default: return;
     }
     event.preventDefault();
-    if (next < 0) search.current?.focus();
-    else buttons[next].focus({ preventScroll: true });
-    if (next >= 0) buttons[next].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (next < 0) search.current?.focus({ preventScroll: true });
+    else focusInGrid(next);
   };
-  const reset = () => { setQuery(''); setCategory('all'); search.current?.focus(); };
+  const clearQuery = () => { setQuery(''); search.current?.focus({ preventScroll: true }); };
+  const reset = () => { setCategory('all'); clearQuery(); };
+  const previewFromPointer = (event: React.PointerEvent, emoji: PlatformEmoji) => {
+    if (event.pointerType === 'touch') return;
+    if (lastPointer.current?.x === event.clientX && lastPointer.current.y === event.clientY) return;
+    lastPointer.current = { x: event.clientX, y: event.clientY };
+    if (preview !== emoji) setPreview(emoji);
+  };
 
   return <section id={id} className="notion-emoji-panel" aria-label="Platformens emojis" onKeyDown={onKeyDown}>
-    <div className="notion-emoji-search-row">
-      <label className="notion-emoji-search">
-        <svg className="notion-emoji-search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
-        <input ref={search} type="search" value={query} onChange={event => setQuery(event.target.value)} aria-label="Søg efter emoji" placeholder="Søg navn eller fx glad, raket…" autoComplete="off" maxLength={100} disabled={!!file} onKeyDown={event => {
-          if (event.key === 'ArrowDown') {
-            const first = grid.current?.querySelector<HTMLButtonElement>('button');
-            if (first) { event.preventDefault(); first.focus({ preventScroll: true }); }
-          }
-        }} />
-      </label>
-      {onUpload && <button type="button" className="notion-emoji-add" disabled={busy} onClick={() => fileInput.current?.click()} aria-label="Tilføj emoji" title="Tilføj emoji">+</button>}
+    <div className="notion-emoji-heading">
+      <strong>{file ? 'Tilføj emoji' : 'Vælg emoji'}</strong>
+      {onUpload && <button type="button" className="notion-emoji-add" disabled={busy} onClick={() => fileInput.current?.click()} aria-label={file ? 'Vælg et andet billede' : 'Tilføj emoji'}><span aria-hidden="true">+</span>{file ? 'Skift billede' : 'Tilføj'}</button>}
       <button type="button" className="notion-emoji-close" disabled={busy} onClick={() => { stopBackground(''); cancelCrop(); onClose(); }} aria-label="Luk emoji-vælger" title="Luk (Esc)">×</button>
     </div>
     {onUpload && <input ref={fileInput} className="notion-emoji-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" aria-label="Vælg emoji-billede" onChange={chooseFile} disabled={busy} tabIndex={-1} />}
@@ -380,20 +409,36 @@ export function EmojiPicker({ id, emojis, onPick, onClose, onUpload, onAnalyze, 
       {busy && <p role="status">Gemmer emoji…</p>}
     </div> : <>
     {error && <p className="notion-emoji-upload-error" role="alert">{error}</p>}
-    <div className="notion-emoji-categories" role="group" aria-label="Emojikategorier">
-      {emojiCategories.map(item => <button key={item.id} type="button" aria-pressed={category === item.id} onClick={() => setCategory(item.id)}>{item.label}</button>)}
+    <div className="notion-emoji-search">
+      <svg className="notion-emoji-search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <input ref={search} type="search" value={query} onChange={event => setQuery(event.target.value)} aria-label="Søg efter emoji" placeholder="Søg efter en emoji…" autoComplete="off" maxLength={100} onKeyDown={event => {
+        if (event.key === 'ArrowDown' && grid.current?.querySelector('button')) {
+          event.preventDefault();
+          focusInGrid(0);
+        }
+      }} />
+      {query && <button type="button" className="notion-emoji-clear" aria-label="Ryd søgning" onClick={clearQuery}>×</button>}
     </div>
-    <div className="notion-emoji-results" role="status" aria-live="polite">{results.length} {results.length === 1 ? 'emoji' : 'emojis'}</div>
+    <div className="notion-emoji-filters">
+      <select aria-label="Kategori" value={category} onChange={event => setCategory(event.target.value)}>
+        {emojiCategories.map(item => <option key={item.id} value={item.id}>{item.id === 'all' ? 'Alle kategorier' : item.label}</option>)}
+      </select>
+      <span className="notion-emoji-results" role="status">{results.length} {results.length === 1 ? 'emoji' : 'emojis'}</span>
+    </div>
     <div ref={grid} className="notion-emoji-grid" role="group" aria-label="Emojis" onMouseLeave={() => setPreview(null)}>
-      {results.map((item, index) => <button key={item.id} type="button" className="notion-emoji-option" title={`:${item.name}:`} aria-label={`:${item.name}:`} onClick={() => onPick(item)} onFocus={() => setPreview(item)} onMouseEnter={() => setPreview(item)} onKeyDown={event => moveInGrid(event, index)}><img src={item.contentUrl} alt="" draggable={false} loading="lazy" /></button>)}
+      {results.map((item, index) => <button key={item.id} type="button" className="notion-emoji-option" tabIndex={index === focusedIndex ? 0 : -1} title={`:${item.name}:`} aria-label={`:${item.name}:`} onClick={() => onPick(item)} onFocus={() => { setFocusedId(item.id); setPreview(null); }} onPointerMove={event => previewFromPointer(event, item)} onKeyDown={event => moveInGrid(event, index)}><img src={item.contentUrl} alt="" draggable={false} loading="lazy" /></button>)}
       {results.length === 0 && <div className="notion-emoji-empty">
         <p>{emojis.length === 0 ? 'Ingen emojis endnu.' : category === 'custom' && !query ? 'Ingen egne emojis endnu.' : 'Ingen emojis matcher dine filtre.'}</p>
         {query || category !== 'all' ? <button type="button" onClick={reset}>Nulstil filtre</button> : <a href="/emojis">Åbn biblioteket</a>}
       </div>}
     </div>
-    <div className="notion-emoji-preview" aria-hidden="true">
-      {activePreview ? <><img src={activePreview.contentUrl} alt="" /><span>:{activePreview.name}:</span><small>{activePreview.isStandard ? 'Standard' : 'Egen emoji'}</small></> : <span>Vælg en emoji · Esc lukker</span>}
-    </div>
+    {activePreview && <div className="notion-emoji-preview">
+      <img src={activePreview.contentUrl} alt="" /><span>:{activePreview.name}:</span>
+      {(canScrollUp || canScrollDown) && <div className="notion-emoji-scroll">
+        <button type="button" aria-label="Rul op" title="Rul op" disabled={!canScrollUp} onClick={() => grid.current?.scrollBy({ top: -grid.current.clientHeight })}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button>
+        <button type="button" aria-label="Rul ned" title="Rul ned" disabled={!canScrollDown} onClick={() => grid.current?.scrollBy({ top: grid.current.clientHeight })}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      </div>}
+    </div>}
     </>}
   </section>;
 }

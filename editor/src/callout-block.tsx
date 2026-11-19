@@ -57,7 +57,7 @@ export const createCallout = createReactBlockSpec({
     const portalTarget = editor.domElement?.closest<HTMLElement>('.notion-blocknote-host') || undefined;
     return <section className={`notion-callout notion-callout-${tone}`} data-tone={tone} aria-label={`Callout · ${TONE_LABEL[tone]}`}>
       {editable
-        ? <Popover opened={opened} onChange={setOpened} position="bottom-start" floatingStrategy="fixed" offset={6} width="min(340px, calc(100vw - 16px))" zIndex={100} withinPortal portalProps={{ target: portalTarget }} middlewares={{ flip: { padding: 8 }, shift: { padding: 8 }, size: { padding: 8 } }} closeOnEscape={false} returnFocus={false} transitionProps={{ duration: 0 }}>
+        ? <Popover opened={opened} onChange={setOpened} position="bottom-start" floatingStrategy="fixed" offset={6} width="min(340px, calc(100vw - 16px))" zIndex={100} withinPortal portalProps={{ target: portalTarget }} middlewares={{ flip: { padding: 8 }, shift: { padding: 8, crossAxis: true } }} closeOnEscape={false} returnFocus={false} transitionProps={{ duration: 0 }}>
           <Popover.Target><button
             ref={trigger}
             type="button"

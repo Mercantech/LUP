@@ -12,7 +12,7 @@
     @if (_open)
     {
         var visible = EmojiPickerCatalog.Filter(_items ?? [], _query, _category);
-        var preview = visible.FirstOrDefault(item => item.Id == _previewId) ?? visible.FirstOrDefault();
+        var preview = visible.FirstOrDefault();
         <div @ref="_panel" id="@_panelId" class="emoji-picker-panel" role="dialog" aria-label="Vælg emoji" data-upload-draft="@(_uploadFile is not null ? "true" : "false")" data-upload-busy="@(_uploadBusy ? "true" : "false")">
             <div class="emoji-picker-heading">
                 <strong>@(_uploadFile is null ? "Vælg emoji" : "Ny emoji")</strong>
@@ -20,11 +20,11 @@
                     @if (Redirect.ShowsTeacherChrome)
                     {
                         <label class="emoji-picker-add" title="Tilføj emoji">
-                            <span aria-hidden="true">+</span>
+                            <UiIcon Name="plus" /><span>Tilføj</span>
                             <InputFile @key="_fileVersion" class="emoji-picker-file" OnChange="SelectUpload" accept="image/png,image/jpeg,image/gif,image/webp" aria-label="Tilføj emoji" disabled="@_uploadBusy" />
                         </label>
                     }
-                    <button type="button" class="emoji-picker-close" aria-label="Luk emoji-vælger" title="Luk (Escape)" disabled="@_uploadBusy" @onclick="() => Dismiss(true)">×</button>
+                    <button type="button" class="emoji-picker-close" aria-label="Luk emoji-vælger" title="Luk (Escape)" disabled="@_uploadBusy" @onclick="() => Dismiss(true)"><UiIcon Name="close" /></button>
                 </div>
             </div>
             @if (_uploadFile is not null)
@@ -62,21 +62,27 @@
             }
             else
             {
-            @if (ResetLabel is not null)
-            {
-                <button type="button" class="emoji-picker-reset-selection" @onclick="ResetSelection">@ResetLabel</button>
-            }
-            <label class="emoji-picker-search-label">
-                <span class="emoji-picker-sr-only">Søg efter emoji</span>
-                <input class="emoji-picker-search" type="search" value="@_query" @oninput="Search" placeholder="Søg navn eller fx glad, raket…" autocomplete="off" spellcheck="false" maxlength="100" disabled="@(_items is null)" />
-            </label>
-            <div class="emoji-picker-categories" role="group" aria-label="Emojikategorier">
-                @foreach (var category in EmojiPickerCatalog.Categories)
+            <div class="emoji-picker-search-box">
+                <UiIcon Name="search" />
+                <input class="emoji-picker-search" type="search" value="@_query" @oninput="Search" aria-label="Søg efter emoji" placeholder="Søg efter en emoji…" autocomplete="off" spellcheck="false" maxlength="100" disabled="@(_items is null)" />
+                @if (_query.Length > 0)
                 {
-                    <button type="button" class="emoji-picker-category" aria-pressed="@(_category == category.Id ? "true" : "false")" @onclick="() => SetCategory(category.Id)">@category.Label</button>
+                    <button type="button" class="emoji-picker-clear" title="Ryd søgning" aria-label="Ryd søgning" @onclick="ClearSearch"><UiIcon Name="close" /></button>
                 }
             </div>
-            <div class="emoji-picker-results">
+            <div class="emoji-picker-filters">
+                <div class="emoji-picker-category-field">
+                    <select class="emoji-picker-category" aria-label="Kategori" @bind="_category">
+                        @foreach (var category in EmojiPickerCatalog.Categories)
+                        {
+                            <option value="@category.Id">@(category.Id == "all" ? "Alle kategorier" : category.Label)</option>
+                        }
+                    </select>
+                    <UiIcon Name="chevron" />
+                </div>
+                <span class="emoji-picker-count" role="status">@(_items is null || _error is not null ? null : $"{visible.Count} {(visible.Count == 1 ? "emoji" : "emojis")}")</span>
+            </div>
+            <div class="emoji-picker-results" data-query="@_query" data-category="@_category">
                 @if (_error is not null)
                 {
                     <div class="emoji-picker-empty" role="alert"><p>@_error</p><button type="button" @onclick="() => Load(true)">Prøv igen</button></div>
@@ -101,24 +107,27 @@
                     <div class="emoji-picker-grid" role="listbox" aria-label="Emojis">
                         @foreach (var item in visible)
                         {
-                            <button @key="item.Id" type="button" class="emoji-picker-option" role="option" aria-selected="false" title="@($":{item.Name}:")" aria-label="@($":{item.Name}:")" @onmouseenter="() => _previewId = item.Id" @onfocus="() => _previewId = item.Id" @onclick="() => Choose(item)">
-                                <img src="@item.ContentUrl" alt="" draggable="false" />
+                            <button @key="item.Id" type="button" class="emoji-picker-option" tabindex="-1" role="option" aria-selected="false" title="@($":{item.Name}:")" aria-label="@($":{item.Name}:")" @onclick="() => Choose(item)">
+                                <img src="@item.ContentUrl" alt="" loading="lazy" draggable="false" />
                             </button>
                         }
                     </div>
                 }
             </div>
-            <div class="emoji-picker-footer">
-                @if (preview is not null)
-                {
+            @if (preview is not null)
+            {
+                <div class="emoji-picker-footer">
                     <span class="emoji-picker-preview"><img src="@preview.ContentUrl" alt="" /><span>:@preview.Name:</span></span>
-                }
-                else
-                {
-                    <span class="emoji-picker-preview">Find din næste emoji</span>
-                }
-                <span class="emoji-picker-count" role="status" aria-live="polite" aria-atomic="true">@visible.Count @(visible.Count == 1 ? "emoji" : "emojis")</span>
-            </div>
+                    <div class="emoji-picker-paging" hidden>
+                        <button type="button" class="emoji-picker-page-up" aria-label="Rul op" title="Rul op"><UiIcon Name="chevron" /></button>
+                        <button type="button" class="emoji-picker-page-down" aria-label="Rul ned" title="Rul ned"><UiIcon Name="chevron" /></button>
+                    </div>
+                </div>
+            }
+            @if (ResetLabel is not null)
+            {
+                <button type="button" class="emoji-picker-reset-selection" @onclick="ResetSelection">@ResetLabel</button>
+            }
             }
         </div>
     }
@@ -151,7 +160,6 @@
         && EmojiUploadDraft.ParseKeywords(_uploadKeywords) is var words && words.Count <= 12 && words.All(word => word.Length <= 32);
     private string _query = "", _category = "all";
     private string? _error;
-    private Guid? _previewId;
     private IReadOnlyList<CustomEmojiItem>? _items;
     private ElementReference _trigger, _panel;
     private IJSObjectReference? _positioner;
@@ -161,7 +169,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_disposed || !_open) return;
-        var positioner = await (_positionerLoad ??= Js.InvokeAsync<IJSObjectReference>("import", "/js/emoji-picker.js?v=4").AsTask());
+        var positioner = await (_positionerLoad ??= Js.InvokeAsync<IJSObjectReference>("import", "/js/emoji-picker.js?v=5").AsTask());
         if (_disposed)
         {
             await DisposeModule(positioner);
@@ -208,20 +216,18 @@
     private void Search(ChangeEventArgs args)
     {
         _query = args.Value?.ToString() ?? "";
-        _previewId = null;
     }
 
-    private void SetCategory(string category)
+    private void ClearSearch()
     {
-        _category = category;
-        _previewId = null;
+        _query = "";
+        _focusSearch = true;
     }
 
     private void Reset()
     {
         _query = "";
         _category = "all";
-        _previewId = null;
         _focusSearch = true;
     }
 

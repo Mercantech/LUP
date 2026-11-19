@@ -7,7 +7,7 @@
 .nb-tree-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .nb-tree-icon-picker:has(.emoji-picker-panel){flex-basis:100%;min-width:0}
 .nb-tree-icon-picker ::deep .emoji-picker:has(.emoji-picker-panel){display:block}
-.nb-tree-icon-picker ::deep .emoji-picker-panel{position:static;width:100%;max-width:100%;max-height:min(52dvh,390px)!important;transform:none!important;margin-top:8px}
+.nb-tree-icon-picker ::deep .emoji-picker-panel{position:static;width:100%;max-width:100%;max-height:min(62dvh,424px)!important;transform:none!important;margin-top:8px}
 .nb-tree-dialog label{display:grid;gap:5px;margin-top:10px;font-size:13px}
 .nb-tree-dialog select{background:var(--bg);color:var(--ink);border:1px solid var(--rule);padding:8px;min-width:0;border-radius:6px;font:inherit}
 .nb-tree-trash-row{border-top:1px solid var(--rule);padding:10px 0;font-size:14px;overflow-wrap:anywhere}
