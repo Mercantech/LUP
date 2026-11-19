@@ -6,7 +6,7 @@ public sealed record NotebookPageSummary(Guid Id, Guid NotebookId, string Title,
     string Kind, string[] Tags, DateOnly? PeriodStart, Guid? HoldId, Guid? TemplateId,
     DateTimeOffset UpdatedAtUtc, long Revision, string? Snippet = null,
     string? LastEditedByName = null, Guid? NotebookIconEmojiId = null, string? NotebookOwnerName = null,
-    int? SortOrder = null);
+    int? SortOrder = null, Guid? IconEmojiId = null);
 public sealed record CreateNotebookPage(string Title, Guid? ParentPageId = null);
 public sealed record UpdateNotebookPage(string Title, Guid? ParentPageId, string[] Tags, Guid? HoldId = null,
     bool KeepPlacementAndHold = false);
@@ -14,7 +14,7 @@ public sealed record NotebookPageList(NotebookPageSummary[] Items, int Total);
 public sealed record NotebookDocumentContext(Guid DocumentId, Guid? NotebookId, string Title, string Kind,
     bool CanRead, bool CanEdit, bool CanComment, bool CanShare, string? StateBase64,
     DateTimeOffset UpdatedAtUtc, long Revision, string? Fingerprint, NotionPageLink[] Pages,
-    string[] Tags, DateOnly? PeriodStart = null, Guid? HoldId = null, long LifecycleVersion = 0);
+    string[] Tags, DateOnly? PeriodStart = null, Guid? HoldId = null, long LifecycleVersion = 0, Guid? IconEmojiId = null);
 public sealed record NotebookGraph(NotebookGraphNode[] Nodes, NotionGraphEdge[] Edges, int Total);
 public sealed record NotebookGraphNode(Guid Id, string Title);
 public sealed record NotebookUser(Guid Sub, string DisplayName, bool IsTeacher);

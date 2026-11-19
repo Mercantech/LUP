@@ -48,8 +48,6 @@
 .notion-branch-toggle.is-expanded ::deep .ui-icon{transform:rotate(90deg)}
 .notion-page{display:flex;flex:1;gap:8px;align-items:center;min-width:0;text-align:left;border:0;background:transparent;border-radius:7px;padding:6px 8px 6px 2px;color:var(--ink);font-size:12px;line-height:1.35}
 .notion-page ::deep .ui-icon{width:16px;height:16px;flex:none;color:var(--muted)}
-.notion-page-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-.notion-page-label ::deep .emoji-text{display:inline}
 .notion-page.is-current{color:var(--blue);font-weight:600}
 .notion-page.is-current ::deep .ui-icon{color:var(--blue)}
 .notion-page:hover{background:var(--paper)}

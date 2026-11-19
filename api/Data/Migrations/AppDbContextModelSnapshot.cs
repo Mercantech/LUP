@@ -2159,6 +2159,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.Property<Guid?>("HoldId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("IconEmojiId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Kind")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -2680,6 +2683,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.Property<Guid?>("HoldId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("IconEmojiId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("LastEditedByName")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
@@ -2713,6 +2719,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.Property<string>("PublishedEditorName")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("PublishedIconEmojiId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("PublishedKnowledgeChecksJson")
                         .IsRequired()

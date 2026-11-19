@@ -16,6 +16,11 @@
                 <button type="button" class="secondary" @onclick="CreateChild">Ny underside</button>
                 <button type="button" class="secondary" @onclick="ShowMove">Flyt til</button>
                 <button type="button" class="secondary" @onclick="ShowDelete">Slet</button>
+                <div class="nb-tree-icon-picker">
+                    <EmojiPicker @key="selected.Id" TriggerLabel="Vælg sideikon" TriggerText="Vælg sideikon" Disabled="_busy"
+                                ResetLabel="@(selected.IconEmojiId.HasValue ? "Brug automatisk ikon" : null)"
+                                OnPick="emoji => ChangeIcon(selected.Id, emoji.Id)" OnReset="() => ChangeIcon(selected.Id, null)" />
+                </div>
             </div>
         }
         else if (_mode == "move")
@@ -77,6 +82,7 @@
     [Parameter] public NotebookTreeItem[] Items { get; set; } = [];
     [Parameter] public bool Reorder { get; set; }
     [Parameter, EditorRequired] public EventCallback<Guid> OnCreateChild { get; set; }
+    [Parameter, EditorRequired] public Func<Guid, Guid?, Task> SetPageIcon { get; set; } = default!;
     [Parameter, EditorRequired] public Func<Guid, MoveNotebookPage, Task<bool>> MovePage { get; set; } = default!;
     [Parameter, EditorRequired] public Func<Guid, Task<NotebookPageDeletionPreview>> PreviewDelete { get; set; } = default!;
     [Parameter, EditorRequired] public Func<Guid, int, Task<bool>> DeletePage { get; set; } = default!;
@@ -122,6 +128,11 @@
     private Task Close() => Js.InvokeVoidAsync("lupGiftUi.close", _id).AsTask();
     private void ShowActionsAgain() { _mode = "actions"; _error = null; }
     private void ShowMove() { _mode = "move"; _position = "root"; _destination = ""; _error = null; }
+    private Task ChangeIcon(Guid id, Guid? iconEmojiId) => Run(async () =>
+    {
+        await SetPageIcon(id, iconEmojiId);
+        await Close();
+    });
     private async Task CreateChild()
     {
         if (_selected is not { } page) return;

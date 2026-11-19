@@ -46,6 +46,8 @@ undervisningssider og personlige notesbøger. Rapport og screenshots gemmes i
 
 `node editor/tests/qa-notebook-tree-browser.mjs` afprøver sidemenuen, flytning med træk og tastatur,
 sletning og gendannelse med samme ID i personlige notesbøger og teorinotesbøger.
+Med `--icons-only` kører scriptet alene prøven for sideikoner i begge sidetræer. Prøven
+vælger og nulstiller et ikon, genåbner siden og kontrollerer mappe-, fil- og titelikon.
 
 `node editor/tests/qa-knowledge-check-notebook-browser.mjs` afprøver indsættelse og udgivelse
 af Videnstjek fra desktop. En elev på mobil starter i notesbogen, genindlæser, fortsætter
