@@ -279,7 +279,7 @@ async function main() {
         await intent.selectOption("idle");
         await resident.locator('.avatar-sheet[data-animation="idle"]').waitFor();
         const homeBeforeExperiment = await locationOf(resident);
-        await page.getByLabel("Hastighed", {exact:true}).selectOption("4");
+        await page.getByRole("combobox", {name:/^Hastighed/}).selectOption("4");
         await page.getByRole("button", { name: "Kør kode", exact: true }).click();
         await page.getByRole("button", { name: "Pause", exact: true }).click();
         await page.getByRole("button", { name: "Genoptag", exact: true }).waitFor();

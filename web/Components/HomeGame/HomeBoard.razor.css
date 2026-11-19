@@ -5,7 +5,7 @@
 .room-stage.with-placement {
     display: grid;
     grid-template-rows: minmax(0, 1fr) auto;
-    max-height: min(calc(100dvh - 4.5rem), var(--placement-space, 100dvh));
+    max-height: var(--placement-space, none);
 }
 .placement-dock {
     min-width: 0;

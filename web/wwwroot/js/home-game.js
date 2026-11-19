@@ -85,9 +85,12 @@ export function focusPlacement(room, x, y) {
     const bounds = stage.getBoundingClientRect();
     if (bounds.bottom < top + minimum || bounds.top > bottom - minimum) {
         // Opening from the shop or inventory can leave the whole room off screen.
+        stage.style.setProperty("--placement-space", `${bottom - top}px`);
         stage.scrollIntoView({block: "center", inline: "nearest", behavior: "instant"});
     }
-    stage.style.setProperty("--placement-space", `${bottom - stage.getBoundingClientRect().top}px`);
+    // Include the rows already above the viewport when placing in a tall room.
+    const available = bottom - stage.getBoundingClientRect().top;
+    stage.style.setProperty("--placement-space", `calc(100dvh + ${available - window.innerHeight}px)`);
     focusCell(stage, x, y);
 }
 

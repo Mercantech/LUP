@@ -60,7 +60,7 @@ export async function checkContextActions(page, definition, output) {
     });
 
     const touch = await page.evaluate(() => navigator.maxTouchPoints > 0);
-    const viewports = touch ? [size] : [{width:1280,height:800}, {width:375,height:667}];
+    const viewports = touch ? [size] : [{width:1280,height:800}, {width:375,height:667}, {width:568,height:320}];
     const activate = control => touch ? control.tap() : control.click();
     for (const viewport of viewports) {
         await page.setViewportSize(viewport);
@@ -78,7 +78,8 @@ export async function checkContextActions(page, definition, output) {
         assert.equal(await menu.locator('details.item-more').evaluate(details => details.open), false,
             'Secondary actions stay folded until requested');
         assert.deepEqual(await scrollOffsets(), before, 'Opening the furniture menu scrolled the room');
-        const screen = touch ? 'touch' : viewport.width < 600 ? 'mobile' : 'desktop';
+        const landscape = viewport.height < 400 && viewport.width > viewport.height;
+        const screen = touch ? 'touch' : landscape ? 'landscape' : viewport.width < 600 ? 'mobile' : 'desktop';
         if (output) await page.screenshot({path:join(output, `item-actions-${screen}.png`)});
         if (touch) await button(menu,'Luk handlinger').tap();
         else await page.keyboard.press('Escape');
@@ -96,7 +97,9 @@ export async function checkContextActions(page, definition, output) {
         await visibleControl(button(placement,'Annullér'));
         await visibleControl(placement.getByTestId('confirm-placement'));
         const after = await scrollOffsets();
-        assert.deepEqual(after, before, `Moving a visible item at ${viewport.width}×${viewport.height} scrolled the room from ${JSON.stringify(before)} to ${JSON.stringify(after)}`);
+        // Short screens can pan the board internally to keep the active tile clear of its toolbar.
+        assert.deepEqual(landscape ? after.at(-1) : after, landscape ? before.at(-1) : before,
+            `Moving a visible item at ${viewport.width}×${viewport.height} scrolled the room from ${JSON.stringify(before)} to ${JSON.stringify(after)}`);
         await activate(button(placement,'Annullér'));
         await placement.waitFor({state:'hidden'});
         if (await menu.isVisible()) await page.keyboard.press('Escape');
