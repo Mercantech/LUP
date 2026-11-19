@@ -249,7 +249,7 @@ public static class CharacterCatalog
             Animations = WhaleMaterials.Animations,
             Reactions = ReactionsFor("whale"),
             LargeReactionPreviews = true,
-            ReactionsDescription = "48 transparente emojis med kaptajnen til hverdagen, en travl deploy og en tur på kajen. Søg efter et motiv, åbn originalen, eller hent en PNG.",
+            ReactionsDescription = "Find kaptajnens reaktioner fra kajen og fire motiver om Aspire. Søg efter et motiv, åbn originalen, eller hent en PNG.",
             ScenesDescription = "Følg kaptajnen fra tidevandsbogen ved kajen til værkstedsbordet, badekarrets testhavn og en rigtig containerudrulning. Åbn billederne i fuld størrelse, eller hent dem som PNG.",
             Scenes = [..WhaleMaterials.Scenes, ..OutfitScenes("whale",
                 "Docker i mørk jakke, bordeaux butterfly og gul hue løfter et glas i skibets salon med havnen bag koøjet.",

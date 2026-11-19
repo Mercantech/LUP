@@ -1728,6 +1728,38 @@
     "previewSha256": "c651b33cdffa31d9dd0f03533360662191f4ef7aac8332f5fa79753c0e486968"
   },
   {
+    "image": "/images/characters/whale/reactions/aspire-apphost.png",
+    "preview": "/images/characters/whale/reactions/aspire-apphost.webp",
+    "originalBytes": 2424993,
+    "previewBytes": 72294,
+    "originalSha256": "ff429ebe3dbd17ad0518ea8f427c38f9d3f8879ccca94b1ad209962f9894febb",
+    "previewSha256": "8742af0c9ecf71dbabe1999f5d7594c04ac92ee91659073479fac5e302f39077"
+  },
+  {
+    "image": "/images/characters/whale/reactions/aspire-klar.png",
+    "preview": "/images/characters/whale/reactions/aspire-klar.webp",
+    "originalBytes": 2367895,
+    "previewBytes": 65998,
+    "originalSha256": "cefadc7198eb143a4b1c3eeb60e4bcfca03e7e1a91fe95e3c79c2341909fc1eb",
+    "previewSha256": "bf3bb2c807ede7ff8da789c3f3e14c61bc0f1228054c339debe3e1c6e3c511d1"
+  },
+  {
+    "image": "/images/characters/whale/reactions/aspire-spor.png",
+    "preview": "/images/characters/whale/reactions/aspire-spor.webp",
+    "originalBytes": 2387016,
+    "previewBytes": 71132,
+    "originalSha256": "308c3c66f06b19967088bd1aab72eba912ed40fa3739829f53b931755f2d4e4b",
+    "previewSha256": "1477fc0df2d443f8e4d1a0af24f647d2d97b833b345adce885aee1345f635bec"
+  },
+  {
+    "image": "/images/characters/whale/reactions/aspire-udrul.png",
+    "preview": "/images/characters/whale/reactions/aspire-udrul.webp",
+    "originalBytes": 2255525,
+    "previewBytes": 71996,
+    "originalSha256": "034b3834963d6fdab0d9407bb78e082227ed4b78cbef97fda7ce05109b26887a",
+    "previewSha256": "cc8e5af8eb33b1aec6c5d92a2b0fe172b2c111b102f94224149b9306e45f8e44"
+  },
+  {
     "image": "/images/characters/gummianden/reactions/wave.png",
     "preview": "/images/characters/gummianden/reactions/wave.webp",
     "originalBytes": 2019050,

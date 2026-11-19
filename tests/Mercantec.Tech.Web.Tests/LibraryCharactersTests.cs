@@ -63,7 +63,7 @@ public sealed class LibraryCharactersTests
             ("chameleon", "character-scenes-title", "6 miljøer"),
             ("chameleon", "character-animations-title", "3 GIF-animationer"),
             ("chameleon", "character-gallery-title", "16 infografikker"),
-            ("whale", "character-reactions-title", "48 emojis"),
+            ("whale", "character-reactions-title", "52 emojis"),
             ("whale", "character-scenes-title", "6 miljøer"),
             ("whale", "character-animations-title", "3 GIF-animationer"),
             ("whale", "character-gallery-title", "16 infografikker"),
