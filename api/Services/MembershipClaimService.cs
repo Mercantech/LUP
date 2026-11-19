@@ -37,6 +37,20 @@ public class MembershipClaimService(AppDbContext db)
             await db.SaveChangesAsync(ct);
 
         await ClaimElectiveEnrollmentsAsync(userSub, lectioId, ct);
+        // Keep student-owned export/deletion identity attached to pre-account corrections.
+        // A conflicting existing claim is not reassigned by linking another account.
+        if (!await db.Memberships.AnyAsync(m => m.LectioId == lectioId && m.UserSub != null && m.UserSub != userSub, ct))
+        {
+            var details = await db.StudentDirectoryDetails
+                .Where(d => d.LectioId == lectioId || d.LectioId == null && d.UserSub == userSub).ToListAsync(ct);
+            foreach (var detail in details)
+            {
+                if (detail.UserSub is not null && detail.UserSub != userSub) continue;
+                detail.UserSub = userSub;
+                detail.LectioId = lectioId;
+            }
+            if (details.Count > 0) await db.SaveChangesAsync(ct);
+        }
         await transaction.CommitAsync(ct);
         return claimed;
     }

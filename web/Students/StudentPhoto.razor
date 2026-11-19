@@ -1,0 +1,67 @@
+@namespace Mercantec.Tech.Web.Students
+@inject ProfilePhotoClient Photos
+@inject AuthService Auth
+@implements IDisposable
+
+<span class="student-photo" style="width:@(Size)px;height:@(Size)px" aria-label="@DisplayName">
+    @if (_image is not null)
+    {
+        <img src="@_image" alt="" width="@Size" height="@Size" @onerror="ImageFailed" />
+    }
+    else
+    {
+        <span aria-hidden="true">@Initials</span>
+    }
+</span>
+
+@code {
+    [Parameter] public Guid? UserSub { get; set; }
+    [Parameter] public string DisplayName { get; set; } = "";
+    [Parameter] public int Size { get; set; } = 48;
+    [Parameter] public bool HasCustomPhoto { get; set; } = true;
+    [Parameter] public string? Revision { get; set; }
+    private string? _image;
+    private string? _loadedKey;
+    private CancellationTokenSource? _load;
+    private bool _disposed;
+    private string Initials => string.Concat(DisplayName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        .Take(2).Select(word => word[..1])).ToUpperInvariant();
+
+    protected override void OnInitialized() => Auth.AuthStateChanged += AuthChanged;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var key = $"{Auth.Subject}/{Auth.IsAuthenticated}/{UserSub}/{HasCustomPhoto}/{Revision}";
+        if (_loadedKey == key) return;
+        _loadedKey = key;
+        _load?.Cancel();
+        _load?.Dispose();
+        _load = new CancellationTokenSource();
+        _image = null;
+        if (!Auth.IsAuthenticated || UserSub is not Guid sub || !HasCustomPhoto) return;
+        var token = _load.Token;
+        try
+        {
+            var image = await Photos.Photo(sub, token);
+            if (!token.IsCancellationRequested && !_disposed && _loadedKey == key) _image = image;
+        }
+        catch (HttpRequestException) { }
+        catch (OperationCanceledException) { }
+    }
+
+    private void ImageFailed() => _image = null;
+    private void AuthChanged() => _ = InvokeAsync(async () =>
+    {
+        _image = null;
+        _loadedKey = null;
+        await OnParametersSetAsync();
+        StateHasChanged();
+    });
+    public void Dispose()
+    {
+        _disposed = true;
+        Auth.AuthStateChanged -= AuthChanged;
+        _load?.Cancel();
+        _load?.Dispose();
+    }
+}

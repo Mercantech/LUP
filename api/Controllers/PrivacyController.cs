@@ -62,7 +62,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
             sub,
             nextSteps = new[]
             {
-                "Platform-data i Mercantec.tech, herunder dit valgte visningsnavn, slettes manuelt af drift, når anmodningen er verificeret (indtil automatik findes).",
+                "Platform-data i Mercantec.tech, herunder dit valgte visningsnavn og profilfoto, slettes manuelt af drift, når anmodningen er verificeret (indtil automatik findes).",
                 "Identitetskonto (login, MFA, roller) administreres i Mercantec Auth — kontakt Auth/drift for sletning dér.",
                 "Lectio-skoleforløb ligger uden for denne app (Lectio-Collector / Lectio)."
             },
@@ -100,6 +100,8 @@ public class PrivacyController(AppDbContext db) : ControllerBase
         object? avatarProfile = null;
         object[] questGoldAwards = [];
         object? homeGame = null;
+        object? profilePhoto = null;
+        object[] studentDirectoryDetails = [];
         object[] pollResponses = [];
         object[] liveCourseAnswers = [];
         object[] liveCourseVotes = [];
@@ -135,6 +137,12 @@ public class PrivacyController(AppDbContext db) : ControllerBase
 
         if (subGuid is Guid giftSub)
         {
+            studentDirectoryDetails = await db.StudentDirectoryDetails.AsNoTracking().Where(details => details.UserSub == giftSub)
+                .Select(details => (object)new { details.Placement, details.CurrentSchoolPeriod,
+                    details.WorkplaceName, details.LastPassedSchoolPeriod, details.UpdatedAtUtc }).ToArrayAsync(ct);
+            profilePhoto = await db.ProfilePhotos.AsNoTracking().Where(photo => photo.UserSub == giftSub)
+                .Select(photo => new { photo.ContentType, photo.SizeBytes, photo.UpdatedAtUtc,
+                    downloadPath = "/api/student-photos/" + giftSub.ToString() }).SingleOrDefaultAsync(ct);
             dailyRankingVisible = await db.DailyGameRankingPreferences.AsNoTracking()
                 .AnyAsync(preference => preference.UserSub == giftSub, ct);
             homeGame = await BuildHomeGameData(giftSub, ct);
@@ -226,6 +234,8 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 avatarProfile,
                 questGoldAwards,
                 homeGame,
+                profilePhoto,
+                studentDirectoryDetails,
                 uploadedGames,
                 wordlePlays,
                 dailyGamePlays,

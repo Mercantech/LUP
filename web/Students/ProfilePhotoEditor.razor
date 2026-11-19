@@ -1,0 +1,133 @@
+@namespace Mercantec.Tech.Web.Students
+@inject ProfilePhotoClient Photos
+@inject AuthService Auth
+@implements IDisposable
+
+<section id="profilfoto" class="photo-editor panel" aria-labelledby="photo-editor-title">
+    <div class="photo-preview">
+        <StudentPhoto UserSub="Subject" DisplayName="@(Auth.DisplayName ?? "")" Size="88"
+                      HasCustomPhoto="@(_photo?.HasCustomPhoto == true)" Revision="@_revision" />
+    </div>
+    <div class="photo-editor-body">
+        <h2 id="photo-editor-title">Dit profilfoto</h2>
+        <p>Tilføj et billede, så underviserne kan genkende dig i elevoversigten.</p>
+        <p class="photo-hint" id="photo-upload-hint">JPG, PNG eller WebP. Højst 2 MB og 20 megapixel.</p>
+        @if (_loading)
+        {
+            <p role="status">Henter profilfoto…</p>
+        }
+        else
+        {
+            <div class="photo-controls">
+                <label class="photo-input-label">
+                    <span>Vælg billede</span>
+                    <InputFile @key="_inputKey" OnChange="Select" accept="image/jpeg,image/png,image/webp"
+                               disabled="@_busy" aria-describedby="photo-upload-hint" />
+                </label>
+                @if (_selected is not null)
+                {
+                    <span class="selected-photo">@_selected.Name</span>
+                    <button type="button" class="action" disabled="@_busy" @onclick="Upload">@(_busy ? "Gemmer…" : "Gem profilfoto")</button>
+                }
+                @if (_photo?.HasCustomPhoto == true)
+                {
+                    <button type="button" class="secondary" disabled="@_busy" @onclick="Delete">Fjern profilfoto</button>
+                }
+            </div>
+        }
+        @if (_error is not null)
+        {
+            <p class="photo-error" role="alert">@_error</p>
+            @if (_loadFailed) { <button type="button" class="secondary" @onclick="Reload">Prøv igen</button> }
+        }
+        @if (_status is not null) { <p role="status">@_status</p> }
+    </div>
+</section>
+
+@code {
+    private ProfilePhotoView? _photo;
+    private IBrowserFile? _selected;
+    private bool _loading = true, _busy, _disposed, _loadFailed;
+    private string? _error, _status, _revision, _account;
+    private int _inputKey;
+    private CancellationTokenSource? _load;
+    private Guid? Subject => Guid.TryParse(Auth.Subject, out var sub) ? sub : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Auth.AuthStateChanged += AuthChanged;
+        await Reload();
+    }
+
+    private async Task Reload()
+    {
+        _account = Auth.Subject;
+        _load?.Cancel(); _load?.Dispose();
+        _load = new CancellationTokenSource();
+        var ct = _load.Token;
+        _loading = true; _error = null; _loadFailed = false;
+        if (!Auth.IsAuthenticated || Subject is null) { _photo = null; _loading = false; return; }
+        try
+        {
+            var photo = await Photos.Mine(ct);
+            if (!ct.IsCancellationRequested && !_disposed) _photo = photo;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) when (ex is HttpRequestException or ProfilePhotoException)
+        {
+            if (!ct.IsCancellationRequested) { _error = "Kunne ikke hente dit profilfoto. Prøv igen."; _loadFailed = true; }
+        }
+        finally { if (!ct.IsCancellationRequested) _loading = false; }
+    }
+
+    private void Select(InputFileChangeEventArgs args)
+    {
+        _error = null; _status = null;
+        _selected = args.File;
+        if (_selected.Size > ProfilePhotoRules.MaxBytes)
+        {
+            _error = "Billedet må højst fylde 2 MB.";
+            _selected = null;
+        }
+    }
+
+    private Task Upload() => Save(true);
+    private Task Delete() => Save(false);
+    private async Task Save(bool upload)
+    {
+        if (_busy || (upload && _selected is null)) return;
+        _busy = true; _error = null; _status = null;
+        var account = _account;
+        var ct = _load!.Token;
+        try
+        {
+            var photo = upload ? await Photos.Upload(_selected!, account!, ct) : await Photos.Delete(account!, ct);
+            if (_disposed || ct.IsCancellationRequested || account != Auth.Subject) return;
+            _photo = photo;
+            _revision = Guid.NewGuid().ToString();
+            _selected = null; _inputKey++;
+            _status = upload ? "Dit profilfoto er gemt." : "Dit profilfoto er fjernet.";
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) when (ex is HttpRequestException or ProfilePhotoException or IOException)
+        {
+            if (!_disposed && account == Auth.Subject)
+                _error = ex is ProfilePhotoException ? ex.Message : "Billedet kunne ikke gemmes. Prøv igen.";
+        }
+        finally { if (account == Auth.Subject) _busy = false; }
+    }
+
+    private void AuthChanged() => _ = InvokeAsync(async () =>
+    {
+        if (_account == Auth.Subject) return;
+        _photo = null; _selected = null; _status = null; _error = null; _busy = false; _revision = null; _inputKey++;
+        await Reload();
+        StateHasChanged();
+    });
+    public void Dispose()
+    {
+        _disposed = true;
+        Auth.AuthStateChanged -= AuthChanged;
+        _load?.Cancel(); _load?.Dispose();
+    }
+}
