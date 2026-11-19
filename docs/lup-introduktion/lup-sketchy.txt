@@ -1,0 +1,12 @@
+dir right
+forloeb Forløb @book-open (rounded) ~ Her samler underviseren holdets mål, materialer og opgave.
+arbejde Arbejdet @notebook-pen (rounded) ~ Eleven kan samle idéer, kode og erfaringer i sin notesbog.
+aflevering Aflevering @file-up (rounded) ~ Eleven sender sit svar som tekst eller fil.
+feedback Feedback @messages-square (rounded) ~ Underviseren giver feedback og kan bede om en ny version.
+forloeb -> arbejde
+arbejde -> aflevering
+aflevering -> feedback
+step Forløb: Underviseren deler forløbet med holdet. | forloeb
+step Arbejdet: Eleven bruger materialet og kan skrive i sin notesbog. | arbejde
+step Aflevering: Eleven sender sit arbejde til underviseren. | aflevering
+step Feedback: Underviseren kommenterer, godkender eller beder om rettelser. | feedback
