@@ -196,12 +196,14 @@ async function main() {
         assert.equal(await page.getByTestId("confirm-placement").isDisabled(), true);
         assert.equal(state.gold, 100);
         await tile(1, 1).click();
+        await tile(6, 3).hover();
         assert.equal(state.gold, 100);
         const purchase = page.getByTestId("confirm-placement");
         assert.equal(await purchase.innerText(), "Placér · 90 guld");
         await purchase.click();
         await page.getByText("Køb og placering gemt. Din saldo er 10 guld.").waitFor();
         assert.equal(state.gold, 10);
+        assert.deepEqual(state.layout.items.find(item => item.id === "sofa").placement.anchor, point(1, 1));
         await page.getByRole("button", { name: "Fortryd" }).click();
         await page.getByText("Seneste byggehandling fortrudt.").waitFor();
         assert.equal(state.gold, 100);

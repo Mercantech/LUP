@@ -42,6 +42,7 @@ public partial class HomeWorkshop : IAsyncDisposable
     private string _exampleChoice = "on";
     private ElementReference _roomView;
     private bool _focusPlacement;
+    private bool _purchaseSiteSelected;
     private string _shelf = "stock";
     private string _overlay = "light";
     private string _language = "python";
@@ -302,10 +303,12 @@ public partial class HomeWorkshop : IAsyncDisposable
 
     private async Task ActivateCellAsync(HomeCell cell)
     {
+        _purchaseSiteSelected = false;
         VisitCell(cell);
         if (_placement is not null)
         {
-            if (_placement.Kind != "buy") await ConfirmPlacementAsync();
+            if (_placement.Kind == "buy") _purchaseSiteSelected = _previewError is null;
+            else await ConfirmPlacementAsync();
             return;
         }
         var item = DisplayLayout.Items.LastOrDefault(item => item.Placement is { } placed &&
@@ -316,13 +319,14 @@ public partial class HomeWorkshop : IAsyncDisposable
 
     private void VisitCell(HomeCell cell)
     {
-        if (_cursor == cell) return;
+        if (_purchaseSiteSelected || _cursor == cell) return;
         _cursor = cell;
         UpdatePreview();
     }
 
     private void StartPurchase(HomeItemDefinition definition)
     {
+        _purchaseSiteSelected = false;
         _selectedId = null;
         _rotation = 0;
         _placement = new("buy", DefinitionId: definition.Id);
@@ -341,6 +345,7 @@ public partial class HomeWorkshop : IAsyncDisposable
 
     private void StartPlacement(HomeItem item)
     {
+        _purchaseSiteSelected = false;
         Select(item);
         _rotation = item.Placement?.Rotation ?? 0;
         _cursor = item.Placement?.Anchor ?? InitialPlacementCell(HomeCatalog.Definition(item.DefinitionId)!, _cursor);
@@ -410,6 +415,7 @@ public partial class HomeWorkshop : IAsyncDisposable
 
     private void CancelPlacement()
     {
+        _purchaseSiteSelected = false;
         _focusPlacement = false;
         _placement = null;
         _ghost = null;
