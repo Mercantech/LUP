@@ -2539,6 +2539,10 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("Slug")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("Title")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
@@ -2546,6 +2550,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("HoldId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
 
                     b.ToTable("notion_collections", (string)null);
                 });

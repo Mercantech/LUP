@@ -84,7 +84,7 @@ else
                 }
                 <details class="notion-sidebar-tools"><summary><UiIcon Name="sliders" />Notesbogsværktøjer<span aria-hidden="true">⌄</span></summary>
                     <nav aria-label="Notesbogsværktøjer">
-                        <a href="/notion"><UiIcon Name="book" />Alle notesbøger</a>
+                        <a href="/notes"><UiIcon Name="book" />Alle notesbøger</a>
                         @if (!Own) { <a href="/notebook"><UiIcon Name="book" />Min notesbog</a> }
                         @if (!TemplateMode && _notebookId is not null) { <button type="button" disabled="@_busy" @onclick="ShowGraph"><UiIcon Name="chart" />Åbn forbindelser og graf</button> }
                         @if (Own && !TemplateMode) { <button type="button" disabled="@_busy" @onclick="ToggleJournal"><UiIcon Name="plus" />Ny logbog</button> }

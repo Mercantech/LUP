@@ -3,7 +3,7 @@
 @inject AuthService Auth
 @implements IDisposable
 <PageTitle>@(_person?.DisplayName ?? "Person") · LUP</PageTitle>
-<header class="page-title"><div><nav class="breadcrumbs"><a href="/notion">Notesbøger</a><span>›</span><span>Person</span></nav><h1>@(_person?.DisplayName ?? "Person")</h1></div></header>
+<header class="page-title"><div><nav class="breadcrumbs"><a href="/notes">Notesbøger</a><span>›</span><span>Person</span></nav><h1>@(_person?.DisplayName ?? "Person")</h1></div></header>
 @if (!Auth.IsAuthenticated) { <a class="action" href="@Auth.LoginPath()">Log ind</a> }
 else if (_loading) { <p role="status">Henter person…</p> }
 else if (_person is null) { <p role="alert">Personen er ikke tilgængelig.</p> }

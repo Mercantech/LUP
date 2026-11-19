@@ -32,7 +32,7 @@
                     <a href="/courses" class="@(HoldsIsCurrent ? "active" : null)" aria-current="@(HoldsIsCurrent ? "true" : null)">Mine hold</a>
                     <a href="/valgfag" class="@(ElectivesIsCurrent ? "active" : null)" aria-current="@(ElectivesIsCurrent ? "page" : null)">Valgfag</a>
                     <a href="/library" class="@(LibraryIsCurrent ? "active" : null)" aria-current="@(LibraryIsCurrent ? "true" : null)">Oversigt</a>
-                    <a href="/notion" class="@(NotebookIsCurrent ? "active" : null)" aria-current="@(NotebookIsCurrent ? "true" : null)">Notesbøger</a>
+                    <a href="/notes" class="@(NotebookIsCurrent ? "active" : null)" aria-current="@(NotebookIsCurrent ? "true" : null)">Notesbøger</a>
                 </nav>
                 <details class="lup-mobile-nav">
                     <summary>Menu</summary>
@@ -40,7 +40,7 @@
                         <a href="/courses" class="@(HoldsIsCurrent ? "active" : null)" aria-current="@(HoldsIsCurrent ? "true" : null)">Mine hold</a>
                         <a href="/valgfag" class="@(ElectivesIsCurrent ? "active" : null)" aria-current="@(ElectivesIsCurrent ? "page" : null)">Valgfag</a>
                         <a href="/library">Oversigt</a>
-                        <a href="/notion">Notesbøger</a>
+                        <a href="/notes">Notesbøger</a>
                         @foreach (var link in NotebookLinks) { <NavLink href="@link.Href">@link.Label</NavLink> }
                     </nav>
                 </details>
@@ -127,7 +127,7 @@
     private bool _loginBusy;
     private string? _notebookProfileAccount;
     private IReadOnlyList<NotebookNavigationLink> NotebookLinks => WorkspaceNavigation.NotebookLinks(IsTeacher);
-    private bool NotebookIsCurrent => CurrentPath == "/journal" || CurrentPath.StartsWith("/notion", StringComparison.Ordinal) || CurrentPath.StartsWith("/notebook", StringComparison.Ordinal) || CurrentPath.StartsWith("/teacher/notebook", StringComparison.Ordinal);
+    private bool NotebookIsCurrent => CurrentPath == "/journal" || (CurrentPath is "/notes" || CurrentPath.StartsWith("/notes/", StringComparison.Ordinal)) || CurrentPath.StartsWith("/notebook", StringComparison.Ordinal) || CurrentPath.StartsWith("/teacher/notebook", StringComparison.Ordinal);
     private bool IsTeacher => Redirect.ShowsTeacherChrome;
     private bool ElectivesIsCurrent => CurrentPath is "/valgfag" or "/electives";
     private bool IsNotebookWorkspace
@@ -139,8 +139,9 @@
             return segments switch
             {
                 ["notebook"] or ["journal"] or ["teacher", "notebook-templates"] => true,
+                ["notes", var key] => Guid.TryParse(key, out _) || NotesRoutes.IsValidSlug(key),
                 ["notion" or "notebook", var id] => Guid.TryParse(id, out _),
-                ["notion", "collections", var id] => Guid.TryParse(id, out _),
+                ["notes" or "notion", "collections", var id] => Guid.TryParse(id, out _),
                 ["teacher", "notebook-templates", var id] => Guid.TryParse(id, out _),
                 _ => false
             };

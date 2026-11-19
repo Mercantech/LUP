@@ -1,11 +1,11 @@
-@page "/notion/graph"
-@page "/notion/graph/{CollectionId:guid}"
-@page "/notion/holds/{HoldId:guid}/graph"
+@page "/notes/graph"
+@page "/notes/graph/{CollectionId:guid}"
+@page "/notes/holds/{HoldId:guid}/graph"
 @using Mercantec.Tech.Web.Notion
 @implements IDisposable
 
 <PageTitle>Forbindelser · LUP</PageTitle>
-<header class="page-title"><div><nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/notion">Notesbøger</a><span>›</span><span>Forbindelser</span></nav><h1>Forbindelser</h1><p>Notesbogens sider og forbindelser til resten af LUP.</p></div></header>
+<header class="page-title"><div><nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/notes">Notesbøger</a><span>›</span><span>Forbindelser</span></nav><h1>Forbindelser</h1><p>Notesbogens sider og forbindelser til resten af LUP.</p></div></header>
 @if (!Auth.IsInitialized) { <p role="status">Indlæser…</p> }
 else if (!Auth.IsAuthenticated) { <a class="action" href="@Auth.LoginPath()">Log ind</a> }
 else { <ReferenceGraphView ScopeKind="@GraphScopeKind" ScopeId="@GraphScopeId" PublishedOnly="ReadOnly" /> }

@@ -55,7 +55,7 @@ public sealed class EditorAiContextService(AppDbContext db, EditorAiContextIndex
             catch (Exception error) when (error is not OperationCanceledException)
             {
                 logger.LogWarning(error, "Source projection deferred for {PageId}", page.Id);
-                failedPages.Add(new("notion-page:" + page.Id, "notion-page", page.Id.ToString(), page.Title, "/notion/" + page.Id,
+                failedPages.Add(new("notion-page:" + page.Id, "notion-page", page.Id.ToString(), page.Title, "/notes/" + page.Id,
                     "Sidens gemte tekst kunne ikke læses. Ingen tekst fra denne kilde er brugt.", State: "failed"));
             }
         await indexer.IndexCatalogAsync(ct);

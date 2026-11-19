@@ -8,6 +8,7 @@ using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Mercantec.Tech.Api.Controllers;
 
@@ -31,33 +32,63 @@ public sealed class NotionCollectionsController(AppDbContext db, CourseAccess co
         return NoContent();
     }
 
+    [HttpPatch("{id:guid}/slug")]
+    public async Task<IActionResult> SetSlug(Guid id, SetNotionCollectionSlug input, CancellationToken ct)
+    {
+        if (UserClaims.GetSub(User) is not Guid) return Unauthorized();
+        var collection = await db.NotionCollections.SingleOrDefaultAsync(c => c.Id == id, ct);
+        if (collection is null || !await access.CanManageScopeAsync(collection.HoldId, User, ct)) return NotFound();
+
+        var slug = NotesRoutes.NormalizeSlug(input.Slug);
+        if (slug is not null && !NotesRoutes.IsValidSlug(slug)) return InvalidSlug();
+        if (await SlugInUse(slug, id, ct)) return SlugConflict();
+
+        collection.Slug = slug;
+        if (!await SaveSlugChanges(ct)) return SlugConflict();
+        Response.Headers.CacheControl = "private, no-store";
+        return Ok(new SetNotionCollectionSlug(collection.Slug));
+    }
+
     [HttpGet]
     public async Task<IActionResult> List(CancellationToken ct, bool publishedOnly = false)
     {
         if (UserClaims.GetSub(User) is not Guid) return Unauthorized();
         Response.Headers.CacheControl = "private, no-store";
-        return Ok(await ReadCollections(null, publishedOnly, ct));
+        return Ok(await ReadCollections(null, null, publishedOnly, ct));
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Get(Guid id, CancellationToken ct, bool publishedOnly = false)
+    public Task<IActionResult> Get(Guid id, CancellationToken ct, bool publishedOnly = false) =>
+        GetCollection(id, null, publishedOnly, ct);
+
+    [HttpGet("by-slug/{slug}")]
+    public Task<IActionResult> GetBySlug(string slug, CancellationToken ct, bool publishedOnly = false)
+    {
+        var normalized = NotesRoutes.NormalizeSlug(slug);
+        return normalized is not null && NotesRoutes.IsValidSlug(normalized)
+            ? GetCollection(null, normalized, publishedOnly, ct)
+            : Task.FromResult<IActionResult>(NotFound());
+    }
+
+    private async Task<IActionResult> GetCollection(Guid? id, string? slug, bool publishedOnly, CancellationToken ct)
     {
         if (UserClaims.GetSub(User) is not Guid) return Unauthorized();
-        var collection = (await ReadCollections(id, publishedOnly, ct)).SingleOrDefault();
+        var collection = (await ReadCollections(id, slug, publishedOnly, ct)).SingleOrDefault();
         Response.Headers.CacheControl = "private, no-store";
         return collection is null ? NotFound() : Ok(collection);
     }
 
-    private async Task<NotionCollectionView[]> ReadCollections(Guid? id, bool publishedOnly, CancellationToken ct)
+    private async Task<NotionCollectionView[]> ReadCollections(Guid? id, string? slug, bool publishedOnly, CancellationToken ct)
     {
         var manageable = await courses.AccessibleHolds(User, true).Select(h => h.Id).ToArrayAsync(ct);
         var teacher = !publishedOnly && UserClaims.IsTeacher(User);
+        var scope = db.NotionCollections.AsNoTracking()
+            .Where(c => (id == null || c.Id == id) && (slug == null || c.Slug == slug));
         var pageQuery = access.ReadablePages(User, publishedOnly).AsNoTracking()
-            .Where(p => p.CollectionId != null && (id == null || p.CollectionId == id));
-        var collections = await db.NotionCollections.AsNoTracking().Where(c => (id == null || c.Id == id)
-                && (pageQuery.Any(p => p.CollectionId == c.Id)
-                    || !publishedOnly && (c.HoldId == null ? teacher : manageable.Contains(c.HoldId.Value))))
-            .Select(c => new { c.Id, c.HoldId, c.CreatedAtUtc, c.Title, c.PublishedTitle, c.IconEmojiId,
+            .Where(p => p.CollectionId != null && scope.Any(c => c.Id == p.CollectionId));
+        var collections = await scope.Where(c => pageQuery.Any(p => p.CollectionId == c.Id)
+                    || !publishedOnly && (c.HoldId == null ? teacher : manageable.Contains(c.HoldId.Value)))
+            .Select(c => new { c.Id, c.HoldId, c.CreatedAtUtc, c.Title, c.PublishedTitle, c.IconEmojiId, c.Slug,
                 HasActiveRoot = db.NotionPages.Any(p => p.Id == c.Id),
                 HoldName = db.Hold.Where(h => h.Id == c.HoldId).Select(h => h.Name).FirstOrDefault() }).ToArrayAsync(ct);
         var pages = await pageQuery.Select(p => new { p.Id, p.CollectionId, p.ParentPageId, p.SortOrder, p.Title, p.PublishedTitle,
@@ -76,7 +107,7 @@ public sealed class NotionCollectionsController(AppDbContext db, CourseAccess co
             var updated = manage ? latest?.UpdatedAtUtc : latest?.PublishedEditedAtUtc ?? latest?.PublishedAtUtc;
             return new NotionCollectionView(c.Id, first?.Id, title ?? "Samling", c.HoldId,
                 c.HoldName, manage, updated ?? c.CreatedAtUtc, c.IconEmojiId,
-                manage ? latest?.LastEditedByName : latest?.PublishedEditorName);
+                manage ? latest?.LastEditedByName : latest?.PublishedEditorName, c.Slug);
         }).Where(p => p.CanManage || p.RootPageId is not null).OrderBy(p => p.Title).ToArray();
     }
 
@@ -88,17 +119,41 @@ public sealed class NotionCollectionsController(AppDbContext db, CourseAccess co
         if (string.IsNullOrWhiteSpace(request.Title) || request.Title.Trim().Length > 200 || request.Title.Any(char.IsControl))
             return BadRequest(new { error = "invalid_title" });
         if (!await NotebookIcon.IsAvailableAsync(db, request.IconEmojiId, ct)) return BadRequest(new { error = "invalid_icon" });
+        var slug = NotesRoutes.NormalizeSlug(request.Slug);
+        if (slug is not null && !NotesRoutes.IsValidSlug(slug)) return InvalidSlug();
+        if (await SlugInUse(slug, null, ct)) return SlugConflict();
+
         var id = Guid.NewGuid(); var now = DateTimeOffset.UtcNow;
         var title = request.Title.Trim();
         var collection = new NotionCollection { Id = id, HoldId = request.HoldId, CreatedBySub = sub, CreatedAtUtc = now,
-            Title = title, IconEmojiId = request.IconEmojiId };
+            Title = title, IconEmojiId = request.IconEmojiId, Slug = slug };
         var page = new NotionPage { Id = id, Collection = collection, HoldId = request.HoldId,
             Title = title, CreatedBySub = sub, CreatedAtUtc = now, UpdatedAtUtc = now, LastEditedByName = UserClaims.EditorName(User) };
         db.NotionCollections.Add(collection); db.NotionPages.Add(page);
-        await db.SaveChangesAsync(ct);
+        if (!await SaveSlugChanges(ct)) return SlugConflict();
         var holdName = request.HoldId is Guid hold ? await db.Hold.Where(h => h.Id == hold).Select(h => h.Name).SingleAsync(ct) : null;
         Response.Headers.CacheControl = "no-store";
         return Ok(new NotionCollectionView(id, id, page.Title, page.HoldId, holdName, true, now,
-            collection.IconEmojiId, page.LastEditedByName));
+            collection.IconEmojiId, page.LastEditedByName, slug));
     }
+
+    private Task<bool> SlugInUse(string? slug, Guid? exceptId, CancellationToken ct) =>
+        slug is null ? Task.FromResult(false) : db.NotionCollections.AnyAsync(c => c.Slug == slug && c.Id != exceptId, ct);
+
+    private async Task<bool> SaveSlugChanges(CancellationToken ct)
+    {
+        try
+        {
+            await db.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException
+            { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "IX_notion_collections_Slug" })
+        {
+            return false;
+        }
+    }
+
+    private IActionResult InvalidSlug() => BadRequest(new { error = "invalid_collection_slug" });
+    private IActionResult SlugConflict() => Conflict(new { error = "collection_slug_taken" });
 }

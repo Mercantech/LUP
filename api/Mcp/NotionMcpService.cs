@@ -112,7 +112,7 @@ public sealed class NotionMcpService(AppDbContext db, CourseAccess courses, IHtt
 
     private static NotionMcpCreatedPage CreatedPageView(NotionMcpPageCreation receipt, NotionPage page)
         => new(receipt.Id, page.Id, page.Title, receipt.ParentPageId, page.HoldId, page.CollectionId,
-            $"/notion/{page.Id}", "created");
+            $"/notes/{page.Id}", "created");
 
     public async Task<object> FindAsync(ClaimsPrincipal user, string? query, Guid? holdId, Guid? collectionId,
         int offset, int limit, CancellationToken ct)
@@ -128,7 +128,7 @@ public sealed class NotionMcpService(AppDbContext db, CourseAccess courses, IHtt
         var total = await pages.CountAsync(ct);
         var rows = await pages.OrderBy(p => p.Title).ThenBy(p => p.Id).Skip(offset).Take(limit)
             .Select(p => new { pageId = p.Id, p.Title, p.HoldId, p.CollectionId, p.ParentPageId, p.UpdatedAtUtc }).ToArrayAsync(ct);
-        return new { items = rows.Select(p => new { p.pageId, p.Title, p.HoldId, p.CollectionId, p.ParentPageId, p.UpdatedAtUtc, href = $"/notion/{p.pageId}" }), total, nextOffset = offset + rows.Length < total ? (int?)(offset + rows.Length) : null };
+        return new { items = rows.Select(p => new { p.pageId, p.Title, p.HoldId, p.CollectionId, p.ParentPageId, p.UpdatedAtUtc, href = $"/notes/{p.pageId}" }), total, nextOffset = offset + rows.Length < total ? (int?)(offset + rows.Length) : null };
     }
 
     public async Task<JsonElement> ReadAsync(ClaimsPrincipal user, string token, string page, string? cursor, int limit, CancellationToken ct)
@@ -137,7 +137,7 @@ public sealed class NotionMcpService(AppDbContext db, CourseAccess courses, IHtt
         await AuthorizeAsync(id, user, ct);
         if (limit is < 1 or > 100 || cursor?.Length > 512) throw new NotionMcpException("invalid_read");
         var result = await EngineAsync("read", new { pageId = id, accessToken = token, cursor, limit }, ct);
-        return JsonSerializer.SerializeToElement(new { pageId = id, title = await db.NotionPages.Where(p => p.Id == id).Select(p => p.Title).SingleAsync(ct), href = $"/notion/{id}", document = result }, Json);
+        return JsonSerializer.SerializeToElement(new { pageId = id, title = await db.NotionPages.Where(p => p.Id == id).Select(p => p.Title).SingleAsync(ct), href = $"/notes/{id}", document = result }, Json);
     }
 
     public async Task<NotionMcpChangeView> ApplyAsync(ClaimsPrincipal user, string token, ApplyNotionMcpChanges request, CancellationToken ct)
@@ -316,7 +316,7 @@ public sealed class NotionMcpService(AppDbContext db, CourseAccess courses, IHtt
             value = uri.AbsolutePath;
         }
         var path = value.Split('?', '#')[0].TrimEnd('/').Split('/');
-        if (path.Length == 3 && path[0] == "" && path[1] == "notion" && Guid.TryParse(path[2], out id) && id != Guid.Empty) return id;
+        if (path.Length == 3 && path[0] == "" && path[1] is "notes" or "notion" && Guid.TryParse(path[2], out id) && id != Guid.Empty) return id;
         throw new NotionMcpException("invalid_page_url");
     }
 

@@ -49,7 +49,7 @@ public sealed class NotionMcpTools(NotionMcpService service, IHttpContextAccesso
     private static object Receipt(NotionMcpChangeView view) => new
     {
         view.OperationId, view.PageId, view.Summary, view.Status, view.CreatedAtUtc, view.AppliedAtUtc,
-        view.UndoneAtUtc, view.UndoOf, view.CanUndo, view.Error, href = $"/notion/{view.PageId}"
+        view.UndoneAtUtc, view.UndoOf, view.CanUndo, view.Error, href = $"/notes/{view.PageId}"
     };
 
     [McpServerTool(Name = "find_pages", ReadOnly = true, OpenWorld = false, UseStructuredContent = true),

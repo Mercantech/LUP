@@ -40,21 +40,21 @@ public static class WorkspaceNavigation
     }
 
     public static string Page(Guid pageId, Guid? workspaceId = null, Guid? courseId = null, bool publishedOnly = false, Guid? holdId = null) =>
-        ContextPath($"/notion/{pageId:D}", workspaceId, courseId, holdId, publishedOnly);
+        ContextPath($"/notes/{pageId:D}", workspaceId, courseId, holdId, publishedOnly);
     public static string Editor(Guid holdId, Guid? workspaceId = null, Guid? courseId = null, bool publishedOnly = false) =>
-        ContextPath("/notion", workspaceId, courseId, holdId, publishedOnly);
+        ContextPath("/notes", workspaceId, courseId, holdId, publishedOnly);
     public static string Graph(Guid pageId, Guid? workspaceId = null, Guid? courseId = null, bool publishedOnly = false, Guid? holdId = null) =>
-        ContextPath($"/notion/graph/{pageId:D}", workspaceId, courseId, holdId, publishedOnly);
+        ContextPath($"/notes/graph/{pageId:D}", workspaceId, courseId, holdId, publishedOnly);
     public static string HoldGraph(Guid holdId, Guid? workspaceId = null, Guid? courseId = null, bool publishedOnly = false) =>
-        ContextPath($"/notion/holds/{holdId:D}/graph", workspaceId, courseId, holdId, publishedOnly);
+        ContextPath($"/notes/holds/{holdId:D}/graph", workspaceId, courseId, holdId, publishedOnly);
     public static string Student(Guid holdId, Guid memberId, Guid? workspaceId = null, Guid? courseId = null) =>
-        ContextPath($"/notion/holds/{holdId:D}/students/{memberId:D}", workspaceId, courseId, holdId);
+        ContextPath($"/notes/holds/{holdId:D}/students/{memberId:D}", workspaceId, courseId, holdId);
     public static string Groups(Guid holdId, Guid? workspaceId = null, Guid? courseId = null, IEnumerable<Guid>? members = null)
     {
         var query = ContextQuery(workspaceId, courseId, holdId);
         var selected = (members ?? []).Where(id => id != Guid.Empty).Distinct().Take(100).ToArray();
         if (selected.Length > 0) query.Add("members=" + string.Join(",", selected.Select(id => id.ToString("D"))));
-        return Join($"/notion/holds/{holdId:D}/groups", query);
+        return Join($"/notes/holds/{holdId:D}/groups", query);
     }
     public static string Roulette(Guid holdId, Guid? workspaceId = null, Guid? courseId = null, Guid? setId = null)
     {
@@ -63,7 +63,7 @@ public static class WorkspaceNavigation
         return Join($"/holds/{holdId:D}/roulette", query);
     }
     public static string GraphIndex(Guid holdId, bool publishedOnly = false) =>
-        ContextPath("/notion/graph", null, null, holdId, publishedOnly);
+        ContextPath("/notes/graph", null, null, holdId, publishedOnly);
     public static string Quest(Guid questId, Guid? workspaceId = null, Guid? courseId = null, Guid? holdId = null, Guid? submissionId = null)
     {
         var query = ContextQuery(workspaceId, courseId, holdId);

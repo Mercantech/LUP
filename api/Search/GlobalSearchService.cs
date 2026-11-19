@@ -96,7 +96,7 @@ internal sealed class GlobalSearchService(AppDbContext db, TimeProvider clock)
             if (string.IsNullOrWhiteSpace(name)) continue;
 
             var holdNames = string.Join(" · ", person.Select(row => row.HoldName).Distinct().Order(StringComparer.CurrentCultureIgnoreCase));
-            var href = $"/notion/holds/{member.HoldId:D}/students/{member.Id:D}";
+            var href = $"/notes/holds/{member.HoldId:D}/students/{member.Id:D}";
             if (member.UserSub is Guid account)
             {
                 includedSubjects.Add(account);

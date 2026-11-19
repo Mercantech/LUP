@@ -60,6 +60,7 @@
 .books-icon-error { color:var(--ink); }
 .books-create { display:grid; gap:16px; margin-bottom:24px; max-width:640px; }
 .books-create h2 { margin:0; }
+.books-address { display:grid; gap:8px; }
 @media(max-width:600px) {
     .books-filters { display:grid; }
     .books-filters input { min-width:0; width:100%; }

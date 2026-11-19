@@ -44,12 +44,12 @@ export function pageUrl(id, published = false, context = null) {
   if (!validId(id)) return null;
   const domain = typeof context === 'string' ? context : context?.domain;
   if (domain === 'notebook') return '/notebook/' + id;
-  return navigationUrl('/notion/' + id, typeof context === 'string' ? null : context, published);
+  return navigationUrl('/notes/' + id, typeof context === 'string' ? null : context, published);
 }
 /** @param {NavigationContext|null} [context] */
 export function studentUrl(holdId, membershipId, context = null) {
   return validId(holdId) && validId(membershipId)
-    ? navigationUrl('/notion/holds/' + holdId + '/students/' + membershipId, context) : null;
+    ? navigationUrl('/notes/holds/' + holdId + '/students/' + membershipId, context) : null;
 }
 /** @param {NavigationContext|null} context */
 function navigationUrl(path, context, published = false) {

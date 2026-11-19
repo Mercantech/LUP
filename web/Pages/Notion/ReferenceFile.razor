@@ -5,7 +5,7 @@
 @inject AuthService Auth
 @implements IDisposable
 <PageTitle>@(_asset?.OriginalName ?? "Fil") · LUP</PageTitle>
-<header class="page-title"><div><nav class="breadcrumbs"><a href="/notion">Notesbøger</a><span>›</span><span>Fil</span></nav><h1>@(_asset?.OriginalName ?? "Fil")</h1></div></header>
+<header class="page-title"><div><nav class="breadcrumbs"><a href="/notes">Notesbøger</a><span>›</span><span>Fil</span></nav><h1>@(_asset?.OriginalName ?? "Fil")</h1></div></header>
 @if (!Auth.IsAuthenticated) { <a class="action" href="@Auth.LoginPath()">Log ind</a> }
 else if (Kind == "file") { <FileViewer FileId="Id" @key="Id" /> }
 else if (_loading) { <p role="status">Henter fil…</p> }

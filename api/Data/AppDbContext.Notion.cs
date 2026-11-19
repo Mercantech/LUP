@@ -1,4 +1,5 @@
 using Mercantec.Tech.Api.Data.Entities;
+using Mercantec.Tech.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mercantec.Tech.Api.Data;
@@ -14,6 +15,8 @@ public partial class AppDbContext
         {
             e.ToTable("notion_collections");
             e.HasKey(x => x.Id);
+            e.Property(x => x.Slug).HasMaxLength(NotesRoutes.SlugMaxLength);
+            e.HasIndex(x => x.Slug).IsUnique();
             e.Property(x => x.Title).HasMaxLength(200);
             e.Property(x => x.PublishedTitle).HasMaxLength(200);
             e.HasOne<Hold>().WithMany().HasForeignKey(x => x.HoldId).OnDelete(DeleteBehavior.Restrict);

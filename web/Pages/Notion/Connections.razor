@@ -1,9 +1,9 @@
-@page "/notion/connections"
+@page "/notes/connections"
 @inject AuthService Auth
 @inject ViewAsStudentContext ViewAs
 @implements IDisposable
 <PageTitle>Forbindelser · LUP</PageTitle>
-<header class="page-title"><div><nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/notion">Notesbøger</a><span>›</span><span>Forbindelser</span></nav><h1>Forbindelser</h1><p>Udforsk sammenhænge mellem noter, teori, opgaver og materialer. Tilpas grafen, så det vigtigste står tydeligt.</p></div></header>
+<header class="page-title"><div><nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/notes">Notesbøger</a><span>›</span><span>Forbindelser</span></nav><h1>Forbindelser</h1><p>Udforsk sammenhænge mellem noter, teori, opgaver og materialer. Tilpas grafen, så det vigtigste står tydeligt.</p></div></header>
 @if (!Auth.IsInitialized) { <p role="status">Indlæser…</p> }
 else if (!Auth.IsAuthenticated) { <a class="action" href="@Auth.LoginPath()">Log ind</a> }
 else { <ReferenceGraphView ScopeKind="@ScopeKind" ScopeId="@ScopeId" PublishedOnly="@(PublishedOnly || ViewAs.IsActive)" /> }

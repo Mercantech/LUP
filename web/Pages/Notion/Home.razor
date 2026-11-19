@@ -1,4 +1,4 @@
-@page "/notion"
+@page "/notes"
 @using System.Globalization
 @using Mercantec.Tech.Web.Emojis
 @using Mercantec.Tech.Web.Notion
@@ -13,7 +13,7 @@
 @implements IDisposable
 
 <PageTitle>Notesbøger · LUP</PageTitle>
-<header class="page-title"><div><h1>Notesbøger</h1><p>Teori, forløb og dine egne noter ét sted.</p></div><div class="books-actions"><a class="secondary" href="/notion/connections">Udforsk forbindelser</a>@if (Teacher) { <button class="action" @onclick="() => _creating = !_creating">Ny notesbog</button> }</div></header>
+<header class="page-title"><div><h1>Notesbøger</h1><p>Teori, forløb og dine egne noter ét sted.</p></div><div class="books-actions"><a class="secondary" href="/notes/connections">Udforsk forbindelser</a>@if (Teacher) { <button class="action" @onclick="() => _creating = !_creating">Ny notesbog</button> }</div></header>
 @if (!Auth.IsInitialized) { <p role="status">Indlæser…</p> }
 else if (!Auth.IsAuthenticated) { <section class="panel"><h2>Åbn dine notesbøger</h2><p>Log ind for at finde teori, holdets indhold og dine noter.</p><a class="action" href="@Auth.LoginPath()">Log ind</a></section> }
 else
@@ -38,6 +38,10 @@ else
         <form class="panel books-create" @onsubmit="Create" @onsubmit:preventDefault>
             <h2>Ny notesbog</h2>
             <label class="field">Titel<input @bind="_title" @bind:event="oninput" maxlength="200" required /></label>
+            <label class="field">Kort adresse (valgfri)
+                <input @bind="_newSlug" @bind:event="oninput" aria-describedby="new-notes-address-hint" maxlength="@NotesRoutes.SlugMaxLength" placeholder="ml2027" />
+                <small id="new-notes-address-hint">Eksempel på et link er /notes/ml2027.</small>
+            </label>
             <label class="field">Tilhørsforhold
                 <select aria-label="Tilhørsforhold" @bind="_newHold">
                     <option value="">Teori · uafhængig af hold</option>
@@ -53,6 +57,7 @@ else
                 }
                 <EmojiPicker Disabled="_busy" TriggerLabel="Vælg ikon til den nye notesbog" TriggerText="Vælg ikon" OnPick="emoji => _newIcon = emoji" />
             </div>
+            @if (_createError is not null) { <p role="alert">@_createError</p> }
             <div class="books-actions">
                 <button class="action" disabled="@(_busy || string.IsNullOrWhiteSpace(_title))">Opret</button>
                 <button type="button" class="secondary" @onclick="() => _creating = false">Annullér</button>
@@ -65,7 +70,7 @@ else
     {
         <div class="books-grid">@foreach (var book in Visible)
         {
-            <article @key="book.Href" class="books-card" data-kind="@book.Kind">
+            <article @key="(book.Kind, book.Id)" class="books-card" data-kind="@book.Kind">
                 <div class="books-card-top">
                     @if (book.CanChangeIcon)
                     {
@@ -108,7 +113,29 @@ else
                 }
                 <div class="books-card-actions">
                     <a class="books-open" href="@book.Href">Åbn notesbog <span aria-hidden="true">→</span></a>
+                    @if (book.CanSetSlug && _editingSlug != book.Id)
+                    {
+                        <button type="button" class="secondary" disabled="@_savingSlug" @onclick="() => EditSlug(book)">Skift adresse</button>
+                    }
                 </div>
+                @if (book.CanSetSlug && _editingSlug == book.Id)
+                {
+                    <form class="books-address" @onsubmit="() => SaveSlug(book)" @onsubmit:preventDefault>
+                        <label class="field">Kort adresse
+                            <input @bind="_slug" @bind:event="oninput" maxlength="@NotesRoutes.SlugMaxLength" placeholder="ml2027" disabled="@_savingSlug" />
+                            <small>Lad feltet være tomt for at bruge samlingens ID i linket.</small>
+                        </label>
+                        @if (_slugError is not null) { <small role="alert">@_slugError</small> }
+                        <div class="books-actions">
+                            <button class="action" disabled="@_savingSlug">Gem adresse</button>
+                            <button type="button" class="secondary" disabled="@_savingSlug" @onclick="() => _editingSlug = null">Annullér</button>
+                        </div>
+                    </form>
+                }
+                @if (book.CanSetSlug && _savedSlug == book.Id)
+                {
+                    <small role="status">Adressen er gemt som @book.Href.</small>
+                }
                 @if (_iconError is { } error && error.BookId == book.Id)
                 {
                     <small class="books-icon-error" role="alert">@error.Message</small>
@@ -132,7 +159,9 @@ else
     private Guid? _savingIcon;
     private (Guid BookId, string Message)? _iconError;
     private string _type = "", _search = "", _hold = "", _title = "", _newHold = "", _sort = "recent";
-    private string? _error;
+    private Guid? _editingSlug, _savedSlug;
+    private string? _error, _createError, _newSlug, _slug, _slugError;
+    private bool _savingSlug;
     private bool _loading = true, _busy, _creating, _disposed, _studentsLoaded;
     private CancellationTokenSource _request = new();
     private RenderFragment BookIcon(Book book) => @<text>
@@ -166,6 +195,7 @@ else
         _request.Cancel(); _request.Dispose(); _request = new(); var ct = _request.Token;
         _books = []; _students = []; _holds = []; _studentsLoaded = false; _error = null; _loading = Auth.IsAuthenticated;
         _icons.Clear(); _missingIcons.Clear(); _iconError = null; _savingIcon = null;
+        _editingSlug = _savedSlug = null; _savingSlug = false;
         if (!Teacher) { _creating = false; _newIcon = null; }
         if (!Auth.IsAuthenticated || _disposed) return;
         try
@@ -175,9 +205,9 @@ else
             if (ct.IsCancellationRequested) return;
             _holds = await holdsTask;
             _books = (await collectionsTask).Select(c => new Book(c.Id, c.HoldId is null ? "theory" : "hold", c.Title,
-                c.HoldId is null ? "Fælles for alle i LUP" : c.HoldName ?? "", "/notion/collections/" + c.Id,
+                c.HoldId is null ? "Fælles for alle i LUP" : c.HoldName ?? "", NotesRoutes.Collection(c.Id, c.Slug),
                 c.HoldId is Guid id ? [id.ToString()] : [], c.RootPageId is null ? null : c.UpdatedAtUtc,
-                c.LastEditedByName, c.IconEmojiId, c.CanManage && Teacher)).ToArray();
+                c.LastEditedByName, c.IconEmojiId, c.CanManage && Teacher, Slug: c.Slug)).ToArray();
             if (!ViewAs.IsActive)
             {
                 var mineTask = Notebooks.Mine(ct); var sharedTask = Notebooks.Shared(ct); await Task.WhenAll(mineTask, sharedTask);
@@ -223,15 +253,49 @@ else
     }
     private async Task Create()
     {
-        if (_busy || !Teacher) return; _busy = true; _error = null;
+        if (_busy || !Teacher) return;
+        _busy = true;
+        _createError = null;
+        var ct = _request.Token;
         try
         {
             var book = await Client.CreateCollection(_title.Trim(), Guid.TryParse(_newHold, out var hold) ? hold : null,
-                _request.Token, _newIcon?.Id);
-            Nav.NavigateTo("/notion/collections/" + book.Id);
+                ct, _newIcon?.Id, _newSlug);
+            if (!ct.IsCancellationRequested) Nav.NavigateTo(NotesRoutes.Collection(book.Id, book.Slug));
         }
-        catch (Exception ex) when (ex is NotionException or HttpRequestException or OperationCanceledException) { if (!_request.IsCancellationRequested) _error = ex.Message; }
+        catch (Exception ex) when (ex is NotionException or HttpRequestException or OperationCanceledException)
+        {
+            if (!ct.IsCancellationRequested) _createError = ex.Message;
+        }
         finally { _busy = false; }
+    }
+    private void EditSlug(Book book)
+    {
+        _editingSlug = book.Id;
+        _slug = book.Slug;
+        _slugError = null;
+        _savedSlug = null;
+    }
+    private async Task SaveSlug(Book book)
+    {
+        if (!Teacher || !book.CanSetSlug || _savingSlug || _editingSlug != book.Id) return;
+        var ct = _request.Token;
+        _savingSlug = true;
+        _slugError = null;
+        try
+        {
+            var result = await Client.SetCollectionSlug(book.Id, _slug, ct);
+            if (ct.IsCancellationRequested) return;
+            _books = _books.Select(b => b.Id == book.Id && b.Kind == book.Kind
+                ? b with { Href = NotesRoutes.Collection(b.Id, result.Slug), Slug = result.Slug } : b).ToArray();
+            _editingSlug = null;
+            _savedSlug = book.Id;
+        }
+        catch (Exception ex) when (ex is NotionException or HttpRequestException or OperationCanceledException)
+        {
+            if (!ct.IsCancellationRequested) _slugError = ex.Message;
+        }
+        finally { if (!ct.IsCancellationRequested) _savingSlug = false; }
     }
     private async Task LoadIcons(Book[] books, CancellationToken ct)
     {
@@ -256,7 +320,7 @@ else
             else await Client.SetCollectionIcon(book.Id, icon?.Id, ct);
             if (ct.IsCancellationRequested) return;
             if (icon is not null) { _icons[icon.Id] = icon; _missingIcons.Remove(icon.Id); }
-            _books = _books.Select(b => b.Href == book.Href ? b with { IconId = icon?.Id } : b).ToArray();
+            _books = _books.Select(b => b.Id == book.Id && b.Kind == book.Kind ? b with { IconId = icon?.Id } : b).ToArray();
         }
         catch (Exception ex) when (ex is NotionException or NotebookException or HttpRequestException or OperationCanceledException)
         {
@@ -266,8 +330,9 @@ else
     }
     public void Dispose() { _disposed = true; Auth.AuthStateChanged -= Changed; ViewAs.Changed -= Changed; _request.Cancel(); _request.Dispose(); }
     private sealed record Book(Guid Id, string Kind, string Title, string Context, string Href, string[] Holds,
-        DateTimeOffset? Updated, string? EditorName, Guid? IconId, bool CanChangeIcon, NotebookPageSummary[]? Pages = null)
+        DateTimeOffset? Updated, string? EditorName, Guid? IconId, bool CanChangeIcon, NotebookPageSummary[]? Pages = null, string? Slug = null)
     {
+        public bool CanSetSlug => CanChangeIcon && Kind is ("theory" or "hold");
         public string Label => Kind switch
         {
             "theory" => "Teorinotesbog", "hold" => Context, "personal" => "Personlig", "shared" => "Delt med mig", _ => "Elevnotesbog"

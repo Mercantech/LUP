@@ -22,6 +22,8 @@ public partial class Index
     [Inject] private IJSRuntime Js { get; set; } = default!;
     [Parameter] public Guid? PageId { get; set; }
     [Parameter] public Guid? CollectionId { get; set; }
+    [Parameter] public string? CollectionSlug { get; set; }
+    private bool IsCollectionRoute => CollectionId is not null || CollectionSlug is not null;
     [SupplyParameterFromQuery(Name = "notice")] public string? MentionNotice { get; set; }
     [SupplyParameterFromQuery(Name = "hold")] public Guid? HoldQuery { get; set; }
     [SupplyParameterFromQuery(Name = "published")] public bool PublishedPreview { get; set; }
@@ -75,13 +77,13 @@ public partial class Index
     private bool CanManageHold => !ViewAs.IsActive && (_current?.CanEdit == true || _collection?.CanManage == true || _holds.Any(h => h.Id == _holdId && h.CanManage));
     private bool IsEditing => _current?.CanEdit == true && !ForceReadOnly;
     private bool Authoring => CanManageHold && !ForceReadOnly;
-    private string RouteKey => $"{PageId}:{CollectionId}:{HoldQuery}:{WorkspaceQuery}:{CourseQuery}:{ForceReadOnly}";
+    private string RouteKey => $"{PageId}:{CollectionId}:{CollectionSlug}:{HoldQuery}:{WorkspaceQuery}:{CourseQuery}:{ForceReadOnly}";
     private string StatusLabel => _savingTitle ? "Gemmer titel…" : _status switch { "saved" => "Gemt i skyen", "saving" => "Gemmer…", "synced" => "Forbundet", "offline" => "Forbindelsen er afbrudt", "error" => "Forbindelsen kræver opmærksomhed", _ => "Forbinder…" };
     private IEnumerable<NotionPageSummary> VisiblePages => ForceReadOnly ? _pages.Where(p => p.PublishedAtUtc is not null) : _pages;
     private string PageHref(Guid id, bool? publishedOnly = null) => WorkspaceNavigation.Page(id, _returnContext?.WorkspaceId, _returnContext?.CourseId, publishedOnly ?? ForceReadOnly, _holdId);
     private string GraphHref(Guid id) => WorkspaceNavigation.Graph(id, _returnContext?.WorkspaceId, _returnContext?.CourseId, ForceReadOnly, _holdId);
     private string HoldGraphHref => WorkspaceNavigation.HoldGraph(_holdId, _returnContext?.WorkspaceId, _returnContext?.CourseId, ForceReadOnly);
-    private string WorkspaceHref(string view = "content") => _holdId == Guid.Empty ? "/notion" : _returnContext?.View(view) ?? WorkspaceNavigation.Hold(_holdId, view);
+    private string WorkspaceHref(string view = "content") => _holdId == Guid.Empty ? "/notes" : _returnContext?.View(view) ?? WorkspaceNavigation.Hold(_holdId, view);
     private bool IsCollection(NotionPageSummary page) => _collections.Contains(page.Id);
     private Guid CollectionRoot(Guid id)
     {
@@ -94,6 +96,7 @@ public partial class Index
     public override Task SetParametersAsync(ParameterView parameters)
     {
         PageId = CollectionId = HoldQuery = WorkspaceQuery = CourseQuery = null;
+        CollectionSlug = null;
         PublishedPreview = false;
         return base.SetParametersAsync(parameters);
     }
@@ -109,7 +112,7 @@ public partial class Index
     {
         if (firstRender) await SyncAccount();
         if (_disposed) return;
-        if (!CanUse || (CollectionId is null && !_loading && _holdsLoaded && _holds.Length == 0 && _current is null && _holdId == Guid.Empty))
+        if (!CanUse || (!IsCollectionRoute && !_loading && _holdsLoaded && _holds.Length == 0 && _current is null && _holdId == Guid.Empty))
         { await UnmountSidebar(); return; }
         var sidebarSetup = InitializeSidebar();
         if (_needsMount && _current is not null && CanUse && !_disposed) await MountEditor();
@@ -216,10 +219,18 @@ public partial class Index
                 if (_pagesHold != (context.CollectionId ?? _holdId) || _pagesPublishedOnly != ForceReadOnly) { _pages = []; _pagesHold = null; }
                 SelectContext(context);
             }
-            else if (CollectionId is Guid collectionId)
+            else if (IsCollectionRoute)
             {
-                var collection = await Client.Collection(collectionId, ct, ForceReadOnly);
+                var collection = CollectionId is Guid collectionId
+                    ? await Client.Collection(collectionId, ct, ForceReadOnly)
+                    : await Client.CollectionBySlug(CollectionSlug!, ct, ForceReadOnly);
                 if (!IsCurrent(generation, ct)) return;
+                if (collection.Slug is { } slug && slug != CollectionSlug)
+                {
+                    var uri = new Uri(Nav.Uri);
+                    Nav.NavigateTo(NotesRoutes.Collection(collection.Id, slug) + uri.Query + uri.Fragment, replace: true);
+                    return;
+                }
                 _collection = collection;
                 _holdId = collection.HoldId ?? Guid.Empty;
                 ResetSidebarScope(collection.Id);

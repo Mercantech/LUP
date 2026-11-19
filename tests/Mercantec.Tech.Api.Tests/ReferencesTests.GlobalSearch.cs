@@ -50,7 +50,7 @@ public sealed partial class ReferencesTests
         await db.SaveChangesAsync();
 
         var found = Assert.Single((await GlobalSearchAs(User(student), "profilnavn", People)).Items);
-        Assert.Equal($"/notion/holds/{hold:D}/students/{classmateId:D}", found.Href);
+        Assert.Equal($"/notes/holds/{hold:D}/students/{classmateId:D}", found.Href);
         Assert.Empty((await GlobalSearchAs(User(outsider), "profilnavn", People)).Items);
         Assert.Empty((await GlobalSearchAs(User(student), "Anden lærer", People)).Items);
         Assert.Equal($"/people/{teacher:D}", Assert.Single((await GlobalSearchAs(User(student), "Lærer", People)).Items).Href);
