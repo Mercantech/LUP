@@ -235,41 +235,48 @@
 .notion-drawing-candidates button{text-align:left}
 .notion-drawing-grant{display:flex;gap:8px;align-items:center;justify-content:space-between;min-width:0}
 .notion-drawing-grant span{min-width:0;overflow-wrap:anywhere}
+.notion-drawing-emoji-picker{overflow-x:hidden;scrollbar-width:none}
 .notion-drawing-emoji-picker .notion-emoji-panel{width:100%;max-width:none;margin:0;border:0;box-shadow:none}
 @media(max-width:640px){.notion-drawing-dialog-head{padding:6px 8px;gap:5px 8px}.notion-drawing-actions{width:100%;margin-left:0}.notion-drawing-settings,.notion-drawing-emoji-picker{top:112px;right:8px;width:calc(100vw - 16px);max-height:calc(100dvh - 128px)}.notion-drawing-settings input,.notion-drawing-settings select{font-size:16px}}
 @media(pointer:coarse){.notion-drawing-actions>button,.notion-drawing-actions summary,.notion-drawing-actions details button,.notion-drawing-settings button{min-width:44px;min-height:44px}}
 @media print{.notion-drawing-dialog{display:none!important}.notion-drawing-preview{cursor:default;break-inside:avoid-page}}
 .bn-grid-suggestion-menu-item .notion-custom-emoji{width:22px;height:22px;vertical-align:middle}
-.notion-emoji-panel{display:flex;flex-direction:column;gap:6px;width:calc(100% - 32px);max-width:340px;min-width:0;box-sizing:border-box;margin:0 16px 12px;padding:8px;border:1px solid var(--notion-rule);border-radius:10px;background:var(--notion-paper);color:var(--notion-ink);box-shadow:0 6px 20px color-mix(in srgb,var(--notion-ink) 8%,transparent)}
+.notion-emoji-panel{display:flex;flex-direction:column;gap:9px;width:calc(100% - 32px);max-width:360px;min-width:0;box-sizing:border-box;margin:0 16px 12px;padding:12px;border:1px solid var(--notion-rule);border-radius:12px;background:var(--notion-paper);color:var(--notion-ink);box-shadow:0 6px 20px color-mix(in srgb,var(--notion-ink) 8%,transparent)}
 .notion-emoji-panel button{min-height:34px;flex-shrink:0;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--notion-ink);font:inherit;font-size:12px;cursor:pointer}
 .notion-emoji-panel button:hover{border-color:var(--notion-rule);background:var(--notion-tint)}
 .notion-emoji-panel button:focus-visible,.notion-emoji-panel input:focus-visible,.notion-emoji-panel textarea:focus-visible,.notion-emoji-panel select:focus-visible{outline:2px solid var(--notion-blue);outline-offset:1px}
-.notion-emoji-search-row{display:flex;align-items:center;gap:6px;min-width:0}
-.notion-emoji-search{display:flex;align-items:center;gap:7px;min-width:0;flex:1;min-height:36px;padding:0 9px;border:1px solid var(--notion-rule);border-radius:7px;background:var(--notion-paper)}
-.notion-emoji-search:focus-within{border-color:var(--notion-blue)}
+.notion-emoji-heading,.notion-emoji-filters{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.notion-emoji-heading strong{flex:1;min-width:0;font-size:15px;line-height:1.25}
+.notion-emoji-search{display:flex;align-items:center;gap:8px;min-width:0;min-height:38px;padding:0 8px;border:1px solid var(--notion-rule);border-radius:8px;background:color-mix(in srgb,var(--notion-ink) 3%,var(--notion-paper))}
+.notion-emoji-search:focus-within{outline:2px solid var(--notion-blue);outline-offset:1px}
 .notion-emoji-search-icon{width:16px;height:16px;flex-shrink:0;color:var(--notion-muted)}
 .notion-emoji-panel .notion-emoji-search input{display:block;width:100%;min-width:0;min-height:34px;box-sizing:border-box;padding:0;border:0;outline-offset:2px;background:transparent;color:var(--notion-ink);font:inherit;font-size:13px;box-shadow:none}
+.notion-emoji-panel .notion-emoji-search input:focus-visible{outline:none}
+.notion-emoji-search input::-webkit-search-cancel-button{display:none}
 .notion-emoji-search input::placeholder{color:var(--notion-muted);opacity:1}
-.notion-emoji-panel .notion-emoji-close{width:34px;min-width:34px;padding:0;font-size:23px;font-weight:400;line-height:1}
-.notion-emoji-categories{display:flex;gap:4px;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:2px;margin:-2px;scroll-padding:2px}
-.notion-emoji-categories button{padding:5px 8px;white-space:nowrap;line-height:1.2}
-.notion-emoji-categories button[aria-pressed=true]{border-color:var(--notion-blue);background:var(--notion-tint);font-weight:600}
-.notion-emoji-results{font-size:11px;line-height:1.5;color:var(--notion-muted)}
-.notion-emoji-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-content:start;gap:4px;min-height:76px;max-height:160px;overflow:auto;overscroll-behavior:contain;padding:2px;margin:-2px;scrollbar-width:thin}
-.notion-emoji-panel .notion-emoji-option{display:grid;place-items:center;min-width:0;width:100%;height:36px;padding:4px}
-.notion-emoji-option img{display:block;width:24px;height:24px;object-fit:contain}
+.notion-emoji-panel .notion-emoji-close,.notion-emoji-panel .notion-emoji-clear{display:grid;place-items:center;width:34px;padding:0;font-size:21px;line-height:1;color:var(--notion-muted)}
+.notion-emoji-filters select{min-width:0;max-width:100%;min-height:34px;padding:4px 5px;border:1px solid var(--notion-rule);border-radius:7px;background:var(--notion-paper);color:var(--notion-ink);font:inherit;font-size:13px;cursor:pointer}
+.notion-emoji-results{flex:none;color:var(--notion-muted);font-size:12px;font-variant-numeric:tabular-nums}
+.notion-emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,44px),1fr));align-content:start;gap:4px;min-width:0;min-height:44px;max-height:min(236px,35dvh);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.notion-emoji-grid::-webkit-scrollbar,.notion-emoji-upload::-webkit-scrollbar,.notion-drawing-emoji-picker::-webkit-scrollbar,.notion-callout-icon-picker::-webkit-scrollbar{display:none}
+.notion-emoji-panel .notion-emoji-option{display:grid;place-items:center;box-sizing:border-box;min-width:0;width:100%;height:44px;padding:5px}
+.notion-emoji-panel .notion-emoji-option:focus-visible{outline-offset:-2px;background:var(--notion-tint)}
+.notion-emoji-option img{display:block;width:28px;height:28px;object-fit:contain}
 .notion-emoji-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:90px;padding:6px;text-align:center;font-size:12px}
 .notion-emoji-panel .notion-emoji-empty p{margin:0;color:var(--notion-muted);font-size:12px}
 .notion-emoji-empty a{color:var(--notion-blue)}
 .notion-emoji-empty button{padding:6px 10px;color:var(--notion-blue)}
-.notion-emoji-preview{display:flex;align-items:center;gap:7px;min-width:0;min-height:32px;padding-top:8px;border-top:1px solid var(--notion-rule);color:var(--notion-muted);font-size:11px;line-height:1.5}
+.notion-emoji-preview{display:flex;align-items:center;gap:7px;min-width:0;min-height:32px;padding-top:7px;border-top:1px solid var(--notion-rule);color:var(--notion-muted);font-size:12px;line-height:1.5}
 .notion-emoji-preview img{width:22px;height:22px;object-fit:contain;flex-shrink:0}
 .notion-emoji-preview span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.notion-emoji-preview small{margin-left:auto;flex-shrink:0;font:inherit}
-.notion-emoji-panel .notion-emoji-add{width:34px;min-width:34px;padding:0;border-color:var(--notion-rule);font-size:24px;line-height:1;color:var(--notion-blue)}
+.notion-emoji-scroll{display:flex;gap:3px;margin-inline-start:auto}
+.notion-emoji-scroll button{display:grid;place-items:center;width:32px;padding:4px}
+.notion-emoji-scroll svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.8}
+.notion-emoji-panel .notion-emoji-add{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-color:var(--notion-rule);background:var(--notion-tint);color:var(--notion-blue);font-weight:600}
+.notion-emoji-add span{font-size:18px;font-weight:400;line-height:1}
 .notion-emoji-panel button:disabled{opacity:.5;cursor:default}
 .notion-emoji-file{display:none}
-.notion-emoji-upload{display:flex;flex-direction:column;gap:8px;min-width:0;max-height:min(620px,65dvh);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:4px 3px 4px 0}
+.notion-emoji-upload{display:flex;flex-direction:column;gap:8px;min-width:0;max-height:min(620px,65dvh);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:4px}
 .notion-emoji-upload-file{display:flex;align-items:center;gap:12px;min-width:0;font-size:12px;color:var(--notion-muted)}
 .notion-emoji-upload-file img{width:52px;height:52px;flex-shrink:0;object-fit:contain;border:1px solid var(--notion-rule);border-radius:8px;padding:6px;background-color:#fff;background-image:linear-gradient(45deg,#dce2eb 25%,transparent 25%),linear-gradient(-45deg,#dce2eb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#dce2eb 75%),linear-gradient(-45deg,transparent 75%,#dce2eb 75%);background-size:12px 12px;background-position:0 0,0 6px,6px -6px,-6px 0}
 .notion-emoji-background-actions{display:flex;flex-wrap:wrap;gap:6px}
@@ -290,9 +297,9 @@
 .notion-emoji-upload-actions{display:flex;gap:6px;flex-wrap:wrap}
 .notion-emoji-upload-actions button{padding:7px 11px}
 .notion-emoji-upload-actions .notion-emoji-upload-save{border-color:var(--notion-blue);color:var(--notion-blue);background:var(--notion-tint);font-weight:600}
-@media(max-width:640px){.notion-emoji-panel{width:calc(100% - 16px);margin-left:8px;margin-right:8px}.notion-emoji-panel .notion-emoji-search input{font-size:16px}}
+@media(max-width:640px){.notion-emoji-panel{width:calc(100% - 16px);margin-left:8px;margin-right:8px}.notion-emoji-panel .notion-emoji-search input,.notion-emoji-filters select{font-size:16px}}
 @media(max-width:640px){.notion-emoji-upload-name input,.notion-emoji-upload-name textarea,.notion-emoji-upload-name select{font-size:16px}}
-@media(pointer:coarse){.notion-emoji-panel button{min-height:44px}.notion-emoji-panel .notion-emoji-close,.notion-emoji-panel .notion-emoji-add{width:44px;min-width:44px}.notion-emoji-search{min-height:44px}.notion-emoji-panel .notion-emoji-search input{min-height:42px}.notion-emoji-panel .notion-emoji-option{height:44px}.notion-emoji-grid{max-height:192px}}
+@media(pointer:coarse){.notion-emoji-panel button,.notion-emoji-filters select{min-height:44px}.notion-emoji-panel .notion-emoji-close,.notion-emoji-panel .notion-emoji-clear,.notion-emoji-scroll button{width:44px}.notion-emoji-search{min-height:44px}.notion-emoji-panel .notion-emoji-search input{min-height:42px}}
 @media print{.notion-emoji-panel{display:none!important}}
 .notion-emoji-suggestion-menu{--emoji-menu-paper:var(--notion-paper,var(--paper,#fff));--emoji-menu-ink:var(--notion-ink,var(--ink,#17243b));--emoji-menu-rule:var(--notion-rule,var(--rule,#dfe7f2));--emoji-menu-muted:var(--notion-muted,var(--muted,#63728b));--emoji-menu-blue:var(--notion-blue,var(--blue,#2452e8));--emoji-menu-tint:var(--notion-tint,var(--tint,#eaf0ff));display:flex;flex-direction:column;width:min(320px,calc(100vw - 16px));min-width:0;max-height:min(330px,calc(100dvh - 24px));box-sizing:border-box;overflow:hidden;border:1px solid var(--emoji-menu-rule);border-radius:10px;background:var(--emoji-menu-paper);color:var(--emoji-menu-ink);font:12px/1.4 'DM Sans',sans-serif;box-shadow:0 7px 24px color-mix(in srgb,var(--emoji-menu-ink) 13%,transparent)}
 .notion-emoji-suggestion-header{display:flex;align-items:center;justify-content:space-between;flex:none;gap:8px;min-height:42px;box-sizing:border-box;padding:5px 8px;border-bottom:1px solid var(--emoji-menu-rule);font-size:12px;font-weight:600}
@@ -637,8 +644,9 @@ button.notion-callout-mark:focus-visible{outline:2px solid var(--notion-accent,#
 .notion-callout-important{--callout-color:#9361c8}
 .notion-callout{background:color-mix(in srgb,var(--notion-paper) 92%,var(--callout-color,var(--notion-blue)));border-color:color-mix(in srgb,var(--notion-rule) 65%,var(--callout-color,var(--notion-blue)))}
 .notion-callout-mark .notion-custom-emoji{display:block;width:28px;height:28px;object-fit:contain;vertical-align:middle}
-.notion-callout-icon-picker{display:flex;flex-direction:column;max-width:calc(100vw - 16px);max-height:calc(100dvh - 24px);box-sizing:border-box;overflow:auto;overscroll-behavior:contain;border:1px solid var(--notion-rule);border-radius:10px;background:var(--notion-paper);color:var(--notion-ink);font:12px/1.4 'DM Sans',sans-serif;box-shadow:0 7px 24px color-mix(in srgb,var(--notion-ink) 13%,transparent)}
-.notion-callout-icon-picker .notion-emoji-panel{width:100%;max-width:none;box-sizing:border-box;flex-shrink:0;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.notion-callout-icon-picker{display:flex;flex-direction:column;max-width:calc(100vw - 16px);max-height:calc(100dvh - 24px);box-sizing:border-box;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain;border:1px solid var(--notion-rule);border-radius:10px;background:var(--notion-paper);color:var(--notion-ink);font:12px/1.4 'DM Sans',sans-serif;box-shadow:0 7px 24px color-mix(in srgb,var(--notion-ink) 13%,transparent)}
+.notion-callout-icon-picker .notion-emoji-panel{width:100%;max-width:none;min-height:0;box-sizing:border-box;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.notion-callout-icon-picker .notion-emoji-panel>:not(.notion-emoji-grid,.notion-emoji-upload){flex-shrink:0}
 .notion-callout-tone-options{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px;border-bottom:1px solid var(--notion-rule)}
 .notion-callout-tone-options button,.notion-callout-icon-reset{min-height:32px;padding:5px 8px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--notion-ink);font:inherit;cursor:pointer}
 .notion-callout-tone-options button:is(:hover,[aria-pressed=true]),.notion-callout-icon-reset:hover{border-color:var(--notion-rule);background:var(--notion-tint)}
