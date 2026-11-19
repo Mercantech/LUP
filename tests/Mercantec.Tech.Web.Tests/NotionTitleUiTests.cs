@@ -99,7 +99,10 @@ public sealed class NotionTitleUiTests
         var toolbar = page.Find(".notion-document-toolbar");
 
         Assert.NotNull(toolbar.QuerySelector(".notion-title-form #notion-title"));
-        Assert.NotNull(toolbar.QuerySelector(".notion-toolbar-nav [aria-label='Fokus']"));
+        Assert.Null(toolbar.QuerySelector(".notion-toolbar-nav"));
+        Assert.NotNull(toolbar.QuerySelector(".notion-document-menu [aria-label='Fokus']"));
+        Assert.NotNull(toolbar.QuerySelector(".notion-document-menu [aria-controls='notion-sidebar']"));
+        Assert.NotNull(toolbar.QuerySelector(".notion-document-menu [aria-keyshortcuts='F1']"));
         Assert.NotNull(toolbar.QuerySelector(".notion-toolbar-actions .notion-ai-toggle-slot"));
         Assert.NotNull(toolbar.QuerySelector(".notion-document-menu [aria-label='Brødkrummer']"));
         Assert.Contains("Præsenter", toolbar.QuerySelector(".notion-document-menu")!.TextContent);
