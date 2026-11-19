@@ -62,13 +62,22 @@
                 {
                     var next = UpcomingFor(package.Id).FirstOrDefault();
                     <a class="package" href="@package.Href" aria-labelledby="@($"package-{package.Id:N}")">
-                        <img src="@package.ImageUrl" alt="" width="600" height="400" />
+                        <img class="package-cover" src="@package.ImageUrl" alt="" width="600" height="400" />
                         <div class="package-copy">
                             <h3 id="@($"package-{package.Id:N}")">@package.Title</h3>
                             <p>@package.Summary</p>
-                            <div class="package-meta">
-                                <UiIcon Name="calendar" />
-                                <span>@ElectiveDisplay.StartLabel(next)</span>
+                            <div class="package-details">
+                                @if (package.Character is { DisplayPortrait: { } portrait } character)
+                                {
+                                    <div class="package-character">
+                                        <img src="@portrait.Image" alt="" width="36" height="36" loading="lazy" />
+                                        <span>Med @character.Name</span>
+                                    </div>
+                                }
+                                <div class="package-meta">
+                                    <UiIcon Name="calendar" />
+                                    <span>@ElectiveDisplay.StartLabel(next)</span>
+                                </div>
                             </div>
                             <span class="package-action">Se fagpakke <UiIcon Name="arrow" /></span>
                         </div>

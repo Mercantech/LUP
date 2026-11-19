@@ -12,7 +12,19 @@
                 <a class="action package-next" href="@($"{Package.Href}#package-offerings-title")">Se aktuelle hold <UiIcon Name="arrow" /></a>
             }
         </div>
-        <img src="@Package.ImageUrl" alt="" class="package-image" width="600" height="400" />
+        @if (Package.Character is { DisplayPortrait: { } portrait } character)
+        {
+            <figure class="package-guide">
+                <img src="@portrait.Image" alt="@portrait.Alt" width="680" height="680" />
+                <figcaption>
+                    <a class="package-guide-link" href="@character.Path">Mød @character.Name <UiIcon Name="arrow" /></a>
+                </figcaption>
+            </figure>
+        }
+        else
+        {
+            <img src="@Package.ImageUrl" alt="" class="package-image" width="600" height="400" />
+        }
     </header>
 
     <div class="package-content">
