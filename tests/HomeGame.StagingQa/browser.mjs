@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
+import { checkRoomInteractions } from './room-interactions.mjs';
 
 if (process.env.LUP_HOME_STAGING_QA !== 'synthetic-only-20261118' ||
     process.env.HOME_QA_ORIGIN !== 'http://web:3000')
@@ -201,6 +202,8 @@ async function checkDeviceWorkshop(identity, page) {
     await goldUnchanged();
     check('Blind and finishes persisted, illegal mounts rejected, furniture rotated and probe followed its planter',
         {closedLux,openLux,teacherGold:initialGold});
+    await checkRoomInteractions(page, getHome, check);
+    home=await getHome();
 
     const runProgram = async (language,source) => {
         home=await api(identity,'/api/me/home-game/program','PUT',{revision:home.layout.revision,language,source});
@@ -414,6 +417,7 @@ try {
     assert.deepEqual(teacher.progress, []);
     assert.ok(teacher.layout.items.every(item => item.placement === null));
     assert.equal(await teacherPage.locator('.room-shell .furniture:not(.ghost),.room-ledge').count(), 0);
+    await teacherPage.screenshot({path:'/artifacts/workshop-empty.png',fullPage:true});
     teacher = await fitReadingCorner(identities.teacher, teacher);
     await teacherPage.reload({ waitUntil:'domcontentloaded' });
     const teachStart=teacherPage.waitForResponse(r=>new URL(r.url()).pathname==='/api/me/home-game/runs' && r.request().method()==='POST');

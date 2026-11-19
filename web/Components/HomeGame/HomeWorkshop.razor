@@ -170,10 +170,10 @@ else
                         @if (_shelf == "finishes")
                         {
                             <div class="finish-picker">
-                                <label>Gulv<select value="@_state.Layout.FloorStyle" disabled="@_working" @onchange='e => BuildAsync(new("floorStyle", Value: e.Value?.ToString()))'>
+                                <label>Gulv<select aria-label="Gulv" value="@_state.Layout.FloorStyle" disabled="@_working" @onchange='e => BuildAsync(new("floorStyle", Value: e.Value?.ToString()))'>
                                     @foreach (var style in HomeCatalog.FloorStyles) { <option value="@style.Key">@style.Value</option> }
                                 </select></label>
-                                <label>Tapet<select value="@_state.Layout.WallpaperStyle" disabled="@_working" @onchange='e => BuildAsync(new("wallpaperStyle", Value: e.Value?.ToString()))'>
+                                <label>Tapet<select aria-label="Tapet" value="@_state.Layout.WallpaperStyle" disabled="@_working" @onchange='e => BuildAsync(new("wallpaperStyle", Value: e.Value?.ToString()))'>
                                     @foreach (var style in HomeCatalog.WallpaperStyles) { <option value="@style.Key">@style.Value</option> }
                                 </select></label>
                             </div>

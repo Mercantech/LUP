@@ -190,7 +190,7 @@ async function main() {
         assert.deepEqual(state.layout.items.find(item => item.id === "lamp").placement.anchor, point(5, 4));
         assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("Inden for rækkevidde"));
         await page.getByRole("button", { name: "Butik", exact: true }).click();
-        await page.getByRole("listitem").filter({ hasText: "Sofa" }).getByRole("button").click();
+        await page.locator(".items li[data-definition=sofa_basic]").getByRole("button").click();
         await tile(6, 3).hover();
         await page.getByText(/optager allerede feltet/i).waitFor();
         assert.equal(await page.getByTestId("confirm-placement").isDisabled(), true);
@@ -287,7 +287,7 @@ async function main() {
         await preview.getByTestId("device-inspector").getByText("Se kodeidé", {exact:true}).click();
         assert.match(await preview.getByTestId("device-inspector").locator("pre").innerText(), /home\.set\("mit_gardin", True\)/);
         await preview.getByRole("button",{name:"Butik",exact:true}).click();
-        await preview.getByRole("listitem").filter({ hasText: "Sofa" }).getByRole("button", { name: "Tilføj gratis" }).click();
+        await preview.locator(".items li[data-definition=sofa_basic]").getByRole("button", { name: "Tilføj gratis" }).click();
         await preview.locator('.home-board [data-x="1"][data-y="1"]').click();
         await preview.getByRole("button",{name:"Placér gratis",exact:true}).click();
         await preview.getByText("Prøveudstyret er placeret.", { exact: true }).waitFor();
