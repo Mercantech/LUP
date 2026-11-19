@@ -450,20 +450,23 @@ async function pickerFlow(page, path, item, device) {
 }
 
 async function run() {
-  const teacher = await client('teacher');
-  const pupil = await client('pupil');
   const collection = await json('teacher', '/api/notion/collections',
     { title: 'QA forløb ' + suffix, holdId: '22222222-aaaa-4222-8222-222222222222' });
   const personal = await json('pupil', '/api/notebooks/mine', {});
   if (!process.argv.includes('--icons-only')) {
     const desktopPage = await json('teacher', '/api/notion/pages',
       { collectionId: collection.id, atRoot: true, title: 'Emoji på desktop ' + suffix });
-    await pickerFlow(teacher, '/notion/', desktopPage, 'desktop');
+    const desktop = await client('teacher');
+    await pickerFlow(desktop, '/notion/', desktopPage, 'desktop');
+    await desktop.context().close();
     const mobilePage = await json('pupil', '/api/notebooks/' + personal.id + '/pages', { title: 'Emoji på mobil ' + suffix });
     const mobile = await client('pupil', { viewport: { width: 360, height: 740 }, hasTouch: true, isMobile: true });
     await pickerFlow(mobile, '/notebook/', mobilePage, 'mobil');
+    await mobile.context().close();
     if (process.argv.includes('--picker-only')) return;
   }
+  const teacher = await client('teacher');
+  const pupil = await client('pupil');
   await pageIcons(teacher, '/notion/', (title, parentPageId) => json('teacher', '/api/notion/pages',
     { collectionId: collection.id, atRoot: !parentPageId, title, parentPageId }), process.env.NOTEBOOK_ICON_QA_SCREENSHOT);
   await pageIcons(pupil, '/notebook/', (title, parentPageId) => json('pupil', '/api/notebooks/' + personal.id + '/pages',
