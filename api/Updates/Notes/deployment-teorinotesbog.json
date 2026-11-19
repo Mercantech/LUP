@@ -1,0 +1,5 @@
+{
+  "date": "2026-11-19",
+  "title": "Slå Docker og deployment op i én notesbog",
+  "description": "Undervisere kan åbne teorinotesbogen Deployment og bruge diagrammer og øvelser om containere, netværk, lagring og Dokploy. Aspire har sit eget kapitel med AppHost, traces og Docker Compose."
+}

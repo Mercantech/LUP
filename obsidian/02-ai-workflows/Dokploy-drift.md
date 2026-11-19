@@ -9,7 +9,7 @@ tags:
 
 # Dokploy-drift
 
-Porteret fra generelle Cursor-rules — tilpasset Mercantec.tech.
+Brug [Deployment i LUP](https://lup.dk/notion/cae2b3bf-5d25-458e-b567-073cd5074c4a) til den fælles teori. Kapitlet [Fra Git til drift med Dokploy](https://lup.dk/notion/f357faac-317b-4c53-a297-dcb65267ad9c) viser vejen fra Git-revision til en verificeret release. Herunder står LUP-projektets konkrete driftsindstillinger.
 
 ## Domæne
 
@@ -28,8 +28,8 @@ Dokploy: domain på service **`web`**, port **3000**. For mercantec.tech / lup.d
 Produktionsstakken **Mercantec.tech → Production** genbruger sin eksisterende private Docker-bridge. Tilføj `-f ./docker-compose.production.yml` efter `-f ./docker-compose.yml` i Dokploys Compose-kommando. Behold projektets navn, som bestemmer navnene på bridgen og datavolumenerne. Hvis bridgen har et særskilt navn, sæt `LUP_PRIVATE_NETWORK_NAME` til navnet på den bridge, produktionsdatabasen allerede bruger. Brug **Deploy** til at starte produktion, så Dokploy bruger kommandoen med begge Compose-filer.
 
 1. `default` er det private net for databasen, API'et og collaboration. Web og MinIO-konsollen bruger også `dokploy-network` til Traefik.
-2. Aliaser på det private net er **`mercantec-tech-api`**, **`mercantec-tech-db`** og **`mercantec-tech-minio`**.
-3. Nginx: `resolver 127.0.0.11` + `set $upstream_api http://mercantec-tech-api:8080`
+2. Web bruger **`lup-api-internal`** til API’et. API’et finder databasen på **`mercantec-tech-db`** og objektlageret på **`mercantec-tech-minio`**.
+3. Nginx bruger Dockers DNS-resolver `127.0.0.11` til at slå `lup-api-internal:8080` op på projektnettet.
 4. Connection string: `Host=mercantec-tech-db`
 5. Object storage: API → `http://mercantec-tech-minio:9000` (S3 path-style). MinIO credentials via Dokploy env (`MINIO_ROOT_*`, `MINIO_BUCKET`, `OBJECT_STORAGE_*`) — **ikke** i git.
 6. Image: **`pgsty/silo`** (pinned tag i compose). Brug **ikke** `quay.io/minio/minio` / `quay.io/minio/mc` — Quay returnerer **401** (community-images fjernet).
