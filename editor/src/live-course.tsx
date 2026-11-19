@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import {
   liveKinds, LiveRequestError, type LiveClient, type LiveEntry, type LiveHistory, type LiveKind, type LiveModule,
   type LivePollType, type LiveRound, type LiveSnapshot,
 } from './live-course-api';
 import { activeRoundForBlock, liveMaxOptions, liveOptionLimit, livePromptLimit, validLiveChoices, visibleEntries, wordCloud } from './live-course-state.mjs';
+import { enterFullscreen, leaveFullscreen } from './fullscreen.mjs';
 import './live-course.css';
 
 interface Runtime {
@@ -313,11 +315,12 @@ function RoundResults({ round, session, runtime, participant }:
 function Moderation({ runtime, session, round }: { runtime: Runtime; session: LiveSnapshot; round: LiveRound }) {
   const approve = (entry: LiveEntry) => runtime.command([session.id, 'rounds', round.id, 'entries', entry.id, 'moderate'], { approved: !entry.approved });
   if (!usesText(round)) return null;
-  return <details className="notion-live-moderation"><summary>Moderér svar ({round.entries.length})</summary>
-    {round.entries.length === 0 ? <p>Der er endnu ingen svar at godkende.</p> :
+  const cloud = round.kind === 'word-cloud';
+  return <details className="notion-live-moderation"><summary>{cloud ? 'Administrér ord' : 'Moderér svar'} ({round.entries.length})</summary>
+    {round.entries.length === 0 ? <p>{cloud ? 'Der er endnu ingen ord.' : 'Der er endnu ingen svar at godkende.'}</p> :
       <ul className="notion-live-entries">{round.entries.map(entry => <li key={entry.id}>
         <span>{entry.text}</span><button type="button" disabled={runtime.busy || runtime.offline}
-          onClick={() => { void approve(entry); }}>{entry.approved ? 'Skjul' : 'Godkend'}</button>
+          onClick={() => { void approve(entry); }}>{entry.approved ? 'Skjul' : cloud ? 'Vis igen' : 'Godkend'}</button>
       </li>)}</ul>}
   </details>;
 }
@@ -327,27 +330,66 @@ export function LiveActivity({ blockId, moduleId, kind, prompt, editable, presen
     activePresentation: boolean; participant: boolean; publishedRevision?: number; onSave: (module: LiveModule) => void }) {
   const runtime = useLiveCourse();
   const snapshot = runtime?.snapshot;
+  const [focused, setFocused] = useState(false);
+  const focusDialog = useRef<HTMLDialogElement>(null);
+  const focusScreen = useRef<HTMLDivElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const nativeFullscreen = useRef(false);
+  const nativeExitedAt = useRef(0);
   const validEdition = snapshot?.publishedRevision === publishedRevision && (!presenting || activePresentation);
   const round = validEdition ? activeRoundForBlock(snapshot ?? null, blockId, moduleId) : null;
-  const showHost = Boolean(presenting && validEdition && snapshot?.mayManage && moduleId);
+  const showHost = Boolean((presenting || focused) && validEdition && snapshot?.mayManage && moduleId);
+  const mayFocus = Boolean(validEdition && snapshot?.mayManage && round);
   const controlsDisabled = runtime?.busy || runtime?.offline;
   const control = (action: string) => runtime && snapshot && round
     ? runtime.command([snapshot.id, 'rounds', round.id, 'control'], { action }) : Promise.resolve(false);
   const ranked = round?.kind === 'quiz' && round.showResults;
+  const closeFocus = () => {
+    void leaveFullscreen(focusScreen.current);
+    setFocused(false);
+    requestAnimationFrame(() => returnFocus.current?.isConnected && returnFocus.current.focus({ preventScroll: true }));
+  };
+  const openFocus = () => {
+    returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    flushSync(() => setFocused(true));
+    focusDialog.current?.showModal();
+    void enterFullscreen(focusScreen.current);
+  };
+  useEffect(() => {
+    if (!focused) return;
+    const element = focusScreen.current;
+    const changed = () => {
+      const active = document.fullscreenElement === element;
+      if (nativeFullscreen.current && !active) nativeExitedAt.current = performance.now();
+      nativeFullscreen.current = active;
+    };
+    document.addEventListener('fullscreenchange', changed);
+    return () => {
+      document.removeEventListener('fullscreenchange', changed);
+      void leaveFullscreen(element);
+      nativeFullscreen.current = false;
+    };
+  }, [focused]);
+  useEffect(() => {
+    if (focused && !mayFocus) closeFocus();
+  }, [focused, mayFocus]);
+  const hostControls = showHost && runtime && snapshot && <div className="notion-live-actions">
+    {(!round || !round.open) && <button type="button" className="notion-live-primary" disabled={controlsDisabled}
+      onClick={() => { void runtime.command([snapshot.id, 'rounds'], { moduleId, blockId }); }}>{round ? 'Start ny runde' : 'Åbn for svar'}</button>}
+    {round?.open && <button type="button" disabled={controlsDisabled} onClick={() => { void control('close'); }}>Luk for svar</button>}
+    {round && <button type="button" disabled={controlsDisabled} onClick={() => { void control(round.showResults ? 'hide' : 'show'); }}>{round.showResults ? 'Skjul resultater' : 'Vis resultater'}</button>}
+    {ranked && <button type="button" disabled={controlsDisabled} onClick={() => {
+      void runtime.command([snapshot.id, 'ranking'], { visible: !snapshot.rankingVisible });
+    }}>{snapshot.rankingVisible ? 'Skjul stilling' : 'Vis stilling'}</button>}
+  </div>;
   return <section className="notion-live-activity" contentEditable={false} id={!presenting ? 'live-aktivitet-' + blockId : undefined}
     aria-label={kinds[kind]}>
-    <header><span className="notion-live-kind">{kinds[kind] || 'Liveaktivitet'}</span>{round && <span>{round.open ? 'Åben for svar' : 'Lukket'}{round.totalAnswers !== null && ' · ' + round.totalAnswers + ' svar'}</span>}</header>
+    <header><span className="notion-live-kind">{kinds[kind] || 'Liveaktivitet'}</span>{round && <span>{round.open ? 'Åben for svar' : 'Lukket'}{round.totalAnswers !== null && ' · ' + round.totalAnswers + ' svar'}</span>}
+      {mayFocus && <button type="button" onClick={openFocus}>Fuld skærm</button>}
+    </header>
     <p className="notion-live-prompt">{round?.prompt ?? (prompt || 'Aktiviteten mangler et spørgsmål')}</p>
     {editable && runtime && <ConfigureActivity client={runtime.client} blockId={blockId} moduleId={moduleId} kind={kind} prompt={prompt} onSave={onSave} />}
-    {showHost && runtime && snapshot && <div className="notion-live-actions">
-      {(!round || !round.open) && <button type="button" className="notion-live-primary" disabled={controlsDisabled}
-        onClick={() => { void runtime.command([snapshot.id, 'rounds'], { moduleId, blockId }); }}>{round ? 'Start ny runde' : 'Åbn for svar'}</button>}
-      {round?.open && <button type="button" disabled={controlsDisabled} onClick={() => { void control('close'); }}>Luk for svar</button>}
-      {round && <button type="button" disabled={controlsDisabled} onClick={() => { void control(round.showResults ? 'hide' : 'show'); }}>{round.showResults ? 'Skjul resultater' : 'Vis resultater'}</button>}
-      {ranked && <button type="button" disabled={controlsDisabled} onClick={() => {
-        void runtime.command([snapshot.id, 'ranking'], { visible: !snapshot.rankingVisible });
-      }}>{snapshot.rankingVisible ? 'Skjul stilling' : 'Vis stilling'}</button>}
-    </div>}
+    {hostControls}
     {round && runtime && snapshot && <>
       {participant && !presenting && <RoundAnswer key={round.id} runtime={runtime} session={snapshot} round={round} />}
       <RoundResults round={round} session={snapshot} runtime={runtime} participant={participant && !presenting} />
@@ -355,6 +397,25 @@ export function LiveActivity({ blockId, moduleId, kind, prompt, editable, presen
     </>}
     {!editable && !round && !showHost && <p className="notion-live-note">Afventer underviseren.</p>}
     {showHost && runtime?.issue && <p role="alert">{runtime.issue}</p>}
+    {focused && round && runtime && snapshot && <dialog ref={focusDialog} className="notion-live-focus" aria-label={kinds[kind] + ' i fuld skærm'}
+      onKeyDown={event => event.stopPropagation()} onCancel={event => {
+        event.preventDefault(); event.stopPropagation();
+        if (document.fullscreenElement === focusScreen.current) { void leaveFullscreen(focusScreen.current); return; }
+        if (performance.now() - nativeExitedAt.current > 300) closeFocus();
+      }}>
+      <div ref={focusScreen} className="notion-live-focus-screen">
+        <header className="notion-live-focus-header"><span className="notion-live-kind">{kinds[kind]}</span>
+          <span>{round.open ? 'Åben for svar' : 'Lukket'}{round.totalAnswers !== null && ' · ' + round.totalAnswers + ' svar'}</span>
+          <button type="button" autoFocus onClick={closeFocus}>Luk fuld skærm</button>
+        </header>
+        <div className="notion-live-focus-content"><h2>{round.prompt}</h2>
+          <RoundResults round={round} session={snapshot} runtime={runtime} participant={false} />
+        </div>
+        <footer>{hostControls}{runtime.offline && <p role="status">Forbindelsen blev afbrudt. LUP forsøger at forbinde igen.</p>}
+          {runtime.issue && <p role="alert">{runtime.issue}</p>}
+        </footer>
+      </div>
+    </dialog>}
   </section>;
 }
 

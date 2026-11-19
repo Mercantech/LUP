@@ -31,6 +31,7 @@ public sealed partial class LiveCourseController
             var round = new LiveCourseRound
             {
                 Id = Guid.NewGuid(), SessionId = sessionId, ModuleId = module.Id, OpenedAtUtc = now,
+                ShowResults = module.Kind == "word-cloud",
                 DeadlineUtc = module.DurationSeconds is int seconds ? now.AddSeconds(seconds) : null
             };
             db.LiveCourseRounds.Add(round);
@@ -95,7 +96,7 @@ public sealed partial class LiveCourseController
             };
             entry.Choice = request.Choice;
             entry.Text = pollType == "text" ? text : null;
-            entry.Approved = pollType == "text" ? null : true;
+            entry.Approved = pollType == "text" && round.Module.Kind != "word-cloud" ? null : true;
             entry.UpdatedAtUtc = now;
             if (previous is null) db.LiveCourseEntries.Add(entry);
             return null;
