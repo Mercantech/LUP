@@ -35,6 +35,30 @@ public sealed class OutlookEventDetailsTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Removes_repeated_email_targets_from_plain_descriptions_and_previews(bool usePreview)
+    {
+        const string content = "Kontakt\r\n\r\nE-mail: person@example.test<mailto:person@example.test>\n" +
+            "Backup: alias@example.test <mailto:other@example.test>\n" +
+            "Book: person@example.test <mailto:person@example.test?subject=Book>\n" +
+            "Skriv til <mailto:person@example.test>";
+        using var transport = new GraphTransport(new
+        {
+            id = EventId,
+            body = usePreview ? null : new { contentType = "text", content },
+            bodyPreview = usePreview ? content : null
+        });
+
+        var details = await ReadDetails(transport);
+
+        Assert.Equal("Kontakt\r\n\r\nE-mail: person@example.test\n" +
+            "Backup: alias@example.test <mailto:other@example.test>\n" +
+            "Book: person@example.test <mailto:person@example.test?subject=Book>\n" +
+            "Skriv til <mailto:person@example.test>", details.Description);
+    }
+
+    [Theory]
     [InlineData("private")]
     [InlineData("Personal")]
     [InlineData("confidential")]

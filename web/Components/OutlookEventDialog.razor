@@ -8,109 +8,138 @@
 <dialog id="@_dialogId" class="outlook-event-dialog" aria-labelledby="@TitleId" @onclose="DismissAsync">
     <header class="outlook-event-header">
         <h2 id="@TitleId">@Title</h2>
-        <button type="button" class="secondary" autofocus @onclick="CloseAsync">Luk</button>
+        <button type="button" class="secondary outlook-event-close" aria-label="Luk aftale" autofocus @onclick="CloseAsync">
+            <UiIcon Name="close" />
+        </button>
     </header>
-    @if (_loading)
-    {
-        <p role="status">Henter aftalen fra Outlook…</p>
-    }
-    else if (_error is { } error)
-    {
-        <p role="alert">@error</p>
-        <button type="button" class="secondary" @onclick="LoadAsync">Prøv igen</button>
-    }
-    else if (_details is { } details)
-    {
-        @if (details.Event.IsPrivate)
+    <div class="outlook-event-body" role="region" aria-label="Aftaledetaljer" tabindex="0">
+        @if (_loading)
         {
-            <p>Denne aftale er markeret som privat i Outlook.</p>
+            <p class="outlook-event-message" role="status">Henter aftalen fra Outlook…</p>
         }
-        else
+        else if (_error is { } error)
         {
+            <p class="outlook-event-message" role="alert">@error</p>
+            <button type="button" class="secondary" @onclick="LoadAsync">Prøv igen</button>
+        }
+        else if (_details is { Event.IsPrivate: true })
+        {
+            <p class="outlook-event-message">Denne aftale er markeret som privat i Outlook.</p>
+        }
+        else if (_details is { } details)
+        {
+            var when = EventTime(details.Event);
             <dl class="outlook-event-facts">
-                <dt>Tidspunkt</dt>
-                <dd>@EventTime(details.Event)</dd>
+                <div class="outlook-event-when">
+                    <dt><UiIcon Name="calendar" /> Tidspunkt</dt>
+                    <dd>
+                        <strong>@when.Date</strong>
+                        @if (when.Time is { } time)
+                        {
+                            <span class="outlook-event-time">@time</span>
+                        }
+                    </dd>
+                </div>
                 @if (details.Event.Location is { Length: > 0 } location)
                 {
-                    <dt>Sted</dt>
-                    <dd>@location</dd>
+                    <div>
+                        <dt><UiIcon Name="pin" /> Sted</dt>
+                        <dd><strong>@location</strong></dd>
+                    </div>
                 }
                 @if (details.Organizer is { } organizer && PersonName(organizer.Name, organizer.Address) is { Length: > 0 } organizerName)
                 {
-                    <dt>Arrangør</dt>
-                    <dd>
-                        @organizerName
-                        @if (ShowAddress(organizerName, organizer.Address))
-                        {
-                            <span class="outlook-person-address">@organizer.Address</span>
-                        }
-                    </dd>
+                    <div>
+                        <dt><UiIcon Name="people" /> Arrangør</dt>
+                        <dd>
+                            <strong>@organizerName</strong>
+                            @if (ShowAddress(organizerName, organizer.Address))
+                            {
+                                <span class="outlook-person-address">@organizer.Address</span>
+                            }
+                        </dd>
+                    </div>
                 }
             </dl>
-            <section class="outlook-event-section" aria-labelledby="@DescriptionId">
-                <h3 id="@DescriptionId">Beskrivelse</h3>
-                @if (details.Description is { Length: > 0 } description)
-                {
-                    <p class="outlook-event-description">@description</p>
-                }
-                else
-                {
-                    <p class="outlook-event-muted">Ingen beskrivelse.</p>
-                }
-            </section>
-            <section class="outlook-event-section" aria-labelledby="@AttendeesId">
-                <h3 id="@AttendeesId">Deltagere</h3>
-                @if (details.HideAttendees)
-                {
-                    <p class="outlook-event-muted">Deltagerlisten er skjult i Outlook.</p>
-                }
-                else if (details.Attendees.Count == 0)
-                {
-                    <p class="outlook-event-muted">Ingen deltagere er angivet.</p>
-                }
-                else
-                {
-                    <ul class="outlook-attendees">
-                        @foreach (var attendee in details.Attendees)
+            <div class="outlook-event-content">
+                <section class="outlook-event-section" aria-labelledby="@DescriptionId">
+                    <h3 id="@DescriptionId">Beskrivelse</h3>
+                    @if (details.Description is { Length: > 0 } description)
+                    {
+                        <p class="outlook-event-description">@description</p>
+                    }
+                    else
+                    {
+                        <p class="outlook-event-muted">Ingen beskrivelse.</p>
+                    }
+                </section>
+                <section class="outlook-event-section outlook-event-people" aria-labelledby="@AttendeesId">
+                    <h3 id="@AttendeesId">
+                        Deltagere
+                        @if (!details.HideAttendees && details.Attendees.Count > 0)
                         {
-                            var name = PersonName(attendee.Name, attendee.Address) ?? "Ukendt deltager";
-                            var type = AttendeeType(attendee.Type);
-                            var response = AttendeeResponse(attendee.Response);
-                            <li>
-                                <div>
+                            <span class="outlook-attendee-count">(@details.Attendees.Count)</span>
+                        }
+                    </h3>
+                    @if (details.HideAttendees)
+                    {
+                        <p class="outlook-event-muted">Deltagerlisten er skjult i Outlook.</p>
+                    }
+                    else if (details.Attendees.Count == 0)
+                    {
+                        <p class="outlook-event-muted">Ingen deltagere er angivet.</p>
+                    }
+                    else
+                    {
+                        <ul class="outlook-attendees" role="list">
+                            @foreach (var attendee in details.Attendees)
+                            {
+                                var name = PersonName(attendee.Name, attendee.Address) ?? "Ukendt deltager";
+                                var type = AttendeeType(attendee.Type);
+                                var response = AttendeeResponse(attendee.Response);
+                                <li>
                                     <strong>@name</strong>
                                     @if (ShowAddress(name, attendee.Address))
                                     {
                                         <span class="outlook-person-address">@attendee.Address</span>
                                     }
-                                </div>
-                                @if (type is not null || response is not null)
-                                {
-                                    <div class="outlook-attendee-status">
-                                        @if (type is not null) { <span>@type</span> }
-                                        @if (response is not null) { <span>@response</span> }
-                                    </div>
-                                }
-                            </li>
-                        }
-                    </ul>
+                                    @if (type is not null || response is not null)
+                                    {
+                                        <div class="outlook-attendee-status">
+                                            @if (response is not null)
+                                            {
+                                                <span class="outlook-attendee-response" data-response="@(attendee.Response?.ToLowerInvariant())">@response</span>
+                                            }
+                                            @if (type is not null)
+                                            {
+                                                <span>@type</span>
+                                            }
+                                        </div>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </section>
+            </div>
+        }
+    </div>
+    @if (_details is { Event.IsPrivate: false } publicDetails)
+    {
+        var outlookLink = SafeExternal(publicDetails.Event.WebLink);
+        var teamsLink = SafeExternal(publicDetails.Event.OnlineMeetingUrl);
+        @if (outlookLink is not null || teamsLink is not null)
+        {
+            <footer class="outlook-event-actions">
+                @if (outlookLink is not null)
+                {
+                    <a class="secondary" href="@outlookLink" target="_blank" rel="noopener noreferrer">Åbn i Outlook</a>
                 }
-            </section>
-            var outlookLink = SafeExternal(details.Event.WebLink);
-            var teamsLink = SafeExternal(details.Event.OnlineMeetingUrl);
-            @if (outlookLink is not null || teamsLink is not null)
-            {
-                <footer class="outlook-event-actions">
-                    @if (outlookLink is not null)
-                    {
-                        <a class="secondary" href="@outlookLink" target="_blank" rel="noopener noreferrer">Åbn i Outlook</a>
-                    }
-                    @if (teamsLink is not null)
-                    {
-                        <a class="action" href="@teamsLink" target="_blank" rel="noopener noreferrer">Deltag i Teams</a>
-                    }
-                </footer>
-            }
+                @if (teamsLink is not null)
+                {
+                    <a class="action" href="@teamsLink" target="_blank" rel="noopener noreferrer">Deltag i Teams</a>
+                }
+            </footer>
         }
     }
 </dialog>
@@ -175,22 +204,27 @@
         return OnClose.InvokeAsync();
     }
 
-    private static string EventTime(TeacherCalendarEvent value)
+    private static (string Date, string? Time) EventTime(TeacherCalendarEvent value)
     {
         if (value.IsAllDay)
         {
             var first = DateOnly.FromDateTime(value.Start.UtcDateTime);
             var end = DateOnly.FromDateTime(value.End.UtcDateTime);
             var last = end > first ? end.AddDays(-1) : first;
-            var firstDate = first.ToString("ddd d. MMMM yyyy", Danish);
-            return last == first ? $"Hele dagen, {firstDate}" : $"Hele dagen, {firstDate} – {last.ToString("ddd d. MMMM yyyy", Danish)}";
+            var firstDate = first.ToString("dddd d. MMMM yyyy", Danish);
+            var date = last == first ? firstDate : $"{firstDate} – {last.ToString("ddd d. MMMM yyyy", Danish)}";
+            return (date, "Hele dagen");
         }
 
         var startTime = HoldTime.Local(value.Start);
         var endTime = HoldTime.Local(value.End);
-        var start = startTime.ToString("ddd d. MMMM yyyy HH:mm", Danish);
-        var endLabel = endTime.ToString(startTime.Date == endTime.Date ? "HH:mm" : "ddd d. MMMM yyyy HH:mm", Danish);
-        return $"{start} – {endLabel}";
+        if (startTime.Date == endTime.Date)
+        {
+            var date = startTime.ToString("dddd d. MMMM yyyy", Danish);
+            return (date, $"{startTime.ToString("HH:mm", Danish)} – {endTime.ToString("HH:mm", Danish)}");
+        }
+
+        return ($"{startTime.ToString("ddd d. MMMM yyyy HH:mm", Danish)} – {endTime.ToString("ddd d. MMMM yyyy HH:mm", Danish)}", null);
     }
 
     private static string? PersonName(string? name, string? address) =>

@@ -1,44 +1,152 @@
 .outlook-event-dialog {
-    width: min(640px, calc(100% - 24px));
+    --outlook-inset: clamp(16px, 3.5vw, 28px);
+    box-sizing: border-box;
+    width: min(840px, calc(100% - 24px));
     max-height: calc(100dvh - 24px);
-    padding: clamp(16px, 4vw, 28px);
+    padding: 0;
     border: 1px solid var(--rule);
-    border-radius: 12px;
+    border-radius: 16px;
     background: var(--paper);
     color: var(--ink);
+    box-shadow: 0 22px 70px #0004;
+    overflow: hidden;
     overflow-wrap: anywhere;
-    overscroll-behavior: contain;
 }
 
-.outlook-event-dialog::backdrop { background: color-mix(in srgb, var(--bg) 72%, transparent); }
-.outlook-event-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.outlook-event-header h2 { margin: 0; font-size: clamp(1.25rem, 2.5vw, 1.625rem); }
-.outlook-event-header button { flex-shrink: 0; }
+.outlook-event-dialog[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.outlook-event-dialog::backdrop { background: color-mix(in srgb, var(--bg) 72%, #0005); }
+
+.outlook-event-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px var(--outlook-inset);
+    border-bottom: 1px solid var(--rule);
+}
+
+.outlook-event-header h2 {
+    min-width: 0;
+    margin: 0;
+    align-self: center;
+    font-size: clamp(1.375rem, 3vw, 1.875rem);
+    line-height: 1.2;
+    text-wrap: pretty;
+}
+
+.outlook-event-header .outlook-event-close {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+}
+
+.outlook-event-close ::deep .ui-icon { width: 20px; height: 20px; }
+
+.outlook-event-body {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 20px var(--outlook-inset) var(--outlook-inset);
+}
+
+.outlook-event-body:focus-visible { outline: 2px solid var(--blue); outline-offset: -3px; }
+.outlook-event-message { margin: 0; }
+.outlook-event-message + button { margin-top: 12px; }
 
 .outlook-event-facts {
     display: grid;
-    grid-template-columns: minmax(5rem, auto) minmax(0, 1fr);
-    gap: 8px 16px;
-    margin: 16px 0 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+    gap: 14px 20px;
+    margin: 0;
+    padding: 16px;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--paper) 58%, var(--tint));
 }
 
-.outlook-event-facts dt, .outlook-person-address, .outlook-attendee-status, .outlook-event-muted { color: var(--muted); }
-.outlook-event-facts dd { margin: 0; }
-.outlook-event-section { border-top: 1px solid var(--rule); margin-top: 16px; padding-top: 16px; }
-.outlook-event-section h3 { margin: 0 0 8px; font-size: 1rem; }
-.outlook-event-section p { margin: 0; }
-.outlook-event-description { white-space: pre-wrap; }
-.outlook-attendees { list-style: none; padding: 0; margin: 0; }
-
-.outlook-attendees li {
+.outlook-event-facts dt {
     display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px 16px;
-    padding: 8px 0;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: .8125rem;
+    font-weight: 600;
 }
 
+.outlook-event-facts dt ::deep .ui-icon { flex: none; width: 16px; height: 16px; color: var(--blue); }
+.outlook-event-facts dd { margin: 0; font-size: .9375rem; }
+.outlook-event-facts dd strong { font-weight: 650; }
+.outlook-event-time { display: block; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.outlook-event-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 24px;
+    margin-top: 22px;
+}
+
+.outlook-event-section { min-width: 0; }
+.outlook-event-section h3 { margin: 0; font-size: 1rem; line-height: 1.4; }
+.outlook-event-section p { margin: 8px 0 0; }
+.outlook-event-description { white-space: pre-wrap; line-height: 1.6; }
+.outlook-event-people { padding-inline-start: 22px; border-inline-start: 1px solid var(--rule); }
+.outlook-attendee-count { margin-inline-start: 4px; color: var(--muted); font-size: .8125rem; font-weight: 500; }
+.outlook-attendees { list-style: none; padding: 0; margin: 6px 0 0; }
+.outlook-attendees li { padding: 10px 0; }
+.outlook-attendees li:last-child { padding-bottom: 0; }
 .outlook-attendees li + li { border-top: 1px solid var(--rule); }
-.outlook-person-address { display: block; font-size: .875rem; }
-.outlook-attendee-status { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .875rem; }
-.outlook-event-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.outlook-attendees strong { display: block; font-size: .9375rem; font-weight: 650; }
+.outlook-person-address { display: block; color: var(--muted); font-size: .875rem; }
+.outlook-event-muted { color: var(--muted); }
+
+.outlook-attendee-status {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: .8125rem;
+}
+
+.outlook-attendee-response {
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: var(--ink);
+    background: color-mix(in srgb, var(--paper) 55%, var(--rule));
+}
+
+.outlook-attendee-response[data-response="accepted"] { color: var(--green, var(--ink)); background: var(--green-tint, var(--tint)); }
+.outlook-attendee-response[data-response="tentativelyaccepted"],
+.outlook-attendee-response[data-response="organizer"] { color: var(--blue); background: var(--tint); }
+
+.outlook-event-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px var(--outlook-inset);
+    border-top: 1px solid var(--rule);
+    background: var(--paper);
+}
+
+@media (max-width: 680px) {
+    .outlook-event-content { grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 18px; }
+    .outlook-event-people { padding: 16px 0 0; border: 0; border-top: 1px solid var(--rule); }
+    .outlook-event-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 12px; }
+    .outlook-event-when { grid-column: 1 / -1; }
+}
+
+@media (max-width: 400px) {
+    .outlook-event-header { padding-block: 12px; }
+    .outlook-event-body { padding-top: 14px; }
+    .outlook-event-actions a { flex: 1 1 auto; justify-content: center; }
+}
