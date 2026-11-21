@@ -1,0 +1,98 @@
+@using Mercantec.Tech.Web.Navigation
+@inject FavoriteShortcutsState Favorites
+@inject IJSRuntime Js
+@implements IDisposable
+
+<div class="favorite-page">
+    <button type="button" class="favorite-page-button" aria-pressed="@(IsFavorite ? "true" : "false")"
+            aria-label="@Label" title="@Label" aria-disabled="@(IsBusy ? "true" : "false")" @onclick="ToggleAsync">
+        <UiIcon Name="star" />
+    </button>
+    <span class="visually-hidden" role="status">@_notice</span>
+    @if ((_localError ?? (_interacted ? Favorites.Error : null)) is { } error)
+    {
+        <div class="favorite-page-error">
+            <span role="alert">@error</span>
+            <button type="button" aria-label="Luk besked" @onclick="DismissError"><UiIcon Name="close" /></button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = "";
+    [Parameter] public bool Teacher { get; set; }
+
+    private bool _readingTitle;
+    private bool _interacted;
+    private bool _disposed;
+    private string? _notice;
+    private string? _localError;
+    private bool IsFavorite => Favorites.Contains(Href);
+    private bool IsBusy => Favorites.IsBusy || _readingTitle;
+    private string Label => IsFavorite ? "Fjern fra favoritter" : "Føj til favoritter";
+
+    protected override void OnInitialized() => Favorites.Changed += OnChanged;
+
+    private async Task ToggleAsync()
+    {
+        if (IsBusy) return;
+
+        _interacted = true;
+        _notice = null;
+        _localError = null;
+        await Favorites.EnsureAsync();
+        if (_disposed || !Favorites.IsLoaded) return;
+
+        var removing = IsFavorite;
+        if (removing)
+        {
+            await Favorites.RemoveAsync(Href);
+        }
+        else
+        {
+            _readingTitle = true;
+            try
+            {
+                var shortcut = FavoriteShortcutNavigation.Describe(Href, await ReadTitleAsync(), Teacher);
+                if (_disposed) return;
+                if (string.IsNullOrWhiteSpace(shortcut.Title))
+                {
+                    _localError = "Vent til siden er hentet, og prøv igen.";
+                    return;
+                }
+                await Favorites.AddAsync(shortcut);
+            }
+            catch (JSException)
+            {
+                _localError = "Sidens titel kunne ikke læses. Prøv igen.";
+            }
+            finally
+            {
+                _readingTitle = false;
+            }
+        }
+
+        if (!_disposed && Favorites.Error is null && _localError is null && IsFavorite != removing)
+            _notice = removing ? "Fjernet fra favoritter." : "Føjet til favoritter på forsiden.";
+    }
+
+    private async Task<string> ReadTitleAsync()
+    {
+        await using var module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/favorite-shortcuts.js");
+        return await module.InvokeAsync<string>("currentPageTitle");
+    }
+
+    private void DismissError()
+    {
+        _interacted = false;
+        _localError = null;
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Favorites.Changed -= OnChanged;
+    }
+}

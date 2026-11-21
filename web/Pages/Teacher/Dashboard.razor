@@ -19,15 +19,7 @@ else if (Auth.IsAuthenticated && Redirect.ShowsTeacherChrome)
             <p>Dit overblik over undervisning, elever og det næste, der skal ske.</p>
         </div>
     </header>
-    <nav class="teacher-home-shortcuts" aria-label="Genveje for undervisere">
-        <NavigationCard Href="/courses" Title="Mine hold" Description="Undervisning, opgaver og afstemninger." Icon="people" />
-        <NavigationCard Href="/teacher/students" Title="Elever" Description="Skoleforløb, arbejdsplads og sidst beståede forløb på tværs af hold." Icon="people" />
-        <NavigationCard Href="/lectio" Title="Lectio" Description="Elever, hold og Auth-kobling." Icon="calendar" />
-        <NavigationCard Href="/notifications" Title="Til opfølgning" Description="Afleveringer, der venter på feedback." Icon="check" />
-        <NavigationCard Href="/library" Title="Oversigt" Description="Undervisningsplaner, fag og projekter." Icon="folder" />
-        <NavigationCard Href="/teacher/notebooks" Title="Elevnotesbøger" Description="Læs og kommentér elevernes noter." Icon="book" />
-        <NavigationCard Href="/teacher/notebook-templates" Title="Logbogsskabeloner" Description="Fælles skabeloner til logbøger." Icon="file" />
-    </nav>
+    <FavoriteShortcutsPanel />
     <section aria-labelledby="teacher-home-calendar">
         <div class="headrow">
             <h2 id="teacher-home-calendar">Min kalender</h2>

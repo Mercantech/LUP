@@ -62,7 +62,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
             sub,
             nextSteps = new[]
             {
-                "Platform-data i Mercantec.tech, herunder dit valgte visningsnavn og profilfoto, slettes manuelt af drift, når anmodningen er verificeret (indtil automatik findes).",
+                "Drift sletter dine platformdata i Mercantec.tech, herunder dit valgte visningsnavn, dit profilfoto og dine favoritter, når anmodningen er verificeret.",
                 "Identitetskonto (login, MFA, roller) administreres i Mercantec Auth — kontakt Auth/drift for sletning dér.",
                 "Lectio-skoleforløb ligger uden for denne app (Lectio-Collector / Lectio)."
             },
@@ -112,11 +112,15 @@ public class PrivacyController(AppDbContext db) : ControllerBase
         object[] wordlePlays = [];
         object[] dailyGamePlays = [];
         object[] knowledgeCheckAttempts = [];
+        IReadOnlyList<FavoriteShortcut> favoriteShortcuts = [];
         var dailyRankingVisible = false;
         if (subGuid is not null)
         {
             displayName = await db.ProfileNames.AsNoTracking().Where(profile => profile.UserSub == subGuid.Value)
                 .Select(profile => profile.DisplayName).SingleOrDefaultAsync(ct);
+            var shortcuts = await db.FavoriteShortcutLists.AsNoTracking()
+                .SingleOrDefaultAsync(list => list.UserSub == subGuid.Value, ct);
+            favoriteShortcuts = shortcuts?.ReadItems() ?? [];
             memberships = await db.Memberships
                 .AsNoTracking()
                 .Where(m => m.UserSub == subGuid.Value)
@@ -247,6 +251,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 knowledgeCheckAttempts,
                 electiveEnrollments,
                 actionReadReceipts,
+                favoriteShortcuts,
                 submissions = Array.Empty<object>(),
                 deletionRequests = Array.Empty<object>()
             },

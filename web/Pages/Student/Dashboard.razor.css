@@ -87,11 +87,6 @@
     .student-home .v3-next { grid-template-columns:1fr; }
     .student-home .v3-next-copy { padding:20px; }
     .student-home .v3-quick-links { gap:10px 14px; }
-    .student-home .dashboard-links { grid-template-columns:1fr; gap:8px; margin:15px 0; }
-    .student-home .dashboard-links a { display:grid; grid-template-columns:25px 1fr; gap:3px 11px; padding:14px; }
-    .student-home .dashboard-links .ui-icon { grid-row:1/3; margin:2px 0 0; width:21px; height:21px; }
-    .student-home .dashboard-links h2 { grid-column:2; grid-row:1; font-size:15px; margin:0; }
-    .student-home .dashboard-links p { grid-column:2; font-size:11px; }
     .student-lectio-grid { grid-template-columns:1fr; gap:17px; }
     .student-vuf { border-left:0; padding-left:0; border-top:1px solid var(--rule); padding-top:17px; }
     .student-panel-head { margin-bottom:16px; }

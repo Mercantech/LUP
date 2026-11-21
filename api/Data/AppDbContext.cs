@@ -17,6 +17,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
     public DbSet<PollRound> PollRounds => Set<PollRound>();
     public DbSet<PollResponse> PollResponses => Set<PollResponse>();
     public DbSet<ProfileName> ProfileNames => Set<ProfileName>();
+    public DbSet<FavoriteShortcutList> FavoriteShortcutLists => Set<FavoriteShortcutList>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +49,13 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         ConfigurePreviews(modelBuilder);
         ConfigureEmojis(modelBuilder);
         ConfigureExtensionUploads(modelBuilder);
+        modelBuilder.Entity<FavoriteShortcutList>(entity =>
+        {
+            entity.ToTable("favorite_shortcut_lists");
+            entity.HasKey(list => list.UserSub);
+            entity.Property(list => list.UserSub).ValueGeneratedNever();
+            entity.Property(list => list.ItemsJson).IsRequired();
+        });
         modelBuilder.Entity<ProfileName>(e =>
         {
             e.ToTable("profile_names");
