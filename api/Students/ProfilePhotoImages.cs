@@ -34,7 +34,8 @@ public static class ProfilePhotoImages
             canvas.Scale((float)scale);
             Orient(canvas, codec.EncodedOrigin, info.Width, info.Height);
             using var paint = new SKPaint { IsAntialias = true };
-            canvas.DrawBitmap(decoded, 0, 0, paint);
+            using var source = SKImage.FromBitmap(decoded);
+            canvas.DrawImage(source, 0, 0, new SKSamplingOptions(SKFilterMode.Linear), paint);
         }
         // The fresh raster carries no EXIF/GPS, XMP or original embedded metadata.
         using var image = SKImage.FromBitmap(thumbnail);

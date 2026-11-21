@@ -16,6 +16,7 @@
 
 @code {
     [Parameter] public Guid? UserSub { get; set; }
+    [Parameter] public string? LectioId { get; set; }
     [Parameter] public string DisplayName { get; set; } = "";
     [Parameter] public int Size { get; set; } = 48;
     [Parameter] public bool HasCustomPhoto { get; set; } = true;
@@ -31,18 +32,25 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        var key = $"{Auth.Subject}/{Auth.IsAuthenticated}/{UserSub}/{HasCustomPhoto}/{Revision}";
+        var key = $"{Auth.Subject}/{Auth.IsAuthenticated}/{UserSub}/{LectioId}/{HasCustomPhoto}/{Revision}";
         if (_loadedKey == key) return;
         _loadedKey = key;
         _load?.Cancel();
         _load?.Dispose();
         _load = new CancellationTokenSource();
         _image = null;
-        if (!Auth.IsAuthenticated || UserSub is not Guid sub || !HasCustomPhoto) return;
+        if (!Auth.IsAuthenticated) return;
         var token = _load.Token;
         try
         {
-            var image = await Photos.Photo(sub, token);
+            string? image = null;
+            if (UserSub is Guid sub && HasCustomPhoto)
+            {
+                try { image = await Photos.Photo(sub, token); }
+                catch (HttpRequestException) { }
+            }
+            if (image is null && !token.IsCancellationRequested && !string.IsNullOrWhiteSpace(LectioId))
+                image = await Photos.LectioPhoto(LectioId, token);
             if (!token.IsCancellationRequested && !_disposed && _loadedKey == key) _image = image;
         }
         catch (HttpRequestException) { }
