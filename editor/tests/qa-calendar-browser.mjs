@@ -184,9 +184,10 @@ try {
   await pupil.getByRole('region', { name: 'Kommende questfrister' }).getByRole('link', { name: quest }).waitFor();
 
   await teacher.goto(base + '/teacher');
-  await teacher.locator('.teacher-home-shortcuts a').nth(5).waitFor();
+  const favorites = teacher.getByRole('list', { name: 'Favoritgenveje' }).getByRole('link');
+  await favorites.nth(6).waitFor();
   await calendarEntry(teacher, outlookTitle, 'outlook').waitFor();
-  assert.equal(await teacher.locator('.teacher-home-shortcuts a').count(), 6);
+  assert.equal(await favorites.count(), 7);
   assert.equal(await teacher.locator('a.brand').getAttribute('aria-current'), 'page');
 
   await teacher.goto(base + '/help');

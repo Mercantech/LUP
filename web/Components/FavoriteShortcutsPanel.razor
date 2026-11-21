@@ -1,0 +1,147 @@
+@using Mercantec.Tech.Web.Navigation
+@inject FavoriteShortcutsState Favorites
+@implements IDisposable
+
+<section class="favorite-shortcuts" aria-labelledby="favorite-shortcuts-title">
+    <div class="favorite-shortcuts-heading">
+        <h2 id="favorite-shortcuts-title" tabindex="-1" @ref="_heading">Favoritter</h2>
+        @if (Favorites.IsLoaded && Favorites.Items.Count > 0)
+        {
+            <button type="button" class="secondary" @ref="_editButton" @onclick="ToggleEditing">
+                @(_editing ? "Færdig" : "Redigér favoritter")
+            </button>
+        }
+    </div>
+
+    @if (Favorites.Error is { } error)
+    {
+        <div class="favorite-shortcuts-error">
+            <p role="alert">@error</p>
+            @if (!Favorites.IsLoaded)
+            {
+                <button type="button" class="secondary" disabled="@Favorites.IsBusy" @onclick="Favorites.EnsureAsync">Prøv igen</button>
+            }
+        </div>
+    }
+
+    @if (!Favorites.IsLoaded)
+    {
+        @if (Favorites.Error is null)
+        {
+            <p class="favorite-shortcuts-note" role="status">Henter dine favoritter…</p>
+        }
+    }
+    else if (Favorites.Items.Count == 0)
+    {
+        <p class="favorite-shortcuts-empty">Du har ingen favoritter endnu. Åbn en side, og vælg stjernen i topmenuen for at få en genvej her.</p>
+    }
+    else
+    {
+        @if (_editing)
+        {
+            <p class="favorite-shortcuts-note">Brug pilene til at ændre rækkefølgen. Ændringer gemmes automatisk.</p>
+        }
+
+        <ol class="favorite-shortcuts-list" role="list" aria-label="Favoritgenveje">
+            @for (var index = 0; index < Favorites.Items.Count; index++)
+            {
+                var item = Favorites.Items[index];
+                var upDisabled = Favorites.IsBusy || index == 0;
+                var downDisabled = Favorites.IsBusy || index == Favorites.Items.Count - 1;
+                <li @key="item.Href">
+                    <NavigationCard Href="@item.Href" Title="@item.Title" Description="@item.Description" Icon="@item.Icon" HeadingLevel="3" />
+                    @if (_editing)
+                    {
+                        <div class="favorite-shortcuts-actions" role="group" aria-label="@($"Redigér {item.Title}")">
+                            <button type="button" class="secondary favorite-move-up" aria-disabled="@DemoWorld.Pressed(upDisabled)"
+                                    aria-label="@($"Flyt {item.Title} op")" title="Flyt op"
+                                    @onclick="() => MoveAsync(item, -1, upDisabled)">
+                                <UiIcon Name="arrow" />
+                            </button>
+                            <button type="button" class="secondary favorite-move-down" aria-disabled="@DemoWorld.Pressed(downDisabled)"
+                                    aria-label="@($"Flyt {item.Title} ned")" title="Flyt ned"
+                                    @onclick="() => MoveAsync(item, 1, downDisabled)">
+                                <UiIcon Name="arrow" />
+                            </button>
+                            <button type="button" class="secondary" aria-disabled="@DemoWorld.Pressed(Favorites.IsBusy)"
+                                    aria-label="@($"Fjern {item.Title} fra favoritter")" title="Fjern fra favoritter"
+                                    @onclick="() => RemoveAsync(item)">
+                                <UiIcon Name="close" />
+                            </button>
+                        </div>
+                    }
+                </li>
+            }
+        </ol>
+    }
+
+    <span class="visually-hidden" role="status">@_notice</span>
+</section>
+
+@code {
+    private bool _editing;
+    private bool _restoreFocus;
+    private string? _notice;
+    private ElementReference _heading;
+    private ElementReference _editButton;
+
+    protected override Task OnInitializedAsync()
+    {
+        Favorites.Changed += OnFavoritesChanged;
+        return Favorites.EnsureAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_restoreFocus)
+        {
+            _restoreFocus = false;
+            await (Favorites.Items.Count > 0 ? _editButton : _heading).FocusAsync();
+        }
+    }
+
+    private void ToggleEditing()
+    {
+        _editing = !_editing;
+        _notice = null;
+    }
+
+    private async Task MoveAsync(FavoriteShortcut item, int offset, bool disabled)
+    {
+        if (disabled || Favorites.IsBusy)
+            return;
+
+        _notice = null;
+        await Favorites.MoveAsync(item.Href, offset);
+        if (Favorites.Error is null)
+        {
+            for (var index = 0; index < Favorites.Items.Count; index++)
+            {
+                if (Favorites.Items[index].Href == item.Href)
+                {
+                    _notice = $"{item.Title} er flyttet til plads {index + 1}.";
+                    break;
+                }
+            }
+        }
+    }
+
+    private async Task RemoveAsync(FavoriteShortcut item)
+    {
+        if (Favorites.IsBusy)
+            return;
+
+        _notice = null;
+        await Favorites.RemoveAsync(item.Href);
+        if (Favorites.Error is null)
+        {
+            _notice = $"{item.Title} er fjernet fra favoritter.";
+            _editing = Favorites.Items.Count > 0;
+            _restoreFocus = true;
+        }
+    }
+
+    private void OnFavoritesChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Favorites.Changed -= OnFavoritesChanged;
+}

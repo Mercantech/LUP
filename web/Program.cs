@@ -14,6 +14,7 @@ builder.Services.AddScoped<RoleResolver>();
 builder.Services.AddScoped<AuthRedirect>();
 builder.Services.AddScoped<ViewAsStudentContext>();
 builder.Services.AddScoped<Mercantec.Tech.Web.ProfileNames.ProfileNameState>();
+builder.Services.AddScoped<Mercantec.Tech.Web.Navigation.FavoriteShortcutsState>();
 
 var apiBase = builder.Configuration["ApiBaseUrl"]?.Trim() ?? "/api/";
 Uri apiBaseUri;

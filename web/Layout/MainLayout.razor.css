@@ -45,6 +45,17 @@ main { flex:1; }
     .lup-header .lup-search-link ::deep .ui-icon { display:block; }
 }
 
+@media(max-width:390px) {
+    .lup-header.member-header { gap:6px; padding-inline:10px; }
+    .lup-header.member-header .lup-tools { gap:4px; }
+    .lup-header.member-header ::deep .theme-trigger { width:38px; padding-inline:0; }
+    .lup-header.member-header ::deep .theme-chevron { display:none; }
+}
+
+@media(max-width:360px) {
+    .lup-header.member-header .brand > span { display:none; }
+}
+
 /* Open header menus stay above the fixed seasonal controls. */
 .lup:has(.theme-picker[open]) { z-index:46; }
 .lup-header:has(details[open]) { z-index:50; }

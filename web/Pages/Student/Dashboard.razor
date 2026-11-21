@@ -23,7 +23,20 @@ else
     var firstName = string.IsNullOrEmpty(displayName) ? null : displayName.Split(' ')[0];
 
     <div class="student-home">
-        <header class="page-title"><div><h1>Goddag@(string.IsNullOrEmpty(firstName) ? "" : $", {firstName}").</h1><p>Din dag, dit næste skridt og plads til at bygge videre.</p></div><a class="secondary student-activities-link" href="/notifications"><UiIcon Name="check" />Mine handlinger</a></header>
+        <header class="page-title">
+            <div>
+                <h1>Goddag@(string.IsNullOrEmpty(firstName) ? "" : $", {firstName}").</h1>
+                <p>Din dag, dit næste skridt og plads til at bygge videre.</p>
+            </div>
+            @if (ViewAs.IsActive)
+            {
+                <a class="secondary student-activities-link" href="/notifications"><UiIcon Name="check" />Mine handlinger</a>
+            }
+        </header>
+        @if (!ViewAs.IsActive)
+        {
+            <FavoriteShortcutsPanel />
+        }
         <div class="cols student-dashboard">
             <div class="student-main">
                 <section class="panel student-holds" aria-labelledby="student-holds-title">
@@ -45,8 +58,6 @@ else
                 {
                     <section class="hero-empty"><h2>Dit næste kapitel starter her</h2><p>Udforsk faglige emner, og byg videre i dit univers, mens du venter på dit næste forløb.</p><div class="actions"><a class="action" href="/learning">Udforsk forløb</a><a class="secondary" href="/projects/mine">Mine projekter</a></div></section>
                 }
-                <nav class="dashboard-links" aria-label="Genveje til din dag"><a href="/learning"><UiIcon Name="book" /><h2>Min læring</h2><p>Forløb, fag og emner</p></a>@if (ActiveCourse is not null) { <a href="/calendar"><UiIcon Name="calendar" /><h2>Min uge</h2><p>Undervisning og quests</p></a> }<a href="/projects/mine"><UiIcon Name="code" /><h2>Mine projekter</h2><p>Fra idé til løsning</p></a></nav>
-
                 <section class="panel student-lectio" aria-labelledby="student-lectio-title" aria-busy="@DemoWorld.Pressed(_lectioLoading)">
                     <div class="student-panel-head"><div><h2 id="student-lectio-title">Lectio og VUF</h2><p>Dit skema, din klasse og din status fra Lectio.</p></div>@if (_linked) { <a class="student-panel-link" href="/lectio">Åbn Lectio <UiIcon Name="arrow" /></a> }</div>
                     @if (_lectioLoading) { <p class="student-inline-note" role="status">Henter dine Lectio-oplysninger…</p> }

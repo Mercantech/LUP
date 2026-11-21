@@ -46,6 +46,10 @@
                 </details>
                 <div class="lup-tools">
                     <a class="lup-search-link" href="/search" aria-label="Søg i LUP" aria-current="@(CurrentPath == "/search" ? "page" : null)"><UiIcon Name="search" /><span>Søg</span></a>
+                    @if (FavoriteHref is { } favoriteHref)
+                    {
+                        <FavoriteShortcutButton @key="favoriteHref" Href="@favoriteHref" Teacher="@IsTeacher" />
+                    }
                     <ThemePicker Value="@_theme" ValueChanged="SetTheme" />
                     <NotificationBell />
                     <details class="lup-account v3-navgroup">
@@ -122,6 +126,14 @@
 </div>
 
 @code {
+    [CascadingParameter(Name = "LupRoutedPage")] public Type? RoutedPage { get; set; }
+
+    private string? FavoriteHref => Auth.IsAuthenticated && !ViewAs.IsActive && RoutedPage is not null
+        && RoutedPage != typeof(Pages.NotFound) && RoutedPage != typeof(Pages.LegacyRedirect)
+        && RoutedPage != typeof(Pages.Courses.HoldRedirect) && RoutedPage != typeof(Pages.Notion.LegacyNotesRoute)
+        && RoutedPage != typeof(Pages.LegacyGameRoute)
+        ? FavoriteShortcutNavigation.Destination(Nav.ToAbsoluteUri(Nav.Uri)) : null;
+
     private string _theme = "light";
     private readonly string _footerName = LupIdentity.NameForVisit();
     private bool _loginBusy;

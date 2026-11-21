@@ -1,0 +1,123 @@
+.favorite-shortcuts {
+    margin-bottom: 22px;
+}
+
+.favorite-shortcuts-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.favorite-shortcuts-heading h2 {
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: -.5px;
+}
+
+.favorite-shortcuts-note,
+.favorite-shortcuts-empty,
+.favorite-shortcuts-error {
+    color: var(--muted);
+    font-size: .875rem;
+    margin: 0 0 10px;
+}
+
+.favorite-shortcuts-empty {
+    padding: 16px;
+    border: 1px dashed var(--rule);
+    border-radius: 10px;
+    background: var(--paper);
+}
+
+.favorite-shortcuts-error {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+}
+
+.favorite-shortcuts-error p {
+    margin: 0;
+}
+
+.favorite-shortcuts-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.favorite-shortcuts-list li {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.favorite-shortcuts-list ::deep .navigation-card {
+    flex: 1;
+    height: auto;
+    padding: 11px 13px;
+    gap: 10px;
+    align-items: center;
+}
+
+.favorite-shortcuts-list ::deep .navigation-card-icon {
+    width: 33px;
+    height: 33px;
+}
+
+.favorite-shortcuts-list ::deep .navigation-card-icon .ui-icon {
+    width: 19px;
+    height: 19px;
+}
+
+.favorite-shortcuts-list ::deep .navigation-card h3 {
+    font-size: 1rem;
+}
+
+.favorite-shortcuts-list ::deep .navigation-card-description {
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+.favorite-shortcuts-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.favorite-shortcuts-actions button {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.favorite-shortcuts-actions button[aria-disabled="true"] {
+    opacity: .55;
+    cursor: default;
+    color: var(--muted);
+    border-color: var(--rule);
+}
+
+.favorite-shortcuts-actions ::deep .ui-icon {
+    width: 17px;
+    height: 17px;
+}
+
+.favorite-move-up ::deep .ui-icon {
+    transform: rotate(-90deg);
+}
+
+.favorite-move-down ::deep .ui-icon {
+    transform: rotate(90deg);
+}
+
+@media (min-width: 1000px) {
+    .favorite-shortcuts-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

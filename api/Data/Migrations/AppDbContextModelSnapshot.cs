@@ -1081,6 +1081,23 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("extension_upload_keys", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.FavoriteShortcutList", b =>
+                {
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ItemsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("Revision")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserSub");
+
+                    b.ToTable("favorite_shortcut_lists", (string)null);
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.FileAsset", b =>
                 {
                     b.Property<Guid>("Id")

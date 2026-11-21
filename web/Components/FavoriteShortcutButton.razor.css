@@ -1,0 +1,54 @@
+.favorite-page {
+    position: relative;
+    line-height: 1;
+}
+
+.favorite-page-button {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    min-height: 40px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.favorite-page-button ::deep .ui-icon { width: 20px; height: 20px; }
+.favorite-page-button:hover,
+.favorite-page-button[aria-pressed="true"] { color: var(--blue); background: var(--tint); }
+.favorite-page-button[aria-pressed="true"] ::deep .ui-icon { fill: currentColor; }
+.favorite-page-button[aria-disabled="true"] { cursor: wait; }
+.favorite-page-button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.favorite-page-error {
+    position: absolute;
+    z-index: 5;
+    right: -64px;
+    top: calc(100% + 8px);
+    display: flex;
+    align-items: start;
+    gap: 8px;
+    width: min(250px, 70vw);
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 6px 16px #0002;
+    font-size: .85rem;
+    line-height: 1.4;
+}
+
+.favorite-page-error button { padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.favorite-page-error button ::deep .ui-icon { width: 18px; height: 18px; }
+
+@media (pointer: coarse) {
+    .favorite-page-button { min-height: 44px; }
+}
+
+@media (max-width: 360px) {
+    .favorite-page-button { width: 30px; }
+}

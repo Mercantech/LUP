@@ -35,7 +35,9 @@
             }
             else
             {
-                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+                <CascadingValue Name="LupRoutedPage" Value="@routeData.PageType">
+                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+                </CascadingValue>
             }
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
         </Found>
