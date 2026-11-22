@@ -132,6 +132,7 @@ public sealed class NotebookCoverTests : IAsyncLifetime
         var whole = Covers(bookReader);
         var bookCover = Value<NotebookCoverView>(await mine.Generate("notebook", bookId, default)).CoverId;
         Assert.Equal("Sensorer Temperaturmåling med en ESP32.", Assert.Single(Assert.Single(generator.Requests).Excerpts));
+        Assert.Null(generator.Requests[0].Course);
 
         using var bitmap = new SKBitmap(8, 8);
         bitmap.Erase(SKColors.RoyalBlue);
@@ -278,6 +279,90 @@ public sealed class NotebookCoverTests : IAsyncLifetime
         Assert.NotNull(request.Artwork);
         Assert.Contains("Use the machine learning banner", request.Artwork.Direction, StringComparison.Ordinal);
         Assert.Contains(request.Artwork.References, image => image.Name == "chameleon");
+        Assert.Null(request.Course);
+    }
+
+    [Fact]
+    public async Task Course_collection_uses_dates_from_its_root_beyond_the_illustration_excerpt()
+    {
+        var root = await db.NotionPages.SingleAsync(page => page.Id == collectionId);
+        root.Title = "Machine Learning 2027 :chameleon_test_data:";
+        db.NotionPages.Add(new()
+        {
+            Id = Guid.NewGuid(), CollectionId = collectionId, ParentPageId = collectionId,
+            Title = "Dag 6", CreatedBySub = teacher, YjsState = [4, 5, 6]
+        });
+        await db.SaveChangesAsync();
+        projection.Respond = async (request, ct) =>
+        {
+            var source = await request.Content!.ReadFromJsonAsync<ProjectionRequest>(ct);
+            var text = source?.StateBase64 == Convert.ToBase64String([1, 2, 3])
+                ? new string('x', 550) + "\nForløbsperiode: 15. februar til 5. marts 2027."
+                : "Aflevering: 24. februar 2027.";
+            return new(HttpStatusCode.OK) { Content = JsonContent.Create(new NotebookCoverProjection(text)) };
+        };
+
+        var editor = Covers(teacher, isTeacher: true);
+        Assert.IsType<OkObjectResult>(await editor.Generate("collection", collectionId, default));
+        Assert.IsType<OkObjectResult>(await editor.Generate(TeachingPage, collectionId, default));
+        Assert.All(generator.Requests, request =>
+        {
+            Assert.DoesNotContain(request.Excerpts, excerpt => excerpt.Contains("15. februar", StringComparison.Ordinal));
+            var label = Assert.IsType<NotebookCoverCourseLabel>(request.Course);
+            Assert.Equal("Machine Learning 2027", label.Title);
+            var date = Assert.Single(label.Dates);
+            Assert.Contains("15. februar", date, StringComparison.Ordinal);
+            Assert.Contains("5. marts 2027", date, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    public async Task Linked_course_supplies_its_name_and_visible_period()
+    {
+        var holdId = Guid.NewGuid();
+        var courseId = Guid.NewGuid();
+        var pageId = Guid.NewGuid();
+        db.Hold.Add(new() { Id = holdId, Name = "H3", Forloeb = new() { Id = Guid.NewGuid(), Name = "H3", CreatedBySub = teacher } });
+        db.NotionPages.Add(new() { Id = pageId, HoldId = holdId, Title = "Overblik", CreatedBySub = teacher });
+        var course = new TeachingCourse
+        {
+            Id = courseId, HoldId = holdId, Title = "Spiludvikling med LUPP", Published = true,
+            StartsOn = new(2027, 11, 15), EndsOn = new(2027, 12, 2),
+            Resources = [new() { Kind = "page", ResourceId = pageId }]
+        };
+        db.TeachingCourses.Add(course);
+        await db.SaveChangesAsync();
+
+        var editor = Covers(teacher, isTeacher: true);
+        Assert.IsType<OkObjectResult>(await editor.Generate(TeachingPage, pageId, default));
+        var label = Assert.IsType<NotebookCoverCourseLabel>(Assert.Single(generator.Requests).Course);
+        Assert.Equal(course.Title, label.Title);
+        Assert.Equal("15. november – 2. december 2027", Assert.Single(label.Dates));
+
+        course.Published = false;
+        await db.SaveChangesAsync();
+        Assert.IsType<OkObjectResult>(await editor.Generate(TeachingPage, pageId, default));
+        Assert.Empty(Assert.IsType<NotebookCoverCourseLabel>(generator.Requests[1].Course).Dates);
+    }
+
+    [Fact]
+    public async Task A_hold_course_home_displays_its_name_even_without_dates()
+    {
+        var holdId = Guid.NewGuid();
+        db.Hold.Add(new() { Id = holdId, Name = "H3", Forloeb = new() { Id = Guid.NewGuid(), Name = "H3", CreatedBySub = teacher } });
+        var root = await db.NotionPages.SingleAsync(page => page.Id == collectionId);
+        root.HoldId = holdId;
+        root.Title = "Kreativ programmering på dansk";
+        var collection = await db.NotionCollections.SingleAsync(item => item.Id == collectionId);
+        collection.HoldId = holdId;
+        await db.SaveChangesAsync();
+
+        var editor = Covers(teacher, isTeacher: true);
+        Assert.IsType<OkObjectResult>(await editor.Generate(TeachingPage, collectionId, default));
+
+        var label = Assert.IsType<NotebookCoverCourseLabel>(Assert.Single(generator.Requests).Course);
+        Assert.Equal(root.Title, label.Title);
+        Assert.Empty(label.Dates);
     }
 
     [Fact]
@@ -354,13 +439,14 @@ public sealed class NotebookCoverTests : IAsyncLifetime
     private sealed class RecordingGenerator : INotebookCoverGenerator
     {
         public bool IsConfigured => true;
-        public List<(string Title, IReadOnlyList<string> Excerpts, NotebookCoverArtDirection? Artwork)> Requests { get; } = [];
+        public List<(string Title, IReadOnlyList<string> Excerpts, NotebookCoverArtDirection? Artwork,
+            NotebookCoverCourseLabel? Course)> Requests { get; } = [];
         public Func<Task>? BeforeResult { get; set; }
 
         public async Task<byte[]> GenerateAsync(string title, IReadOnlyList<string> excerpts, CancellationToken ct,
-            NotebookCoverArtDirection? artwork = null)
+            NotebookCoverArtDirection? artwork = null, NotebookCoverCourseLabel? course = null)
         {
-            Requests.Add((title, excerpts, artwork));
+            Requests.Add((title, excerpts, artwork, course));
             if (BeforeResult is not null) await BeforeResult();
             return [1, 2, 3];
         }

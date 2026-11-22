@@ -1,6 +1,6 @@
 {
   "date": "2026-11-22",
   "title": "Giv notesbøger og sider et coverbillede",
-  "description": "Upload eller AI-generér et cover via menuen med tre prikker. AI kan bruge sidens emojis, LUP’s karakterer og stilen fra valgfagsbannerne. Det nye cover vises, så snart det er gemt.",
+  "description": "Upload eller AI-generér et cover via menuen med tre prikker. Forløbscovers viser navnet og de datoer, der står på siden. Illustrationerne kan bruge sidens emojis, LUP’s karakterer og stilen fra valgfagsbannerne.",
   "authors": ["Mathias"]
 }

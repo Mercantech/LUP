@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using Mercantec.Tech.Api.Ai.EditorRuns;
@@ -30,6 +31,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
     private const int MaxExcerptLength = 500;
     private const int MaxUploadRequestBytes = NotebookCoverRules.MaxUploadBytes + 64 * 1024;
     private static readonly TimeSpan ExcerptProjectionTimeout = TimeSpan.FromSeconds(6);
+    private static readonly CultureInfo Danish = CultureInfo.GetCultureInfo("da-DK");
     private readonly NotionAccess notion = new(db, courses);
 
     [HttpGet]
@@ -103,7 +105,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
             var source = await ReadSource(target, ct);
             var art = artwork is null ? null : await artwork.ResolveAsync(target.Kind, target.Title, source, ct);
             ct.ThrowIfCancellationRequested();
-            var image = await generator.GenerateAsync(target.Title, source.Excerpts, ct, art);
+            var image = await generator.GenerateAsync(target.Title, source.Excerpts, ct, art, source.CourseLabel);
             return await Save(target, image, ct, includeImage);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
@@ -232,7 +234,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
             pages = includePageTitles ? pages.Where(p => p.CollectionId == target.Id) : pages.Where(p => p.Id == target.Id);
             documents = await pages.OrderByDescending(p => p.Id == target.Id).ThenBy(p => p.ParentPageId != null)
                 .ThenBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Id).Take(MaxSourcePages)
-                .Select(p => new CoverDocument(p.Title, p.IconEmojiId, null,
+                .Select(p => new CoverDocument(p.Id, p.Title, p.IconEmojiId, null,
                     p.YjsState != null && p.YjsState.Length <= MaxSourceStateBytes ? p.YjsState : null)).ToArrayAsync(ct);
         }
         else
@@ -245,7 +247,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
                 : notes.Where(d => d.Id == target.Id);
             documents = await notes.OrderBy(d => d.ParentPageId != null).ThenBy(d => d.SortOrder ?? int.MaxValue)
                 .ThenBy(d => d.Id).Take(MaxSourcePages)
-                .Select(d => new CoverDocument(d.Title, d.IconEmojiId, d.SearchText.Substring(0, NotebookCoverEmojiSignals.MaxTextLength),
+                .Select(d => new CoverDocument(d.Id, d.Title, d.IconEmojiId, d.SearchText.Substring(0, NotebookCoverEmojiSignals.MaxTextLength),
                     d.YjsState != null && d.YjsState.Length <= MaxSourceStateBytes ? d.YjsState : null)).ToArrayAsync(ct);
         }
 
@@ -257,9 +259,10 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
                 .Select(collection => editablePages.Where(page => page.Id == collection.Id)
                     .Select(page => page.Title).FirstOrDefault() ?? collection.Title).SingleOrDefaultAsync(ct);
         }
+        string? holdCourse = null;
         if (target.HoldId is Guid holdId)
         {
-            var holdCourse = await courses.AccessibleHolds(User).Where(hold => hold.Id == holdId)
+            holdCourse = await courses.AccessibleHolds(User).Where(hold => hold.Id == holdId)
                 .Select(hold => hold.Forloeb.Name).SingleOrDefaultAsync(ct);
             if (!string.IsNullOrWhiteSpace(holdCourse))
                 courseTitle = string.IsNullOrWhiteSpace(courseTitle) ? holdCourse : $"{courseTitle}\n{holdCourse}";
@@ -270,20 +273,61 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         var projections = await Task.WhenAll(documents.Select(doc => ReadCoverProjection(doc.State, budget.Token, ct)));
         var excerpts = new List<string>(documents.Length);
         var emojis = new List<NotebookCoverEmoji>();
+        var pageText = "";
         if (target.IconEmojiId is Guid icon) emojis.Add(new(icon, null));
         emojis.AddRange(NotebookCoverEmojiSignals.InText(target.Title));
 
         foreach (var (document, content) in documents.Zip(projections))
         {
             var text = document.SearchText is { Length: > 0 } savedText ? savedText : content?.PlainText ?? "";
+            if (document.Id == target.Id) pageText = text;
             excerpts.Add(Excerpt(includePageTitles ? document.Title : null, text));
             if (document.IconEmojiId is Guid pageIcon) emojis.Add(new(pageIcon, null));
             emojis.AddRange(NotebookCoverEmojiSignals.InText(document.Title));
             emojis.AddRange(content?.Emojis ?? NotebookCoverEmojiSignals.InText(text));
         }
 
+        var label = await ResolveCourseLabel(target, pageText, holdCourse, ct);
         return new(excerpts.Where(part => part.Length > 0).Distinct(StringComparer.Ordinal).ToArray(),
-            NotebookCoverEmojiSignals.Unique(emojis), courseTitle);
+            NotebookCoverEmojiSignals.Unique(emojis), label?.Title ?? courseTitle, label);
+    }
+
+    private async Task<NotebookCoverCourseLabel?> ResolveCourseLabel(CoverTarget target, string pageText,
+        string? holdCourse, CancellationToken ct)
+    {
+        if (target.Kind is not (Collection or NotionPage)) return null;
+
+        if (target.HoldId is Guid holdId && holdCourse is not null)
+        {
+            var linkedCourse = await db.TeachingCourseResources.AsNoTracking()
+                .Where(link => link.Kind == "page" && link.ResourceId == target.Id && link.Course.HoldId == holdId)
+                .Select(link => new { link.Course.Title, link.Course.StartsOn, link.Course.EndsOn, link.Course.Published, link.Course.Archived })
+                .SingleOrDefaultAsync(ct);
+            if (linkedCourse is not null)
+            {
+                var label = NotebookCoverCourseLabel.Create(linkedCourse.Title, pageText);
+                if (label is { Dates.Count: 0 } && linkedCourse.Published && !linkedCourse.Archived)
+                    return label with { Dates = FormatCoursePeriod(linkedCourse.StartsOn, linkedCourse.EndsOn) };
+                return label;
+            }
+        }
+
+        var holdCourseHome = holdCourse is not null && (target.Kind == Collection || target.CollectionId == target.Id
+            || target.CollectionId is null && string.Equals(target.Title.Trim(), holdCourse.Trim(), StringComparison.OrdinalIgnoreCase));
+        var title = NotebookCoverCourseLabel.FindCourseTitle(target.Title, pageText) ?? (holdCourseHome ? target.Title : null);
+        return title is null ? null : NotebookCoverCourseLabel.Create(title, pageText);
+    }
+
+    private static string[] FormatCoursePeriod(DateOnly? start, DateOnly? end)
+    {
+        if (start is DateOnly first && end is DateOnly last && first != last)
+        {
+            var format = first.Year == last.Year ? "d. MMMM" : "d. MMMM yyyy";
+            return [$"{first.ToString(format, Danish)} – {last.ToString("d. MMMM yyyy", Danish)}"];
+        }
+        if (start is DateOnly from && end is null) return [$"Fra {from.ToString("d. MMMM yyyy", Danish)}"];
+        if (end is DateOnly to && start is null) return [$"Til {to.ToString("d. MMMM yyyy", Danish)}"];
+        return start is DateOnly day ? [day.ToString("d. MMMM yyyy", Danish)] : [];
     }
 
     private async Task<NotebookCoverProjection?> ReadCoverProjection(byte[]? state, CancellationToken budget, CancellationToken request)
@@ -308,5 +352,5 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
 
     private sealed record CoverTarget(string Kind, Guid Id, Guid? CoverId, string Title, long LifecycleVersion,
         Guid? IconEmojiId, Guid? HoldId, Guid? CollectionId = null);
-    private sealed record CoverDocument(string Title, Guid? IconEmojiId, string? SearchText, byte[]? State);
+    private sealed record CoverDocument(Guid Id, string Title, Guid? IconEmojiId, string? SearchText, byte[]? State);
 }

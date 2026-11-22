@@ -18,6 +18,10 @@
                       LogicalName="cover-art/images/characters/%(RecursiveDir)%(Filename)%(Extension)" />
     <EmbeddedResource Include="../web/wwwroot/images/valgfag/*.webp"
                       LogicalName="cover-art/images/valgfag/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../extensions/lup/assets/fonts/space-grotesk-variable.ttf"
+                      LogicalName="cover-font/space-grotesk.ttf" />
+    <EmbeddedResource Include="../extensions/lup/assets/licenses/SPACE-GROTESK-OFL.txt"
+                      LogicalName="cover-font/SPACE-GROTESK-OFL.txt" />
     <EmbeddedResource Include="Updates/Images/*.webp" LogicalName="platform-updates/%(Filename)%(Extension)" />
     <EmbeddedResource Include="Updates/coverage.json" LogicalName="platform-updates/coverage.json" />
     <EmbeddedResource Include="Updates/Notes/*.json" LogicalName="platform-updates/notes/%(Filename)%(Extension)" />
