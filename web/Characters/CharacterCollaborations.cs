@@ -510,6 +510,28 @@ internal static class CharacterCollaborations
                 TeachingSource = new("ML-VUF · Dag 7 om modelkvalitet og clustering", "https://ml.mercantec.tech/vuf/#/dag/7", true, false)
             }
         },
+        new("karla-lupp", ["karla", "lupp"], "Karla og LUPP · Find tilbage til listen",
+            "LUPP afprøver Karlas opskriftsapp på en mobil. Karla lægger mærke til, hvor han leder efter tilbageknappen, og om han finder tilbage til samme sted på listen.",
+            "Karla og LUPP afprøver den samme prototype på mobil og tablet ved det varme arbejdsbord.")
+        {
+            Exercise = new("Flutter · Navigation og brugertest",
+                "Bed en makker åbne den tredje opskrift og finde tilbage uden hjælp. Tjek både tilbageknappen i appen og telefonens tilbagefunktion.",
+                "Du vender tilbage til oversigten, hvor den tredje opskrift stadig er synlig. Notér, hvor din makker ledte efter tilbageknappen.")
+            {
+                TeachingSource = new("Karlas Flutter-illustrationer", "/characters/karla#character-gallery-title", false, false)
+            }
+        },
+        new("karla-bilbo", ["karla", "bilbo"], "Karla og Bilbo · Fra API til opskrift",
+            "Bilbo leverer en liste med opskrifter fra sit C#-API. Karla bruger svaret til at vise de samme opskrifter på mobil og tablet. Sammen prøver de også et kald, der fejler.",
+            "Karla og Bilbo Backend ser på opskriftsappen og følger data fra API’et til skærmen.")
+        {
+            Exercise = new("Flutter og C# · Hent JSON fra et API",
+                "Lad Bilbos endpoint svare med to opskrifter med id og titel. Vis begge i Karlas liste. Prøv bagefter med en fejl fra API’et.",
+                "Appen viser begge titler ved et gyldigt svar. Ved fejl får brugeren en forklaring og kan forsøge igen.")
+            {
+                TeachingSource = new("Flutter · Hent data fra internettet", "https://docs.flutter.dev/cookbook/networking/fetch-data", true, false)
+            }
+        },
         new("lupp-gitmejsen-raev-resource-loop", ["lupp", "gitmejsen", "fox"], "Ét boost til hele runden",
             "LUPP giver Rune Run-figuren én opladning. Ræv prøver at bruge den forskellige steder på samme bane. Gitmejsen gemmer begge varianter med resultatet fra hver spiltest.",
             "Ræv lægger en mønt ved prøvens indgang, mens LUPP følger ressourcekredsløbet. Gitmejsen gemmer kortet med den afprøvede version.")

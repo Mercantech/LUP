@@ -452,12 +452,47 @@ public sealed class CharacterDetailTests
         Assert.Equal(CharacterCatalog.All.Count, CharacterCatalog.All.Select(character => character.Path).Distinct().Count());
         Assert.Equal("Bilbo Backend", page.Find("a[href='/characters/bilbo'] h2").TextContent);
         Assert.Equal("Gitmejsen", page.Find("a[href='/characters/gitmejsen'] h2").TextContent);
+        Assert.Equal("Karla Eremitkrebs", page.Find("a[href='/characters/karla'] h2").TextContent);
         Assert.Equal("Bæver", page.Find("a[href='/characters/beaver'] h2").TextContent);
         Assert.Equal("Ræv", page.Find("a[href='/characters/fox'] h2").TextContent);
         Assert.Equal("Docker", page.Find("a[href='/characters/whale'] h2").TextContent);
         Assert.Equal("Gummianden", page.Find("a[href='/characters/gummianden'] h2").TextContent);
         Assert.Equal("Cyberbien", page.Find("a[href='/characters/bee'] h2").TextContent);
         Assert.Equal("Næsebladet", page.Find("a[href='/characters/bat'] h2").TextContent);
+    }
+
+    [Fact]
+    public async Task KarlaProfileShowsFlutterArtworkAndLinksToBothCollaborators()
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await LearningUiTestContext.CreateAsync(api);
+        var page = context.Render<CharacterDetail>(parameters => parameters.Add(p => p.Slug, "karla"));
+
+        Assert.Equal("Karla Eremitkrebs", page.Find("h1").TextContent);
+        Assert.Contains("Flutter", page.Find(".character-subtitle").TextContent);
+        Assert.Equal("/images/characters/karla/portrait.webp", page.Find(".character-main-art img").GetAttribute("src"));
+        Assert.Contains(page.FindAll(".character-links a"), link => link.GetAttribute("href") == "/characters/karla#character-gallery-title");
+        Assert.Equal(48, page.FindAll(".character-reactions figure").Count);
+        Assert.Equal(48, page.FindAll(".character-reactions .character-artwork-download").Select(link => link.GetAttribute("href")).Distinct().Count());
+        Assert.Equal(2, page.FindAll(".character-scenes figure").Count);
+        Assert.Equal(12, page.FindAll(".character-gallery figure").Count);
+        Assert.All(page.FindAll(".character-gallery img"), image =>
+        {
+            Assert.StartsWith("/images/characters/karla/", image.GetAttribute("src"));
+            Assert.False(string.IsNullOrWhiteSpace(image.GetAttribute("alt")));
+        });
+        Assert.Equal("Skalhuset", page.Find(".character-residence h2").TextContent);
+        Assert.Equal(new[] { "/images/characters/karla/home/outside.webp", "/images/characters/karla/home/inside.webp" },
+            page.FindAll(".character-residence figure img").Select(image => image.GetAttribute("src")));
+
+        Assert.Equal(2, page.FindAll(".character-collaborations figure").Count);
+        Assert.Equal("/characters/lupp#collaboration-karla-lupp", page.Find("#collaboration-karla-lupp .character-collaboration-links a").GetAttribute("href"));
+        Assert.Equal("/characters/bilbo#collaboration-karla-bilbo", page.Find("#collaboration-karla-bilbo .character-collaboration-links a").GetAttribute("href"));
+
+        page.Render(parameters => parameters.Add(p => p.Slug, "lupp"));
+        Assert.Equal("/characters/karla#collaboration-karla-lupp", page.Find("#collaboration-karla-lupp .character-collaboration-links a").GetAttribute("href"));
+        page.Render(parameters => parameters.Add(p => p.Slug, "bilbo"));
+        Assert.Equal("/characters/karla#collaboration-karla-bilbo", page.Find("#collaboration-karla-bilbo .character-collaboration-links a").GetAttribute("href"));
     }
 
     [Fact]

@@ -4864,6 +4864,486 @@
       "height": 1254,
       "guid": "54086f26-586e-5fa4-9750-af8c3a2d70c6",
       "name": "gitmejsen_clean"
+    },
+    {
+      "guid": "8425efcd-1852-530b-a7ae-29157c9ef973",
+      "character": "karla",
+      "name": "karla_hello",
+      "title": "Hej fra Karla",
+      "image": "/images/characters/karla/reactions/hello.png",
+      "alt": "Karla løfter en klo og vinker.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "3ef12866-cf56-5e08-a2e0-1767de5df3fe",
+      "character": "karla",
+      "name": "karla_coffee",
+      "title": "Kaffepause",
+      "image": "/images/characters/karla/reactions/coffee.png",
+      "alt": "Karla holder en varm kop med damp over.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "485b94c0-b134-539f-b27b-d7c1993df6e3",
+      "character": "karla",
+      "name": "karla_idea",
+      "title": "En app-idé",
+      "image": "/images/characters/karla/reactions/idea.png",
+      "alt": "Karla får en idé og viser en lysende pære.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "c87f4dec-06eb-548e-854a-326c49c8babe",
+      "character": "karla",
+      "name": "karla_question",
+      "title": "Lad os undersøge det",
+      "image": "/images/characters/karla/reactions/question.png",
+      "alt": "Karla tænker med en klo ved hagen.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "e65e5f1a-301b-5a5a-91c1-833de3ecdea6",
+      "character": "karla",
+      "name": "karla_success",
+      "title": "Det virker!",
+      "image": "/images/characters/karla/reactions/success.png",
+      "alt": "Karla fejrer, at forsøget er lykkedes.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "79fc35c3-3fc4-5c67-82e7-bb09661fd26d",
+      "character": "karla",
+      "name": "karla_help",
+      "title": "En hjælpende klo",
+      "image": "/images/characters/karla/reactions/help.png",
+      "alt": "Karla rækker en åben klo frem.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "a7cbd193-8bd4-5ee3-bdf6-7ddce000e0d1",
+      "character": "karla",
+      "name": "karla_prototype",
+      "title": "Skitser en prototype",
+      "image": "/images/characters/karla/reactions/prototype.png",
+      "alt": "Karla viser en skitse af en mobilskærm.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "c7541d2b-0b6d-5912-b3d7-f2be793649a2",
+      "character": "karla",
+      "name": "karla_widget",
+      "title": "Én widget",
+      "image": "/images/characters/karla/reactions/widget.png",
+      "alt": "Karla viser et enkelt lille kort fra appens brugerflade.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "376b5b4c-3d56-5c7c-b8ef-103db5ed5458",
+      "character": "karla",
+      "name": "karla_widget_tree",
+      "title": "Widgettræ",
+      "image": "/images/characters/karla/reactions/widget-tree.png",
+      "alt": "Karla viser klodser, der forgrener sig fra en fælles rod.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "e67549d9-a13c-5603-abe9-99e9f34bd9ad",
+      "character": "karla",
+      "name": "karla_row",
+      "title": "En Row",
+      "image": "/images/characters/karla/reactions/row.png",
+      "alt": "Karla har tre klodser liggende side om side.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "8d02c884-a9f6-52af-946f-e91e2ed29551",
+      "character": "karla",
+      "name": "karla_column",
+      "title": "En Column",
+      "image": "/images/characters/karla/reactions/column.png",
+      "alt": "Karla stabler tre farvede klodser oven på hinanden.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "688f91c9-7d52-59de-b642-815e8ea0f773",
+      "character": "karla",
+      "name": "karla_layout_builder",
+      "title": "LayoutBuilder",
+      "image": "/images/characters/karla/reactions/layout-builder.png",
+      "alt": "Karla sammenligner to rammer med forskellig bredde.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "0fa1992b-3b9d-5554-a355-6216d01cb011",
+      "character": "karla",
+      "name": "karla_responsive",
+      "title": "Mobil og tablet",
+      "image": "/images/characters/karla/reactions/responsive.png",
+      "alt": "Karla viser den samme app på to skærmstørrelser.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "dadb6130-29e7-5d55-8562-c557bfeca059",
+      "character": "karla",
+      "name": "karla_tap",
+      "title": "Tryk",
+      "image": "/images/characters/karla/reactions/tap.png",
+      "alt": "Karla trykker på en knap på mobilen.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "0dc2d3ae-de5d-597e-84d4-7cc96123c397",
+      "character": "karla",
+      "name": "karla_swipe",
+      "title": "Stryg",
+      "image": "/images/characters/karla/reactions/swipe.png",
+      "alt": "Karla stryger hen over en lille skærm.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "4502454b-bc9f-5246-abc1-6bc0e4f277da",
+      "character": "karla",
+      "name": "karla_pinch",
+      "title": "Knib for at zoome",
+      "image": "/images/characters/karla/reactions/pinch.png",
+      "alt": "Karla bruger to kloender til at vise en zoomebevægelse.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "d7dd7cd7-c506-5b4a-99cb-4d25febaac8a",
+      "character": "karla",
+      "name": "karla_scroll",
+      "title": "Rul i listen",
+      "image": "/images/characters/karla/reactions/scroll.png",
+      "alt": "Karla ruller i en liste på mobilen.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "209c4891-99e2-5bca-8d0d-58b7ba9dd998",
+      "character": "karla",
+      "name": "karla_hot_reload",
+      "title": "Hot reload",
+      "image": "/images/characters/karla/reactions/hot-reload.png",
+      "alt": "Karla ser en ny ændring på sin testtelefon.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "5fd69e28-f04c-50dc-b608-6e4a784627cb",
+      "character": "karla",
+      "name": "karla_state",
+      "title": "Lokal tilstand",
+      "image": "/images/characters/karla/reactions/state.png",
+      "alt": "Karla viser to mulige tilstande for en kontakt.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "51dd12d9-3a88-5c6d-9a27-88e3c958714a",
+      "character": "karla",
+      "name": "karla_set_state",
+      "title": "Opdatér tilstanden",
+      "image": "/images/characters/karla/reactions/set-state.png",
+      "alt": "Karla viser, at en tæller ændrer sig efter et tryk.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "f0df14cb-1535-5839-a0db-3858eb13d944",
+      "character": "karla",
+      "name": "karla_navigation",
+      "title": "Åbn en ny skærm",
+      "image": "/images/characters/karla/reactions/navigation.png",
+      "alt": "Karla bevæger sig fra en skærm til en anden.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "2438921c-c4bf-58d9-8288-7ebcc57df186",
+      "character": "karla",
+      "name": "karla_back",
+      "title": "Tilbage til listen",
+      "image": "/images/characters/karla/reactions/back.png",
+      "alt": "Karla viser en pil tilbage til den forrige visning.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "17daa154-9b53-575a-ac5b-326782266309",
+      "character": "karla",
+      "name": "karla_form",
+      "title": "Udfyld formularen",
+      "image": "/images/characters/karla/reactions/form.png",
+      "alt": "Karla arbejder med formularfelter på mobilen.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "f078d3c4-593f-5e8f-9423-3c8468b2e491",
+      "character": "karla",
+      "name": "karla_validation",
+      "title": "Tjek et felt",
+      "image": "/images/characters/karla/reactions/validation.png",
+      "alt": "Karla peger på et felt, der skal rettes.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "bed3f6c1-4632-5240-906d-ee347152c64d",
+      "character": "karla",
+      "name": "karla_api_request",
+      "title": "Send et API-kald",
+      "image": "/images/characters/karla/reactions/api-request.png",
+      "alt": "Karla sender en forespørgsel fra telefonen til en server.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "0cb3bac5-9e1a-58b0-a305-e3ba060d069d",
+      "character": "karla",
+      "name": "karla_json",
+      "title": "Læs JSON",
+      "image": "/images/characters/karla/reactions/json.png",
+      "alt": "Karla holder et datakort med krøllede parenteser og farvede datalinjer.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "8dee2e4d-eb3f-5848-bf65-6448e0c55b9f",
+      "character": "karla",
+      "name": "karla_loading",
+      "title": "Indlæser",
+      "image": "/images/characters/karla/reactions/loading.png",
+      "alt": "Karla venter ved telefonens gyldne indlæsningssymbol.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "8f4e387b-9776-5875-b0cb-53a27565bba5",
+      "character": "karla",
+      "name": "karla_error",
+      "title": "Vis en fejl",
+      "image": "/images/characters/karla/reactions/error.png",
+      "alt": "Karla viser et trekantet advarselssymbol ved en lille skærm.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "9dd13e96-0308-54be-9cc0-adf5fb1eef80",
+      "character": "karla",
+      "name": "karla_offline",
+      "title": "Offline",
+      "image": "/images/characters/karla/reactions/offline.png",
+      "alt": "Karla peger på et overstreget Wi-Fi-symbol på mobilen.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "9d11801b-29eb-5a44-8909-85b2e9f7b4b1",
+      "character": "karla",
+      "name": "karla_retry",
+      "title": "Prøv igen",
+      "image": "/images/characters/karla/reactions/retry.png",
+      "alt": "Karla peger på en rund turkis pil.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "b3e48f53-7415-517e-af69-5b52493051cf",
+      "character": "karla",
+      "name": "karla_async",
+      "title": "Vent på svaret",
+      "image": "/images/characters/karla/reactions/async.png",
+      "alt": "Karla har et timeglas ved sin telefon.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "f6890454-a714-5429-96e3-c4069076b04d",
+      "character": "karla",
+      "name": "karla_theme",
+      "title": "Appens farvetema",
+      "image": "/images/characters/karla/reactions/theme.png",
+      "alt": "Karla sammenligner tre farveprøver til appens tema.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "89d68575-d429-5b04-b815-d598b4738a54",
+      "character": "karla",
+      "name": "karla_dark_mode",
+      "title": "Lys og mørk visning",
+      "image": "/images/characters/karla/reactions/dark-mode.png",
+      "alt": "Karla viser en sol og en måne på et todelt skærmkort.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "8d73df49-abbc-5fcf-a64b-4bdd9fafb091",
+      "character": "karla",
+      "name": "karla_contrast",
+      "title": "Tjek kontrasten",
+      "image": "/images/characters/karla/reactions/contrast.png",
+      "alt": "Karla sammenligner en tydelig mørk form med en blegere form.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "11b2afe1-80e6-5d6f-908e-9979bfeda7b6",
+      "character": "karla",
+      "name": "karla_text_scale",
+      "title": "Gør teksten større",
+      "image": "/images/characters/karla/reactions/text-scale.png",
+      "alt": "Karla holder to kort med hver sin størrelse af bogstavet A.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "cce535d6-b2ae-5865-971c-ba5fd1733212",
+      "character": "karla",
+      "name": "karla_screen_reader",
+      "title": "Lyt med skærmlæser",
+      "image": "/images/characters/karla/reactions/screen-reader.png",
+      "alt": "Karla lytter til lydbølger fra mobilen.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "ad3bb8d4-5a4d-55e5-a9d2-f5616b7213ca",
+      "character": "karla",
+      "name": "karla_touch_target",
+      "title": "God plads til tryk",
+      "image": "/images/characters/karla/reactions/touch-target.png",
+      "alt": "Karla trykker på en stor turkis knap med luft omkring.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "f1c95739-1dcf-578b-93f0-9bc3ef1b77b6",
+      "character": "karla",
+      "name": "karla_focus",
+      "title": "Synligt fokus",
+      "image": "/images/characters/karla/reactions/focus.png",
+      "alt": "Karla viser en markant ramme om den valgte knap.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "aec8c11c-3cc7-580a-a31a-90548a668fec",
+      "character": "karla",
+      "name": "karla_unit_test",
+      "title": "Enhedstest",
+      "image": "/images/characters/karla/reactions/unit-test.png",
+      "alt": "Karla undersøger én klods med en lup og et grønt flueben.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "0590731c-6578-55bd-b1c3-6980c4f81189",
+      "character": "karla",
+      "name": "karla_widget_test",
+      "title": "Widgettest",
+      "image": "/images/characters/karla/reactions/widget-test.png",
+      "alt": "Karla sætter flueben ved en afprøvet knap på et lille skærmkort.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "37c902dd-3989-5e68-a21f-8b342ba8fb6f",
+      "character": "karla",
+      "name": "karla_integration_test",
+      "title": "Integrationstest",
+      "image": "/images/characters/karla/reactions/integration-test.png",
+      "alt": "Karla følger tre forbundne trin frem til et grønt flueben.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "a65110e0-e9d8-5330-bb1c-c85c13703a8a",
+      "character": "karla",
+      "name": "karla_debug",
+      "title": "Find fejlen",
+      "image": "/images/characters/karla/reactions/debug.png",
+      "alt": "Karla undersøger et bugsymbol med en lup.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "ffe279b3-5317-540e-9cae-a7810590238d",
+      "character": "karla",
+      "name": "karla_performance",
+      "title": "Mål ydeevnen",
+      "image": "/images/characters/karla/reactions/performance.png",
+      "alt": "Karla kigger på et måleur med en turkis viser.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "096baf37-f298-5f04-a2a7-bb9b858a4adb",
+      "character": "karla",
+      "name": "karla_hot_restart",
+      "title": "Hot restart",
+      "image": "/images/characters/karla/reactions/hot-restart.png",
+      "alt": "Karla trykker på en genstartsknap.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "faf4f52e-1549-598c-afab-70ff55c0e89a",
+      "character": "karla",
+      "name": "karla_android_test",
+      "title": "Test på Android",
+      "image": "/images/characters/karla/reactions/android-test.png",
+      "alt": "Karla afprøver appen på en høj telefon med grøn brugerflade.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "05759e71-e023-5513-bafd-2ce4157dfaa7",
+      "character": "karla",
+      "name": "karla_ios_test",
+      "title": "Test på iOS",
+      "image": "/images/characters/karla/reactions/ios-test.png",
+      "alt": "Karla afprøver appen på en afrundet telefon med violet brugerflade.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "16b5148f-d092-5e50-ac34-1e57c761a3f6",
+      "character": "karla",
+      "name": "karla_build",
+      "title": "Byg en version",
+      "image": "/images/characters/karla/reactions/build.png",
+      "alt": "Karla lægger en appbrik i en lille pakke.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "d01e723f-220d-5adf-affe-5fe84f827d02",
+      "character": "karla",
+      "name": "karla_release",
+      "title": "Klar til udgivelse",
+      "image": "/images/characters/karla/reactions/release.png",
+      "alt": "Karla sender et lille papirfly af sted.",
+      "width": 1254,
+      "height": 1254
     }
   ]
 }
