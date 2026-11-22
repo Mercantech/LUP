@@ -397,7 +397,7 @@ public static class CharacterCatalog
         },
         new("iben", "Iben Ildflue", "Underviser i Blazor med C# og .NET", "Blazor · ASP.NET Core", false,
             "Tænd en lerlanterne med Iben Sanderson Edwards Fowler, og følg et klik fra browseren til C# og tilbage til skærmen.",
-            "Iben Sanderson Edwards Fowler udvikler webapps i sit aftenlab. Hun peger på en af lanternerne på skærmen og spørger sit hold »Hvilken værdi skal ændre sig, når jeg trykker her?« Prøv selv hendes lysdæmper, og se, hvordan en komponent reagerer.",
+            "LUP.dk er bygget med Blazor WebAssembly, så du bruger allerede Blazor på denne side. I sit aftenlab spørger Iben Sanderson Edwards Fowler holdet »Hvilken værdi skal ændre sig, når jeg trykker her?« Prøv hendes lysdæmper. Når du trækker i skyderen, kører komponentens C#-kode i din browser og opdaterer lanternen og procenttallet.",
             ["Blazor", "C#", ".NET", "Razor", "Databinding", "EventCallback", "Komponenter"],
             [new("Iben", "/images/characters/iben/iben-fritlagt.webp", "Iben Ildflue svæver med mørke krøller, indigoblå vinger og en ravlysende bagkrop."),
              new("Portræt i labbet", "/images/characters/iben/portrait.webp", "Iben Ildflue med mørk krøllet hestehale, indigoblå vinger og lilla overskjorte med Blazor-mærke."),
