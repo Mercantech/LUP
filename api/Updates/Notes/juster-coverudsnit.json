@@ -1,6 +1,6 @@
 {
   "date": "2026-11-22",
   "title": "Vælg udsnittet af dit coverbillede",
-  "description": "Vælg Justér udsnit under coveret, og brug skyderen til at flytte det synlige udsnit op eller ned. Du kan se ændringen, før du gemmer.",
+  "description": "Coverhandlingerne er samlet i trepunktsmenuen. Åbn Coverbillede, og vælg Justér udsnit for at flytte det synlige udsnit op eller ned. Du kan se ændringen, før du gemmer. Trepunktsmenuen har også fået tydeligere grupper for side, visning, notesbog og udgivelse.",
   "authors": ["Mathias"]
 }

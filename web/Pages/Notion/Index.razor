@@ -91,50 +91,75 @@ else
                         <details class="notion-document-more">
                             <summary aria-label="Flere sidehandlinger"><UiIcon Name="more" /><span>Mere</span></summary>
                             <div class="notion-document-menu">
-                                <button type="button" class="notion-sidebar-toggle" aria-controls="notion-sidebar" aria-keyshortcuts="Control+b Meta+b" aria-expanded="@(_sidebarOpen && !_workspaceFocused ? "true" : "false")" aria-label="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" title="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" @onclick="ToggleSidebar"><UiIcon Name="panel" /><span>@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")</span></button>
-                                <button type="button" class="notion-focus-toggle" disabled="@(!SidebarEnhanced)" aria-pressed="@_workspaceFocused.ToString().ToLowerInvariant()" aria-label="@(_workspaceFocused ? "Afslut fokus" : "Fokus")" title="@(_workspaceFocused ? "Gendan sidekolonnerne" : "Skjul sidekolonnerne og fokusér på dokumentet")" @onclick="ToggleWorkspaceFocus"><UiIcon Name="screen" /><span>@(_workspaceFocused ? "Afslut fokus" : "Fokus")</span></button>
-                                <button type="button" aria-haspopup="dialog" aria-keyshortcuts="F1" @onclick="() => _shortcutHelp?.OpenAsync() ?? Task.CompletedTask"><UiIcon Name="keyboard" />Tastaturgenveje</button>
                                 @if (!_loading && IsCollectionRoute && !ForceReadOnly && _collection is { CanManage: true } coverBook)
                                 {
-                                    <NotebookCoverActions @key='("collection", coverBook.Id)' Kind="collection" TargetId="coverBook.Id" CoverId="coverBook.CoverId"
-                                                          CoverChanged="coverId => UpdateCollectionCover(coverBook.Id, coverId)" BeforeGenerate="PrepareCoverGeneration" AdjustRequested="() => _coverEditor?.AdjustPosition()" />
+                                    <div class="notion-menu-group">
+                                        <NotebookCoverActions @key='("collection", coverBook.Id)' Kind="collection" TargetId="coverBook.Id" CoverId="coverBook.CoverId"
+                                                              CoverChanged="coverId => UpdateCollectionCover(coverBook.Id, coverId)" BeforeGenerate="PrepareCoverGeneration" AdjustRequested="() => _coverEditor?.AdjustPosition()" />
+                                    </div>
                                 }
                                 else if (!_loading && !IsCollectionRoute && IsEditing && _current is { } coverPage)
                                 {
-                                    <NotebookCoverActions @key='("notion-page", coverPage.PageId)' Kind="notion-page" TargetId="coverPage.PageId" CoverId="coverPage.CoverId"
-                                                          CoverChanged="coverId => UpdatePageCover(coverPage.PageId, coverId)" BeforeGenerate="PrepareCoverGeneration" AdjustRequested="() => _coverEditor?.AdjustPosition()" />
+                                    <div class="notion-menu-group">
+                                        <NotebookCoverActions @key='("notion-page", coverPage.PageId)' Kind="notion-page" TargetId="coverPage.PageId" CoverId="coverPage.CoverId"
+                                                              CoverChanged="coverId => UpdatePageCover(coverPage.PageId, coverId)" BeforeGenerate="PrepareCoverGeneration" AdjustRequested="() => _coverEditor?.AdjustPosition()" />
+                                    </div>
                                 }
                                 @if (_current is not null)
                                 {
-                                    <p class="notion-publication-status">@(_current.PublishedAtUtc is null ? "Kladde" : $"Udgivet {_current.PublishedAtUtc.Value.ToLocalTime():d. MMM HH:mm}")</p>
-                                    <nav class="breadcrumbs notion-toolbar-breadcrumbs" aria-label="Brødkrummer"><a href="/notes">Notesbøger</a><span>›</span><a href="@WorkspaceHref()">Undervisning</a><span>›</span><span>@(_holdId == Guid.Empty ? "Teori" : "Holdets indhold")</span></nav>
-                                    <button type="button" disabled="@(!_mounted)" @onclick="PresentPage"><UiIcon Name="screen" />Præsenter</button>
-                                    @if (IsEditing && _current.PublishedAtUtc is not null)
+                                    <div class="notion-menu-group" role="group" aria-labelledby="notion-more-page">
+                                        <p class="notion-menu-label" id="notion-more-page">Side</p>
+                                        <button type="button" @onclick="CopyLink"><UiIcon Name="external" />Kopiér link</button>
+                                        @if (IsEditing)
+                                        {
+                                            <button type="button" disabled="@_busy" aria-keyshortcuts="Control+Alt+Shift+n Meta+Alt+Shift+n" @onclick="() => BeginCreate(true)"><UiIcon Name="plus" />Ny underside</button>
+                                            <button type="button" @onclick="() => _codexHistoryPageId = _current.PageId"><UiIcon Name="code" />Codex-ændringer</button>
+                                            <button type="button" disabled="@_busy" @onclick="RefreshContext"><UiIcon Name="loop" />@(_holdId == Guid.Empty ? "Opdatér sideoversigt" : "Opdatér holddata")</button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" disabled="@_busy" @onclick="Retry"><UiIcon Name="loop" />Opdatér siden</button>
+                                        }
+                                    </div>
+                                }
+                                <div class="notion-menu-group" role="group" aria-labelledby="notion-more-view">
+                                    <p class="notion-menu-label" id="notion-more-view">Visning</p>
+                                    <button type="button" class="notion-sidebar-toggle" aria-controls="notion-sidebar" aria-keyshortcuts="Control+b Meta+b" aria-expanded="@(_sidebarOpen && !_workspaceFocused ? "true" : "false")" aria-label="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" title="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" @onclick="ToggleSidebar"><UiIcon Name="panel" /><span>@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")</span></button>
+                                    <button type="button" class="notion-focus-toggle" disabled="@(!SidebarEnhanced)" aria-pressed="@_workspaceFocused.ToString().ToLowerInvariant()" aria-label="@(_workspaceFocused ? "Afslut fokus" : "Fokus")" title="@(_workspaceFocused ? "Gendan sidekolonnerne" : "Skjul sidekolonnerne og fokusér på dokumentet")" @onclick="ToggleWorkspaceFocus"><UiIcon Name="screen" /><span>@(_workspaceFocused ? "Afslut fokus" : "Fokus")</span></button>
+                                    @if (_current is not null)
                                     {
-                                        <a href="@PageHref(_current.PageId, true)">Se udgivet</a>
-                                        <button type="button" disabled="@_busy" @onclick="UnpublishPage">Træk udgivelse tilbage</button>
+                                        <button type="button" disabled="@(!_mounted)" @onclick="PresentPage"><UiIcon Name="eye" />Præsenter</button>
                                     }
-                                    @if (IsCollectionRoute)
-                                    {
-                                        <a href="@PageHref(_current.PageId)"><UiIcon Name="file" />Åbn startsiden som side</a>
-                                    }
-                                    else if (ActiveCollectionId is Guid bookId)
-                                    {
-                                        <a href="@CollectionCoverHref(bookId)"><UiIcon Name="book" />Åbn notesbogen</a>
-                                    }
-                                    <button type="button" @onclick="CopyLink"><UiIcon Name="external" />Kopiér link</button>
-                                    <a href="@GraphHref(_current.CollectionId ?? CollectionRoot(_current.PageId))"><UiIcon Name="chart" />Graf for kollektionen</a>
-                                    @if (IsEditing)
-                                    {
-                                        <button type="button" @onclick="() => _codexHistoryPageId = _current.PageId"><UiIcon Name="loop" />Codex-ændringer</button>
-                                        <button type="button" disabled="@_busy" aria-keyshortcuts="Control+Alt+Shift+n Meta+Alt+Shift+n" @onclick="() => BeginCreate(true)"><UiIcon Name="plus" />Ny underside</button>
-                                        <button type="button" disabled="@_busy" @onclick="RefreshContext"><UiIcon Name="loop" />@(_holdId == Guid.Empty ? "Opdatér sideoversigt" : "Opdatér holddata")</button>
-                                    }
-                                    else
-                                    {
-                                        <button type="button" disabled="@_busy" @onclick="Retry"><UiIcon Name="loop" />Opdatér siden</button>
-                                        @if (CanManageHold) { <a href="@PageHref(_current.PageId, false)"><UiIcon Name="code" />Til kladden</a> }
-                                    }
+                                    <button type="button" aria-haspopup="dialog" aria-keyshortcuts="F1" @onclick="() => _shortcutHelp?.OpenAsync() ?? Task.CompletedTask"><UiIcon Name="keyboard" />Tastaturgenveje</button>
+                                </div>
+                                @if (_current is not null)
+                                {
+                                    <div class="notion-menu-group" role="group" aria-labelledby="notion-more-book">
+                                        <p class="notion-menu-label" id="notion-more-book">Notesbog</p>
+                                        @if (IsCollectionRoute)
+                                        {
+                                            <a href="@PageHref(_current.PageId)"><UiIcon Name="file" />Åbn startsiden som side</a>
+                                        }
+                                        else if (ActiveCollectionId is Guid bookId)
+                                        {
+                                            <a href="@CollectionCoverHref(bookId)"><UiIcon Name="book" />Åbn notesbogen</a>
+                                        }
+                                        <a href="@GraphHref(_current.CollectionId ?? CollectionRoot(_current.PageId))"><UiIcon Name="chart" />Graf for kollektionen</a>
+                                        <nav class="breadcrumbs notion-toolbar-breadcrumbs" aria-label="Brødkrummer"><a href="/notes">Notesbøger</a><span>›</span><a href="@WorkspaceHref()">Undervisning</a><span>›</span><span>@(_holdId == Guid.Empty ? "Teori" : "Holdets indhold")</span></nav>
+                                    </div>
+                                    <div class="notion-menu-group" role="group" aria-labelledby="notion-more-publish">
+                                        <p class="notion-menu-label" id="notion-more-publish">Udgivelse</p>
+                                        <p class="notion-publication-status">@(_current.PublishedAtUtc is null ? "Kladde" : $"Udgivet {_current.PublishedAtUtc.Value.ToLocalTime():d. MMM HH:mm}")</p>
+                                        @if (IsEditing && _current.PublishedAtUtc is not null)
+                                        {
+                                            <a href="@PageHref(_current.PageId, true)"><UiIcon Name="external" />Se udgivet</a>
+                                            <button type="button" class="notion-menu-danger" disabled="@_busy" @onclick="UnpublishPage"><UiIcon Name="close" />Træk udgivelse tilbage</button>
+                                        }
+                                        else if (!IsEditing && CanManageHold)
+                                        {
+                                            <a href="@PageHref(_current.PageId, false)"><UiIcon Name="file" />Til kladden</a>
+                                        }
+                                    </div>
                                 }
                             </div>
                         </details>

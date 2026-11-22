@@ -7,9 +7,13 @@ export function revokeCoverUrl(url) {
 }
 
 export function focusCoverPosition(slider) {
-    const menu = document.activeElement?.closest(".notion-document-more");
+    const menu = slider.closest(".notion-workspace")?.querySelector(".notion-document-more[open]");
     if (menu) menu.open = false;
     slider.focus();
+}
+
+export function focusCoverMenu(banner) {
+    banner.closest(".notion-workspace")?.querySelector(".notion-document-more > summary")?.focus();
 }
 
 export function downloadCover(bytes, filename) {

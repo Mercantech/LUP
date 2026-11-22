@@ -140,7 +140,7 @@ else
                             {
                                 <details class="notion-document-more">
                                     <summary aria-label="Flere sidehandlinger"><UiIcon Name="more" /><span>Mere</span></summary>
-                                    <div class="notion-document-menu">
+                                    <div class="notion-document-menu notion-menu-group">
                                         @if (NotebookLanding && _loadedNotebookAccess is Guid coverBook)
                                         {
                                             <NotebookCoverActions @key='("notebook", coverBook)' Kind="notebook" TargetId="coverBook" CoverId="NotebookCoverId"

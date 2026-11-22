@@ -7,27 +7,20 @@
 
 @if (Banner)
 {
-    <div class="notebook-cover-banner">@ImageContent</div>
-    @if (CoverChanged.HasDelegate && !PublishedOnly && _imageUrl is not null && _loadedVersion == CoverId)
+    <div class="notebook-cover-banner" @ref="_banner">@ImageContent</div>
+    @if (_adjusting && CoverChanged.HasDelegate && !PublishedOnly && _imageUrl is not null && _loadedVersion == CoverId)
     {
         <div class="notebook-cover-position">
-            @if (_adjusting)
-            {
-                <label for="@_rangeId">Lodret udsnit</label>
-                <div class="notebook-cover-range">
-                    <span>Top</span>
-                    <input @ref="_range" id="@_rangeId" type="range" min="0" max="100" @bind="_draftY" @bind:event="oninput" disabled="@_saving" />
-                    <span>Bund</span>
-                </div>
-                <div class="notebook-cover-position-buttons">
-                    <button type="button" class="action" @onclick="SavePositionAsync" disabled="@(_saving || _draftY == _positionY)">Gem udsnit</button>
-                    <button type="button" class="secondary" @onclick="CancelPosition" disabled="@_saving">Annullér</button>
-                </div>
-            }
-            else
-            {
-                <button type="button" class="secondary" @onclick="AdjustPosition">Justér udsnit</button>
-            }
+            <label for="@_rangeId">Lodret udsnit</label>
+            <div class="notebook-cover-range">
+                <span>Top</span>
+                <input @ref="_range" id="@_rangeId" type="range" min="0" max="100" @bind="_draftY" @bind:event="oninput" disabled="@_saving" />
+                <span>Bund</span>
+            </div>
+            <div class="notebook-cover-position-buttons">
+                <button type="button" class="action" @onclick="SavePositionAsync" disabled="@(_saving || _draftY == _positionY)">Gem udsnit</button>
+                <button type="button" class="secondary" @onclick="CancelPosition" disabled="@_saving">Annullér</button>
+            </div>
             @if (_positionError is not null)
             {
                 <p role="alert">@_positionError</p>
@@ -62,8 +55,10 @@ else
     private bool _adjusting;
     private bool _saving;
     private string? _positionError;
+    private ElementReference _banner;
     private ElementReference _range;
     private bool _focusRange;
+    private bool _restoreMenuFocus;
 
     private RenderFragment ImageContent => @<text>
         @if (_imageUrl is not null)
@@ -89,15 +84,27 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!_focusRange || !_adjusting || _imageUrl is null || _loadedVersion != CoverId || _module is null) return;
-        _focusRange = false;
-        try { await (await _module).InvokeVoidAsync("focusCoverPosition", _range); }
+        if (_module is not { IsCompletedSuccessfully: true }) return;
+        try
+        {
+            if (_restoreMenuFocus)
+            {
+                _restoreMenuFocus = false;
+                await _module.Result.InvokeVoidAsync("focusCoverMenu", _banner);
+            }
+            else if (_focusRange && _adjusting && _imageUrl is not null && _loadedVersion == CoverId)
+            {
+                _focusRange = false;
+                await _module.Result.InvokeVoidAsync("focusCoverPosition", _range);
+            }
+        }
         catch (JSException) { }
     }
 
     private void CancelPosition()
     {
         _adjusting = false;
+        _restoreMenuFocus = true;
         _positionError = null;
     }
 
@@ -115,6 +122,7 @@ else
             if (ct.IsCancellationRequested || _source != source || Auth.Subject != source?.Subject) return;
             _positionY = result.PositionY;
             _adjusting = false;
+            _restoreMenuFocus = true;
             await CoverChanged.InvokeAsync(result.CoverId);
         }
         catch (Exception ex) when (ex is NotebookCoverException or HttpRequestException or System.Text.Json.JsonException or OperationCanceledException)
@@ -162,7 +170,7 @@ else
                 await ReplaceImageAsync(null);
                 return;
             }
-            _module ??= Js.InvokeAsync<IJSObjectReference>("import", "./js/notebook-covers.js").AsTask();
+            _module ??= Js.InvokeAsync<IJSObjectReference>("import", "./js/notebook-covers.js?v=2").AsTask();
             var module = await _module;
             if (ct.IsCancellationRequested || _disposed) return;
             var url = await module.InvokeAsync<string>("createCoverUrl", image.Bytes);
