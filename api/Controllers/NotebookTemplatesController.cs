@@ -73,7 +73,7 @@ public sealed class NotebookTemplatesController(AppDbContext db, NotebookAccess 
         Response.Headers.CacheControl = "no-store";
         return Ok(new NotebookDocumentContext(doc.Id, null, doc.Title, doc.Kind, true, true, false, false,
             doc.YjsState is null ? null : Convert.ToBase64String(doc.YjsState), doc.UpdatedAtUtc, doc.Revision,
-            doc.Fingerprint, [], [], null, null));
+            doc.Fingerprint, [], [], LifecycleVersion: doc.LifecycleVersion, IconEmojiId: doc.IconEmojiId, CoverId: doc.CoverId));
     }
 
     [HttpPatch("templates/{id:guid}")]

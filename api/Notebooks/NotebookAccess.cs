@@ -21,12 +21,23 @@ public sealed class NotebookAccess(AppDbContext db)
     public Task<bool> CanReadAsync(Guid documentId, ClaimsPrincipal user, CancellationToken ct) =>
         ReadableDocuments(user).AnyAsync(d => d.Id == documentId, ct);
 
-    public Task<bool> CanEditAsync(Guid documentId, ClaimsPrincipal user, CancellationToken ct)
+    public IQueryable<NotebookDocument> EditableDocuments(ClaimsPrincipal user)
     {
-        if (UserClaims.GetSub(user) is not Guid sub) return Task.FromResult(false);
+        if (UserClaims.GetSub(user) is not Guid sub) return db.NotebookDocuments.Where(d => false);
         var teacher = UserClaims.IsTeacher(user);
-        return db.NotebookDocuments.AnyAsync(d => d.Id == documentId &&
-            (d.Kind == "template" ? teacher : d.NotebookId != null && d.Notebook!.OwnerSub == sub), ct);
+        return db.NotebookDocuments.Where(d =>
+            d.Kind == "template" ? teacher : db.Notebooks.Any(n => n.Id == d.NotebookId && n.OwnerSub == sub));
+    }
+
+    public Task<bool> CanEditAsync(Guid documentId, ClaimsPrincipal user, CancellationToken ct) =>
+        EditableDocuments(user).AnyAsync(d => d.Id == documentId, ct);
+
+    public IQueryable<Notebook> ReadableWholeNotebooks(ClaimsPrincipal user)
+    {
+        if (UserClaims.GetSub(user) is not Guid sub) return db.Notebooks.Where(n => false);
+        if (UserClaims.IsTeacher(user)) return db.Notebooks;
+        return db.Notebooks.Where(n => n.OwnerSub == sub || db.NotebookShares.Any(s =>
+            s.NotebookId == n.Id && s.RecipientSub == sub && s.PageId == null));
     }
 
     public Task<bool> CanCommentAsync(Guid documentId, ClaimsPrincipal user, CancellationToken ct)

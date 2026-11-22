@@ -2058,6 +2058,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CoverId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -2149,6 +2152,43 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("notebook_comments", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.NotebookCoverAsset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CollectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Image")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<Guid?>("NotebookId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("NotebookPageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("NotionPageId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CollectionId");
+
+                    b.HasIndex("NotebookId");
+
+                    b.HasIndex("NotebookPageId");
+
+                    b.HasIndex("NotionPageId");
+
+                    b.ToTable("notebook_cover_assets", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_notebook_cover_assets_owner", "(CASE WHEN \"CollectionId\" IS NULL THEN 0 ELSE 1 END)\n+ (CASE WHEN \"NotionPageId\" IS NULL THEN 0 ELSE 1 END)\n+ (CASE WHEN \"NotebookId\" IS NULL THEN 0 ELSE 1 END)\n+ (CASE WHEN \"NotebookPageId\" IS NULL THEN 0 ELSE 1 END) = 1");
+                        });
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.NotebookDocument", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2158,6 +2198,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.Property<string>("AssetIdsJson")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("CoverId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -2540,6 +2583,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CoverId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -2678,6 +2724,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.Property<Guid?>("CollectionId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CoverId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -2731,6 +2780,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("PublishedBySub")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PublishedCoverId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("PublishedDrawingsJson")
@@ -4007,6 +4059,29 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .HasForeignKey("PageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.NotebookCoverAsset", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.NotionCollection", null)
+                        .WithMany()
+                        .HasForeignKey("CollectionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.Notebook", null)
+                        .WithMany()
+                        .HasForeignKey("NotebookId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.NotebookDocument", null)
+                        .WithMany()
+                        .HasForeignKey("NotebookPageId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.NotionPage", null)
+                        .WithMany()
+                        .HasForeignKey("NotionPageId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.NotebookDocument", b =>

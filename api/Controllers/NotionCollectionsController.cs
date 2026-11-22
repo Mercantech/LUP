@@ -86,9 +86,9 @@ public sealed class NotionCollectionsController(AppDbContext db, CourseAccess co
             .Where(c => (id == null || c.Id == id) && (slug == null || c.Slug == slug));
         var pageQuery = access.ReadablePages(User, publishedOnly).AsNoTracking()
             .Where(p => p.CollectionId != null && scope.Any(c => c.Id == p.CollectionId));
-        var collections = await scope.Where(c => pageQuery.Any(p => p.CollectionId == c.Id)
-                    || !publishedOnly && (c.HoldId == null ? teacher : manageable.Contains(c.HoldId.Value)))
-            .Select(c => new { c.Id, c.HoldId, c.CreatedAtUtc, c.Title, c.PublishedTitle, c.IconEmojiId, c.Slug,
+        var visible = access.ReadableCollections(User, publishedOnly).Select(c => c.Id);
+        var collections = await scope.Where(c => visible.Contains(c.Id))
+            .Select(c => new { c.Id, c.HoldId, c.CreatedAtUtc, c.Title, c.PublishedTitle, c.IconEmojiId, c.Slug, c.CoverId,
                 HasActiveRoot = db.NotionPages.Any(p => p.Id == c.Id),
                 HoldName = db.Hold.Where(h => h.Id == c.HoldId).Select(h => h.Name).FirstOrDefault() }).ToArrayAsync(ct);
         var pages = await pageQuery.Select(p => new { p.Id, p.CollectionId, p.ParentPageId, p.SortOrder, p.Title, p.PublishedTitle,
@@ -107,7 +107,7 @@ public sealed class NotionCollectionsController(AppDbContext db, CourseAccess co
             var updated = manage ? latest?.UpdatedAtUtc : latest?.PublishedEditedAtUtc ?? latest?.PublishedAtUtc;
             return new NotionCollectionView(c.Id, first?.Id, title ?? "Samling", c.HoldId,
                 c.HoldName, manage, updated ?? c.CreatedAtUtc, c.IconEmojiId,
-                manage ? latest?.LastEditedByName : latest?.PublishedEditorName, c.Slug);
+                manage ? latest?.LastEditedByName : latest?.PublishedEditorName, c.Slug, c.CoverId);
         }).Where(p => p.CanManage || p.RootPageId is not null).OrderBy(p => p.Title).ToArray();
     }
 

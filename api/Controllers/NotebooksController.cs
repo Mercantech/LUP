@@ -43,7 +43,7 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
             }
         }
         NoCache();
-        return Ok(new NotebookInfo(notebook.Id, sub, profile.DisplayName, true, true, notebook.IconEmojiId));
+        return Ok(new NotebookInfo(notebook.Id, sub, profile.DisplayName, true, true, notebook.IconEmojiId, notebook.CoverId));
     }
 
     [HttpPatch("{notebookId:guid}/icon")]
@@ -108,15 +108,21 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
         var rows = await Project(query).ToListAsync(ct);
         var visible = rows.Select(d => d.Id).ToHashSet();
         var notebookIds = rows.Select(d => d.NotebookId).Distinct().ToArray();
+        var coveredNotebooks = access.ReadableWholeNotebooks(User).Select(n => n.Id);
         var owners = await db.Notebooks.AsNoTracking().Where(n => notebookIds.Contains(n.Id))
-            .Select(n => new { n.Id, n.IconEmojiId, Name = db.NotebookProfiles
-                .Where(p => p.Sub == n.OwnerSub).Select(p => p.DisplayName).FirstOrDefault() })
+            .Select(n => new
+            {
+                n.Id, n.IconEmojiId,
+                CoverId = coveredNotebooks.Contains(n.Id) ? n.CoverId : null,
+                Name = db.NotebookProfiles.Where(p => p.Sub == n.OwnerSub).Select(p => p.DisplayName).FirstOrDefault()
+            })
             .ToDictionaryAsync(n => n.Id, ct);
         NoCache();
         return Ok(rows.OrderByDescending(d => d.UpdatedAtUtc).ThenBy(d => d.Id).Select(d => View(d, visible) with
         {
             NotebookIconEmojiId = owners.GetValueOrDefault(d.NotebookId)?.IconEmojiId,
-            NotebookOwnerName = owners.GetValueOrDefault(d.NotebookId)?.Name
+            NotebookOwnerName = owners.GetValueOrDefault(d.NotebookId)?.Name,
+            NotebookCoverId = owners.GetValueOrDefault(d.NotebookId)?.CoverId
         }).ToArray());
     }
 
@@ -125,11 +131,13 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
     {
         // SQL CASE avoids fetching/toasting the large binary for an unchanged reader, while
         // access, page labels and link targets are still refreshed on every poll.
+        var coveredNotebooks = access.ReadableWholeNotebooks(User);
         var document = await access.ReadableDocuments(User).AsNoTracking().Where(d => d.Id == id)
             .Select(d => new
             {
                 d.Id, d.NotebookId, d.Title, d.Kind, d.UpdatedAtUtc, d.Revision, d.Fingerprint,
-                d.TagsJson, d.PeriodStart, d.HoldId, d.LifecycleVersion, d.IconEmojiId,
+                d.TagsJson, d.PeriodStart, d.HoldId, d.LifecycleVersion, d.IconEmojiId, d.CoverId,
+                NotebookCoverId = coveredNotebooks.Where(n => n.Id == d.NotebookId).Select(n => n.CoverId).FirstOrDefault(),
                 YjsState = knownRevision != null && knownRevision == d.Revision ? null : d.YjsState
             }).SingleOrDefaultAsync(ct);
         if (document is null) return NotFound();
@@ -140,7 +148,8 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
             document.NotebookId is Guid nb && await access.CanShareNotebookAsync(nb, User, ct),
             document.YjsState is { Length: > 0 } bytes ? Convert.ToBase64String(bytes) : null,
             document.UpdatedAtUtc, document.Revision, document.Fingerprint, pages,
-            ReadTags(document.TagsJson), document.PeriodStart, document.HoldId, document.LifecycleVersion, document.IconEmojiId));
+            ReadTags(document.TagsJson), document.PeriodStart, document.HoldId, document.LifecycleVersion, document.IconEmojiId,
+            document.CoverId, document.NotebookCoverId));
     }
 
     [HttpPost("{notebookId:guid}/pages")]
@@ -375,7 +384,7 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
             return new TeacherNotebookView(n.Id, n.OwnerSub, profiles.GetValueOrDefault(n.OwnerSub)?.DisplayName ?? "LUP-bruger",
                 memberships.Where(m => m.Sub == n.OwnerSub).Select(m => m.Name).Distinct().Order().ToArray(),
                 pages.Where(d => d.Kind == "journal").Select(d => d.PeriodStart).Max(),
-                latest?.UpdatedAtUtc ?? n.CreatedAtUtc, n.IconEmojiId, latest?.LastEditedByName, latest is not null);
+                latest?.UpdatedAtUtc ?? n.CreatedAtUtc, n.IconEmojiId, latest?.LastEditedByName, latest is not null, n.CoverId);
         });
         if (!string.IsNullOrWhiteSpace(search)) result = result.Where(n => n.OwnerName.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase));
         NoCache();
@@ -400,7 +409,7 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
 
     public static NotebookPageSummary PageView(NotebookDocument d) => new(d.Id, d.NotebookId ?? Guid.Empty,
         d.Title, d.ParentPageId, d.Kind, ReadTags(d.TagsJson), d.PeriodStart, d.HoldId, d.TemplateId, d.UpdatedAtUtc, d.Revision,
-        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder, IconEmojiId: d.IconEmojiId);
+        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder, IconEmojiId: d.IconEmojiId, CoverId: d.CoverId);
 
     public static string[] ReadTags(string? json)
     {
@@ -447,17 +456,17 @@ public sealed partial class NotebooksController(AppDbContext db, NotebookAccess 
 
     private sealed record PageData(Guid Id, Guid NotebookId, string Title, Guid? ParentPageId, string Kind,
         string TagsJson, DateOnly? PeriodStart, Guid? HoldId, Guid? TemplateId, DateTimeOffset UpdatedAtUtc,
-        long Revision, string SearchText, string? LastEditedByName, int? SortOrder, Guid? IconEmojiId);
+        long Revision, string SearchText, string? LastEditedByName, int? SortOrder, Guid? IconEmojiId, Guid? CoverId);
 
     private static IQueryable<PageData> Project(IQueryable<NotebookDocument> query) => query.Select(d => new PageData(
         d.Id, d.NotebookId!.Value, d.Title, d.ParentPageId, d.Kind, d.TagsJson, d.PeriodStart, d.HoldId,
-        d.TemplateId, d.UpdatedAtUtc, d.Revision, d.SearchText, d.LastEditedByName, d.SortOrder, d.IconEmojiId));
+        d.TemplateId, d.UpdatedAtUtc, d.Revision, d.SearchText, d.LastEditedByName, d.SortOrder, d.IconEmojiId, d.CoverId));
 
     private static NotebookPageSummary View(PageData d, HashSet<Guid>? visible, string? search = null) => new(d.Id,
         d.NotebookId, d.Title, d.ParentPageId is Guid parent && (visible is null || visible.Contains(parent)) ? parent : null,
         d.Kind, ReadTags(d.TagsJson), d.PeriodStart, d.HoldId, d.TemplateId, d.UpdatedAtUtc, d.Revision,
         string.IsNullOrWhiteSpace(search) ? null : Snippet(d.SearchText, search),
-        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder, IconEmojiId: d.IconEmojiId);
+        LastEditedByName: d.LastEditedByName, SortOrder: d.SortOrder, IconEmojiId: d.IconEmojiId, CoverId: d.CoverId);
 
     private static string Snippet(string text, string search)
     {

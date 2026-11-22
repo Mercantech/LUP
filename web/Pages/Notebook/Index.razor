@@ -86,6 +86,14 @@ else
                     <nav aria-label="Notesbogsværktøjer">
                         <a href="/notes"><UiIcon Name="book" />Alle notesbøger</a>
                         @if (!Own) { <a href="/notebook"><UiIcon Name="book" />Min notesbog</a> }
+                        @if (NotebookLanding && _current is { } firstPage)
+                        {
+                            <a href="@PageHref(firstPage.DocumentId)"><UiIcon Name="file" />Åbn noten som side</a>
+                        }
+                        else if (!TemplateMode && !NotebookLanding && _loadedNotebookAccess is Guid bookId)
+                        {
+                            <a href="@NotebookHref(bookId)"><UiIcon Name="book" />Åbn notesbogen</a>
+                        }
                         @if (!TemplateMode && _notebookId is not null) { <button type="button" disabled="@_busy" @onclick="ShowGraph"><UiIcon Name="chart" />Åbn forbindelser og graf</button> }
                         @if (Own && !TemplateMode) { <button type="button" disabled="@_busy" @onclick="ToggleJournal"><UiIcon Name="plus" />Ny logbog</button> }
                         @if (IsTeacher)
@@ -136,11 +144,13 @@ else
                 }
                 @if (_current is null)
                 {
+                    @CoverBanner
                     <div class="nb-empty"><UiIcon Name="book" /><h2>Ingen sider</h2><p>@(TemplateMode ? "Opret eller vælg en skabelon." : "Opret en note eller vælg en logbogsskabelon.")</p>@if (Own) { <button class="action" @onclick="() => BeginCreate(false)">Opret første note</button> }</div>
                 }
                 else
                 {
                     <article class="nb-sheet">
+                    @CoverBanner
                     <div class="nb-document-bar"><div class="nb-actions">@if (Editing && !TemplateMode) { <button class="secondary" aria-keyshortcuts="Control+Alt+Shift+n Meta+Alt+Shift+n" @onclick="() => BeginCreate(true)" disabled="@_busy">Ny underside</button> }@if (_current.CanComment) { <button class="secondary" @onclick="ToggleComments" disabled="@_busy" aria-expanded="@_showComments">Kommentarer</button> }@if (Own) { <button class="secondary" @onclick="ToggleShares" disabled="@_busy" aria-expanded="@_showShares">Del</button> }</div></div>
                     <p class="nb-visibility">@(TemplateMode ? "Undervisere kan skrive i skabelonen. Elever får en kopi ved oprettelse af logbog." : "Alle undervisere kan læse og kommentere. Deling giver andre læseadgang.")</p>
                     @if (_status is "offline" or "error" && _statusDetail.Length > 0) { <p class="nb-message nb-error" role="alert">@_statusDetail</p> }
@@ -177,6 +187,19 @@ else
 }
 
 @code {
+    private RenderFragment CoverBanner => @<text>
+        @if (NotebookLanding && _loadedNotebookAccess is Guid bookId)
+        {
+            <NotebookCoverEditor @key="bookId" Kind="notebook" TargetId="bookId" CoverId="NotebookCoverId" CanEdit="Own"
+                                 CoverChanged="coverId => UpdateNotebookCover(bookId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+        }
+        else if (!TemplateMode && _current is { } page)
+        {
+            <NotebookCoverEditor @key="page.DocumentId" Kind="notebook-page" TargetId="page.DocumentId" CoverId="page.CoverId" CanEdit="Editing"
+                                 CoverChanged="coverId => UpdatePageCover(page.DocumentId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+        }
+    </text>;
+
     private RenderFragment PageRowContent(SidebarRow item) => @<NotebookTreeRow @key="item.Page.Id" Id="@item.Page.Id" Title="@item.Page.Title" Editable="Own"
                      Busy="_busy" Reorder="CanReorderTree" Dragging="_draggingPage"
                      OnActions="OpenTreeActions" OnDragStart="StartTreeDrag" OnDragEnd="EndTreeDrag" OnDrop="DropTreePage">

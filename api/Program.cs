@@ -12,6 +12,7 @@ using Mercantec.Tech.Api.Mcp;
 using Mercantec.Tech.Api.Wordle;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -135,6 +136,17 @@ builder.Services.AddHttpClient("openai", (sp, client) =>
 });
 builder.Services.AddSingleton<OpenAiEditorClient>();
 builder.Services.AddSingleton<OpenAiEmojiAnalysisClient>();
+builder.Services.AddHttpClient(NotebookCoverGenerator.ClientName, (sp, client) =>
+{
+    var settings = sp.GetRequiredService<IOptions<OpenAiOptions>>().Value;
+    client.BaseAddress = new Uri(string.IsNullOrWhiteSpace(settings.BaseUrl)
+        ? "https://api.openai.com/v1/" : settings.BaseUrl.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(105);
+    client.MaxResponseContentBufferSize = 8 * 1024 * 1024;
+}).RemoveAllLoggers();
+builder.Services.AddSingleton<INotebookCoverGenerator, NotebookCoverGenerator>();
+builder.Services.AddRateLimiter(options =>
+    options.AddPolicy(NotebookCoverGenerator.RateLimitPolicy, NotebookCoverGenerator.LimitRequests));
 builder.Services.AddHttpClient("openai-editor", (sp, client) =>
 {
     var opts = sp.GetRequiredService<IOptions<OpenAiOptions>>().Value;

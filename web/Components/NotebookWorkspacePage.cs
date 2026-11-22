@@ -18,6 +18,36 @@ public abstract partial class NotebookWorkspacePage : ComponentBase
     private DotNetObjectReference<NotebookWorkspacePage>? _callbacks;
     private sealed record SidebarPreferences(bool Mobile, bool DesktopOpen);
 
+    protected static async Task WaitForCoverContent(
+        Func<(IJSObjectReference? Module, ElementReference Element, string Status)> editor,
+        CancellationToken cancellationToken)
+    {
+        const string message = "Indholdet skal være gemt i skyen. Kontrollér forbindelsen, og prøv igen, når siden er gemt.";
+        using var wait = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        wait.CancelAfter(TimeSpan.FromSeconds(5));
+        try
+        {
+            while (true)
+            {
+                wait.Token.ThrowIfCancellationRequested();
+                var (module, element, status) = editor();
+                if (status is "offline" or "error") throw new InvalidOperationException(message);
+                if (module is not null && (status is "saved" or "synced")
+                    && !await module.InvokeAsync<bool>("hasUnsavedChanges", wait.Token, element))
+                    return;
+                await Task.Delay(150, wait.Token);
+            }
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new InvalidOperationException(message, ex);
+        }
+        catch (JSException ex)
+        {
+            throw new InvalidOperationException(message, ex);
+        }
+    }
+
     protected async Task InitializeSidebar()
     {
         if (_sidebarDisposed || _sidebarStarting || string.IsNullOrEmpty(_workspaceElement.Id) || _sidebarReady && _sidebarMountedElement.Id == _workspaceElement.Id) return;

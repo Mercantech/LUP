@@ -104,6 +104,14 @@ else
                                         <a href="@PageHref(_current.PageId, true)">Se udgivet</a>
                                         <button type="button" disabled="@_busy" @onclick="UnpublishPage">Træk udgivelse tilbage</button>
                                     }
+                                    @if (IsCollectionRoute)
+                                    {
+                                        <a href="@PageHref(_current.PageId)"><UiIcon Name="file" />Åbn startsiden som side</a>
+                                    }
+                                    else if (ActiveCollectionId is Guid bookId)
+                                    {
+                                        <a href="@CollectionCoverHref(bookId)"><UiIcon Name="book" />Åbn notesbogen</a>
+                                    }
                                     <button type="button" @onclick="CopyLink"><UiIcon Name="external" />Kopiér link</button>
                                     <a href="@GraphHref(_current.CollectionId ?? CollectionRoot(_current.PageId))"><UiIcon Name="chart" />Graf for kollektionen</a>
                                     @if (IsEditing)
@@ -126,6 +134,26 @@ else
                 @if (_showGroups && CanManageHold && _holdId != Guid.Empty)
                 {
                     <section class="panel notion-group-panel"><div class="notion-actions"><button class="secondary" @onclick="() => _showGroups = false">Luk gruppeværktøj</button><a href="@WorkspaceHref("groups")" class="secondary">Åbn holdets grupper</a></div><HoldGroups @key="(_holdId, _groupPanelGeneration)" HoldId="_holdId" WorkspaceId="@(_returnContext?.WorkspaceId ?? Guid.Empty)" CourseId="_returnContext?.CourseId" InitialSelection="_groupSelection" OnSaved="RefreshContext" /></section>
+                }
+                @if (!_loading)
+                {
+                    @if (IsCollectionRoute && _collection is { } book)
+                    {
+                        <div class="notion-cover-slot">
+                            <NotebookCoverEditor @key="(book.Id, ForceReadOnly)" Kind="collection" TargetId="book.Id" CoverId="book.CoverId"
+                                                 CanEdit="@(book.CanManage && !ForceReadOnly)" PublishedOnly="@(ForceReadOnly || !book.CanManage)"
+                                                 CoverChanged="coverId => UpdateCollectionCover(book.Id, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                        </div>
+                    }
+                    else if (_current is { } page)
+                    {
+                        <div class="notion-cover-slot">
+                            <NotebookCoverEditor @key="(page.PageId, IsEditing)" Kind="notion-page" TargetId="page.PageId"
+                                                 CoverId="@(IsEditing ? page.CoverId : page.PublishedCoverId)"
+                                                 CanEdit="IsEditing" PublishedOnly="@(!IsEditing)"
+                                                 CoverChanged="coverId => UpdatePageCover(page.PageId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                        </div>
+                    }
                 }
                 @if (_loading) { <p class="notion-document-loading" role="status">Henter siden…</p> }
                 else if (_current is null)

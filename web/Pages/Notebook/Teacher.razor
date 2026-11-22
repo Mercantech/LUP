@@ -19,7 +19,30 @@ else
     else if (!Visible.Any()) { <section class="panel"><h2>Ingen notesbøger matcher</h2><p>Elevernes notesbøger vises, når de har åbnet notesbogen i LUP. Prøv også et andet navn eller hold.</p></section> }
     else
     {
-        <div class="panel nb-teacher-list" role="list">@foreach (var notebook in Visible) { <article class="nb-teacher-row" role="listitem"><div><h2><a href="/notebook?owner=@notebook.Id">@notebook.OwnerName</a></h2><p>@(notebook.Holds.Length == 0 ? "Intet tilknyttet hold" : string.Join(" · ", notebook.Holds))</p></div><dl><div><dt>Seneste logbog</dt><dd>@(notebook.LatestJournalDate?.ToString("d. MMM yyyy") ?? "Ingen indlæg endnu")</dd></div><div><dt>Seneste ændring</dt><dd>@notebook.UpdatedAtUtc.ToLocalTime().ToString("d. MMM HH:mm")</dd></div></dl><a class="secondary" href="/notebook?owner=@notebook.Id">Åbn notesbog</a></article> }</div>
+        <div class="panel nb-teacher-list" role="list">
+            @foreach (var notebook in Visible)
+            {
+                <article @key="notebook.Id" class="nb-teacher-row" role="listitem">
+                    <div class="nb-teacher-identity">
+                        @if (notebook.CoverId is Guid coverId)
+                        {
+                            <div class="nb-teacher-cover" aria-hidden="true">
+                                <NotebookCoverImage Kind="notebook" TargetId="@notebook.Id" CoverId="@coverId" />
+                            </div>
+                        }
+                        <div class="nb-teacher-name">
+                            <h2><a href="/notebook?owner=@notebook.Id">@notebook.OwnerName</a></h2>
+                            <p>@(notebook.Holds.Length == 0 ? "Intet tilknyttet hold" : string.Join(" · ", notebook.Holds))</p>
+                        </div>
+                    </div>
+                    <dl>
+                        <div><dt>Seneste logbog</dt><dd>@(notebook.LatestJournalDate?.ToString("d. MMM yyyy") ?? "Ingen indlæg endnu")</dd></div>
+                        <div><dt>Seneste ændring</dt><dd>@notebook.UpdatedAtUtc.ToLocalTime().ToString("d. MMM HH:mm")</dd></div>
+                    </dl>
+                    <a class="secondary" href="/notebook?owner=@notebook.Id">Åbn notesbog</a>
+                </article>
+            }
+        </div>
     }
 }
 

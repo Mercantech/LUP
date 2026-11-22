@@ -43,6 +43,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         ConfigureEditorAi(modelBuilder);
         ConfigureEditorAiContext(modelBuilder);
         ConfigureNotebooks(modelBuilder);
+        ConfigureNotebookCovers(modelBuilder);
         ConfigureReferences(modelBuilder);
         ConfigureDrawings(modelBuilder);
         ConfigureNotionGroupsMedia(modelBuilder);

@@ -8,6 +8,7 @@ public sealed class OpenAiOptions
     /// <summary>Default: gpt-6-luna (OpenAI billigste capable chat, $0.10/$0.50 per 1M).</summary>
     public string Model { get; set; } = "gpt-6-luna";
     public string BaseUrl { get; set; } = "https://api.openai.com/v1/";
+    public string CoverImageModel { get; set; } = "gpt-image-2.6-sunburst";
     public string EditorModel { get; set; } = "gpt-6.1-sol";
     public string EditorReasoningEffort { get; set; } = "high";
     public int EditorResponseTokens { get; set; } = 32768;

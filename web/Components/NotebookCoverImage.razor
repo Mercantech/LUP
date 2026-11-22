@@ -1,0 +1,88 @@
+@using Mercantec.Tech.Web.Notebooks
+@inject NotebookCoverClient Client
+@inject AuthService Auth
+@inject IJSRuntime Js
+@implements IAsyncDisposable
+
+@if (_imageUrl is not null)
+{
+    <img class="notebook-cover-image" src="@_imageUrl" alt="" decoding="async" draggable="false" />
+}
+
+@code {
+    [Parameter, EditorRequired] public string Kind { get; set; } = "";
+    [Parameter, EditorRequired] public Guid TargetId { get; set; }
+    [Parameter] public Guid? CoverId { get; set; }
+    [Parameter] public bool PublishedOnly { get; set; }
+
+    private (string Kind, Guid Target, Guid? Cover, bool PublishedOnly, string? Subject)? _source;
+    private CancellationTokenSource? _load;
+    private IJSObjectReference? _module;
+    private string? _imageUrl;
+    private bool _disposed;
+
+    protected override void OnInitialized() => Auth.AuthStateChanged += OnAuthChanged;
+
+    protected override Task OnParametersSetAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var source = (Kind, TargetId, CoverId, PublishedOnly, Auth.Subject);
+        if (_disposed || _source == source) return;
+        _source = source;
+        _load?.Cancel();
+        _load?.Dispose();
+        _load = null;
+        var previous = _imageUrl;
+        _imageUrl = null;
+        if (previous is not null && _module is not null) await RevokeAsync(_module, previous);
+        if (_disposed || _source != source || CoverId is not Guid version || TargetId == Guid.Empty || !Auth.IsAuthenticated) return;
+
+        _load = new CancellationTokenSource();
+        var ct = _load.Token;
+        try
+        {
+            var bytes = await Client.ReadAsync(Kind, TargetId, version, PublishedOnly, ct);
+            if (bytes is null || ct.IsCancellationRequested) return;
+            var module = _module ?? await Js.InvokeAsync<IJSObjectReference>("import", "./js/notebook-covers.js");
+            if (_disposed)
+            {
+                await module.DisposeAsync();
+                return;
+            }
+            _module = module;
+            if (ct.IsCancellationRequested) return;
+            var url = await module.InvokeAsync<string>("createCoverUrl", bytes);
+            if (ct.IsCancellationRequested || _disposed || _source != source)
+                await RevokeAsync(module, url);
+            else
+                _imageUrl = url;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or JSException) { }
+    }
+
+    private void OnAuthChanged() => _ = InvokeAsync(async () =>
+    {
+        var loading = LoadAsync();
+        StateHasChanged();
+        await loading;
+        if (!_disposed) StateHasChanged();
+    });
+
+    private static async ValueTask RevokeAsync(IJSObjectReference module, string url)
+    {
+        try { await module.InvokeVoidAsync("revokeCoverUrl", url); }
+        catch (JSException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        Auth.AuthStateChanged -= OnAuthChanged;
+        _load?.Cancel();
+        _load?.Dispose();
+        if (_module is null) return;
+        if (_imageUrl is not null) await RevokeAsync(_module, _imageUrl);
+        await _module.DisposeAsync();
+    }
+}

@@ -24,12 +24,33 @@ public sealed class NotionAccess(AppDbContext db, CourseAccess courses)
     public Task<bool> CanReadAsync(Guid pageId, ClaimsPrincipal user, CancellationToken ct, bool publishedOnly = false) =>
         ReadablePages(user, publishedOnly).AnyAsync(p => p.Id == pageId, ct);
 
-    public async Task<bool> CanManageAsync(Guid pageId, ClaimsPrincipal user, CancellationToken ct)
+    public IQueryable<NotionCollection> ReadableCollections(ClaimsPrincipal user, bool publishedOnly = false)
     {
-        var scope = await db.NotionPages.AsNoTracking().Where(p => p.Id == pageId)
-            .Select(p => new { p.HoldId }).SingleOrDefaultAsync(ct);
-        return scope is not null && await CanManageScopeAsync(scope.HoldId, user, ct);
+        if (UserClaims.GetSub(user) is not Guid) return db.NotionCollections.Where(c => false);
+        var pages = ReadablePages(user, publishedOnly);
+        var manageable = ManageableCollections(user);
+        return db.NotionCollections.Where(c => pages.Any(p => p.CollectionId == c.Id)
+            || !publishedOnly && manageable.Any(collection => collection.Id == c.Id));
     }
+
+    public IQueryable<NotionCollection> ManageableCollections(ClaimsPrincipal user)
+    {
+        if (UserClaims.GetSub(user) is not Guid) return db.NotionCollections.Where(c => false);
+        var teacher = UserClaims.IsTeacher(user);
+        var holds = courses.AccessibleHolds(user, true).Select(h => h.Id);
+        return db.NotionCollections.Where(c => c.HoldId == null ? teacher : holds.Contains(c.HoldId.Value));
+    }
+
+    public IQueryable<NotionPage> ManageablePages(ClaimsPrincipal user)
+    {
+        if (UserClaims.GetSub(user) is not Guid) return db.NotionPages.Where(p => false);
+        var teacher = UserClaims.IsTeacher(user);
+        var holds = courses.AccessibleHolds(user, true).Select(h => h.Id);
+        return db.NotionPages.Where(p => p.HoldId == null ? teacher : holds.Contains(p.HoldId.Value));
+    }
+
+    public Task<bool> CanManageAsync(Guid pageId, ClaimsPrincipal user, CancellationToken ct) =>
+        ManageablePages(user).AnyAsync(p => p.Id == pageId, ct);
 
     public Task<bool> CanManageAsync(NotionPage page, ClaimsPrincipal user, CancellationToken ct) =>
         CanManageScopeAsync(page.HoldId, user, ct);

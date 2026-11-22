@@ -42,7 +42,7 @@ public static class ProfilePhotoImages
         return Task.FromResult<byte[]?>(output?.ToArray());
     }
 
-    private static void Orient(SKCanvas canvas, SKEncodedOrigin origin, int width, int height)
+    internal static void Orient(SKCanvas canvas, SKEncodedOrigin origin, int width, int height)
     {
         switch (origin)
         {
