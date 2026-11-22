@@ -223,6 +223,7 @@ public sealed class EmojisControllerTests : IAsyncLifetime
         Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "bat"));
         Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "bilbo"));
         Assert.Equal(30, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "gitmejsen"));
+        Assert.Equal(48, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "karla"));
         Assert.Equal(12, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "beaver"));
         Assert.Equal(12, CharacterEmojiCatalog.All.Count(item => item.CharacterSlug == "fox"));
         Assert.Equal("Tænkepause", CharacterEmojiCatalog.All.Single(item => item.Name == "beaver_thinking").Title);
@@ -298,6 +299,13 @@ public sealed class EmojisControllerTests : IAsyncLifetime
         Assert.Contains("idempotency", idempotency.Keywords!);
         Assert.Contains("idempotens", idempotency.Keywords!);
         Assert.Equal("everyday", items.Single(item => item.Name == "bilbo_jam").Category);
+        var layoutBuilder = items.Single(item => item.Name == "karla_layout_builder");
+        Assert.Equal("technology", layoutBuilder.Category);
+        Assert.StartsWith("Karla", layoutBuilder.AltText);
+        Assert.Contains("flutter", layoutBuilder.Keywords!);
+        Assert.Contains("dart", layoutBuilder.Keywords!);
+        Assert.Contains("mobiludvikling", layoutBuilder.Keywords!);
+        Assert.Contains("layout", layoutBuilder.Keywords!);
         Assert.Empty(await _db.CustomEmojis.ToListAsync());
         Assert.Empty(_storage.Objects);
     }
@@ -330,6 +338,7 @@ public sealed class EmojisControllerTests : IAsyncLifetime
     [InlineData("bee")]
     [InlineData("bat")]
     [InlineData("bilbo")]
+    [InlineData("karla")]
     public async Task BuiltInCharacterEmojisCannotBeRenamedOrDeleted(string character)
     {
         var asset = CharacterEmojiCatalog.All.First(item => item.CharacterSlug == character);

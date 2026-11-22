@@ -2406,6 +2406,135 @@
           }
         ]
       }
+    },
+    {
+      "key": "karla-flutter-mobil-og-tablet",
+      "characterSlug": "karla",
+      "intro": "Vi går en tur gennem min opskriftsapp. Prøv at følge en widget, et tryk og et API-svar hele vejen til det, brugeren ser.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Fra widget til app på mobil og tablet",
+        "topic": "Flutter og Dart",
+        "description": "Find den rigtige løsning til layout, tilstand, tilgængelighed og test i Karlas opskriftsapp.",
+        "estimatedMinutes": 8,
+        "questions": [
+          {
+            "id": "91a1faae-b0b1-4e2e-8008-0c74f78a4a1d",
+            "kind": "single",
+            "prompt": "Du vil samle billede, navn og en favoritknap i ét opskriftskort. Hvad er en god måde at bygge det på i Flutter?",
+            "options": [
+              "Brug en widget til kortet, og sammensæt den af mindre widgets.",
+              "Gem hele kortet som en PNG-fil.",
+              "Lav kun kortet i API’et.",
+              "Giv hver opskrift sin egen app."
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Kortet kan være en widget med børn, så billedet, teksten og knappen hver har deres ansvar.",
+            "learnMoreUrl": "https://docs.flutter.dev/ui",
+            "learnMoreTitle": "Flutter · Widgets og brugerflader"
+          },
+          {
+            "id": "dc519e7f-6672-4d2f-98d5-71b2e2b1b76a",
+            "kind": "single",
+            "prompt": "Listen og en valgt opskrift skal vises side om side, når der er plads. Hvad bør LayoutBuilder kigge på?",
+            "options": [
+              "Telefonens mærke.",
+              "Antallet af billeder i opskriften.",
+              "Den plads layoutet får fra sin forælder.",
+              "Id’et på opskriften."
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "LayoutBuilder modtager størrelsesrammerne fra forælderen. Brug den tilgængelige bredde til at vælge, hvordan indholdet vises.",
+            "learnMoreUrl": "https://docs.flutter.dev/ui/adaptive-responsive",
+            "learnMoreTitle": "Flutter · Adaptivt layout"
+          },
+          {
+            "id": "07f3aa44-e835-4978-b1fd-a683272f1715",
+            "kind": "single",
+            "prompt": "Eleven trykker på favoritknappen i en StatefulWidget. Hvordan kan det synlige hjerte afspejle den nye lokale tilstand?",
+            "options": [
+              "Sæt tekststørrelsen op.",
+              "Opdatér værdien inde i setState, så widgetten genbygges.",
+              "Hent et nyt billede fra API’et ved hvert tryk.",
+              "Opret en ny app for hver favorit."
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "setState markerer, at widgettens tilstand er ændret. Næste build kan vise hjertet ud fra den nye værdi.",
+            "learnMoreUrl": "https://docs.flutter.dev/ui/interactive",
+            "learnMoreTitle": "Flutter · Tilføj interaktion"
+          },
+          {
+            "id": "efbc6564-7d75-4a71-9186-af2b98719fa9",
+            "kind": "multiple",
+            "prompt": "API’et er midlertidigt utilgængeligt. Hvilke to ting skal opskriftsappen give brugeren?",
+            "options": [
+              "En læsbar besked om, at opskrifterne ikke kunne hentes.",
+              "En spinner, der fortsætter efter svaret.",
+              "En mulighed for at prøve igen.",
+              "En liste med opdigtede opskrifter."
+            ],
+            "correctOptions": [
+              0,
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En fejltilstand har sin egen brugerflade. Vis, hvad der skete, og giv brugeren en vej videre.",
+            "learnMoreUrl": "https://docs.flutter.dev/cookbook/networking/fetch-data",
+            "learnMoreTitle": "Flutter · Hent data og håndtér fejl"
+          },
+          {
+            "id": "69ca900b-bad8-4c58-96e4-545279d653d5",
+            "kind": "single",
+            "prompt": "En favoritknap viser kun et hjerte. Hvad hjælper en bruger med skærmlæser?",
+            "options": [
+              "Læs filnavnet på ikonet op.",
+              "Skift hjertets farve.",
+              "Sæt knappens placering til højre.",
+              "Giv knappen et meningsfuldt navn, der afspejler handlingen."
+            ],
+            "correctOptions": [
+              3
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Skærmlæseren skal kunne formidle handlingen, for eksempel Tilføj til favoritter. Afprøv navnet med skærmlæser.",
+            "learnMoreUrl": "https://docs.flutter.dev/ui/accessibility-and-internationalization/accessibility",
+            "learnMoreTitle": "Flutter · Tilgængelighed"
+          },
+          {
+            "id": "c7e82c0e-75b3-415f-9a0e-a24fd05fe31b",
+            "kind": "single",
+            "prompt": "I vil automatisk åbne appen på en enhed, finde en opskrift, markere den som favorit og gå tilbage. Hvilken testtype passer til hele forløbet?",
+            "options": [
+              "En enhedstest af opskriftens titel.",
+              "En integrationstest.",
+              "En analyse af filnavnene.",
+              "En test af et enkelt farvetema."
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En integrationstest afprøver flere dele af appen sammen. Brug den til hele opgaven på en enhed eller emulator.",
+            "learnMoreUrl": "https://docs.flutter.dev/testing/overview",
+            "learnMoreTitle": "Flutter · Testtyper"
+          }
+        ]
+      }
     }
   ]
 }

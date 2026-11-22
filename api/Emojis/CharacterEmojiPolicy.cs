@@ -29,6 +29,7 @@ public static class CharacterEmojiPolicy
             "bat" => "Næsebladet",
             "bilbo" => "Bilbo Backend",
             "gitmejsen" => "Gitmejsen",
+            "karla" => "Karla Eremitkrebs",
             _ => "raymond"
         };
         var reaction = emoji.Name[(emoji.CharacterSlug.Length + 1)..];
@@ -45,6 +46,7 @@ public static class CharacterEmojiPolicy
             "bat" => new[] { "flagermus", "IoT", "Internet of Things", "sensor", "signal" },
             "bilbo" => new[] { "backend", "API", "EF Core", "C#" },
             "gitmejsen" => new[] { "Git", "versionsstyring", "version control", "topmejse" },
+            "karla" => new[] { "Flutter", "Dart", "mobiludvikling", "app", "eremitkrebs" },
             _ => new[] { "sikkerhed", "test", emoji.CharacterSlug == "beaver" ? "blåt team" : "rødt team" }
         };
         var keywords = EmojiMetadataPolicy.Keywords(new[] { characterName, emoji.CharacterSlug, emoji.Title, "emoji", "reaktion" }
@@ -115,6 +117,9 @@ public static class CharacterEmojiPolicy
             "first_commit" or "commit_message" or "branch" or "merge_conflict" or "conflict_resolved" or "release"
                 or "stash" or "history" or "branch_switch" or "merge" or "diff" or "review" or "revert" or "tag" or "push" or "pull" or "clean"
                 when emoji.CharacterSlug == "gitmejsen" => "technology",
+            "success" when emoji.CharacterSlug == "karla" => "gestures",
+            "idea" or "prototype" when emoji.CharacterSlug == "karla" => "learning",
+            _ when emoji.CharacterSlug == "karla" => "technology",
             _ => "smileys"
         };
         return new(EmojiMetadataPolicy.CleanText(emoji.Alt, EmojiMetadataPolicy.MaxAltText), category, keywords);
