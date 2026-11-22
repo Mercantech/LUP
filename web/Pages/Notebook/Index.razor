@@ -129,9 +129,32 @@ else
                         <NotebookShortcutHelp @ref="_shortcutHelp" CanCreatePage="ShortcutCanCreatePage" CanCreateChild="ShortcutCanCreateChild" Templates="TemplateMode" CreateLabel="@(TemplateMode ? "Opret skabelon" : "Opret note")" />
                     </div>
                     <div class="notion-toolbar-title notion-published-title"><EmojiText Text="@(_current?.Title ?? Heading)" /></div>
-                    @if (_current is not null)
+                    @if (_current is not null || CanEditCover)
                     {
-                        <div class="notion-toolbar-actions"><span class="notion-save-status nb-save @_status" role="status" title="@(Editing ? StatusLabel : "Læsevisning · opdateres automatisk")"><i aria-hidden="true"></i><span class="notion-save-label">@(Editing ? StatusLabel : "Læsevisning")</span></span></div>
+                        <div class="notion-toolbar-actions">
+                            @if (_current is not null)
+                            {
+                                <span class="notion-save-status nb-save @_status" role="status" title="@(Editing ? StatusLabel : "Læsevisning · opdateres automatisk")"><i aria-hidden="true"></i><span class="notion-save-label">@(Editing ? StatusLabel : "Læsevisning")</span></span>
+                            }
+                            @if (CanEditCover)
+                            {
+                                <details class="notion-document-more">
+                                    <summary aria-label="Flere sidehandlinger"><UiIcon Name="more" /><span>Mere</span></summary>
+                                    <div class="notion-document-menu">
+                                        @if (NotebookLanding && _loadedNotebookAccess is Guid coverBook)
+                                        {
+                                            <NotebookCoverActions @key='("notebook", coverBook)' Kind="notebook" TargetId="coverBook" CoverId="NotebookCoverId"
+                                                                  CoverChanged="coverId => UpdateNotebookCover(coverBook, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                        }
+                                        else if (_current is { } coverPage)
+                                        {
+                                            <NotebookCoverActions @key='("notebook-page", coverPage.DocumentId)' Kind="notebook-page" TargetId="coverPage.DocumentId" CoverId="coverPage.CoverId"
+                                                                  CoverChanged="coverId => UpdatePageCover(coverPage.DocumentId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                        }
+                                    </div>
+                                </details>
+                            }
+                        </div>
                     }
                 </div>
                 @if (_showJournal && Own)
@@ -190,13 +213,11 @@ else
     private RenderFragment CoverBanner => @<text>
         @if (NotebookLanding && _loadedNotebookAccess is Guid bookId)
         {
-            <NotebookCoverEditor @key="bookId" Kind="notebook" TargetId="bookId" CoverId="NotebookCoverId" CanEdit="Own"
-                                 CoverChanged="coverId => UpdateNotebookCover(bookId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+            <NotebookCoverEditor @key='("notebook", bookId)' Kind="notebook" TargetId="bookId" CoverId="NotebookCoverId" />
         }
         else if (!TemplateMode && _current is { } page)
         {
-            <NotebookCoverEditor @key="page.DocumentId" Kind="notebook-page" TargetId="page.DocumentId" CoverId="page.CoverId" CanEdit="Editing"
-                                 CoverChanged="coverId => UpdatePageCover(page.DocumentId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+            <NotebookCoverEditor @key='("notebook-page", page.DocumentId)' Kind="notebook-page" TargetId="page.DocumentId" CoverId="page.CoverId" />
         }
     </text>;
 

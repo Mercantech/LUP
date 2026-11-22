@@ -4,7 +4,7 @@
 @implements IDisposable
 
 <details class="notebook-cover-actions">
-    <summary class="secondary"><UiIcon Name="image" /><span>@(CoverId is null ? "Tilføj cover" : "Skift cover")</span></summary>
+    <summary><UiIcon Name="image" /><span>@(CoverId is null ? "Tilføj cover" : "Skift cover")</span></summary>
     <div class="cover-options" aria-busy="@DemoWorld.Pressed(_busy)">
         <label class="secondary cover-upload" aria-disabled="@DemoWorld.Pressed(_busy)">
             <span>Upload cover</span>

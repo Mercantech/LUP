@@ -47,6 +47,7 @@ public partial class Index
     private Guid[] _groupSelection = [];
     private int _groupPanelGeneration;
     private int _generation;
+    private int _coverChangeVersion;
     private int _navigationGeneration = -1;
     private Guid? _pagesHold;
     private bool _pagesPublishedOnly, _holdsLoaded, _navigationLoading, _resourcesLoaded;
@@ -361,6 +362,7 @@ public partial class Index
     private void UpdatePageCover(Guid page, Guid? coverId)
     {
         if (_disposed || !IsEditing || _current?.PageId != page) return;
+        _coverChangeVersion++;
         _current = _current with { CoverId = coverId };
         SetPages(_pages);
     }
@@ -493,9 +495,15 @@ public partial class Index
         var generation = _generation;
         var id = _current.PageId;
         var originalTitle = _current.Title;
+        var coverChangeVersion = _coverChangeVersion;
         var context = await FetchContext(id, ct);
         if (!IsCurrent(generation, ct) || _current?.PageId != id) return;
-        _current = context with { Members = _current.Members, Polls = _current.Polls, Pages = _current.Pages };
+        // A rename or publication refresh can overlap an independently saved cover.
+        _current = context with
+        {
+            Members = _current.Members, Polls = _current.Polls, Pages = _current.Pages,
+            CoverId = coverChangeVersion == _coverChangeVersion ? context.CoverId : _current.CoverId
+        };
         _title = _title.Trim() == originalTitle || _title.Trim() == context.Title ? context.Title : _title;
         SetPages(_pages);
         await PushEditorContext(generation, ct);

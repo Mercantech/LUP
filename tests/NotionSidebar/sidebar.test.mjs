@@ -41,6 +41,7 @@ async function fixture({ mobile = false, stored = null, storedWidth = null, root
                     if (selector === '[hidden]' && target.hasAttribute('hidden')) return target;
                     if (selector === 'button,a' && target.action) return target;
                     if (selector === '.notion-document-menu' && target.menu) return target;
+                    if (selector === '.notebook-cover-actions' && target.coverActions) return target;
                     if (selector === '.notion-sidebar-resize' && target.resize) return target;
                     if (selector === '[data-page-id]' && target.dataset?.pageId) return target;
                     if (selector === '.notion-page-row' && target.row) return target;
@@ -358,6 +359,12 @@ test('the scoped document menu closes on outside clicks, actions and Escape with
         f.click(f.action);
         assert.equal(f.more.open, false, 'chosen actions close the menu');
         assert.equal(f.summary.focusCount, 0, 'clicking an action must not steal its focus');
+        const coverActions = f.makeNode('cover-actions'), generateCover = f.makeNode('generate-cover');
+        coverActions.coverActions = true; coverActions.parent = f.menu;
+        generateCover.action = true; generateCover.parent = coverActions;
+        f.more.open = true;
+        f.click(generateCover);
+        assert.equal(f.more.open, true, 'cover actions keep progress visible');
         f.more.open = true;
         f.click(f.toggle);
         assert.equal(f.more.open, false, 'an outside click closes this workspace menu');

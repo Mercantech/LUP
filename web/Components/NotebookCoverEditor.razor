@@ -1,17 +1,7 @@
-@if (CoverId is not null || CanEdit)
+@if (CoverId is not null)
 {
-    <div class="notebook-cover-editor">
-        @if (CoverId is not null)
-        {
-            <div class="notebook-cover-banner">
-                <NotebookCoverImage Kind="@Kind" TargetId="@TargetId" CoverId="@CoverId" PublishedOnly="@PublishedOnly" />
-            </div>
-        }
-        @if (CanEdit)
-        {
-            <NotebookCoverActions @key="(Kind, TargetId)" Kind="@Kind" TargetId="@TargetId" CoverId="@CoverId"
-                                  CoverChanged="@CoverChanged" BeforeGenerate="@BeforeGenerate" />
-        }
+    <div class="notebook-cover-banner">
+        <NotebookCoverImage Kind="@Kind" TargetId="@TargetId" CoverId="@CoverId" PublishedOnly="@PublishedOnly" ShowRetry="true" />
     </div>
 }
 
@@ -20,7 +10,4 @@
     [Parameter, EditorRequired] public Guid TargetId { get; set; }
     [Parameter] public Guid? CoverId { get; set; }
     [Parameter] public bool PublishedOnly { get; set; }
-    [Parameter] public bool CanEdit { get; set; }
-    [Parameter] public EventCallback<Guid?> CoverChanged { get; set; }
-    [Parameter] public EventCallback BeforeGenerate { get; set; }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Mercantec.Tech.Web;
 using Mercantec.Tech.Web.Auth;
+using Mercantec.Tech.Web.Notebooks;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -55,7 +56,9 @@ builder.Services.AddScoped<Mercantec.Tech.Web.Learning.RouletteSpeechClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Notion.NotionClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Notion.NotionMcpClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Notebooks.NotebookClient>();
-builder.Services.AddScoped<Mercantec.Tech.Web.Notebooks.NotebookCoverClient>();
+builder.Services.AddKeyedScoped<HttpClient>("notebook-covers", (sp, _) => CreateApiClient(sp, TimeSpan.FromSeconds(120)));
+builder.Services.AddScoped(sp => new NotebookCoverClient(
+    sp.GetRequiredKeyedService<HttpClient>("notebook-covers"), sp.GetRequiredService<AuthService>()));
 builder.Services.AddScoped<Mercantec.Tech.Web.Emojis.EmojiClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Extensions.ExtensionAccessClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Calendar.TeacherCalendarClient>();
@@ -69,11 +72,13 @@ builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddTransient<AuthDelegatingHandler>();
-builder.Services.AddScoped(sp =>
+builder.Services.AddScoped(sp => CreateApiClient(sp, TimeSpan.FromSeconds(100)));
+
+await builder.Build().RunAsync();
+
+HttpClient CreateApiClient(IServiceProvider sp, TimeSpan timeout)
 {
     var handler = sp.GetRequiredService<AuthDelegatingHandler>();
     handler.InnerHandler = new HttpClientHandler();
-    return new HttpClient(handler) { BaseAddress = apiBaseUri };
-});
-
-await builder.Build().RunAsync();
+    return new HttpClient(handler) { BaseAddress = apiBaseUri, Timeout = timeout };
+}

@@ -94,6 +94,16 @@ else
                                 <button type="button" class="notion-sidebar-toggle" aria-controls="notion-sidebar" aria-keyshortcuts="Control+b Meta+b" aria-expanded="@(_sidebarOpen && !_workspaceFocused ? "true" : "false")" aria-label="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" title="@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")" @onclick="ToggleSidebar"><UiIcon Name="panel" /><span>@(_sidebarOpen && !_workspaceFocused ? "Skjul sidemenu" : "Vis sidemenu")</span></button>
                                 <button type="button" class="notion-focus-toggle" disabled="@(!SidebarEnhanced)" aria-pressed="@_workspaceFocused.ToString().ToLowerInvariant()" aria-label="@(_workspaceFocused ? "Afslut fokus" : "Fokus")" title="@(_workspaceFocused ? "Gendan sidekolonnerne" : "Skjul sidekolonnerne og fokusér på dokumentet")" @onclick="ToggleWorkspaceFocus"><UiIcon Name="screen" /><span>@(_workspaceFocused ? "Afslut fokus" : "Fokus")</span></button>
                                 <button type="button" aria-haspopup="dialog" aria-keyshortcuts="F1" @onclick="() => _shortcutHelp?.OpenAsync() ?? Task.CompletedTask"><UiIcon Name="keyboard" />Tastaturgenveje</button>
+                                @if (!_loading && IsCollectionRoute && !ForceReadOnly && _collection is { CanManage: true } coverBook)
+                                {
+                                    <NotebookCoverActions @key='("collection", coverBook.Id)' Kind="collection" TargetId="coverBook.Id" CoverId="coverBook.CoverId"
+                                                          CoverChanged="coverId => UpdateCollectionCover(coverBook.Id, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                }
+                                else if (!_loading && !IsCollectionRoute && IsEditing && _current is { } coverPage)
+                                {
+                                    <NotebookCoverActions @key='("notion-page", coverPage.PageId)' Kind="notion-page" TargetId="coverPage.PageId" CoverId="coverPage.CoverId"
+                                                          CoverChanged="coverId => UpdatePageCover(coverPage.PageId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                }
                                 @if (_current is not null)
                                 {
                                     <p class="notion-publication-status">@(_current.PublishedAtUtc is null ? "Kladde" : $"Udgivet {_current.PublishedAtUtc.Value.ToLocalTime():d. MMM HH:mm}")</p>
@@ -141,17 +151,14 @@ else
                     {
                         <div class="notion-cover-slot">
                             <NotebookCoverEditor @key="(book.Id, ForceReadOnly)" Kind="collection" TargetId="book.Id" CoverId="book.CoverId"
-                                                 CanEdit="@(book.CanManage && !ForceReadOnly)" PublishedOnly="@(ForceReadOnly || !book.CanManage)"
-                                                 CoverChanged="coverId => UpdateCollectionCover(book.Id, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                                 PublishedOnly="@(ForceReadOnly || !book.CanManage)" />
                         </div>
                     }
                     else if (_current is { } page)
                     {
                         <div class="notion-cover-slot">
                             <NotebookCoverEditor @key="(page.PageId, IsEditing)" Kind="notion-page" TargetId="page.PageId"
-                                                 CoverId="@(IsEditing ? page.CoverId : page.PublishedCoverId)"
-                                                 CanEdit="IsEditing" PublishedOnly="@(!IsEditing)"
-                                                 CoverChanged="coverId => UpdatePageCover(page.PageId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                                 CoverId="@(IsEditing ? page.CoverId : page.PublishedCoverId)" PublishedOnly="@(!IsEditing)" />
                         </div>
                     }
                 }

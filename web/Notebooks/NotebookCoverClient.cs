@@ -9,8 +9,17 @@ namespace Mercantec.Tech.Web.Notebooks;
 
 public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
 {
+    private SavedPreview? _savedPreview;
+
     public async Task<byte[]?> ReadAsync(string kind, Guid id, Guid version, bool publishedOnly, CancellationToken ct)
     {
+        if (!publishedOnly && _savedPreview is { } saved && saved.Kind == kind && saved.TargetId == id
+            && saved.Version == version && saved.Subject == auth.Subject && auth.IsAuthenticated)
+        {
+            _savedPreview = null;
+            return saved.Image;
+        }
+
         using var request = CreateRequest(HttpMethod.Get,
             $"{Path(kind, id)}?version={version:D}" + (publishedOnly ? "&publishedOnly=true" : ""));
         using var response = await http.SendAsync(request, ct);
@@ -24,34 +33,44 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
     {
         if (file.Size > NotebookCoverRules.MaxUploadBytes)
             throw new NotebookCoverException("Vælg et billede på højst 5 MB.");
-        using var request = CreateRequest(HttpMethod.Put, Path(kind, id));
+        using var request = CreateRequest(HttpMethod.Put, Path(kind, id) + "?includeImage=true");
         await using var stream = file.OpenReadStream(NotebookCoverRules.MaxUploadBytes, ct);
         using var image = new MemoryStream((int)file.Size);
         await stream.CopyToAsync(image, ct);
         using var form = new MultipartFormDataContent();
         form.Add(new ByteArrayContent(image.ToArray()), "file", file.Name);
         request.Content = form;
-        return await MutateAsync(request, ct);
+        return await MutateAsync(request, kind, id, ct);
     }
 
     public async Task<NotebookCoverView> GenerateAsync(string kind, Guid id, CancellationToken ct)
     {
-        using var request = CreateRequest(HttpMethod.Post, Path(kind, id) + "/generate");
-        return await MutateAsync(request, ct);
+        using var request = CreateRequest(HttpMethod.Post, Path(kind, id) + "/generate?includeImage=true");
+        return await MutateAsync(request, kind, id, ct);
     }
 
     public async Task<NotebookCoverView> DeleteAsync(string kind, Guid id, CancellationToken ct)
     {
         using var request = CreateRequest(HttpMethod.Delete, Path(kind, id));
-        return await MutateAsync(request, ct);
+        return await MutateAsync(request, kind, id, ct);
     }
 
-    private async Task<NotebookCoverView> MutateAsync(HttpRequestMessage request, CancellationToken ct)
+    private async Task<NotebookCoverView> MutateAsync(HttpRequestMessage request, string kind, Guid id, CancellationToken ct)
     {
         using var response = await http.SendAsync(request, ct);
         if (response.IsSuccessStatusCode)
-            return await response.Content.ReadFromJsonAsync<NotebookCoverView>(ct)
+        {
+            var saved = await response.Content.ReadFromJsonAsync<NotebookCoverView>(ct)
                 ?? throw new NotebookCoverException("Coveret kunne ikke hentes efter ændringen.");
+            // The write response carries the committed image for one local preview.
+            // Subsequent loads still use the current authorization and versioned API.
+            _savedPreview = saved is { CoverId: Guid version, Image: { Length: > 0 } image }
+                && Guid.TryParse(auth.Subject, out var subject)
+                && request.Headers.TryGetValues(NotebookCoverRules.SubjectHeader, out var values)
+                && values.Contains(subject.ToString("D"))
+                    ? new(kind, id, version, auth.Subject!, image) : null;
+            return saved;
+        }
 
         string? error = null;
         try { error = (await response.Content.ReadFromJsonAsync<CoverError>(ct))?.Error; }
@@ -80,6 +99,7 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
     }
 
     private static string Path(string kind, Guid id) => $"notebook-covers/{Uri.EscapeDataString(kind)}/{id:D}";
+    private sealed record SavedPreview(string Kind, Guid TargetId, Guid Version, string Subject, byte[] Image);
     private sealed record CoverError(string? Error);
 }
 

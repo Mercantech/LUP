@@ -29,6 +29,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
     private const int MaxSourceStateBytes = 1_500_000;
     private const int MaxExcerptLength = 500;
     private const int MaxUploadRequestBytes = NotebookCoverRules.MaxUploadBytes + 64 * 1024;
+    private static readonly TimeSpan ExcerptProjectionTimeout = TimeSpan.FromSeconds(6);
     private readonly NotionAccess notion = new(db, courses);
 
     [HttpGet]
@@ -62,7 +63,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
     [RequestSizeLimit(MaxUploadRequestBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadRequestBytes)]
     public async Task<IActionResult> Upload(string kind, Guid id, [FromForm(Name = "file")] IFormFile? file,
-        CancellationToken ct)
+        CancellationToken ct, [FromQuery] bool includeImage = false)
     {
         var failure = Guard(required: true);
         if (failure is not null) return failure;
@@ -74,7 +75,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         using var upload = new MemoryStream((int)file.Length);
         await file.CopyToAsync(upload, ct);
         var image = NotebookCoverImage.Normalize(upload.ToArray());
-        return image is null ? BadRequest(new { error = "invalid_cover_image" }) : await Save(target, image, ct);
+        return image is null ? BadRequest(new { error = "invalid_cover_image" }) : await Save(target, image, ct, includeImage);
     }
 
     [HttpDelete]
@@ -89,7 +90,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
 
     [HttpPost("generate")]
     [EnableRateLimiting(NotebookCoverGenerator.RateLimitPolicy)]
-    public async Task<IActionResult> Generate(string kind, Guid id, CancellationToken ct)
+    public async Task<IActionResult> Generate(string kind, Guid id, CancellationToken ct, [FromQuery] bool includeImage = false)
     {
         var failure = Guard(required: true);
         if (failure is not null) return failure;
@@ -100,8 +101,9 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         try
         {
             var excerpts = await ReadExcerpts(target, ct);
+            ct.ThrowIfCancellationRequested();
             var image = await generator.GenerateAsync(target.Title, excerpts, ct);
-            return await Save(target, image, ct);
+            return await Save(target, image, ct, includeImage);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
         {
@@ -166,7 +168,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         };
     }
 
-    private async Task<IActionResult> Save(CoverTarget target, byte[]? image, CancellationToken ct)
+    private async Task<IActionResult> Save(CoverTarget target, byte[]? image, CancellationToken ct, bool includeImage = false)
     {
         Guid? coverId = image is null ? null : Guid.NewGuid();
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
@@ -193,7 +195,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
             await OwnedAssets(target.Kind, target.Id).Where(asset => asset.Id == previous).ExecuteDeleteAsync(ct);
 
         await transaction.CommitAsync(ct);
-        return Ok(new NotebookCoverView(coverId));
+        return Ok(new NotebookCoverView(coverId, includeImage ? image : null));
     }
 
     private Task<int> SetCover(CoverTarget target, Guid? newCoverId, CancellationToken ct)
@@ -225,18 +227,21 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         {
             case Collection:
             case NotionPage:
-                var pages = notion.ManageablePages(User).AsNoTracking().Where(p => p.YjsState != null
-                    && p.YjsState.Length <= MaxSourceStateBytes);
-                pages = target.Kind == Collection ? pages.Where(p => p.CollectionId == target.Id) : pages.Where(p => p.Id == target.Id);
+                var pages = notion.ManageablePages(User).AsNoTracking();
+                var isCollection = target.Kind == Collection;
+                pages = isCollection ? pages.Where(p => p.CollectionId == target.Id) : pages.Where(p => p.Id == target.Id);
                 var notionPages = await pages.OrderByDescending(p => p.Id == target.Id).ThenBy(p => p.ParentPageId != null)
                     .ThenBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Id).Take(MaxSourcePages)
-                    .Select(p => new { p.Title, State = p.YjsState! }).ToArrayAsync(ct);
-                foreach (var page in notionPages)
+                    .Select(p => new
+                    {
+                        p.Title,
+                        State = p.YjsState != null && p.YjsState.Length <= MaxSourceStateBytes ? p.YjsState : null
+                    }).ToArrayAsync(ct);
+                using (var projectionBudget = CancellationTokenSource.CreateLinkedTokenSource(ct))
                 {
-                    if (page.State.Length == 0) continue;
-                    var content = await projection.ProjectAsync(page.State, ct);
-                    if (target.Kind == Collection) parts.Add(Excerpt(page.Title, content.PlainText));
-                    else parts.Add(Excerpt(null, content.PlainText));
+                    projectionBudget.CancelAfter(ExcerptProjectionTimeout);
+                    parts.AddRange(await Task.WhenAll(notionPages.Select(page =>
+                        ReadNotionExcerpt(isCollection ? page.Title : null, page.State, projectionBudget.Token, ct))));
                 }
                 break;
             case Notebook:
@@ -256,6 +261,25 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         }
 
         return parts.Where(part => part.Length > 0).Distinct(StringComparer.Ordinal).ToArray();
+    }
+
+    private async Task<string> ReadNotionExcerpt(string? title, byte[]? state, CancellationToken budget, CancellationToken request)
+    {
+        if (state is { Length: > 0 })
+        {
+            try
+            {
+                var content = await projection.ProjectAsync(state, budget);
+                return Excerpt(title, content.PlainText ?? "");
+            }
+            catch (Exception ex) when (!request.IsCancellationRequested &&
+                ex is HttpRequestException or JsonException or InvalidDataException or OperationCanceledException)
+            {
+                // One unavailable projection leaves the other sources and saved titles usable.
+            }
+        }
+
+        return Excerpt(title, "");
     }
 
     private static string Excerpt(string? title, string text)

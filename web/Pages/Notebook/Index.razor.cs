@@ -68,6 +68,7 @@ public partial class Index
     private bool Editing => _current?.CanEdit == true && CanUse;
     private bool NotebookLanding => _loadedNotebookAccess is not null && PageId is null && !TemplateMode
         && Nav.ToAbsoluteUri(Nav.Uri).AbsolutePath.TrimEnd('/').Equals("/notebook", StringComparison.OrdinalIgnoreCase);
+    private bool CanEditCover => NotebookLanding ? Own : !TemplateMode && Editing;
     private Guid? NotebookCoverId => Own ? _mine?.CoverId : _current is { } page ? page.NotebookCoverId : _teacherNotebookCoverId;
     private string RouteKey => $"{PageId}:{TemplateId}:{NotebookId}:{RequestedComments}:{NoticeKind}:{NoticeQuery}:{TemplateMode}:{Nav.ToAbsoluteUri(Nav.Uri).AbsolutePath == "/journal"}";
     private NotebookTemplateView? CurrentTemplate => _templates.FirstOrDefault(t => t.Id == TemplateId);
@@ -468,10 +469,14 @@ public partial class Index
 
     private async Task PrepareCoverGeneration()
     {
-        if (!Editing) return;
+        if (!Editing || NotebookLanding && _current?.Kind != "note") return;
+        var ct = TreeToken;
+        if (MetadataDirty && !string.IsNullOrWhiteSpace(_title))
+            await SaveMetadata();
+        ct.ThrowIfCancellationRequested();
         if (MetadataDirty)
-            throw new InvalidOperationException("Gem sidens oplysninger, før du genererer et cover.");
-        await WaitForCoverContent(() => (_mounted ? _editor : null, _editorElement, _status), TreeToken);
+            throw new InvalidOperationException(_error ?? "Gem sidens titel og oplysninger, før du genererer et cover.");
+        await WaitForCoverContent(() => (_mounted ? _editor : null, _editorElement, _status), ct);
     }
 
     private async Task OpenPage(Guid id)
