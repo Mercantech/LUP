@@ -1,6 +1,7 @@
 using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
+using Mercantec.Tech.Api.Integrations.Azure;
 using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Mercantec.Tech.Api.Controllers;
 
 [ApiController, Authorize, Route("api/holds/{holdId:guid}/calendar")]
-public sealed class HoldCalendarController(AppDbContext db, CourseAccess access) : ControllerBase
+public sealed partial class HoldCalendarController(AppDbContext db, CourseAccess access, AzureGraphCalendarClient? graph = null) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List(Guid holdId, CancellationToken ct, [FromQuery] Guid? asUser = null)

@@ -1,3 +1,5 @@
+using System.Net.Mail;
+
 namespace Mercantec.Tech.Api.Integrations.Azure;
 
 public sealed class AzureGraphOptions
@@ -19,15 +21,33 @@ public sealed class AzureGraphOptions
         "mags@mercantec.dk=mags@mercantec.dk;" +
         "kasc@mercantec.dk=kasc@mercantec.dk";
 
+    public string CalendarWriteTargets { get; set; } = "kasper=kasc@mercantec.dk;mathias=mags@mercantec.dk";
+
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(TenantId)
         && !string.IsNullOrWhiteSpace(ClientId)
         && !string.IsNullOrWhiteSpace(ClientSecret);
 
-    public IReadOnlyDictionary<string, string> ParseTeacherUpnMap()
+    public IReadOnlyDictionary<string, string> ParseTeacherUpnMap() => ParseMap(TeacherUpnMap);
+
+    internal IReadOnlyDictionary<string, string> ParseCalendarWriteTargets()
+    {
+        var configured = ParseMap(CalendarWriteTargets);
+        var targets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var id in new[] { "kasper", "mathias" })
+        {
+            if (configured.TryGetValue(id, out var mailbox) && MailAddress.TryCreate(mailbox, out var parsed)
+                && string.Equals(parsed.Address, mailbox, StringComparison.OrdinalIgnoreCase)
+                && !targets.Values.Contains(mailbox, StringComparer.OrdinalIgnoreCase))
+                targets.Add(id, mailbox.ToLowerInvariant());
+        }
+        return targets;
+    }
+
+    private static IReadOnlyDictionary<string, string> ParseMap(string entries)
     {
         var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var part in TeacherUpnMap.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        foreach (var part in entries.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
             var eq = part.IndexOf('=');
             if (eq <= 0 || eq >= part.Length - 1)
@@ -46,22 +66,15 @@ public sealed class AzureGraphOptions
     /// </summary>
     public string? ResolveTeacherUpn(string? sub, string? email = null)
     {
-        var map = ParseTeacherUpnMap();
+        return ResolveMappedTeacherUpn(sub, email)
+            ?? (email is not null && email.Contains('@', StringComparison.Ordinal) ? email.Trim() : null);
+    }
 
+    internal string? ResolveMappedTeacherUpn(string? sub, string? email)
+    {
+        var map = ParseTeacherUpnMap();
         if (!string.IsNullOrWhiteSpace(sub) && map.TryGetValue(sub.Trim(), out var bySub))
             return bySub;
-
-        if (!string.IsNullOrWhiteSpace(email))
-        {
-            var trimmed = email.Trim();
-            if (map.TryGetValue(trimmed, out var byEmail))
-                return byEmail;
-
-            // Samme e-mail som UPN (typisk Mercantec-konti)
-            if (trimmed.Contains('@', StringComparison.Ordinal))
-                return trimmed;
-        }
-
-        return null;
+        return !string.IsNullOrWhiteSpace(email) && map.TryGetValue(email.Trim(), out var byEmail) ? byEmail : null;
     }
 }

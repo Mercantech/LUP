@@ -12,6 +12,28 @@ public sealed class TeacherCalendarClient(HttpClient http)
     public Task<TeacherCalendarEventDetails> GetEventAsync(string id, CancellationToken ct = default) =>
         GetAsync<TeacherCalendarEventDetails>($"calendar/mine/event?id={Uri.EscapeDataString(id)}", ct);
 
+    public Task<OutlookCalendarTargets> TargetsAsync(CancellationToken ct = default) =>
+        GetAsync<OutlookCalendarTargets>("calendar/outlook-targets", ct);
+
+    public async Task<OutlookCalendarCopies> CopyAsync(Guid holdId, Guid eventId, string[] targetIds,
+        CancellationToken ct = default)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(28));
+        using var response = await http.PostAsJsonAsync($"holds/{holdId:D}/calendar/{eventId:D}/outlook",
+            new CopyHoldCalendarEventToOutlook(targetIds), timeout.Token);
+        if (!response.IsSuccessStatusCode)
+            throw new TeacherCalendarException(response.StatusCode switch
+            {
+                System.Net.HttpStatusCode.Forbidden => "Din konto har ikke adgang til de valgte Outlook-kalendere.",
+                System.Net.HttpStatusCode.NotFound => "Aftalen kunne ikke findes i LUP.",
+                _ => "Outlook-kopien kunne ikke bekræftes. Prøv igen."
+            });
+
+        return await response.Content.ReadFromJsonAsync<OutlookCalendarCopies>(timeout.Token)
+            ?? throw new TeacherCalendarException("Outlook-kopien kunne ikke bekræftes. Prøv igen.");
+    }
+
     private async Task<T> GetAsync<T>(string url, CancellationToken ct) where T : class
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);

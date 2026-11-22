@@ -1,6 +1,7 @@
 // Explicit loopback-only fixture. This executable is never referenced by the production app or Docker image.
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -10,6 +11,7 @@ using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Drawings;
 using Mercantec.Tech.Api.Emojis;
+using Mercantec.Tech.Api.Integrations.Azure;
 using Mercantec.Tech.Api.KnowledgeChecks;
 using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Api.Notebooks;
@@ -51,6 +53,22 @@ builder.Configuration["Wordle:ScheduleKey"] = QaIdentities.ServiceKey;
 builder.Configuration["DailyGames:ScheduleKey"] = QaIdentities.ServiceKey;
 builder.Services.AddWordle();
 builder.Services.AddLiveQuiz();
+var calendarQa = Environment.GetEnvironmentVariable("NOTEBOOK_BROWSER_QA_CALENDAR") == "1";
+if (calendarQa)
+{
+    builder.Services.Configure<AzureGraphOptions>(options =>
+    {
+        options.TenantId = "fixture-tenant";
+        options.ClientId = "fixture-client";
+        options.ClientSecret = "fixture-secret";
+        options.TeacherUpnMap = $"{QaIdentities.All["teacher"].Sub:D}=mathias@example.test";
+        options.CalendarWriteTargets = "kasper=kasper@example.test;mathias=mathias@example.test";
+    });
+    builder.Services.AddSingleton<QaOutlookState>();
+    builder.Services.AddHttpClient("azure-graph").ConfigurePrimaryHttpMessageHandler(
+        sp => new QaOutlookHandler(sp.GetRequiredService<QaOutlookState>()));
+    builder.Services.AddSingleton<AzureGraphCalendarClient>();
+}
 builder.Services.AddSingleton<NotebookServiceKey>();
 builder.Services.AddHttpClient<NotebookEngineClient>(client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddSingleton<IObjectStorage, QaMemoryStorage>();
@@ -72,6 +90,8 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapGet("/_qa/health", () => Results.Json(new { status = "ok", fixture = "fictional-notebook-browser-qa" }));
+if (calendarQa)
+    app.MapGet("/_qa/outlook-copies", (QaOutlookState outlook) => Results.Json(outlook.Copies.ToArray()));
 app.MapGet("/_qa/identities", () => Results.Json(QaIdentities.All.Values.Select(identity => new
 {
     identity.Key, identity.Name, identity.Sub, identity.Token,
@@ -96,7 +116,7 @@ using (var scope = app.Services.CreateScope())
     foreach (var key in new[] { "pupil", "peer" })
         db.Memberships.Add(new Membership { Id = Guid.NewGuid(), Hold = hold, UserSub = QaIdentities.All[key].Sub,
             DisplayName = QaIdentities.All[key].Name, CreatedAtUtc = now });
-    if (Environment.GetEnvironmentVariable("NOTEBOOK_BROWSER_QA_CALENDAR") == "1")
+if (calendarQa)
     {
         var otherCourse = new Forloeb
         {
@@ -209,6 +229,47 @@ internal sealed class QaAuthenticationHandler(IOptionsMonitor<AuthenticationSche
             new Claim("role", identity.Key == "teacher" ? "Underviser" : "Elev") };
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, Scheme.Name));
         return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
+    }
+}
+
+internal sealed record QaOutlookCopy(string Mailbox, string Subject, string TransactionId, bool Accepted);
+
+internal sealed class QaOutlookState
+{
+    internal ConcurrentQueue<QaOutlookCopy> Copies { get; } = new();
+    private int _plannerFailure;
+
+    internal bool Accept(string mailbox, string subject) =>
+        mailbox != "kasper@example.test" || subject != "QA Outlook fra kalender"
+        || Interlocked.Exchange(ref _plannerFailure, 1) != 0;
+}
+
+internal sealed class QaOutlookHandler(QaOutlookState state) : HttpMessageHandler
+{
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+    {
+        if (request.Method == HttpMethod.Post && request.RequestUri is { Host: "login.microsoftonline.com" })
+            return new(HttpStatusCode.OK) { Content = JsonContent.Create(new { access_token = "qa-graph-token", expires_in = 3600 }) };
+
+        if (request.Method != HttpMethod.Post || request.RequestUri is not { Host: "graph.microsoft.com" } uri
+            || request.Headers.Authorization?.Parameter != "qa-graph-token")
+            return new(HttpStatusCode.NotFound);
+
+        var path = Uri.UnescapeDataString(uri.AbsolutePath).Split('/');
+        if (path is not ["", "v1.0", "users", "kasper@example.test" or "mathias@example.test", "calendar", "events"])
+            return new(HttpStatusCode.BadRequest);
+        using var payload = await request.Content!.ReadFromJsonAsync<JsonDocument>(ct);
+        if (payload is null || payload.RootElement.TryGetProperty("attendees", out _)
+            || payload.RootElement.GetProperty("transactionId").GetString() is not { Length: > 0 } transaction
+            || payload.RootElement.GetProperty("subject").GetString() is not { Length: > 0 } subject)
+            return new(HttpStatusCode.BadRequest);
+
+        var mailbox = path[3];
+        var accepted = state.Accept(mailbox, subject);
+        state.Copies.Enqueue(new(mailbox, subject, transaction, accepted));
+        return accepted
+            ? new(HttpStatusCode.Created) { Content = JsonContent.Create(new { id = "qa-" + transaction }) }
+            : new(HttpStatusCode.ServiceUnavailable);
     }
 }
 

@@ -59,7 +59,9 @@ Installér Playwright fra `release-news` med `npm --prefix release-news ci`. Sta
 frisk launcher med `NOTEBOOK_BROWSER_QA_CALENDAR=1` i miljøet og kør
 `node editor/tests/qa-calendar-browser.mjs`. Testen bruger den rigtige LUP-plan
 og notifikationer gennem de lokale API-controllere. Outlook-aftalen er en fiktiv
-respons i underviserens browserkontekst.
+respons i underviserens browserkontekst. Kopier til Kasper og Mathias går gennem
+de lokale API-controllere og en simuleret Microsoft Graph-transport. Prøven
+kontrollerer, at en delvist mislykket kopiering kan gentages for én kalender.
 
 ## Tegninger: automatiseret browseraccept
 

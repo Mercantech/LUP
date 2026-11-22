@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -32,6 +33,59 @@ public sealed class AzureGraphCalendarClient(
 
     public string? ResolveTeacherUpn(string? sub, string? email = null) =>
         _options.ResolveTeacherUpn(sub, email);
+
+    public IReadOnlyDictionary<string, string> GetCalendarCopyMailboxes(string? sub, string? email)
+    {
+        var targets = _options.ParseCalendarWriteTargets();
+        var caller = _options.ResolveMappedTeacherUpn(sub, email);
+        return caller is not null && targets.Values.Contains(caller, StringComparer.OrdinalIgnoreCase)
+            ? targets : new Dictionary<string, string>();
+    }
+
+    public async Task<string> CreateCalendarEventAsync(string targetUpn, HoldCalendarEventView appointment,
+        string transactionId, CancellationToken ct)
+    {
+        if (!IsConfigured)
+            throw new InvalidOperationException("Azure Graph er ikke konfigureret");
+        if (!_options.ParseCalendarWriteTargets().Values.Contains(targetUpn, StringComparer.OrdinalIgnoreCase))
+            throw new ArgumentException("Postkassen er ikke konfigureret til Outlook-kopier.", nameof(targetUpn));
+        ArgumentException.ThrowIfNullOrWhiteSpace(transactionId);
+
+        var token = await GetAccessTokenAsync(ct);
+        using var request = new HttpRequestMessage(HttpMethod.Post,
+            $"https://graph.microsoft.com/v1.0/users/{Uri.EscapeDataString(targetUpn)}/calendar/events")
+        {
+            Content = JsonContent.Create(new
+            {
+                subject = appointment.Title,
+                body = new { contentType = "text", content = appointment.Description },
+                start = CalendarWriteTime(appointment.StartUtc),
+                end = CalendarWriteTime(appointment.EndUtc),
+                location = new { displayName = appointment.Location },
+                transactionId
+            })
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var http = httpClientFactory.CreateClient("azure-graph");
+        using var response = await http.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning("Graph kalenderoprettelse fejlede: {Status}", (int)response.StatusCode);
+            throw new HttpRequestException("Kunne ikke oprette Outlook-aftalen.", null, response.StatusCode);
+        }
+
+        var created = await response.Content.ReadFromJsonAsync<GraphEvent>(JsonOptions, ct);
+        if (string.IsNullOrWhiteSpace(created?.Id))
+            throw new HttpRequestException("Outlook svarede uden id for aftalen.");
+        return created.Id;
+    }
+
+    private static object CalendarWriteTime(DateTimeOffset time) => new
+    {
+        dateTime = time.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff", CultureInfo.InvariantCulture),
+        timeZone = "UTC"
+    };
 
     public async Task<IReadOnlyList<TeacherCalendarEvent>> GetCalendarViewAsync(
         string azureUpn,

@@ -1,0 +1,63 @@
+.outlook-copy-options {
+    min-width: 0;
+    margin: 0;
+    padding: 10px 12px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 9px;
+    background: var(--bg);
+}
+
+.outlook-copy-options legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    float: none;
+    width: auto;
+    margin: 0;
+    padding-inline: 4px;
+    font-size: .9rem;
+    font-weight: 650;
+}
+
+.outlook-copy-options legend ::deep .ui-icon { width: 16px; height: 16px; color: var(--blue); }
+.outlook-copy-options p { margin: 2px 0 8px; font-size: .83rem; color: var(--muted); }
+.outlook-copy-choices { display: flex; flex-wrap: wrap; gap: 5px 20px; }
+
+.outlook-copy-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    font-size: .88rem;
+    cursor: pointer;
+}
+
+.outlook-copy-choice input {
+    box-sizing: border-box;
+    flex: none;
+    appearance: none;
+    display: grid;
+    align-items: center;
+    width: 32px;
+    height: 19px;
+    padding: 2px;
+    margin: 0;
+    border: 1px solid var(--muted);
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--muted);
+    cursor: inherit;
+}
+
+.outlook-copy-choice input::before {
+    content: "";
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.outlook-copy-choice input:checked { justify-items: end; border-color: var(--blue); background: var(--blue); color: var(--on-blue, white); }
+.outlook-copy-choice input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.outlook-copy-choice input:disabled { opacity: .6; cursor: default; }
+@media (forced-colors: active) { .outlook-copy-choice input { appearance: auto; } }

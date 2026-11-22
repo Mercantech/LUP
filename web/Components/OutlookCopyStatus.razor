@@ -1,0 +1,130 @@
+@using Mercantec.Tech.Web.Calendar
+@inject TeacherCalendarClient Outlook
+@inject AuthService Auth
+@inject ViewAsStudentContext ViewAs
+@implements IDisposable
+
+@if (_copies.Count > 0)
+{
+    <section class="outlook-copy-result" aria-label="Outlook-kopier">
+        <div role="status" aria-live="polite">
+            <strong>Outlook</strong>
+            <ul>
+                @foreach (var copy in _copies)
+                {
+                    <li @key="copy.TargetId"><span>@TargetName(copy.TargetId)</span> <span>@StateLabel(copy)</span></li>
+                }
+            </ul>
+            @if (_error is not null)
+            {
+                <p>@_error</p>
+            }
+        </div>
+        @if (!_copying)
+        {
+            <div class="outlook-copy-result-actions">
+                @if (_copies.Any(copy => copy.Status != "copied"))
+                {
+                    <button type="button" class="secondary" @onclick="RetryAsync">Prøv Outlook igen</button>
+                }
+                @if (OnDismiss.HasDelegate)
+                {
+                    <button type="button" class="secondary" aria-label="Skjul Outlook-status" title="Skjul Outlook-status" @onclick="OnDismiss"><UiIcon Name="close" /></button>
+                }
+            </div>
+        }
+    </section>
+}
+
+@code {
+    [Parameter, EditorRequired] public Guid HoldId { get; set; }
+    [Parameter, EditorRequired] public Guid EventId { get; set; }
+    [Parameter, EditorRequired] public string[] TargetIds { get; set; } = [];
+    [Parameter] public EventCallback<OutlookCalendarCopies> CopyCompleted { get; set; }
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    private (Guid Hold, Guid Event, string? Subject) _source;
+    private readonly List<OutlookCalendarCopyView> _copies = [];
+    private CancellationTokenSource? _request;
+    private bool _copying;
+    private string? _error;
+
+    protected override Task OnParametersSetAsync()
+    {
+        var source = (HoldId, EventId, Auth.Subject);
+        if (source == _source) return Task.CompletedTask;
+        _request?.Cancel();
+        _request = null;
+        _source = source;
+        _copies.Clear();
+        _copying = false;
+        _error = null;
+        if (HoldId == Guid.Empty || EventId == Guid.Empty || !Auth.IsAuthenticated || ViewAs.IsActive)
+            return Task.CompletedTask;
+        _copies.AddRange(TargetIds.Distinct(StringComparer.Ordinal).Select(id => new OutlookCalendarCopyView(id, "pending")));
+        return RetryAsync();
+    }
+
+    private async Task RetryAsync()
+    {
+        if (_copying || ViewAs.IsActive || Auth.Subject != _source.Subject) return;
+        var targets = _copies.Where(copy => copy.Status != "copied").Select(copy => copy.TargetId).ToArray();
+        if (targets.Length == 0) return;
+        using var request = new CancellationTokenSource();
+        _request = request;
+        _copying = true;
+        _error = null;
+        try
+        {
+            var result = await Outlook.CopyAsync(_source.Hold, _source.Event, targets, request.Token);
+            if (!IsCurrent(request)) return;
+            for (var index = 0; index < _copies.Count; index++)
+            {
+                var id = _copies[index].TargetId;
+                if (targets.Contains(id))
+                    _copies[index] = result.Copies.FirstOrDefault(copy => copy.TargetId == id) ?? new(id, "failed");
+            }
+            if (result.Copies.Any(copy => copy.Status == "copied"))
+                await CopyCompleted.InvokeAsync(result);
+        }
+        catch (Exception ex) when (ex is TeacherCalendarException or HttpRequestException
+            or System.Text.Json.JsonException or OperationCanceledException)
+        {
+            if (!IsCurrent(request)) return;
+            for (var index = 0; index < _copies.Count; index++)
+                if (targets.Contains(_copies[index].TargetId)) _copies[index] = _copies[index] with { Status = "failed" };
+            _error = ex is TeacherCalendarException ? ex.Message : "Outlook-kopien kunne ikke bekræftes. Prøv igen.";
+        }
+        finally
+        {
+            if (ReferenceEquals(_request, request))
+            {
+                _request = null;
+                _copying = false;
+            }
+        }
+    }
+
+    private bool IsCurrent(CancellationTokenSource request) => ReferenceEquals(_request, request)
+        && !request.IsCancellationRequested && Auth.Subject == _source.Subject && !ViewAs.IsActive;
+
+    private static string TargetName(string id) => id == "kasper" ? "Kasper" : "Mathias";
+
+    private string StateLabel(OutlookCalendarCopyView copy) => copy.Status switch
+    {
+        "copied" => "Oprettet",
+        _ when _copying => "Kopierer…",
+        "pending" => "Afventer Outlook",
+        _ when copy.ErrorCode == "outlook_permission_denied" => "Mangler skriverettighed",
+        _ when copy.ErrorCode == "outlook_not_configured" => "Outlook er ikke koblet til LUP",
+        _ when copy.ErrorCode == "outlook_mailbox_not_found" => "Postkassen blev ikke fundet",
+        _ when copy.ErrorCode == "outlook_copy_in_progress" => "Kopieringen er i gang",
+        _ => "Kunne ikke kopieres"
+    };
+
+    public void Dispose()
+    {
+        _request?.Cancel();
+        _request = null;
+    }
+}

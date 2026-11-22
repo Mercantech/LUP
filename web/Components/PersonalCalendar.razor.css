@@ -176,6 +176,13 @@
     pointer-events: none;
 }
 
+.pc-duration-row, .pc-duration-options { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.pc-duration-row { justify-content: space-between; }
+.pc-duration-options > button { min-height: 34px; }
+.pc-duration-options > button[aria-pressed="true"] { border-color: var(--blue); background: var(--tint); color: var(--ink); }
+.pc-duration-end { color: var(--muted); font-size: .8125rem; font-variant-numeric: tabular-nums; }
+@media (pointer: coarse) { .pc-duration-options > button { min-height: 44px; } }
+
 .pc-editor-footer {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

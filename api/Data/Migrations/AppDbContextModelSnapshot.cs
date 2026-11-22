@@ -1349,6 +1349,42 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("hold_calendar_events", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.HoldCalendarOutlookCopy", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Mailbox")
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<Guid?>("AttemptId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ErrorCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("GraphEventId")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<long>("LeaseExpiresUnixSeconds")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TargetId")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("EventId", "Mailbox");
+
+                    b.HasIndex("Mailbox")
+                        .HasFilter("\"GraphEventId\" IS NOT NULL");
+
+                    b.ToTable("hold_calendar_outlook_copies", (string)null);
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.HoldFavorite", b =>
                 {
                     b.Property<Guid>("UserSub")
@@ -3852,6 +3888,15 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .WithMany()
                         .HasForeignKey("QuestId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.HoldCalendarOutlookCopy", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.HoldCalendarEvent", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.HoldFavorite", b =>

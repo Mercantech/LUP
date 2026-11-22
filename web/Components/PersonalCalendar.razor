@@ -84,6 +84,11 @@ else
         {
             <p class="pc-status" role="status">@_notice</p>
         }
+        @foreach (var copy in _outlookCopies)
+        {
+            <OutlookCopyStatus @key="copy.EventId" HoldId="copy.HoldId" EventId="copy.EventId" TargetIds="copy.TargetIds"
+                               OnDismiss="() => { _outlookCopies.Remove(copy); }" CopyCompleted="_ => RefreshOutlookAfterCopy()" />
+        }
         @if (_loadError is not null)
         {
             <div class="pc-status pc-error" role="alert">
@@ -162,6 +167,16 @@ else
                                     </span>
                                 </label>
                             </div>
+                            <div class="pc-duration-row">
+                                <div class="pc-duration-options" role="group" aria-label="Vælg varighed">
+                                    @foreach (var minutes in DurationOptions)
+                                    {
+                                        <button type="button" class="secondary" aria-pressed="@DemoWorld.Pressed(draft.Duration == minutes)"
+                                                @onclick="() => draft.Duration = minutes">@minutes min.</button>
+                                    }
+                                </div>
+                                @if (DraftEndLabel(draft) is { } endsAt) { <span class="pc-duration-end">Slut @endsAt</span> }
+                            </div>
                             <label class="field">Fremmødeform
                                 <select name="attendance" @bind="draft.AttendanceMode">
                                     <option value="">Vælg fremmødeform</option>
@@ -172,6 +187,10 @@ else
                             </label>
                         </div>
                     </div>
+                    @if (draft.Id is null)
+                    {
+                        <OutlookCopyOptions @bind-SelectedTargetIds="_outlookTargetIds" Disabled="_busy" />
+                    }
                     @if (ConfirmOverlap)
                     {
                         <p class="pc-warning pc-form-feedback" role="alert">@_overlap Kontrollér tidspunktet, eller gem alligevel.</p>
@@ -194,7 +213,7 @@ else
                                 <button type="button" class="secondary pc-danger" @onclick="AskDelete">Slet aktivitet</button>
                             }
                             <button type="button" class="secondary" @onclick="ClearEditor">Annullér</button>
-                            <button type="submit" class="action" disabled="@_stale">@(_busy ? "Gemmer…" : ConfirmOverlap ? "Gem alligevel" : "Gem aktivitet")</button>
+                            <button type="submit" class="action" disabled="@(_stale || string.IsNullOrWhiteSpace(draft.Title) || draft.Kind == "quest" && draft.QuestId is null)">@SaveLabel</button>
                         </div>
                     </div>
                 </fieldset>
