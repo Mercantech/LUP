@@ -1,0 +1,20 @@
+.outlook-copy-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-block: 8px;
+    padding: 9px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 9px;
+    background: var(--paper);
+    font-size: .85rem;
+}
+
+.outlook-copy-result strong { display: block; margin-bottom: 2px; }
+.outlook-copy-result ul { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 0; }
+.outlook-copy-result li span + span { margin-inline-start: 2px; color: var(--muted); }
+.outlook-copy-result p { margin: 4px 0 0; }
+.outlook-copy-result-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.outlook-copy-result-actions ::deep .ui-icon { width: 16px; height: 16px; }

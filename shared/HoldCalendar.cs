@@ -7,6 +7,10 @@ public sealed record SaveHoldCalendarEvent(Guid HoldId, string Title, string Des
     DateTimeOffset StartUtc, DateTimeOffset EndUtc, string Location, string Kind = "teaching", int Version = 0,
     string? AttendanceMode = null, Guid? QuestId = null);
 
+public sealed record CopyHoldCalendarEventToOutlook(string[] TargetIds);
+public sealed record OutlookCalendarCopyView(string TargetId, string Status, string? ErrorCode = null);
+public sealed record OutlookCalendarCopies(OutlookCalendarCopyView[] Copies);
+
 public sealed record HoldCalendarOverview(HoldCalendarSource[] Holds, HoldCalendarEventView[] Events,
     CalendarQuestDeadline[] Deadlines, CalendarQuestChoice[] QuestChoices);
 public sealed record HoldCalendarSource(Guid HoldId, Guid ForloebId, string Name, bool CanManage);

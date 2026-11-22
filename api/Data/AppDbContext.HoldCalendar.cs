@@ -7,6 +7,7 @@ public partial class AppDbContext
 {
     public DbSet<HoldCalendarEvent> HoldCalendarEvents => Set<HoldCalendarEvent>();
     public DbSet<HoldCalendarChange> HoldCalendarChanges => Set<HoldCalendarChange>();
+    public DbSet<HoldCalendarOutlookCopy> HoldCalendarOutlookCopies => Set<HoldCalendarOutlookCopy>();
 
     private static void ConfigureHoldCalendar(ModelBuilder model)
     {
@@ -33,6 +34,19 @@ public partial class AppDbContext
             e.HasIndex(x => new { x.HoldId, x.ChangedAtUtc });
             e.HasIndex(x => new { x.EventId, x.EventVersion });
             e.HasOne<Hold>().WithMany().HasForeignKey(x => x.HoldId).OnDelete(DeleteBehavior.Cascade);
+        });
+        model.Entity<HoldCalendarOutlookCopy>(e =>
+        {
+            e.ToTable("hold_calendar_outlook_copies");
+            e.HasKey(x => new { x.EventId, x.Mailbox });
+            e.Property(x => x.Mailbox).HasMaxLength(320);
+            e.Property(x => x.TargetId).HasMaxLength(16).IsRequired();
+            // Outlook event IDs are opaque. Index mailbox for planner lookups without putting
+            // provider-controlled strings into a PostgreSQL btree index key.
+            e.Property(x => x.GraphEventId).HasMaxLength(2048);
+            e.Property(x => x.ErrorCode).HasMaxLength(64);
+            e.HasIndex(x => x.Mailbox).HasFilter("\"GraphEventId\" IS NOT NULL");
+            e.HasOne<HoldCalendarEvent>().WithMany().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

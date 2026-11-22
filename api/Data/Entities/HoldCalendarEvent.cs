@@ -26,3 +26,14 @@ public sealed class HoldCalendarChange
     public string Kind { get; set; } = "";
     public DateTimeOffset ChangedAtUtc { get; set; }
 }
+
+public sealed class HoldCalendarOutlookCopy
+{
+    public Guid EventId { get; set; }
+    public string Mailbox { get; set; } = "";
+    public string TargetId { get; set; } = "";
+    public string? GraphEventId { get; set; }
+    public string? ErrorCode { get; set; }
+    public Guid? AttemptId { get; set; }
+    public long LeaseExpiresUnixSeconds { get; set; }
+}

@@ -93,6 +93,17 @@ public sealed class TeacherCalendarHoldFilterTests
         Assert.Empty(filtered);
     }
 
+    [Fact]
+    public void Linked_copy_is_exempt_from_heuristic_duplicate_hold_filtering()
+    {
+        var day = new DateTimeOffset(2026, 11, 5, 0, 0, 0, TimeSpan.Zero);
+        var linked = Event("known", "dt1H2601/pro", day.AddHours(14), 45) with { LupEventId = Guid.NewGuid() };
+        var events = Enumerable.Range(0, 4)
+            .Select(i => Event($"e{i}", linked.Subject, day.AddHours(8 + i), 45)).Append(linked).ToArray();
+
+        Assert.Equal(linked, Assert.Single(TeacherCalendarHoldFilter.HideDuplicateHolds(events)));
+    }
+
     private static TeacherCalendarEvent Event(
         string id, string subject, DateTimeOffset start, int minutes) =>
         new(

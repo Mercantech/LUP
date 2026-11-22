@@ -18,8 +18,12 @@ public partial class PersonalCalendar
     private const int HourHeight = 64;
     private const int MinimumBlockHeight = 58;
     private static readonly CultureInfo Danish = CultureInfo.GetCultureInfo("da-DK");
+    private static readonly int[] DurationOptions = [30, 45, 60, 90];
 
     private readonly CancellationTokenSource _life = new();
+    private readonly List<OutlookCopy> _outlookCopies = [];
+    private string[] _outlookTargetIds = [];
+    private int _contextVersion;
     private CancellationTokenSource? _holdRequest, _outlookRequest;
     private (string? Subject, bool CanRead, bool Teacher, bool Preview, Guid? AsUser)? _context;
     private DateOnly _anchor = Today;
@@ -45,8 +49,10 @@ public partial class PersonalCalendar
     private bool CanCreate => CanEdit && _holds.Any(hold => hold.CanManage);
     private IEnumerable<HoldCalendarSource> ManageableHolds => _holds.Where(hold => hold.CanManage);
     private bool CanManage(Guid holdId) => CanEdit && _holds.Any(hold => hold.HoldId == holdId && hold.CanManage);
-    private bool IsDirty => _draft is not null && _draft != _baseline;
+    private bool IsDirty => _draft is not null && (_draft != _baseline || _outlookTargetIds.Length > 0);
     private bool ConfirmOverlap => _overlap is not null && _draft == _overlapDraft;
+    private string SaveLabel => _busy ? "Gemmer…" : ConfirmOverlap ? "Gem alligevel"
+        : _outlookTargetIds.Length > 0 ? "Gem og kopiér til Outlook" : "Gem aktivitet";
     private static DateOnly Today => LocalDay(DateTimeOffset.UtcNow);
     private static DateOnly LocalDay(DateTimeOffset value) => DateOnly.FromDateTime(HoldTime.Local(value));
     private static DateOnly Monday(DateOnly date) => date.AddDays(-((int)date.DayOfWeek + 6) % 7);
@@ -86,6 +92,8 @@ public partial class PersonalCalendar
         var context = (Auth.Subject, CanRead, Teacher, ViewAs.IsActive, ViewAs.AuthSub);
         if (_context == context) return Task.CompletedTask;
         _context = context;
+        _contextVersion++;
+        _outlookCopies.Clear();
         _holdFilter = "";
         _holds = [];
         _choices = [];
@@ -109,12 +117,12 @@ public partial class PersonalCalendar
         return LoadPeriod();
     }
 
-    private Task LoadPeriod()
+    private Task LoadPeriod(HoldCalendarEventView? saved = null)
     {
         _holdRequest?.Cancel();
         _outlookRequest?.Cancel();
         _selectedOutlookEvent = null;
-        _activities = [];
+        _activities = saved is null ? [] : [saved];
         _deadlines = [];
         _outlookEvents = [];
         _loadError = _outlookError = null;
@@ -200,6 +208,11 @@ public partial class PersonalCalendar
         }
     }
 
+    private void RefreshOutlookAfterCopy()
+    {
+        if (!_disposed && CanShowOutlook && _showOutlook) _ = RetryOutlook();
+    }
+
     private async Task ToggleOutlook(ChangeEventArgs args)
     {
         _showOutlook = args.Value is true;
@@ -269,6 +282,7 @@ public partial class PersonalCalendar
     private void ClearEditor()
     {
         _draft = _baseline = _overlapDraft = _deleting = null;
+        _outlookTargetIds = [];
         _mutationError = _overlap = null;
         _stale = _focusEditor = false;
     }
@@ -335,21 +349,21 @@ public partial class PersonalCalendar
             _mutationError = "Udfyld en titel, og vælg en quest, hvis du planlægger en quest.";
             return;
         }
-        if (!HoldTime.TryUtc(draft.Start, out var start) || draft.Duration is < 1 or > MaxDuration)
+        if (!TryDraftPeriod(draft, out var start, out var end))
         {
             _mutationError = "Vælg et gyldigt dansk tidspunkt og en varighed på mindst 1 minut og højst 31 dage. Der kan ikke startes i en tvetydig time ved skift mellem sommer- og vintertid.";
             return;
         }
 
-        var end = start.AddMinutes(draft.Duration);
-        var context = _context;
+        var version = _contextVersion;
+        var targetIds = draft.Id is null ? _outlookTargetIds.ToArray() : [];
         _busy = true;
         try
         {
             if (!ConfirmOverlap)
             {
                 var overlap = await CheckOverlap(draft.Id, start, end);
-                if (_disposed || _context != context) return;
+                if (_disposed || version != _contextVersion) return;
                 if (overlap is not null)
                 {
                     _overlap = overlap;
@@ -363,32 +377,54 @@ public partial class PersonalCalendar
             var saved = draft.Id is Guid id
                 ? await Learning.UpdateEvent(id, request, _life.Token)
                 : await Learning.CreateEvent(request, _life.Token);
-            if (_disposed || _context != context) return;
+            if (_disposed || version != _contextVersion) return;
             ClearEditor();
             var previousPeriod = PeriodStart;
             _anchor = LocalDay(saved.StartUtc);
+            if (_holdFilter.Length > 0) _holdFilter = saved.HoldId.ToString();
+            _notice = "Aktiviteten er gemt i holdets kalender.";
+            if (targetIds.Length > 0) _outlookCopies.Add(new(saved.HoldId, saved.Id, targetIds));
+
+            Task refresh;
             if (previousPeriod == PeriodStart)
             {
                 _activities = [.. _activities.Where(activity => activity.Id != saved.Id), saved];
-                await RetryHoldPlan();
+                refresh = RetryHoldPlan();
             }
             else
             {
-                await LoadPeriod();
+                refresh = LoadPeriod(saved);
             }
-            if (!_disposed && _context == context)
-                _notice = "Aktiviteten er gemt i holdets kalender.";
+            StateHasChanged();
+            await refresh;
         }
         catch (Exception ex) when (ex is LearningException or HttpRequestException or OperationCanceledException)
         {
-            if (_disposed || _context != context) return;
+            if (_disposed || version != _contextVersion) return;
             _mutationError = ex is LearningException ? ex.Message : "Aktiviteten kunne ikke gemmes. Prøv igen.";
             _stale = ex is LearningException { Code: "calendar_event_changed" };
         }
         finally
         {
-            if (_context == context) _busy = false;
+            if (version == _contextVersion) _busy = false;
         }
+    }
+
+    private static bool TryDraftPeriod(CalendarDraft draft, out DateTimeOffset start, out DateTimeOffset end)
+    {
+        end = default;
+        if (!HoldTime.TryUtc(draft.Start, out start) || draft.Duration is < 1 or > MaxDuration) return false;
+        var duration = TimeSpan.FromMinutes(draft.Duration);
+        if (start > DateTimeOffset.MaxValue - duration) return false;
+        end = start + duration;
+        return true;
+    }
+
+    private static string? DraftEndLabel(CalendarDraft draft)
+    {
+        if (!TryDraftPeriod(draft, out var start, out var end)) return null;
+        var format = LocalDay(start) == LocalDay(end) ? "HH:mm" : "d. MMM HH:mm";
+        return HoldTime.Local(end).ToString(format, Danish);
     }
 
     private async Task<string?> CheckOverlap(Guid? activityId, DateTimeOffset start, DateTimeOffset end)
@@ -430,9 +466,11 @@ public partial class PersonalCalendar
         }
 
         var hold = holdItems.Any(item => item.Id != activityId && Overlaps(item.StartUtc, item.EndUtc, start, end));
+        var holdById = holdItems.ToDictionary(item => item.Id);
         var outlook = _showOutlook && outlookItems.Any(item =>
         {
-            if (string.Equals(item.ShowAs, "free", StringComparison.OrdinalIgnoreCase)) return false;
+            if (string.Equals(item.ShowAs, "free", StringComparison.OrdinalIgnoreCase)
+                || IsOutlookDuplicate(item, holdById)) return false;
             var (from, to) = OutlookRange(item);
             return Overlaps(from, to, start, end);
         });
@@ -479,6 +517,7 @@ public partial class PersonalCalendar
             await Learning.DeleteEvent(draft.HoldId, id, draft.Version, _life.Token);
             if (_disposed || _context != context) return;
             _activities = _activities.Where(activity => activity.Id != id).ToArray();
+            _outlookCopies.RemoveAll(copy => copy.EventId == id);
             ClearEditor();
             _notice = "Aktiviteten er slettet.";
         }
@@ -514,7 +553,11 @@ public partial class PersonalCalendar
     {
         var sources = _holds.Where(hold => _holdFilter.Length == 0 || hold.HoldId.ToString() == _holdFilter)
             .ToDictionary(hold => hold.HoldId);
-        var activities = _activities.Where(item => sources.ContainsKey(item.HoldId)).Select(item =>
+        var periodFrom = LocalBoundary(PeriodStart);
+        var periodTo = LocalBoundary(PeriodStart.AddDays(PeriodLength));
+        var visibleActivities = _activities.Where(item => sources.ContainsKey(item.HoldId)
+            && Overlaps(item.StartUtc, item.EndUtc, periodFrom, periodTo)).ToDictionary(item => item.Id);
+        var activities = visibleActivities.Values.Select(item =>
         {
             var hold = sources[item.HoldId];
             return new PlanBlock("activity", item.Id.ToString(), item.Title, item.StartUtc, item.EndUtc,
@@ -526,12 +569,13 @@ public partial class PersonalCalendar
             return new PlanBlock("deadline", item.QuestId.ToString(), item.Title, item.DeadlineUtc, item.DeadlineUtc,
                 false, hold.Name, null, null, QuestHref(item.QuestId, hold), null);
         });
-        var outlook = _showOutlook && CanShowOutlook ? _outlookEvents.Select(item =>
-        {
-            var (from, to) = OutlookRange(item);
-            return new PlanBlock("outlook", item.Id, item.IsPrivate ? "Privat aftale" : item.Subject, from, to,
-                item.IsAllDay, null, item.IsPrivate ? null : item.Location, null, null, null, OpensOutlookDetails: !item.IsPrivate);
-        }) : [];
+        var outlook = _showOutlook && CanShowOutlook
+            ? _outlookEvents.Where(item => !IsOutlookDuplicate(item, visibleActivities)).Select(item =>
+            {
+                var (from, to) = OutlookRange(item);
+                return new PlanBlock("outlook", item.Id, item.IsPrivate ? "Privat aftale" : item.Subject, from, to,
+                    item.IsAllDay, null, item.IsPrivate ? null : item.Location, null, null, null, OpensOutlookDetails: !item.IsPrivate);
+            }) : [];
         var blocks = activities.Concat(deadlines).Concat(outlook).OrderBy(item => item.StartUtc).ThenBy(item => item.EndUtc).ToArray();
 
         return Enumerable.Range(0, PeriodLength).Select(offset =>
@@ -596,6 +640,10 @@ public partial class PersonalCalendar
             DateOnly.FromDateTime(end) > day ? 24 * 60 : end.Hour * 60 + end.Minute);
     }
 
+    private static bool IsOutlookDuplicate(TeacherCalendarEvent outlook, IReadOnlyDictionary<Guid, HoldCalendarEventView> activities) =>
+        !outlook.IsAllDay && outlook.LupEventId is Guid id && activities.TryGetValue(id, out var activity)
+        && outlook.Start == activity.StartUtc && outlook.End == activity.EndUtc;
+
     private static (DateTimeOffset Start, DateTimeOffset End) OutlookRange(TeacherCalendarEvent item) => item.IsAllDay
         ? (LocalBoundary(DateOnly.FromDateTime(item.Start.UtcDateTime)), LocalBoundary(DateOnly.FromDateTime(item.End.UtcDateTime)))
         : (item.Start, item.End);
@@ -646,6 +694,7 @@ public partial class PersonalCalendar
         public int Version { get; init; }
     }
 
+    private sealed record OutlookCopy(Guid HoldId, Guid EventId, string[] TargetIds);
     private sealed record PlanDay(DateOnly Date, IReadOnlyList<PlanBlock> Blocks);
     private sealed record PlanBlock(string Source, string Id, string Title, DateTimeOffset StartUtc, DateTimeOffset EndUtc,
         bool AllDay, string? HoldName, string? Location, string? AttendanceMode, string? Href, HoldCalendarEventView? Activity,

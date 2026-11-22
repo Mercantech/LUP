@@ -12,7 +12,12 @@
 <section class="hold-calendar" aria-label="Holdets kalender">
     <div class="hc-heading"><div><h2>Holdets kalender</h2><p>Undervisning, begivenheder og questfrister samlet. Alle tider er dansk tid.</p></div>@if (_canManage) { <button type="button" class="action" @onclick="() => New(_anchor)" disabled="@_busy"><UiIcon Name="plus" /> Opret begivenhed</button> }</div>
     @if (_error is not null) { <p class="hc-error" role="alert">@_error</p> }
-    @if (_notice is not null) { <p role="status">@_notice</p> }
+    @if (_notice is not null) { <p class="hc-notice" role="status">@_notice</p> }
+    @foreach (var copy in _outlookCopies)
+    {
+        <OutlookCopyStatus @key="copy.EventId" HoldId="copy.HoldId" EventId="copy.EventId" TargetIds="copy.TargetIds"
+                           OnDismiss="() => { _outlookCopies.Remove(copy); }" />
+    }
     @if (_loading) { <p role="status">Henter kalender…</p> }
     else
     {
@@ -22,13 +27,31 @@
                 <h3>@(_editing is null ? "Opret begivenhed" : "Redigér begivenhed")</h3>
                 <fieldset disabled="@_busy">
                     <div class="hc-fields"><label class="field">Titel<input @bind="_title" @bind:event="oninput" maxlength="200" required /></label><label class="field">Type<select @bind="_kind" disabled="@(_editing?.QuestId is not null)"><option value="teaching">Undervisning</option><option value="workshop">Workshop</option><option value="exam">Prøve / eksamen</option><option value="other">Andet</option>@if (_editing?.QuestId is not null) { <option value="quest">Tilknyttet quest</option> }</select></label></div>
-                    <div class="hc-fields"><label class="field">Start (dansk tid)<input type="datetime-local" value="@_start" @onchange="e => _start = e.Value?.ToString() ?? string.Empty" required /></label><label class="field">Slut (dansk tid)<input type="datetime-local" value="@_end" @onchange="e => _end = e.Value?.ToString() ?? string.Empty" required /></label></div>
+                    <div class="hc-fields">
+                        <label class="field">Start (dansk tid)<input type="datetime-local" value="@_start" @onchange="ChangeStart" required /></label>
+                        <label class="field">Slut (dansk tid)<input type="datetime-local" value="@_end" @onchange="ChangeEnd" required /></label>
+                    </div>
+                    <div class="hc-duration-options" role="group" aria-label="Vælg varighed">
+                        @foreach (var minutes in DurationOptions)
+                        {
+                            <button type="button" class="secondary" aria-pressed="@DemoWorld.Pressed(_duration == TimeSpan.FromMinutes(minutes) && TimingError is null)"
+                                    @onclick="() => SetDuration(TimeSpan.FromMinutes(minutes))">@minutes min.</button>
+                        }
+                    </div>
+                    @if (TimingError is { } timingError) { <p class="hc-validation" role="status">@timingError</p> }
                     <label class="field">Fremmødeform
                         <select @bind="_attendance"><option value="">Vælg fremmødeform</option><option value="physical">Fuldt fremmøde</option><option value="online">Online fremmøde</option><option value="home">Arbejde hjemme</option></select>
                     </label>
                     <label class="field">Lokale / sted<input @bind="_location" @bind:event="oninput" maxlength="200" placeholder="Fx lokale 204 eller online" /></label>
                     <label class="field">Beskrivelse<textarea @bind="_description" @bind:event="oninput" maxlength="4000" rows="3"></textarea></label>
-                    <div class="actions"><button type="submit" class="action" disabled="@string.IsNullOrWhiteSpace(_title)">@(_busy ? "Gemmer…" : "Gem begivenhed")</button><button type="button" class="secondary" @onclick="Cancel">Annullér</button></div>
+                    @if (_editing is null)
+                    {
+                        <OutlookCopyOptions @bind-SelectedTargetIds="_outlookTargetIds" Disabled="_busy" />
+                    }
+                    <div class="actions">
+                        <button type="submit" class="action" disabled="@(string.IsNullOrWhiteSpace(_title) || TimingError is not null)">@SaveLabel</button>
+                        <button type="button" class="secondary" @onclick="Cancel">Annullér</button>
+                    </div>
                 </fieldset>
             </form>
         }
@@ -81,7 +104,12 @@
     [Parameter] public Guid? EventId { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }
     private static readonly CultureInfo Danish = CultureInfo.GetCultureInfo("da-DK");
+    private static readonly int[] DurationOptions = [30, 45, 60, 90];
+    private static readonly TimeSpan MaxDuration = TimeSpan.FromDays(31);
     private readonly CancellationTokenSource _life = new();
+    private readonly List<OutlookCopy> _outlookCopies = [];
+    private string[] _outlookTargetIds = [];
+    private TimeSpan _duration = TimeSpan.FromHours(1);
     private HoldCalendarEventView[] _events = [];
     private QuestView[] _quests = [];
     private (Guid Hold, string? Account, bool Preview, Guid? AsUser, bool Authenticated)? _context;
@@ -95,7 +123,11 @@
     private string _baseline = "";
     private Guid? _openedEvent;
     private string FormKey => string.Join('\u001f',_title,_description,_kind,_location,_start,_end,_attendance);
-    private bool IsDirty => _editingOpen && _canManage && !ViewAs.IsActive && FormKey != _baseline;
+    private bool IsDirty => _editingOpen && _canManage && !ViewAs.IsActive
+        && (FormKey != _baseline || _outlookTargetIds.Length > 0);
+    private string? TimingError => ValidateTiming(out _, out _);
+    private string SaveLabel => _busy ? "Gemmer…" : _outlookTargetIds.Length > 0
+        ? "Gem og kopiér til Outlook" : "Gem begivenhed";
     private async Task BeforeNavigate(LocationChangingContext context)
     {
         if (IsDirty && !await Js.InvokeAsync<bool>("confirm","Du har ugemte ændringer i begivenheden. Forlad siden?")) context.PreventNavigation();
@@ -119,7 +151,7 @@
     {
         if (_context != CurrentContext)
         {
-            _events = []; _quests = []; _canManage = false; Cancel(); _selected = _deleting = null;
+            ResetContext();
             await Load();
         }
         if (StartCreating && !_startHandled && _canManage) { New(_anchor); _startHandled = true; }
@@ -131,10 +163,18 @@
     {
         // Token renewal does not change the editing context or discard the current event.
         if (_disposed || _context == CurrentContext) return;
-        _events = []; _quests = []; _canManage = false; Cancel(); _selected = _deleting = null;
-        await Load();
+        ResetContext();
+        var load = Load();
+        StateHasChanged();
+        await load;
         if (!_disposed) StateHasChanged();
     });
+    private void ResetContext()
+    {
+        _events = []; _quests = []; _canManage = _busy = false; _selected = _deleting = null; _error = _notice = null;
+        _outlookCopies.Clear();
+        Cancel();
+    }
     private async Task Load()
     {
         _context = CurrentContext;
@@ -152,25 +192,91 @@
     }
     private void Move(int direction) { _anchor = _view == "month" ? _anchor.AddMonths(direction) : _anchor.AddDays(direction * (_view == "list" ? 31 : 7)); _selected = null; }
     private void Today() { _anchor = Day(DateTimeOffset.UtcNow); _selected = null; }
-    private void New(DateOnly day) { _editing = null; _editingOpen = true; _title = _description = _location = _attendance = ""; _kind = "teaching"; _start = day.ToString("yyyy-MM-dd") + "T08:00"; _end = day.ToString("yyyy-MM-dd") + "T09:00"; _deleting = _selected = null; _notice = null; _baseline = FormKey; }
-    private void Cancel() { _editingOpen = false; _editing = null; }
-    private void Edit(HoldCalendarEventView item) { _editing = item; _editingOpen = true; _title = item.Title; _description = item.Description; _kind = item.Kind; _attendance = item.AttendanceMode ?? ""; _location = item.Location; _start = HoldTime.Input(item.StartUtc); _end = HoldTime.Input(item.EndUtc); _deleting = _selected = null; _notice = null; _baseline = FormKey; }
+    private void New(DateOnly day)
+    {
+        Cancel();
+        _editingOpen = true;
+        _title = _description = _location = _attendance = "";
+        _kind = "teaching";
+        _start = FormattableString.Invariant($"{day:yyyy-MM-dd}T08:00");
+        SetDuration(TimeSpan.FromHours(1));
+        _deleting = _selected = null;
+        _error = _notice = null;
+        _baseline = FormKey;
+    }
+    private void Cancel()
+    {
+        _editingOpen = false;
+        _editing = null;
+        _outlookTargetIds = [];
+    }
+    private void Edit(HoldCalendarEventView item)
+    {
+        Cancel();
+        _editing = item;
+        _editingOpen = true;
+        _title = item.Title; _description = item.Description; _kind = item.Kind;
+        _attendance = item.AttendanceMode ?? ""; _location = item.Location;
+        _start = HoldTime.Input(item.StartUtc); _end = HoldTime.Input(item.EndUtc);
+        _duration = item.EndUtc - item.StartUtc;
+        _deleting = _selected = null;
+        _error = _notice = null;
+        _baseline = FormKey;
+    }
+    private void ChangeStart(ChangeEventArgs args)
+    {
+        _start = args.Value?.ToString() ?? "";
+        SetDuration(_duration);
+    }
+    private void ChangeEnd(ChangeEventArgs args)
+    {
+        _end = args.Value?.ToString() ?? "";
+        if (ValidateTiming(out var start, out var end) is null) _duration = end - start;
+    }
+    private void SetDuration(TimeSpan duration)
+    {
+        _duration = duration;
+        if (HoldTime.TryUtc(_start, out var start) && start <= DateTimeOffset.MaxValue - duration)
+            _end = HoldTime.Input(start + duration);
+    }
+    private string? ValidateTiming(out DateTimeOffset start, out DateTimeOffset end)
+    {
+        var validStart = HoldTime.TryUtc(_start, out start);
+        var validEnd = HoldTime.TryUtc(_end, out end);
+        if (!validStart || !validEnd)
+            return "Vælg gyldige tidspunkter i dansk tid. Undgå den tvetydige time ved skift mellem sommer- og vintertid.";
+        return end <= start || end - start > MaxDuration
+            ? "Slut skal være efter start. En begivenhed må højst vare 31 dage."
+            : null;
+    }
     private void AskDelete(HoldCalendarEventView item) { _deleting = item; _notice = null; }
     private async Task Save()
     {
-        if (_busy || !_canManage || ViewAs.IsActive) return;
-        if (!HoldTime.TryUtc(_start, out var start) || !HoldTime.TryUtc(_end, out var end)) { _error = "Vælg gyldige tidspunkter i dansk tid. Undgå timen ved skift mellem sommer- og vintertid."; return; }
-        if (end <= start || end - start > TimeSpan.FromDays(31)) { _error = "Slut skal være efter start. En begivenhed må højst vare 31 dage."; return; }
-        var holdId = HoldId; var subject = Auth.Subject; _busy = true; _error = null;
+        if (_busy || !_canManage || ViewAs.IsActive || string.IsNullOrWhiteSpace(_title)) return;
+        if (ValidateTiming(out var start, out var end) is { } timingError) { _error = timingError; return; }
+        var version = _loadVersion;
+        var context = CurrentContext;
+        var targetIds = _editing is null ? _outlookTargetIds.ToArray() : [];
+        _busy = true; _error = null;
         try
         {
-            var body = new SaveHoldCalendarEvent(holdId, _title.Trim(), _description, start, end, _location, _kind, _editing?.Version ?? 0, _attendance.Length == 0 ? null : _attendance, _editing?.QuestId);
+            var body = new SaveHoldCalendarEvent(HoldId, _title.Trim(), _description, start, end, _location, _kind, _editing?.Version ?? 0, _attendance.Length == 0 ? null : _attendance, _editing?.QuestId);
             var saved = _editing is not null ? await Client.UpdateEvent(_editing.Id, body, _life.Token) : await Client.CreateEvent(body, _life.Token);
-            if (holdId != HoldId || subject != Auth.Subject || ViewAs.IsActive || _disposed) return;
-            _events = [.. _events.Where(e => e.Id != saved.Id), saved]; Cancel(); _anchor = Day(saved.StartUtc); _notice = "Begivenheden er gemt i holdets kalender."; await OnChanged.InvokeAsync();
+            if (_disposed || version != _loadVersion || context != CurrentContext) return;
+            _events = [.. _events.Where(e => e.Id != saved.Id), saved];
+            Cancel();
+            _anchor = Day(saved.StartUtc);
+            _notice = "Begivenheden er gemt i holdets kalender.";
+            if (targetIds.Length > 0) _outlookCopies.Add(new(saved.HoldId, saved.Id, targetIds));
+            StateHasChanged();
+            await OnChanged.InvokeAsync();
         }
-        catch (Exception ex) when (ex is LearningException or HttpRequestException or OperationCanceledException) { if (!_disposed) _error = ex is LearningException ? ex.Message : "Begivenheden kunne ikke gemmes. Prøv igen."; }
-        finally { _busy = false; }
+        catch (Exception ex) when (ex is LearningException or HttpRequestException or OperationCanceledException)
+        {
+            if (!_disposed && version == _loadVersion && context == CurrentContext)
+                _error = ex is LearningException ? ex.Message : "Begivenheden kunne ikke gemmes. Prøv igen.";
+        }
+        finally { if (version == _loadVersion && context == CurrentContext) _busy = false; }
     }
     private async Task Delete()
     {
@@ -180,7 +286,9 @@
         {
             await Client.DeleteEvent(holdId, item.Id, item.Version, _life.Token);
             if (holdId != HoldId || subject != Auth.Subject || ViewAs.IsActive || _disposed) return;
-            _events = _events.Where(e => e.Id != item.Id).ToArray(); _deleting = _selected = null; _notice = "Begivenheden er slettet."; await OnChanged.InvokeAsync();
+            _events = _events.Where(e => e.Id != item.Id).ToArray();
+            _outlookCopies.RemoveAll(copy => copy.EventId == item.Id);
+            _deleting = _selected = null; _notice = "Begivenheden er slettet."; await OnChanged.InvokeAsync();
         }
         catch (Exception ex) when (ex is LearningException or HttpRequestException or OperationCanceledException) { if (!_disposed) _error = ex is LearningException ? ex.Message : "Begivenheden kunne ikke slettes. Prøv igen."; }
         finally { _busy = false; }
@@ -190,6 +298,7 @@
     {
         "physical" => "Fuldt fremmøde", "online" => "Online fremmøde", "home" => "Arbejde hjemme", _ => mode
     };
+    private sealed record OutlookCopy(Guid HoldId, Guid EventId, string[] TargetIds);
     private sealed record Entry(string Title, DateTimeOffset Start, DateTimeOffset End, string Kind, string Location, string Description, HoldCalendarEventView? Event, Guid? QuestId);
     public void Dispose() { _disposed = true; Auth.AuthStateChanged -= Changed; ViewAs.Changed -= Changed; _life.Cancel(); _life.Dispose(); }
 }

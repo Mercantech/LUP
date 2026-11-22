@@ -19,7 +19,11 @@ public sealed record TeacherCalendarEvent(
     string? WebLink,
     bool IsPrivate,
     bool IsCancelled,
-    string? ShowAs);
+    string? ShowAs,
+    Guid? LupEventId = null);
+
+public sealed record OutlookCalendarTarget(string Id, string Name);
+public sealed record OutlookCalendarTargets(bool Configured, OutlookCalendarTarget[] Targets);
 
 public sealed record TeacherCalendarEventDetails(
     TeacherCalendarEvent Event,
@@ -49,7 +53,7 @@ public static class TeacherCalendarHoldFilter
         var tz = ResolveDkTimeZone();
         var hideIds = new HashSet<string>(StringComparer.Ordinal);
 
-        foreach (var group in events.GroupBy(e => Fingerprint(e, tz)))
+        foreach (var group in events.Where(e => e.LupEventId is null).GroupBy(e => Fingerprint(e, tz)))
         {
             var members = group.ToList();
             if (!DuplicateHoldCounts.Contains(members.Count))

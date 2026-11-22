@@ -1,0 +1,66 @@
+@using Mercantec.Tech.Web.Calendar
+@inject TeacherCalendarClient Outlook
+@inject AuthService Auth
+@inject ViewAsStudentContext ViewAs
+@implements IDisposable
+
+@if (_capability is { Targets.Length: > 0 } capability)
+{
+    <fieldset class="outlook-copy-options" disabled="@(Disabled || !capability.Configured)">
+        <legend><UiIcon Name="calendar" /> Læg i Outlook</legend>
+        <p id="@_hint">
+            @(capability.Configured
+                ? "Opret også en kopi i en eller begge Outlook-kalendere."
+                : "Outlook er endnu ikke koblet til LUP. Du kan stadig gemme aftalen i holdets kalender.")
+        </p>
+        <div class="outlook-copy-choices" aria-describedby="@_hint">
+            @foreach (var target in capability.Targets)
+            {
+                <label class="outlook-copy-choice" @key="target.Id">
+                    <input type="checkbox" role="switch" checked="@SelectedTargetIds.Contains(target.Id)"
+                           @onchange="args => SelectAsync(target.Id, args.Value is true)" />
+                    <span>@target.Name</span>
+                </label>
+            }
+        </div>
+    </fieldset>
+}
+
+@code {
+    [Parameter] public string[] SelectedTargetIds { get; set; } = [];
+    [Parameter] public EventCallback<string[]> SelectedTargetIdsChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private readonly string _hint = $"outlook-copy-hint-{Guid.NewGuid():N}";
+    private readonly CancellationTokenSource _lifetime = new();
+    private OutlookCalendarTargets? _capability;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.IsAuthenticated || ViewAs.IsActive) return;
+        var subject = Auth.Subject;
+        try
+        {
+            var targets = await Outlook.TargetsAsync(_lifetime.Token);
+            if (!_lifetime.IsCancellationRequested && subject == Auth.Subject && !ViewAs.IsActive)
+                _capability = targets;
+        }
+        catch (Exception ex) when (ex is TeacherCalendarException or HttpRequestException
+            or System.Text.Json.JsonException or OperationCanceledException) { }
+    }
+
+    private Task SelectAsync(string targetId, bool selected)
+    {
+        if (Disabled || _capability?.Configured != true) return Task.CompletedTask;
+        var next = selected
+            ? SelectedTargetIds.Append(targetId).Distinct(StringComparer.Ordinal).ToArray()
+            : SelectedTargetIds.Where(id => id != targetId).ToArray();
+        return SelectedTargetIdsChanged.InvokeAsync(next);
+    }
+
+    public void Dispose()
+    {
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+    }
+}

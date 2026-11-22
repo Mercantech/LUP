@@ -184,6 +184,8 @@ if (string.IsNullOrWhiteSpace(azure["ClientSecret"]))
     builder.Configuration["Azure:ClientSecret"] = builder.Configuration["AZURE_CLIENT_SECRET"];
 if (string.IsNullOrWhiteSpace(azure["TeacherUpnMap"]) && !string.IsNullOrWhiteSpace(builder.Configuration["AZURE_TEACHER_UPN_MAP"]))
     builder.Configuration["Azure:TeacherUpnMap"] = builder.Configuration["AZURE_TEACHER_UPN_MAP"];
+if (azure["CalendarWriteTargets"] is null && builder.Configuration["AZURE_CALENDAR_WRITE_TARGETS"] is { } calendarWriteTargets)
+    builder.Configuration["Azure:CalendarWriteTargets"] = calendarWriteTargets;
 
 // OpenAI: understøt både OpenAI__* (compose) og flade OPENAI_* env-navne
 var openAi = builder.Configuration.GetSection(OpenAiOptions.SectionName);
@@ -285,6 +287,8 @@ var editorAiModelLabel = editorAiModel.Length <= 80 && editorAiModel.StartsWith(
         ? editorAiModel : "custom";
 app.Logger.LogInformation("Editor AI configuration: configured={Configured}; model={Model}",
     editorAiOptions.IsConfigured, editorAiModelLabel);
+var outlookOptions = app.Services.GetRequiredService<IOptions<AzureGraphOptions>>().Value;
+app.Logger.LogInformation("Outlook calendar configuration: configured={Configured}", outlookOptions.IsConfigured);
 
 using (var scope = app.Services.CreateScope())
 {

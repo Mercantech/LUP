@@ -50,6 +50,12 @@ async function changeStatus(resourceId, state) {
   return items.filter(item => item.kind === 'calendar-change' && item.targetId === resourceId && item.state === state);
 }
 
+async function outlookCopies(subject) {
+  const response = await fetch(apiBase + '/_qa/outlook-copies');
+  assert.equal(response.status, 200);
+  return (await response.json()).filter(copy => copy.subject === subject);
+}
+
 try {
   const teacherContext = await createContext({ width: 1440, height: 1050 });
   const clock = await teacherContext.newPage();
@@ -183,6 +189,59 @@ try {
   await calendarEntry(pupil, quest).getByText('Online fremmøde').waitFor();
   await pupil.getByRole('region', { name: 'Kommende questfrister' }).getByRole('link', { name: quest }).waitFor();
 
+  const plannerCopyTitle = 'QA Outlook fra kalender';
+  await teacher.getByRole('button', { name: 'Planlæg aktivitet', exact: true }).click();
+  await editor.getByLabel('Titel').fill(plannerCopyTitle);
+  await editor.getByLabel('Start (dansk tid)').fill(today + 'T17:15');
+  await editor.getByRole('button', { name: /^45 min/ }).click();
+  assert.equal(await editor.getByLabel('Varighed (minutter)').inputValue(), '45');
+  await editor.getByRole('switch', { name: 'Kasper' }).check();
+  await editor.getByRole('switch', { name: 'Mathias' }).check();
+  await editor.getByRole('button', { name: 'Gem og kopiér til Outlook', exact: true }).click();
+  await calendarEntry(teacher, plannerCopyTitle).waitFor();
+  const plannerCopies = teacher.getByRole('region', { name: 'Outlook-kopier' });
+  await plannerCopies.getByText('Kunne ikke kopieres', { exact: true }).waitFor();
+  await plannerCopies.getByText('Oprettet', { exact: true }).waitFor();
+  await plannerCopies.getByRole('button', { name: 'Prøv Outlook igen' }).click();
+  await plannerCopies.getByText('Oprettet', { exact: true }).nth(1).waitFor();
+  assert.equal(await plannerCopies.getByText('Oprettet', { exact: true }).count(), 2);
+  const plannerAttempts = await outlookCopies(plannerCopyTitle);
+  const kasperAttempts = plannerAttempts.filter(copy => copy.mailbox === 'kasper@example.test');
+  const mathiasAttempts = plannerAttempts.filter(copy => copy.mailbox === 'mathias@example.test');
+  assert.deepEqual(kasperAttempts.map(copy => copy.accepted), [false, true]);
+  assert.equal(kasperAttempts[0].transactionId, kasperAttempts[1].transactionId);
+  assert.equal(mathiasAttempts.length, 1);
+  assert.equal(mathiasAttempts[0].accepted, true);
+  assert.notEqual(kasperAttempts[0].transactionId, mathiasAttempts[0].transactionId);
+  await teacher.reload();
+  await calendarEntry(teacher, plannerCopyTitle).waitFor();
+  assert.equal(await calendarEntry(teacher, plannerCopyTitle).count(), 1);
+  assert.equal((await outlookCopies(plannerCopyTitle)).length, 3);
+
+  const holdCopyTitle = 'QA Outlook fra hold';
+  await teacher.setViewportSize({ width: 390, height: 844 });
+  await teacher.goto(base + '/courses/' + holder + '?view=calendar');
+  const holdCalendar = teacher.locator('.hold-calendar');
+  await holdCalendar.getByRole('button', { name: 'Opret begivenhed', exact: true }).click();
+  const holdEditor = holdCalendar.locator('.hc-editor');
+  await holdEditor.getByLabel('Titel').fill(holdCopyTitle);
+  await holdEditor.getByLabel('Start (dansk tid)').fill(today + 'T16:15');
+  await holdEditor.getByRole('button', { name: /^30 min/ }).click();
+  await holdEditor.getByRole('switch', { name: 'Kasper' }).check();
+  assert.ok(await teacher.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  const holdSave = teacher.waitForResponse(response => response.request().method() === 'POST'
+    && /\/holds\/[^/]+\/calendar$/.test(new URL(response.url()).pathname));
+  await holdEditor.getByRole('button', { name: 'Gem og kopiér til Outlook', exact: true }).click();
+  const holdSaved = await holdSave;
+  assert.equal(holdSaved.status(), 200);
+  const holdEvent = await holdSaved.json();
+  assert.equal(Date.parse(holdEvent.endUtc) - Date.parse(holdEvent.startUtc), 30 * 60 * 1000);
+  await holdCalendar.getByRole('region', { name: 'Outlook-kopier' }).getByText('Oprettet', { exact: true }).waitFor();
+  const holdAttempts = await outlookCopies(holdCopyTitle);
+  assert.deepEqual(holdAttempts.map(copy => [copy.mailbox, copy.accepted]), [['kasper@example.test', true]]);
+  assert.deepEqual(await outlookCopies(quest), []);
+  await teacher.setViewportSize({ width: 1440, height: 1050 });
+
   await teacher.goto(base + '/teacher');
   const favorites = teacher.getByRole('list', { name: 'Favoritgenveje' }).getByRole('link');
   await favorites.nth(6).waitFor();
@@ -201,7 +260,7 @@ try {
   await pupil.getByRole('button', { name: 'Log ud', exact: true }).click();
   await pupilTwin.getByRole('heading', { name: 'Log ind', exact: true }).waitFor();
 
-  console.log('Kalender-QA bestået: holdfilter, Outlook-detaljer og overlap, flytning, notifikation, aflysning, questfrister, arbejdsblokke, underviserforside og mobil.');
+  console.log('Kalender-QA bestået: holdfilter, Outlook-detaljer, Outlook-kopier og gentagelse, overlap, notifikation, aflysning, questfrister, mobil og underviserforside.');
 } finally {
   await browserInstance.close();
 }
