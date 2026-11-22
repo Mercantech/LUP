@@ -6,6 +6,7 @@ using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Mercantec.Tech.Api.Controllers;
 
@@ -165,10 +166,6 @@ public class HoldsController(AppDbContext db) : ControllerBase
         if (!UserClaims.IsTeacher(User))
             return Forbid();
 
-        var hold = await db.Hold.FirstOrDefaultAsync(h => h.Id == id, ct);
-        if (hold is null)
-            return NotFound();
-
         var source = string.IsNullOrWhiteSpace(body.Source) ? "manual" : body.Source.Trim().ToLowerInvariant();
         if (source is not ("manual" or "lectio"))
             return BadRequest(new { error = "invalid_source" });
@@ -177,6 +174,13 @@ public class HoldsController(AppDbContext db) : ControllerBase
         var lectioId = string.IsNullOrWhiteSpace(body.LectioId) ? null : body.LectioId.Trim();
         if (userSub is null && lectioId is null)
             return BadRequest(new { error = "need_user_sub_or_lectio_id" });
+        if (lectioId is { Length: > 64 } || body.DisplayName?.Trim().Length > 200)
+            return BadRequest(new { error = "invalid_member_fields" });
+
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        if (await access.AccessibleHolds(User, manageOnly: true).Where(h => h.Id == id)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(h => h.Name, h => h.Name), ct) != 1)
+            return NotFound();
 
         if (userSub is not null)
         {
@@ -187,7 +191,8 @@ public class HoldsController(AppDbContext db) : ControllerBase
 
         if (lectioId is not null)
         {
-            var exists = await db.Memberships.AnyAsync(m => m.HoldId == id && m.LectioId == lectioId, ct);
+            var key = lectioId.ToLowerInvariant();
+            var exists = await db.Memberships.AnyAsync(m => m.HoldId == id && m.LectioId != null && m.LectioId.ToLower() == key, ct);
             if (exists)
                 return Conflict(new { error = "already_member_lectio" });
         }
@@ -203,7 +208,12 @@ public class HoldsController(AppDbContext db) : ControllerBase
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
         db.Memberships.Add(membership);
-        await db.SaveChangesAsync(ct);
+        try { await db.SaveChangesAsync(ct); }
+        catch (DbUpdateException ex) when (IsDuplicateMembership(ex))
+        {
+            return Conflict(new { error = "already_member" });
+        }
+        await tx.CommitAsync(ct);
 
         return Created($"/api/holds/{id}/memberships", new
         {
@@ -217,4 +227,9 @@ public class HoldsController(AppDbContext db) : ControllerBase
             membership.CreatedAtUtc
         });
     }
+
+    internal static bool IsDuplicateMembership(DbUpdateException ex) =>
+        ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: "IX_memberships_HoldId_UserSub" or "IX_memberships_HoldId_LectioId" }
+        || ex.InnerException?.Message.Contains("UNIQUE constraint failed: memberships.HoldId,", StringComparison.Ordinal) == true;
 }
