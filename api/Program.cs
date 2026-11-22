@@ -186,6 +186,8 @@ if (string.IsNullOrWhiteSpace(azure["TeacherUpnMap"]) && !string.IsNullOrWhiteSp
     builder.Configuration["Azure:TeacherUpnMap"] = builder.Configuration["AZURE_TEACHER_UPN_MAP"];
 if (azure["CalendarWriteTargets"] is null && builder.Configuration["AZURE_CALENDAR_WRITE_TARGETS"] is { } calendarWriteTargets)
     builder.Configuration["Azure:CalendarWriteTargets"] = calendarWriteTargets;
+if (string.IsNullOrWhiteSpace(azure["CalendarLupOrigin"]) && builder.Configuration["LUP_PUBLIC_ORIGIN"] is { } lupPublicOrigin)
+    builder.Configuration["Azure:CalendarLupOrigin"] = lupPublicOrigin;
 
 // OpenAI: understøt både OpenAI__* (compose) og flade OPENAI_* env-navne
 var openAi = builder.Configuration.GetSection(OpenAiOptions.SectionName);

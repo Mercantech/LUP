@@ -31,7 +31,7 @@ public sealed class HoldCalendarOutlookTests : IAsyncLifetime
         await db.Database.EnsureCreatedAsync();
         db.Hold.Add(new()
         {
-            Id = holdId, Name = "Testhold",
+            Id = holdId, Name = "Testhold <A>",
             Forloeb = new() { Id = Guid.NewGuid(), Name = "Programmering", CreatedBySub = teacher }
         });
         db.HoldCalendarEvents.Add(new()
@@ -82,6 +82,15 @@ public sealed class HoldCalendarOutlookTests : IAsyncLifetime
         }, Copies(await owner.CopyToOutlook(holdId, eventId, new(["kasper", "mathias", "kasper"]), default)));
         Assert.Equal("Syntetisk workshop", (await db.HoldCalendarEvents.SingleAsync()).Title);
         Assert.Equal(2, transport.Posted.Count);
+        Assert.All(transport.Posted, item =>
+        {
+            Assert.Equal("html", item.BodyType);
+            Assert.Contains("<strong>Hold</strong><br>Testhold &lt;A&gt;", item.Body, StringComparison.Ordinal);
+            Assert.Contains("Fiktivt indhold", item.Body, StringComparison.Ordinal);
+            Assert.Contains($"/holds/{holdId:D}?view=calendar&amp;event={eventId:D}", item.Body, StringComparison.Ordinal);
+            Assert.Contains($"/holds/{holdId:D}?view=overview", item.Body, StringComparison.Ordinal);
+            Assert.DoesNotContain("Programmering", item.Body, StringComparison.Ordinal);
+        });
         Assert.Equal(new OutlookCalendarCopyView[]
         {
             new("kasper", "copied"), new("mathias", "failed", "outlook_permission_denied")
@@ -192,14 +201,16 @@ public sealed class HoldCalendarOutlookTests : IAsyncLifetime
             Assert.Equal(HttpMethod.Post, request.Method);
             var mailbox = Uri.UnescapeDataString(request.RequestUri!.AbsolutePath.Split('/')[3]);
             var body = await request.Content!.ReadFromJsonAsync<JsonElement>(ct);
-            var copied = new PostedEvent(mailbox, body.GetProperty("transactionId").GetString()!);
+            var description = body.GetProperty("body");
+            var copied = new PostedEvent(mailbox, body.GetProperty("transactionId").GetString()!,
+                description.GetProperty("contentType").GetString()!, description.GetProperty("content").GetString()!);
             Assert.Equal("Syntetisk workshop", body.GetProperty("subject").GetString());
             Posted.Enqueue(copied);
             return await Respond(copied, ct);
         }
     }
 
-    private sealed record PostedEvent(string Mailbox, string TransactionId);
+    private sealed record PostedEvent(string Mailbox, string TransactionId, string BodyType, string Body);
     private sealed class HttpFactory(FakeGraph transport) : IHttpClientFactory
     {
         public HttpClient CreateClient(string _) => new(transport, disposeHandler: false);

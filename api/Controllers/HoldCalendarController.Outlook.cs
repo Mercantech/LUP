@@ -45,8 +45,11 @@ public sealed partial class HoldCalendarController
             || request.TargetIds.Any(target => target is not ("kasper" or "mathias") || !targets.ContainsKey(target)))
             return BadRequest(new { error = "invalid_outlook_targets" });
 
-        var item = await db.HoldCalendarEvents.AsNoTracking().SingleOrDefaultAsync(e => e.Id == id && e.HoldId == holdId, ct);
-        if (item is null) return NotFound();
+        var source = await (from item in db.HoldCalendarEvents.AsNoTracking()
+                            join hold in db.Hold on item.HoldId equals hold.Id
+                            where item.Id == id && item.HoldId == holdId
+                            select new { Event = item, HoldName = hold.Name }).SingleOrDefaultAsync(ct);
+        if (source is null) return NotFound();
 
         var wanted = request.TargetIds.Distinct(StringComparer.Ordinal).ToArray();
         var receipts = await OutlookReceipts(id, wanted.Select(target => targets[target]).ToArray(), ct);
@@ -86,8 +89,8 @@ public sealed partial class HoldCalendarController
         {
             using var graphBudget = CancellationTokenSource.CreateLinkedTokenSource(ct);
             graphBudget.CancelAfter(CopyTimeBudget);
-            var appointment = View(item);
-            var outcomes = await Task.WhenAll(attempts.Select(attempt => SendToOutlook(appointment, attempt, graphBudget.Token)));
+            var appointment = View(source.Event);
+            var outcomes = await Task.WhenAll(attempts.Select(attempt => SendToOutlook(appointment, source.HoldName, attempt, graphBudget.Token)));
 
             // Save acknowledgements even if the browser disconnected after Outlook created its copy.
             using var receiptBudget = new CancellationTokenSource(ReceiptTimeBudget);
@@ -147,13 +150,14 @@ public sealed partial class HoldCalendarController
         return leased == 1;
     }
 
-    private async Task<OutlookOutcome> SendToOutlook(HoldCalendarEventView appointment, OutlookAttempt attempt, CancellationToken ct)
+    private async Task<OutlookOutcome> SendToOutlook(HoldCalendarEventView appointment, string holdName, OutlookAttempt attempt,
+        CancellationToken ct)
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes($"{appointment.Id:D}\n{attempt.Mailbox}"));
         var transactionId = new Guid(bytes.AsSpan(0, 16)).ToString("D");
         try
         {
-            var graphId = await graph!.CreateCalendarEventAsync(attempt.Mailbox, appointment, transactionId, ct);
+            var graphId = await graph!.CreateCalendarEventAsync(attempt.Mailbox, appointment, holdName, transactionId, ct);
             return graphId is { Length: > 0 and <= 2048 } && !string.IsNullOrWhiteSpace(graphId) && !graphId.Any(char.IsControl)
                 ? new(attempt, graphId, null) : new(attempt, null, "outlook_unavailable");
         }

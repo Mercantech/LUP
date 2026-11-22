@@ -16,3 +16,10 @@ public sealed record HoldCalendarOverview(HoldCalendarSource[] Holds, HoldCalend
 public sealed record HoldCalendarSource(Guid HoldId, Guid ForloebId, string Name, bool CanManage);
 public sealed record CalendarQuestDeadline(Guid QuestId, Guid HoldId, string Title, DateTimeOffset DeadlineUtc);
 public sealed record CalendarQuestChoice(Guid QuestId, Guid HoldId, string Title);
+
+public static class HoldCalendarRoutes
+{
+    public static string Overview(Guid holdId) => $"/holds/{holdId:D}?view=overview";
+
+    public static string Event(Guid holdId, Guid eventId) => $"/holds/{holdId:D}?view=calendar&event={eventId:D}";
+}

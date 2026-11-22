@@ -1,6 +1,6 @@
 {
   "date": "2026-11-22",
   "title": "Læg en holdaftale i Outlook",
-  "description": "Opret en aftale fra holdet eller planlæggeren, vælg en hurtig varighed, og læg en kopi i Kaspers og Mathias’ Outlook-kalendere efter behov.",
+  "description": "Opret en aftale fra holdet eller planlæggeren og læg en kopi i Kaspers eller Mathias’ Outlook-kalender eller begge. Outlook-begivenheden viser holdnavn, sted og beskrivelse med links til begivenheden og holdets oversigt i LUP.",
   "authors": ["Mathias"]
 }

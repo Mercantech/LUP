@@ -178,7 +178,7 @@ public sealed partial class ReferenceService(AppDbContext db)
             if (Includes(kind)) result.Add(new(Ref(kind, id), title, href, context ?? HoldName(hold), hold, collection, rename));
         }
         if (!pagesOnly && Includes("hold"))
-        foreach (var h in holds.Where(h => wanted is null || wanted.Contains(Ref("hold", h.Id)))) Add("hold", h.Id, h.Name, $"/holds/{h.Id:D}?view=overview", h.Id);
+        foreach (var h in holds.Where(h => wanted is null || wanted.Contains(Ref("hold", h.Id)))) Add("hold", h.Id, h.Name, HoldCalendarRoutes.Overview(h.Id), h.Id);
 
         var extraPages = new List<Guid>(); var extraNotes = new List<Guid>();
         if (wanted is not null)
@@ -322,7 +322,7 @@ public sealed partial class ReferenceService(AppDbContext db)
         foreach (var e in await Only(new HoldCalendarAccess(db).Visible(db.HoldCalendarEvents.AsNoTracking()
             .Where(e => holdIds.Contains(e.HoldId)), sub, manageable), "event", e => e.Id)
             .Select(e => new { e.Id, e.HoldId, e.Title }).ToArrayAsync(ct))
-            Add("event", e.Id, e.Title, $"/holds/{e.HoldId:D}?view=calendar&event={e.Id:D}", e.HoldId);
+            Add("event", e.Id, e.Title, HoldCalendarRoutes.Event(e.HoldId, e.Id), e.HoldId);
 
         var files = new FileAuthorization(db);
         // Narrow candidates in SQL before the full existing policy (which also checks historical

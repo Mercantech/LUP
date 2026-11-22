@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -43,7 +45,7 @@ public sealed class AzureGraphCalendarClient(
     }
 
     public async Task<string> CreateCalendarEventAsync(string targetUpn, HoldCalendarEventView appointment,
-        string transactionId, CancellationToken ct)
+        string holdName, string transactionId, CancellationToken ct)
     {
         if (!IsConfigured)
             throw new InvalidOperationException("Azure Graph er ikke konfigureret");
@@ -58,7 +60,7 @@ public sealed class AzureGraphCalendarClient(
             Content = JsonContent.Create(new
             {
                 subject = appointment.Title,
-                body = new { contentType = "text", content = appointment.Description },
+                body = new { contentType = "html", content = CalendarBody(appointment, holdName) },
                 start = CalendarWriteTime(appointment.StartUtc),
                 end = CalendarWriteTime(appointment.EndUtc),
                 location = new { displayName = appointment.Location },
@@ -79,6 +81,27 @@ public sealed class AzureGraphCalendarClient(
         if (string.IsNullOrWhiteSpace(created?.Id))
             throw new HttpRequestException("Outlook svarede uden id for aftalen.");
         return created.Id;
+    }
+
+    private string CalendarBody(HoldCalendarEventView appointment, string holdName)
+    {
+        var origin = _options.ResolveCalendarLupOrigin();
+        var eventUrl = WebUtility.HtmlEncode(new Uri(origin, HoldCalendarRoutes.Event(appointment.HoldId, appointment.Id)).AbsoluteUri);
+        var holdUrl = WebUtility.HtmlEncode(new Uri(origin, HoldCalendarRoutes.Overview(appointment.HoldId)).AbsoluteUri);
+        var body = new StringBuilder();
+
+        void AddSection(string label, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return;
+            var text = WebUtility.HtmlEncode(value.ReplaceLineEndings("\n")).Replace("\n", "<br>", StringComparison.Ordinal);
+            body.Append("<p><strong>").Append(label).Append("</strong><br>").Append(text).Append("</p>");
+        }
+
+        AddSection("Hold", holdName);
+        AddSection("Sted", appointment.Location);
+        AddSection("Beskrivelse", appointment.Description);
+        return body.Append($"<p><a href=\"{eventUrl}\">Åbn begivenheden i LUP</a><br>"
+            + $"<a href=\"{holdUrl}\">Åbn holdets oversigt i LUP</a></p>").ToString();
     }
 
     private static object CalendarWriteTime(DateTimeOffset time) => new

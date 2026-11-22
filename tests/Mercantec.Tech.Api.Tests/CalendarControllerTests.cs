@@ -82,6 +82,12 @@ public sealed class CalendarControllerTests
     [Fact]
     public async Task GraphWritesOnlyToAllowlistedCalendarAndSendsNoAttendees()
     {
+        const string holdName = "Testhold <A> & B";
+        const string location = "A42 <syd> & vest";
+        const string description = "<script>alert(1)</script>\r\nAnden & sidste linje\nTredje linje";
+        var start = new DateTimeOffset(2027, 5, 10, 9, 15, 0, TimeSpan.FromHours(2));
+        var activity = new HoldCalendarEventView(Guid.NewGuid(), Guid.NewGuid(), "Holdaktivitet", description,
+            start, start.AddHours(1), location, "teaching", 1);
         var order = new List<string>();
         using var transport = new Transport(async (request, ct) =>
         {
@@ -100,28 +106,71 @@ public sealed class CalendarControllerTests
             using var json = await request.Content!.ReadFromJsonAsync<JsonDocument>(ct);
             var payload = json!.RootElement;
             Assert.Equal("Holdaktivitet", payload.GetProperty("subject").GetString());
-            Assert.Equal("<b>Præcis beskrivelse</b>", payload.GetProperty("body").GetProperty("content").GetString());
-            Assert.Equal("text", payload.GetProperty("body").GetProperty("contentType").GetString());
+            var body = payload.GetProperty("body");
+            Assert.Equal("html", body.GetProperty("contentType").GetString());
+            var html = Assert.IsType<string>(body.GetProperty("content").GetString()).ReplaceLineEndings("");
+            Assert.Contains("<strong>Hold</strong><br>Testhold &lt;A&gt; &amp; B", html, StringComparison.Ordinal);
+            Assert.Contains("<strong>Sted</strong><br>A42 &lt;syd&gt; &amp; vest", html, StringComparison.Ordinal);
+            Assert.Contains("<strong>Beskrivelse</strong><br>&lt;script&gt;alert(1)&lt;/script&gt;<br>Anden &amp; sidste linje<br>Tredje linje",
+                html, StringComparison.Ordinal);
+            Assert.DoesNotContain("<script>", html, StringComparison.OrdinalIgnoreCase);
+            AssertLupLinks(html, "https://lup.dk", activity);
             Assert.Equal("2027-05-10T07:15:00.0000000", payload.GetProperty("start").GetProperty("dateTime").GetString());
             Assert.Equal("2027-05-10T08:15:00.0000000", payload.GetProperty("end").GetProperty("dateTime").GetString());
             Assert.Equal("UTC", payload.GetProperty("start").GetProperty("timeZone").GetString());
             Assert.Equal("UTC", payload.GetProperty("end").GetProperty("timeZone").GetString());
-            Assert.Equal("A42", payload.GetProperty("location").GetProperty("displayName").GetString());
+            Assert.Equal(location, payload.GetProperty("location").GetProperty("displayName").GetString());
             Assert.Equal("fixture-transaction", payload.GetProperty("transactionId").GetString());
             Assert.False(payload.TryGetProperty("attendees", out _));
             Assert.False(payload.TryGetProperty("isOnlineMeeting", out _));
             return new(HttpStatusCode.Created) { Content = JsonContent.Create(new { id = "opaque+/fixture=" }) };
         });
         var graph = CreateGraph(true, transport);
-        var start = new DateTimeOffset(2027, 5, 10, 9, 15, 0, TimeSpan.FromHours(2));
-        var activity = new HoldCalendarEventView(Guid.NewGuid(), Guid.NewGuid(), "Holdaktivitet", "<b>Præcis beskrivelse</b>",
-            start, start.AddHours(1), "A42", "teaching", 1);
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            graph.CreateCalendarEventAsync("anden@mercantec.dk", activity, "fixture-transaction", default));
+            graph.CreateCalendarEventAsync("anden@mercantec.dk", activity, holdName, "fixture-transaction", default));
         Assert.Empty(order);
-        var outlookId = await graph.CreateCalendarEventAsync("kasc@mercantec.dk", activity, "fixture-transaction", default);
+        var outlookId = await graph.CreateCalendarEventAsync("kasc@mercantec.dk", activity, holdName, "fixture-transaction", default);
         Assert.Equal("opaque+/fixture=", outlookId);
         Assert.Equal(new[] { "token", "calendar" }, order);
+    }
+
+    [Theory]
+    [InlineData("https://lup-preview.example.invalid:8443/", "https://lup-preview.example.invalid:8443")]
+    [InlineData("http://lup-preview.example.invalid", "https://lup.dk")]
+    [InlineData("https://name@lup-preview.example.invalid/", "https://lup.dk")]
+    [InlineData("https://lup-preview.example.invalid/notes", "https://lup.dk")]
+    public async Task GraphSendsLupLinksWithoutOptionalDetails(string configuredOrigin, string expectedOrigin)
+    {
+        var start = new DateTimeOffset(2027, 5, 10, 7, 15, 0, TimeSpan.Zero);
+        var activity = new HoldCalendarEventView(Guid.NewGuid(), Guid.NewGuid(), "Holdaktivitet", " \r\n",
+            start, start.AddHours(1), "", "teaching", 1);
+        using var transport = new Transport(async (request, ct) =>
+        {
+            if (request.RequestUri!.Host == "login.microsoftonline.com") return TokenResponse();
+
+            using var json = await request.Content!.ReadFromJsonAsync<JsonDocument>(ct);
+            var body = json!.RootElement.GetProperty("body");
+            Assert.Equal("html", body.GetProperty("contentType").GetString());
+            var html = Assert.IsType<string>(body.GetProperty("content").GetString());
+            AssertLupLinks(html, expectedOrigin, activity);
+            Assert.DoesNotContain("<strong>Beskrivelse</strong>", html, StringComparison.Ordinal);
+            Assert.DoesNotContain("<strong>Sted</strong>", html, StringComparison.Ordinal);
+            return new(HttpStatusCode.Created) { Content = JsonContent.Create(new { id = "fixture-event" }) };
+        });
+        var graph = CreateGraph(true, transport, calendarLupOrigin: configuredOrigin);
+
+        Assert.Equal("fixture-event", await graph.CreateCalendarEventAsync("kasc@mercantec.dk", activity, "Testhold",
+            "fixture-transaction", default));
+    }
+
+    private static void AssertLupLinks(string html, string origin, HoldCalendarEventView activity)
+    {
+        var holdUrl = $"{origin}/holds/{activity.HoldId:D}";
+        Assert.Contains($"href=\"{holdUrl}?view=calendar&amp;event={activity.Id:D}\"", html, StringComparison.Ordinal);
+        Assert.Contains($"href=\"{holdUrl}?view=overview\"", html, StringComparison.Ordinal);
+        var decoded = WebUtility.HtmlDecode(html);
+        Assert.Contains("Åbn begivenheden i LUP", decoded, StringComparison.Ordinal);
+        Assert.Contains("Åbn holdets oversigt i LUP", decoded, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -178,7 +227,8 @@ public sealed class CalendarControllerTests
         return await controller.Mine(null, null, db, default);
     }
 
-    private static AzureGraphCalendarClient CreateGraph(bool configured, IHttpClientFactory? factory, string? upnMap = null)
+    private static AzureGraphCalendarClient CreateGraph(bool configured, IHttpClientFactory? factory, string? upnMap = null,
+        string? calendarLupOrigin = null)
     {
         var opts = new AzureGraphOptions
         {
@@ -187,6 +237,7 @@ public sealed class CalendarControllerTests
             ClientSecret = configured ? "s" : ""
         };
         if (upnMap is not null) opts.TeacherUpnMap = upnMap;
+        if (calendarLupOrigin is not null) opts.CalendarLupOrigin = calendarLupOrigin;
         return new(factory ?? new EmptyHttpClientFactory(), Options.Create(opts), NullLogger<AzureGraphCalendarClient>.Instance);
     }
 

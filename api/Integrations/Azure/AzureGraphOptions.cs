@@ -5,6 +5,7 @@ namespace Mercantec.Tech.Api.Integrations.Azure;
 public sealed class AzureGraphOptions
 {
     public const string SectionName = "Azure";
+    private const string DefaultCalendarLupOrigin = "https://lup.dk";
 
     public string TenantId { get; set; } = "";
     public string ClientId { get; set; } = "";
@@ -22,6 +23,7 @@ public sealed class AzureGraphOptions
         "kasc@mercantec.dk=kasc@mercantec.dk";
 
     public string CalendarWriteTargets { get; set; } = "kasper=kasc@mercantec.dk;mathias=mags@mercantec.dk";
+    public string CalendarLupOrigin { get; set; } = DefaultCalendarLupOrigin;
 
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(TenantId)
@@ -29,6 +31,12 @@ public sealed class AzureGraphOptions
         && !string.IsNullOrWhiteSpace(ClientSecret);
 
     public IReadOnlyDictionary<string, string> ParseTeacherUpnMap() => ParseMap(TeacherUpnMap);
+
+    internal Uri ResolveCalendarLupOrigin() =>
+        Uri.TryCreate(CalendarLupOrigin, UriKind.Absolute, out var uri)
+        && uri.Scheme == Uri.UriSchemeHttps && uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.UserInfo)
+        && string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment)
+            ? uri : new Uri(DefaultCalendarLupOrigin);
 
     internal IReadOnlyDictionary<string, string> ParseCalendarWriteTargets()
     {
