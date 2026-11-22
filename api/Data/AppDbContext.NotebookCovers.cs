@@ -21,7 +21,7 @@ public partial class AppDbContext
                 + (CASE WHEN "NotionPageId" IS NULL THEN 0 ELSE 1 END)
                 + (CASE WHEN "NotebookId" IS NULL THEN 0 ELSE 1 END)
                 + (CASE WHEN "NotebookPageId" IS NULL THEN 0 ELSE 1 END) = 1
-                """));
+                """.ReplaceLineEndings("\n")));
             entity.HasKey(asset => asset.Id);
             entity.Property(asset => asset.Id).ValueGeneratedNever();
             entity.HasOne<NotionCollection>().WithMany().HasForeignKey(asset => asset.CollectionId).OnDelete(DeleteBehavior.Cascade);
