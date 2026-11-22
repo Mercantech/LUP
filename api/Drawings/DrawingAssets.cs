@@ -103,7 +103,10 @@ public sealed partial class DrawingService
             if (await _db.Drawings.Where(d => d.Id == id && d.Revision == revision && d.Fingerprint == fingerprint && d.AccessVersion == drawing.AccessVersion)
                 .ExecuteUpdateAsync(s => s.SetProperty(d => d.PreviewLightAssetId, lightAsset.Id).SetProperty(d => d.PreviewDarkAssetId, darkAsset.Id)
                     .SetProperty(d => d.PreviewRevision, revision).SetProperty(d => d.PreviewFingerprint, fingerprint), ct) != 1) throw DrawingValidation.Changed();
-            _db.DrawingAssets.AddRange(lightAsset, darkAsset); await _db.SaveChangesAsync(ct); await transaction.CommitAsync(ct); committed = true;
+            _db.DrawingAssets.AddRange(lightAsset, darkAsset);
+            await _db.SaveChangesAsync(ct);
+            await SyncCollectionDrawingAsync(drawing, ct);
+            await transaction.CommitAsync(ct); committed = true;
             return new(revision, fingerprint, MediaUrl(id, lightAsset.Id, user), MediaUrl(id, darkAsset.Id, user));
         }
         finally

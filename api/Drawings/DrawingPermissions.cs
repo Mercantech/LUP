@@ -25,7 +25,10 @@ public sealed partial class DrawingService
                 .ExecuteUpdateAsync(s => s.SetProperty(d => d.Mode, input.Mode).SetProperty(d => d.AccessVersion, d => d.AccessVersion + 1), ct);
             if (written != 1) throw DrawingValidation.Changed();
             if (drawing.Mode != input.Mode)
+            {
                 await TouchParentAsync(drawing.Domain, drawing.DocumentId, DateTimeOffset.UtcNow, UserClaims.EditorName(user), ct);
+                await SyncCollectionDrawingAsync(drawing, ct);
+            }
             await transaction.CommitAsync(ct);
         }
         await InvalidateAsync(id, ct);

@@ -110,6 +110,7 @@ public sealed class TeachingCoursesController(AppDbContext db, CourseAccess acce
         var page = new NotionPage { Id = Guid.NewGuid(), HoldId = holdId, ParentPageId = request.ParentPageId,
             CollectionId = parentScope?.CollectionId, Title = request.Title.Trim(), CreatedBySub = sub, CreatedAtUtc = now,
             UpdatedAtUtc = now, LastEditedByName = UserClaims.EditorName(User) };
+        await Mercantec.Tech.Api.Notion.NotionPublicationWriter.SetInitialPublicationAsync(db, page, ct);
         db.NotionPages.Add(page);
         item.Resources.Add(new() { Kind = "page", ResourceId = page.Id }); item.Version++;
         try { await db.SaveChangesAsync(ct); }

@@ -215,6 +215,7 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
             Title = title, CreatedBySub = sub,
             CreatedAtUtc = now, UpdatedAtUtc = now, LastEditedByName = UserClaims.EditorName(User)
         };
+        await NotionPublicationWriter.SetInitialPublicationAsync(db, page, ct);
         db.NotionPages.Add(page);
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
@@ -229,11 +230,19 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
         if (!ValidTitle(request.Title)) return BadRequest(new { error = "invalid_title" });
         var title = request.Title.Trim();
         var editorName = UserClaims.EditorName(User);
-        await db.NotionPages.Where(p => p.Id == id && p.Title != title).ExecuteUpdateAsync(s => s
-            .SetProperty(p => p.Title, title).SetProperty(p => p.UpdatedAtUtc, DateTimeOffset.UtcNow)
+        var now = DateTimeOffset.UtcNow;
+        var pages = db.NotionPages.Where(p => p.Id == id && p.Title != title);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        await pages.ExecuteUpdateAsync(s => s
+            .SetProperty(p => p.Title, title).SetProperty(p => p.UpdatedAtUtc, now)
             .SetProperty(p => p.LastEditedByName, editorName)
             .SetProperty(p => p.DraftRevision, p => p.DraftRevision + 1), ct);
+        await NotionPublicationWriter.ForWholeCollection(db, db.NotionPages.Where(p => p.Id == id && p.PublishedTitle != title))
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.PublishedTitle, title)
+                .SetProperty(p => p.PublishedRevision, p => p.PublishedRevision == p.DraftRevision - 1 ? p.DraftRevision : p.PublishedRevision)
+                .SetProperty(p => p.PublishedEditedAtUtc, now).SetProperty(p => p.PublishedEditorName, editorName), ct);
         var updated = await db.NotionPages.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id, ct);
+        await transaction.CommitAsync(ct);
         return updated is null ? NotFound() : Ok(View(updated));
     }
 
@@ -247,14 +256,20 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
         if (!await NotebookIcon.IsAvailableAsync(db, input.IconEmojiId, ct)) return BadRequest(new { error = "invalid_icon" });
         var page = db.NotionPages.Where(p => p.Id == id);
         var editorName = UserClaims.EditorName(User);
+        var now = DateTimeOffset.UtcNow;
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         await page.Where(p => p.IconEmojiId != input.IconEmojiId).ExecuteUpdateAsync(s => s
             .SetProperty(p => p.IconEmojiId, input.IconEmojiId).SetProperty(p => p.LastEditedByName, editorName)
-            .SetProperty(p => p.UpdatedAtUtc, DateTimeOffset.UtcNow), ct);
+            .SetProperty(p => p.UpdatedAtUtc, now), ct);
+        await NotionPublicationWriter.ForWholeCollection(db, page.Where(p => p.PublishedIconEmojiId != input.IconEmojiId))
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.PublishedIconEmojiId, input.IconEmojiId)
+                .SetProperty(p => p.PublishedEditedAtUtc, now).SetProperty(p => p.PublishedEditorName, editorName), ct);
         var summary = await page.Select(p => new NotionPageSummary(p.Id, p.HoldId, p.Title, p.ParentPageId, p.UpdatedAtUtc,
             p.PublishedAtUtc, p.PublishedAtUtc != null && (p.DraftRevision != p.PublishedRevision || p.Title != p.PublishedTitle
                 || p.IconEmojiId != p.PublishedIconEmojiId || p.CoverId != p.PublishedCoverId),
             p.CollectionId, p.SortOrder, p.IconEmojiId, p.CoverId)).SingleOrDefaultAsync(ct);
         Response.Headers.CacheControl = "no-store";
+        await transaction.CommitAsync(ct);
         return summary is null ? NotFound() : Ok(summary);
     }
 
@@ -293,7 +308,8 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
             .Select(p => new { p.Id, p.HoldId, p.Title, p.UpdatedAtUtc, p.PublishedAtUtc, p.PublishedTitle,
                 p.DraftRevision, p.PublishedRevision, p.LifecycleVersion, p.IconEmojiId, p.PublishedIconEmojiId,
                 CoverId = edit ? p.CoverId : p.PublishedCoverId, p.PublishedCoverId, PublishedState = edit ? null : p.PublishedState,
-                PublishedDrawingsJson = edit ? null : p.PublishedDrawingsJson }).SingleOrDefaultAsync(ct);
+                PublishedDrawingsJson = edit ? null : p.PublishedDrawingsJson,
+                WholeCollectionPublished = p.Collection != null && p.Collection.WholePublishedBySub != null }).SingleOrDefaultAsync(ct);
         if (page is null) return NotFound();
         if (!edit && (page.PublishedAtUtc is null || page.PublishedTitle is null || page.PublishedState is not { Length: > 0 })) return NotFound();
         var resources = includeResources && page.HoldId is Guid resourcesHold ? await ReadEditorResources(resourcesHold, edit, ct) : new NotionEditorResources([], []);
@@ -317,7 +333,7 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
             edit ? page.DraftRevision : page.PublishedRevision ?? 0, page.PublishedRevision,
             state is null ? null : Convert.ToBase64String(state), page.PublishedTitle,
             edit ? [] : DrawingAccess.Bindings(page.PublishedDrawingsJson), scope.CollectionId, edit ? page.LifecycleVersion : 0,
-            edit ? page.IconEmojiId : page.PublishedIconEmojiId, page.PublishedIconEmojiId, page.CoverId, page.PublishedCoverId));
+            edit ? page.IconEmojiId : page.PublishedIconEmojiId, page.PublishedIconEmojiId, page.CoverId, page.PublishedCoverId, page.WholeCollectionPublished));
     }
 
     [HttpGet("pages/{id:guid}/knowledge-checks")]
@@ -413,17 +429,11 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
         var locked = await db.NotionPages.Where(p => p.Id == id).ExecuteUpdateAsync(s => s
             .SetProperty(p => p.PublicationVersion, p => p.PublicationVersion), ct);
         if (locked == 0) return NotFound();
+        if (await NotionPublicationWriter.WholePublisherAsync(db, id, ct) is not null)
+            return Conflict(new { error = "whole_collection_published" });
         var references = new Mercantec.Tech.Api.References.ReferenceService(db);
         await references.BaselineNotionAsync(id, ct);
-        await db.NotionPages.Where(p => p.Id == id).ExecuteUpdateAsync(s => s
-            .SetProperty(p => p.PublishedState, (byte[]?)null).SetProperty(p => p.PublishedTitle, (string?)null)
-            .SetProperty(p => p.PublishedIconEmojiId, (Guid?)null)
-            .SetProperty(p => p.PublishedCoverId, (Guid?)null)
-            .SetProperty(p => p.PublishedAtUtc, (DateTimeOffset?)null).SetProperty(p => p.PublishedBySub, (Guid?)null)
-            .SetProperty(p => p.PublishedEditorName, (string?)null).SetProperty(p => p.PublishedEditedAtUtc, (DateTimeOffset?)null)
-            .SetProperty(p => p.PublishedRevision, (long?)null).SetProperty(p => p.PublishedAssetIdsJson, "[]").SetProperty(p => p.PublishedDrawingsJson, "[]")
-            .SetProperty(p => p.PublishedKnowledgeChecksJson, "{}")
-            .SetProperty(p => p.PublicationVersion, p => p.PublicationVersion + 1), ct);
+        await NotionPublicationWriter.ClearAsync(db.NotionPages.Where(p => p.Id == id), ct);
         await db.DeleteUnreferencedNotionCoversAsync(id, ct);
         await references.RefreshNotionAsync(id, ct, published: true);
         var unpublished = await db.NotionPages.AsNoTracking().SingleAsync(p => p.Id == id, ct);

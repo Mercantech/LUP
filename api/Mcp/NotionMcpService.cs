@@ -76,6 +76,7 @@ public sealed class NotionMcpService(AppDbContext db, CourseAccess courses, IHtt
             created = new() { Id = Guid.NewGuid(), Title = title, ParentPageId = parentPageId,
                 HoldId = holdId, CollectionId = parent.CollectionId, CreatedBySub = owner,
                 CreatedAtUtc = now, UpdatedAtUtc = now, LastEditedByName = UserClaims.EditorName(user) };
+            await NotionPublicationWriter.SetInitialPublicationAsync(db, created, ct);
             receipt = new() { Id = operationId, OwnerSub = owner, ParentPageId = parentPageId,
                 PageId = created.Id, RequestHash = hash, CreatedAtUtc = now };
             db.NotionPages.Add(created);

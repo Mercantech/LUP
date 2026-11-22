@@ -91,23 +91,42 @@ else
                         <details class="notion-document-more">
                             <summary aria-label="Flere sidehandlinger"><UiIcon Name="more" /><span>Mere</span></summary>
                             <div class="notion-document-menu">
-                                @if (_current is { } publicationPage)
+                                @if (_current is not null || CanManageCollectionPublication)
                                 {
                                     <div class="notion-menu-group" role="group" aria-labelledby="notion-more-publish">
                                         <p class="notion-menu-label" id="notion-more-publish">Udgivelse</p>
-                                        <p class="notion-publication-status">@(publicationPage.PublishedAtUtc is { } publishedAt ? $"Udgivet {publishedAt.ToLocalTime():d. MMM HH:mm}" : "Kladde")</p>
-                                        @if (IsEditing)
+                                        @if (CanManageCollectionPublication && ActiveCollectionId is Guid publishedBookId)
                                         {
-                                            <button type="button" class="notion-menu-publish" aria-keyshortcuts="@PublishShortcut" disabled="@(!CanPublish)" @onclick="PublishPage"><UiIcon Name="@(CanUpdatePublication ? "loop" : "check")" />@PublishActionLabel</button>
-                                            @if (CanUpdatePublication)
+                                            @if (WholeCollectionPublished)
                                             {
-                                                <a href="@PageHref(publicationPage.PageId, true)" target="_blank" rel="noopener"><UiIcon Name="external" />Åbn udgivet side<span class="notion-visually-hidden"> (ny fane)</span></a>
-                                                <button type="button" class="notion-menu-danger" disabled="@_busy" @onclick="UnpublishPage"><UiIcon Name="close" />Træk udgivelse tilbage</button>
+                                                <p class="notion-publication-status">Hele notesbogen er udgivet</p>
+                                                <a href="@(NotesRoutes.Collection(publishedBookId) + "?published=true")" target="_blank" rel="noopener"><UiIcon Name="book" />Åbn udgivet notesbog<span class="notion-visually-hidden"> (ny fane)</span></a>
+                                                <button type="button" class="notion-menu-danger" disabled="@_busy" @onclick="() => SetCollectionPublication(false)"><UiIcon Name="close" />Træk hele notesbogen tilbage</button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="notion-menu-publish" disabled="@_busy" @onclick="() => SetCollectionPublication(true)"><UiIcon Name="book" />Udgiv hele notesbogen</button>
                                             }
                                         }
-                                        else if (CanManageHold)
+                                        @if (_current is { } publicationPage)
                                         {
-                                            <a href="@PageHref(publicationPage.PageId, false)"><UiIcon Name="file" />Til kladden</a>
+                                            <p class="notion-publication-status">@(publicationPage.PublishedAtUtc is { } publishedAt ? $"Side udgivet {publishedAt.ToLocalTime():d. MMM HH:mm}" : "Siden er en kladde")</p>
+                                            @if (IsEditing)
+                                            {
+                                                <button type="button" class="notion-menu-publish" aria-keyshortcuts="@PublishShortcut" disabled="@(!CanPublish)" @onclick="PublishPage"><UiIcon Name="@(CanUpdatePublication ? "loop" : "check")" />@PublishActionLabel</button>
+                                                @if (CanUpdatePublication)
+                                                {
+                                                    <a href="@PageHref(publicationPage.PageId, true)" target="_blank" rel="noopener"><UiIcon Name="external" />Åbn udgivet side<span class="notion-visually-hidden"> (ny fane)</span></a>
+                                                    @if (!WholeCollectionPublished)
+                                                    {
+                                                        <button type="button" class="notion-menu-danger" disabled="@_busy" @onclick="UnpublishPage"><UiIcon Name="close" />Træk udgivelse tilbage</button>
+                                                    }
+                                                }
+                                            }
+                                            else if (CanManageHold)
+                                            {
+                                                <a href="@PageHref(publicationPage.PageId, false)"><UiIcon Name="file" />Til kladden</a>
+                                            }
                                         }
                                     </div>
                                 }

@@ -1,5 +1,6 @@
 using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Notebooks;
+using Mercantec.Tech.Api.Notion;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -98,8 +99,19 @@ public sealed partial class NotionController
             await TreePages(scope, deleted: true).Where(p => p.Id == id).ExecuteUpdateAsync(s => s
                 .SetProperty(p => p.ParentPageId, (Guid?)null).SetProperty(p => p.SortOrder, (int?)null), ct);
         }
-        await TreePages(scope, deleted: true).Where(p => p.TrashRootId == id).ExecuteUpdateAsync(s => s
+        var branch = TreePages(scope, deleted: true).Where(p => p.TrashRootId == id);
+        var restoredIds = await branch.Select(p => p.Id).ToArrayAsync(ct);
+        await branch.ExecuteUpdateAsync(s => s
             .SetProperty(p => p.DeletedAtUtc, (DateTimeOffset?)null).SetProperty(p => p.TrashRootId, (Guid?)null), ct);
+        if (await NotionPublicationWriter.WholePublisherAsync(db, id, ct) is Guid publisher)
+        {
+            var writer = new NotionPublicationWriter(db, drawings);
+            foreach (var restored in restoredIds)
+            {
+                var error = await writer.PublishSavedAsync(restored, publisher, requireReadyDrawings: false, ct);
+                if (error is not null) return Conflict(new { error });
+            }
+        }
         await transaction.CommitAsync(ct);
         return NoContent();
     }

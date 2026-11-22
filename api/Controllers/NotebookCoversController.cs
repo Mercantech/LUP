@@ -227,7 +227,12 @@ public sealed partial class NotebookCoversController(AppDbContext db, CourseAcce
         }
 
         if (target.Kind == NotionPage)
+        {
+            await NotionPublicationWriter.ForWholeCollection(db, db.NotionPages.Where(p => p.Id == target.Id))
+                .ExecuteUpdateAsync(update => update.SetProperty(p => p.PublishedCoverId, coverId)
+                    .SetProperty(p => p.PublishedEditedAtUtc, p => p.UpdatedAtUtc).SetProperty(p => p.PublishedEditorName, p => p.LastEditedByName), ct);
             await db.DeleteUnreferencedNotionCoversAsync(target.Id, ct);
+        }
         else if (target.CoverId is Guid previous)
             await OwnedAssets(target.Kind, target.Id).Where(asset => asset.Id == previous).ExecuteDeleteAsync(ct);
 

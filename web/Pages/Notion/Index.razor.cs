@@ -81,6 +81,8 @@ public partial class Index
     private bool CanUpdatePublication => IsEditing && _current?.PublishedAtUtc is not null;
     private string PublishActionLabel => CanUpdatePublication ? "Opdatér udgivelsen" : _holdId == Guid.Empty ? "Udgiv til LUP" : "Udgiv til holdet";
     private string? PublishShortcut => CanUpdatePublication ? "Control+s Meta+s" : null;
+    private bool CanManageCollectionPublication => ActiveCollectionId is not null && Authoring;
+    private bool WholeCollectionPublished => _current?.WholeCollectionPublished ?? _collection?.WholePublished ?? false;
     private bool Authoring => CanManageHold && !ForceReadOnly;
     private string RouteKey => $"{PageId}:{CollectionId}:{CollectionSlug}:{HoldQuery}:{WorkspaceQuery}:{CourseQuery}:{ForceReadOnly}";
     private string StatusLabel => _savingTitle ? "Gemmer titel…" : _status switch { "saved" => "Gemt i skyen", "saving" => "Gemmer…", "synced" => "Forbundet", "offline" => "Forbindelsen er afbrudt", "error" => "Forbindelsen kræver opmærksomhed", _ => "Forbinder…" };
@@ -521,6 +523,33 @@ public partial class Index
         if (_resourcesLoaded) { _resourcesLoaded = false; await LoadResources(generation, ct); }
     });
     protected override Task UpdatePublishedPage() => CanUpdatePublication ? PublishPage() : Task.CompletedTask;
+    private Task SetCollectionPublication(bool publish) => Work(async ct =>
+    {
+        if (!CanManageCollectionPublication || ActiveCollectionId is not Guid bookId) return;
+        var generation = _generation;
+        var audience = _holdId == Guid.Empty ? "brugere på LUP" : "holdet";
+        var confirmation = publish
+            ? $"Udgiv alle notesbogens sider til {audience}? Nye sider og gemte ændringer vil også blive udgivet automatisk."
+            : "Træk alle notesbogens sider tilbage? De bliver utilgængelige for læserne. Indholdet bevares som kladde.";
+        if (!await Js.InvokeAsync<bool>("confirm", ct, confirmation)) return;
+        if (publish && IsEditing)
+        {
+            if (!await SaveTitle() || !IsCurrent(generation, ct)) return;
+            try { await WaitForSavedContent(() => (_module, _editorElement, _status), ct); }
+            catch (InvalidOperationException ex) { if (IsCurrent(generation, ct)) _error = ex.Message; return; }
+        }
+        if (!IsCurrent(generation, ct)) return;
+        var result = await Client.SetCollectionPublication(bookId, publish, ct);
+        if (!IsCurrent(generation, ct)) return;
+        if (_collection is { } book) _collection = book with { WholePublished = result.WholePublished };
+        await UpdateContext(ct);
+        await LoadNavigation(generation, ct, refresh: true);
+        if (!IsCurrent(generation, ct)) return;
+        _notice = result.WholePublished
+            ? $"{result.PageCount} {(result.PageCount == 1 ? "side er" : "sider er")} udgivet. Nye sider bliver udgivet automatisk."
+            : "Hele notesbogens udgivelse er trukket tilbage.";
+    });
+
     private async Task PublishPage()
     {
         if (!CanPublish || _current is not { } page || _module is not { } module) return;
@@ -583,7 +612,20 @@ public partial class Index
         : string.IsNullOrEmpty(rejectedAccess) ? Auth.GetValidAccessTokenAsync() : Auth.RefreshAfterUnauthorizedAsync(rejectedAccess);
     [JSInvokable] public Task<string?> GetNotionLiveToken(string? rejectedAccess) => !Auth.IsAuthenticated || IsLivePreview
         ? Task.FromResult<string?>(null) : GetNotionKnowledgeCheckToken(rejectedAccess);
-    [JSInvokable] public Task OnNotionStatus(string status, string detail) => InvokeAsync(() => { if (_disposed) return; _status = status; _statusDetail = detail; StateHasChanged(); });
+    [JSInvokable]
+    public Task OnNotionStatus(string status, string detail) => InvokeAsync(async () =>
+    {
+        if (_disposed) return;
+        _status = status;
+        _statusDetail = detail;
+        StateHasChanged();
+        if (status != "saved" || _busy || !IsEditing || !WholeCollectionPublished || _requests is null) return;
+        var generation = _generation;
+        var ct = _requests.Token;
+        try { await UpdateContext(ct); }
+        catch (Exception ex) when (IsExpected(ex)) { return; }
+        if (IsCurrent(generation, ct)) StateHasChanged();
+    });
     [JSInvokable] public Task OnNotionCreateGroup(string membershipIdsJson) => InvokeAsync(async () =>
     {
         if (!IsEditing || _disposed || _holdId == Guid.Empty) return;

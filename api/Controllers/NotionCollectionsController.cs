@@ -13,7 +13,7 @@ using Npgsql;
 namespace Mercantec.Tech.Api.Controllers;
 
 [ApiController, Authorize, Route("api/notion/collections")]
-public sealed class NotionCollectionsController(AppDbContext db, CourseAccess courses) : ControllerBase
+public sealed partial class NotionCollectionsController(AppDbContext db, CourseAccess courses, Mercantec.Tech.Api.Drawings.DrawingService? drawings = null) : ControllerBase
 {
     private readonly NotionAccess access = new(db, courses);
 
@@ -88,7 +88,7 @@ public sealed class NotionCollectionsController(AppDbContext db, CourseAccess co
             .Where(p => p.CollectionId != null && scope.Any(c => c.Id == p.CollectionId));
         var visible = access.ReadableCollections(User, publishedOnly).Select(c => c.Id);
         var collections = await scope.Where(c => visible.Contains(c.Id))
-            .Select(c => new { c.Id, c.HoldId, c.CreatedAtUtc, c.Title, c.PublishedTitle, c.IconEmojiId, c.Slug, c.CoverId,
+            .Select(c => new { c.Id, c.HoldId, c.CreatedAtUtc, c.Title, c.PublishedTitle, c.IconEmojiId, c.Slug, c.CoverId, c.WholePublishedBySub,
                 HasActiveRoot = db.NotionPages.Any(p => p.Id == c.Id),
                 HoldName = db.Hold.Where(h => h.Id == c.HoldId).Select(h => h.Name).FirstOrDefault() }).ToArrayAsync(ct);
         var pages = await pageQuery.Select(p => new { p.Id, p.CollectionId, p.ParentPageId, p.SortOrder, p.Title, p.PublishedTitle,
@@ -107,7 +107,7 @@ public sealed class NotionCollectionsController(AppDbContext db, CourseAccess co
             var updated = manage ? latest?.UpdatedAtUtc : latest?.PublishedEditedAtUtc ?? latest?.PublishedAtUtc;
             return new NotionCollectionView(c.Id, first?.Id, title ?? "Samling", c.HoldId,
                 c.HoldName, manage, updated ?? c.CreatedAtUtc, c.IconEmojiId,
-                manage ? latest?.LastEditedByName : latest?.PublishedEditorName, c.Slug, c.CoverId);
+                manage ? latest?.LastEditedByName : latest?.PublishedEditorName, c.Slug, c.CoverId, c.WholePublishedBySub is not null);
         }).Where(p => p.CanManage || p.RootPageId is not null).OrderBy(p => p.Title).ToArray();
     }
 
