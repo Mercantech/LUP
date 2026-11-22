@@ -57,7 +57,7 @@
     background:radial-gradient(ellipse at 50% 65%, #b76731 0%, #663951 42%, transparent 76%);
 }
 .lup .binding-lab .lantern img { width:min(100%, 210px); height:auto; aspect-ratio:1; object-fit:contain; }
-.lup .binding-trace, .lup .binding-lab details { grid-column:1 / -1; min-width:0; }
+.lup .binding-trace, .lup .binding-code { grid-column:1 / -1; min-width:0; }
 .lup .binding-trace {
     justify-content:space-between;
     padding:10px 14px;
@@ -65,8 +65,38 @@
     border-radius:8px;
 }
 .lup .binding-trace p { margin:0; }
-.lup .binding-lab summary { cursor:pointer; font-weight:600; }
-.lup .binding-lab pre { overflow-x:auto; padding:12px; background:var(--tint); border-radius:8px; }
+.lup .binding-code { border:1px solid var(--rule); border-radius:10px; }
+.lup .binding-code summary {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-height:44px;
+    padding:10px 14px;
+    cursor:pointer;
+    font-weight:600;
+    list-style:none;
+    border-radius:9px;
+}
+.lup .binding-code summary::-webkit-details-marker { display:none; }
+.lup .binding-code summary:is(:hover,:focus-visible) { background:var(--tint); }
+.lup .binding-code summary .ui-icon { width:16px; height:16px; color:var(--character-accent); }
+.lup .binding-code[open] summary { border-bottom:1px solid var(--rule); border-radius:9px 9px 0 0; }
+.lup .binding-code[open] summary .ui-icon { transform:rotate(90deg); }
+.lup .binding-code-content {
+    display:grid;
+    grid-template-columns:minmax(200px, 1fr) minmax(0, 2fr);
+    align-items:start;
+    gap:16px 24px;
+    padding:14px;
+}
+.lup .binding-code-guide { margin:0; }
+.lup .binding-code-guide > div + div { border-top:1px solid var(--rule); margin-top:10px; padding-top:10px; }
+.lup .binding-code-guide dt { font-weight:600; }
+.lup .binding-code-guide dd { margin:3px 0 0; color:var(--muted); font-size:13px; }
+.lup .binding-code-content .course-code { margin:0; min-width:0; }
+@media (max-width:760px) {
+    .lup .binding-code-content { grid-template-columns:minmax(0, 1fr); }
+}
 @media (max-width:560px) {
     .lup .binding-lab { grid-template-columns:minmax(0, 1fr); }
     .lup .binding-lab .lantern { min-height:170px; }

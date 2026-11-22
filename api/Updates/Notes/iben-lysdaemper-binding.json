@@ -1,6 +1,6 @@
 {
   "date": "2026-11-22",
   "title": "Se hvilken vej værdien bevæger sig i Ibens lysdæmper",
-  "description": "Se, hvordan LUP.dk selv bruger Blazor WebAssembly. Træk i Ibens skyder, eller tryk på tænd/sluk for at følge lysstyrken fra brugerfladen til C# og tilbage. Du kan også nulstille forsøget og folde Razor-koden ud.",
+  "description": "Se, hvordan LUP.dk selv bruger Blazor WebAssembly. Følg lysstyrken fra Ibens skyder til C# og tilbage. Fold Razor-eksemplet ud for at se, hvad de enkelte dele gør, og kopiér koden til din egen komponent.",
   "authors": ["Mathias"]
 }
