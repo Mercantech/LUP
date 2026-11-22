@@ -6,6 +6,8 @@ namespace Mercantec.Tech.Web.Notion;
 public sealed class NotionClient(HttpClient http)
 {
     public Task<NotionCollectionView[]> Collections(CancellationToken ct, bool publishedOnly = false) => Get<NotionCollectionView[]>($"notion/collections?publishedOnly={publishedOnly.ToString().ToLowerInvariant()}", ct);
+    public Task<NotionCollectionPublicationResult> SetCollectionPublication(Guid id, bool publish, CancellationToken ct)
+        => Post<NotionCollectionPublicationResult>($"notion/collections/{id}/{(publish ? "publish" : "unpublish")}", new { }, ct);
     public Task<NotionCollectionView> CreateCollection(string title, Guid? holdId, CancellationToken ct, Guid? iconEmojiId = null, string? slug = null) =>
         Post<NotionCollectionView>("notion/collections", new CreateNotionCollection(title, holdId, iconEmojiId, slug), ct);
     public async Task<SetNotionCollectionSlug> SetCollectionSlug(Guid id, string? slug, CancellationToken ct)
@@ -99,9 +101,10 @@ public sealed class NotionClient(HttpClient http)
     {
         if (!response.IsSuccessStatusCode)
         {
-            string? code = null;
-            try { code = (await response.Content.ReadFromJsonAsync<ApiError>(ct))?.Error; } catch (System.Text.Json.JsonException) { }
-            throw new NotionException(code switch
+            ApiError? error = null;
+            try { error = await response.Content.ReadFromJsonAsync<ApiError>(ct); } catch (System.Text.Json.JsonException) { }
+            var code = error?.Error;
+            var message = code switch
             {
                 "invalid_group" => "Giv gruppen et navn, og vælg elever fra dette hold.",
                 "invalid_group_set" => "Vælg et aktivt gruppesæt fra dette hold. Arkiverede sæt skal gendannes først.",
@@ -111,6 +114,9 @@ public sealed class NotionClient(HttpClient http)
                 "group_changed" => "Gruppen er ændret af en anden. Opdatér listen, og prøv igen.",
                 "draft_changed" or "stale_draft" or "publication_conflict" => "Kladden er ændret. Vent på lagring, og prøv at udgive igen.",
                 "publication_missing" => "Udgivelsen er trukket tilbage. Genindlæs siden, hvis du vil udgive den igen.",
+                "whole_collection_published" => "Siden er udgivet sammen med notesbogen. Træk hele notesbogen tilbage under Udgivelse.",
+                "empty_collection" => "Opret en side i notesbogen, før du udgiver den.",
+                "invalid_publication_content" => "Indholdet kunne ikke klargøres til udgivelse. Åbn siden, og kontrollér dens indhold og filer.",
                 "invalid_assets" => "En vedhæftning er ikke tilgængelig på denne side. Fjern den, eller upload den igen.",
                 "invalid_knowledge_check_publication" => "Et videnstjek på siden er lukket eller tilhører et andet hold. Vælg en anden udgivelse, eller fjern blokken.",
                 "invalid_collection_slug" => "Brug højst 64 små bogstaver (a-z), tal eller bindestreger. Vælg en adresse, som ikke er reserveret.",
@@ -121,6 +127,7 @@ public sealed class NotionClient(HttpClient http)
                 "trash_expired" => "Fristen på 30 dage er udløbet.",
                 "drawing_changed" => "Tegningen er ændret. Vent på lagring, og prøv at udgive igen.",
                 "drawing_preview_required" => "Åbn tegningen, og vent på, at forhåndsvisningen er gemt, før du udgiver.",
+                "invalid_drawing_publication" => "En tegning på siden kunne ikke udgives. Kontrollér, at tegningen tilhører siden.",
                 "drawing_service_unavailable" => "Tegningerne kunne ikke gemmes lige nu. Prøv igen.",
                 _ => (int)response.StatusCode switch
                 {
@@ -132,10 +139,11 @@ public sealed class NotionClient(HttpClient http)
                     503 => "Dokumenttjenesten er ikke tilgængelig lige nu. Prøv igen om lidt.",
                     _ => "Indholdet kunne ikke hentes. Kontrollér forbindelsen, og prøv igen."
                 }
-            }, code);
+            };
+            throw new NotionException(error?.PageTitle is { } title ? $"Siden „{title}“ kunne ikke udgives. {message}" : message, code);
         }
     }
-    private sealed record ApiError(string? Error);
+    private sealed record ApiError(string? Error, string? PageTitle = null);
 }
 public sealed class NotionException(string message, string? errorCode = null) : Exception(message)
 {

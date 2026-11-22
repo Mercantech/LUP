@@ -52,4 +52,5 @@ public sealed class NotionCollection
     public DateTimeOffset CreatedAtUtc { get; set; }
     public string? Title { get; set; }
     public string? PublishedTitle { get; set; }
+    public Guid? WholePublishedBySub { get; set; }
 }

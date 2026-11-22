@@ -17,7 +17,8 @@ public sealed record NotionPageContext(Guid PageId, Guid? HoldId, string Title, 
     NotionPageLink[]? Pages = null, DateTimeOffset? PublishedAtUtc = null, long DraftRevision = 0,
     long? PublishedRevision = null, string? PublishedStateBase64 = null, string? PublishedTitle = null,
     DrawingPublicationBinding[]? Drawings = null, Guid? CollectionId = null, long LifecycleVersion = 0,
-    Guid? IconEmojiId = null, Guid? PublishedIconEmojiId = null, Guid? CoverId = null, Guid? PublishedCoverId = null);
+    Guid? IconEmojiId = null, Guid? PublishedIconEmojiId = null, Guid? CoverId = null, Guid? PublishedCoverId = null,
+    bool WholeCollectionPublished = false);
 public sealed record PublishNotionPage(long ExpectedRevision, string ExpectedFingerprint, Guid[] AssetIds,
     DrawingPublicationRequest[]? Drawings = null, bool UpdateOnly = false);
 public sealed record StoreNotionDocument(string StateBase64, string Fingerprint, Guid[]? DrawingIds = null,

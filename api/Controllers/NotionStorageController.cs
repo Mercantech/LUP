@@ -3,7 +3,9 @@ using System.Text;
 using System.Text.Json;
 using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Data;
+using Mercantec.Tech.Api.Drawings;
 using Mercantec.Tech.Api.KnowledgeChecks;
+using Mercantec.Tech.Api.Notion;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +15,7 @@ namespace Mercantec.Tech.Api.Controllers;
 
 /// <summary>Internal Hocuspocus persistence only. Never accepts a browser user's JWT as storage access.</summary>
 [ApiController, AllowAnonymous, Route("api/internal/notion/documents")]
-public sealed class NotionStorageController(AppDbContext db, IConfiguration configuration) : ControllerBase
+public sealed class NotionStorageController(AppDbContext db, IConfiguration configuration, DrawingService? drawings = null) : ControllerBase
 {
     public const int MaxStateBytes = 16 * 1024 * 1024;
 
@@ -134,6 +136,8 @@ public sealed class NotionStorageController(AppDbContext db, IConfiguration conf
             .SetProperty(p => p.DrawingIdsJson, p => drawingManifest ?? p.DrawingIdsJson), ct);
         if (written == 0) return NotFound();
         await references.RefreshNotionAsync(id, ct);
+        if (contentChanged && await NotionPublicationWriter.WholePublisherAsync(db, id, ct) is Guid publisher)
+            await new NotionPublicationWriter(db, drawings).PublishSavedAsync(id, publisher, requireReadyDrawings: false, ct);
         if (operation is { Status: "pending" })
         {
             if (operation.UndoOf is Guid originalId)

@@ -29,6 +29,17 @@ public static partial class YjsPageLinks
         { return false; }
     }
 
+    internal static (Guid[] Assets, Guid[] Drawings) ReadPublicationMedia(byte[] update, Guid pageId)
+    {
+        if (update.Length > 16 * 1024 * 1024) throw new InvalidDataException("Document is too large.");
+        var doc = Doc.Decode(update);
+        var assets = new HashSet<Guid>();
+        var drawings = new HashSet<Guid>();
+        if (doc.Roots.TryGetValue("document-store", out var root))
+            doc.CollectReferences(root, "notion-page", [], [], (pageId, assets, drawings));
+        return (assets.Order().ToArray(), drawings.Order().ToArray());
+    }
+
     public static IReadOnlyCollection<Guid> Read(ReadOnlySpan<byte> update)
     {
         var links = new HashSet<Guid>();
@@ -274,7 +285,8 @@ public static partial class YjsPageLinks
             Walk(node, links, seen);
         }
 
-        public void CollectReferences(YNode node, string pageKind, ISet<EntityReference> references, ISet<EntityReference> mentions)
+        public void CollectReferences(YNode node, string pageKind, HashSet<EntityReference> references, HashSet<EntityReference> mentions,
+            (Guid PageId, HashSet<Guid> Assets, HashSet<Guid> Drawings)? publication = null)
         {
             var pending = new Stack<YNode>();
             var seen = new HashSet<YNode>();
@@ -310,8 +322,25 @@ public static partial class YjsPageLinks
                     else if (name == "studentMention") Add("member", Attribute(element, "membershipId"), true);
                     else if (name == "holdPoll") Add("poll", Attribute(element, "pollId"));
                     else if (name == "holdGroup") Add("group", Attribute(element, "groupId"));
-                    else if (name == "pageMedia") Add(pageKind == "notebook-page" ? "notebook-asset" : "notion-asset", Attribute(element, "assetId"));
-                    else if (name == "drawing") Add("drawing", Attribute(element, "drawingId"));
+                    else if (name == "pageMedia")
+                    {
+                        var assetId = Attribute(element, "assetId");
+                        Add(pageKind == "notebook-page" ? "notebook-asset" : "notion-asset", assetId);
+                        if (publication is { } media && !string.IsNullOrEmpty(assetId))
+                        {
+                            if (!Guid.TryParse(assetId, out var asset) || asset == Guid.Empty
+                                || !Guid.TryParse(Attribute(element, "pageId"), out var owner) || owner != media.PageId)
+                                throw new InvalidDataException("Attachment is not owned by its page.");
+                            media.Assets.Add(asset);
+                        }
+                    }
+                    else if (name == "drawing")
+                    {
+                        var drawingId = Attribute(element, "drawingId");
+                        Add("drawing", drawingId);
+                        if (publication is { } media && Guid.TryParse(drawingId, out var drawing) && drawing != Guid.Empty)
+                            media.Drawings.Add(drawing);
+                    }
                     else if (name == "classRoster")
                     {
                         var members = Attribute(element, "membershipIds");

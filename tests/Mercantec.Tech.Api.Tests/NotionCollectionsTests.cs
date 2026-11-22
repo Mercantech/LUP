@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text;
 using Mercantec.Tech.Api.Controllers;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Mercantec.Tech.Api.Tests;
 
@@ -71,6 +73,105 @@ public sealed class NotionCollectionsTests : IAsyncLifetime
         Assert.IsType<OkObjectResult>(await Pages(otherTeacher, true).Unpublish(collection.Id, default));
         Assert.IsType<NotFoundResult>(await Pages(reader).Context(collection.Id, default));
         Assert.Empty(Value<NotionCollectionView[]>(await Collections(reader).List(default)));
+    }
+
+    [Fact]
+    public async Task WholePublicationIncludesTheTreeAndPublishesNewPagesAndSavedChanges()
+    {
+        var book = await Create();
+        var other = await Create();
+        var editor = Pages(teacher, true);
+        var student = Pages(reader);
+        var publisher = Collections(teacher, true);
+        var child = Value<NotionPageSummary>(await editor.Create(new(null, "Underside", book.Id), default));
+        var grandchild = Value<NotionPageSummary>(await editor.Create(new(null, "Øvelse", child.Id), default));
+        var content = GraphFixtures.Get("deleted");
+        await Store(grandchild.Id, content);
+        Assert.IsType<NotFoundResult>(await Collections(reader).PublishCollection(book.Id, default));
+        Assert.IsType<NotFoundResult>(await student.Context(grandchild.Id, default));
+        Assert.Equal(new NotionCollectionPublicationResult(3, true),
+            Value<NotionCollectionPublicationResult>(await publisher.PublishCollection(book.Id, default)));
+
+        Assert.True(Value<NotionCollectionView>(await Collections(reader).Get(book.Id, default)).WholePublished);
+        Assert.False(Value<NotionPageContext>(await student.Context(book.Id, default)).CanEdit);
+        var view = Value<NotionPageContext>(await student.Context(grandchild.Id, default));
+        Assert.Equal(content, Convert.FromBase64String(view.PublishedStateBase64!));
+        Assert.Equal(child.Id, view.Pages!.Single(p => p.Id == grandchild.Id).ParentPageId);
+        Assert.IsType<NotFoundResult>(await student.Context(other.Id, default));
+        Assert.IsType<ConflictObjectResult>(await editor.Unpublish(child.Id, default));
+
+        var newPage = Value<NotionPageSummary>(await editor.Create(new(null, "Ny side", child.Id), default));
+        Assert.NotNull(newPage.PublishedAtUtc);
+        await Store(newPage.Id, content);
+        await editor.Rename(newPage.Id, new("Ny titel"), default);
+        var fresh = Value<NotionPageContext>(await student.Context(newPage.Id, default));
+        Assert.Equal("Ny titel", fresh.Title);
+        Assert.Equal(content, Convert.FromBase64String(fresh.PublishedStateBase64!));
+        Assert.Equal(Value<NotionPageContext>(await editor.Context(newPage.Id, default)).DraftRevision, fresh.PublishedRevision);
+
+        Assert.IsType<NoContentResult>(await editor.TrashPage(child.Id, default));
+        Assert.IsType<NotFoundResult>(await student.Context(newPage.Id, default));
+        Assert.IsType<NoContentResult>(await editor.RestorePage(child.Id, default));
+        Assert.IsType<OkObjectResult>(await student.Context(newPage.Id, default));
+
+        Assert.IsType<NoContentResult>(await editor.TrashPage(child.Id, default));
+        Assert.Equal(new NotionCollectionPublicationResult(1, false),
+            Value<NotionCollectionPublicationResult>(await publisher.UnpublishCollection(book.Id, default)));
+        Assert.IsType<NoContentResult>(await editor.RestorePage(child.Id, default));
+        Assert.IsType<NotFoundResult>(await student.Context(book.Id, default));
+        Assert.IsType<NotFoundResult>(await student.Context(newPage.Id, default));
+        Assert.Equal("Ny titel", Value<NotionPageContext>(await editor.Context(newPage.Id, default)).Title);
+        var draft = Value<NotionPageSummary>(await editor.Create(new(null, "Efter tilbagetrækning", book.Id), default));
+        Assert.Null(draft.PublishedAtUtc);
+    }
+
+    [Fact]
+    public async Task FailedWholePublicationLeavesAllPagesAndTheExistingPublicationIntact()
+    {
+        var book = await Create();
+        var editor = Pages(teacher, true);
+        var invalid = Value<NotionPageSummary>(await editor.Create(new(null, "Ugyldig side", book.Id), default));
+        var draft = Value<NotionPageSummary>(await editor.Create(new(null, "Kladde", book.Id), default));
+        await Publish(book.Id);
+        await editor.Rename(book.Id, new("Ny kladdetitel"), default);
+        await Store(invalid.Id, [1]);
+        Assert.IsType<ConflictObjectResult>(await Collections(teacher, true).PublishCollection(book.Id, default));
+        Assert.Equal("SQL-teori", Value<NotionPageContext>(await Pages(reader).Context(book.Id, default)).Title);
+        Assert.IsType<NotFoundResult>(await Pages(reader).Context(draft.Id, default));
+        Assert.False(Value<NotionCollectionView>(await Collections(teacher, true).Get(book.Id, default)).WholePublished);
+    }
+
+    [Fact]
+    public async Task WholePublicationGrantsOnlyTheSavedPagesOwnReferencedAttachments()
+    {
+        var book = await Create();
+        var uploader = Assets(teacher, true);
+        var png = new byte[] { 137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0 };
+        FormFile File(string name) => new(new MemoryStream(png), 0, png.Length, "file", name) { Headers = new HeaderDictionary() };
+        var included = Value<NotionAssetView>(await uploader.Upload(book.Id, File("diagram.png"), default));
+        var unrelated = Value<NotionAssetView>(await uploader.Upload(book.Id, File("kladde.png"), default));
+        var fixture = Encoding.Latin1.GetString(GraphFixtures.Get("basic"))
+            .Replace("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", book.Id.ToString("D"))
+            .Replace("ffffffff-ffff-4fff-8fff-ffffffffffff", included.Id.ToString("D"));
+        await Store(book.Id, Encoding.Latin1.GetBytes(fixture));
+
+        Assert.IsType<OkObjectResult>(await Collections(teacher, true).PublishCollection(book.Id, default));
+        Assert.IsType<OkObjectResult>(await Assets(reader).Access(included.Id, default));
+        Assert.IsType<NotFoundResult>(await Assets(reader).Access(unrelated.Id, default));
+    }
+
+    private async Task Store(Guid pageId, byte[] bytes)
+    {
+        var serverKey = new string('k', 40);
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            { ["Notion:ServiceSecret"] = serverKey }).Build();
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/octet-stream";
+        context.Request.Headers["X-Notion-Service-Key"] = serverKey;
+        context.Request.Headers["X-Notion-State-Fingerprint"] = Fingerprint;
+        context.Request.Body = new MemoryStream(bytes);
+        var controller = new NotionStorageController(db, config) { ControllerContext = new() { HttpContext = context } };
+        Assert.IsType<OkObjectResult>(await controller.WriteState(pageId, default));
     }
 
     [Fact]

@@ -4,6 +4,7 @@ using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Notebooks;
+using Mercantec.Tech.Api.Notion;
 using Mercantec.Tech.Api.Storage;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.DataProtection;
@@ -150,6 +151,13 @@ public sealed partial class DrawingService
             .SetProperty(p => p.UpdatedAtUtc, now).SetProperty(p => p.LastEditedByName, editorName), ct);
     public Task CheckpointAsync(IEnumerable<Guid> ids, CancellationToken ct) => _engine.CheckpointAsync(ids, ct);
 
+    private async Task SyncCollectionDrawingAsync(Drawing drawing, CancellationToken ct)
+    {
+        if (drawing.NotionPageId is Guid pageId
+            && await NotionPublicationWriter.WholePublisherAsync(_db, pageId, ct) is Guid publisher)
+            await new NotionPublicationWriter(_db, this).PublishSavedAsync(pageId, publisher, requireReadyDrawings: false, ct);
+    }
+
     public async Task<DrawingPublicationBinding[]> PreparePublicationAsync(string domain, Guid documentId,
         IReadOnlyCollection<Guid> referencedIds, IReadOnlyCollection<DrawingPublicationRequest>? requests, CancellationToken ct)
     {
@@ -169,6 +177,38 @@ public sealed partial class DrawingService
                 .ExecuteUpdateAsync(s => s.SetProperty(d => d.UpdatedAtUtc, d => d.UpdatedAtUtc), ct) != 1) throw DrawingValidation.Changed();
             var snapshot = request.Mode == "snapshot" ? await FreezeAsync(drawing, ct) : null;
             result.Add(new(drawing.Id, drawing.BlockId, request.Mode, snapshot?.Id, drawing.Revision, drawing.Fingerprint!));
+        }
+        await _db.SaveChangesAsync(ct);
+        return result.ToArray();
+    }
+
+    internal async Task<DrawingPublicationBinding[]> BindSavedPublicationAsync(Guid pageId, Guid[] ids,
+        DrawingPublicationBinding[] previous, bool requireReady, CancellationToken ct)
+    {
+        // Drawing writes take the caller's parent page lock before changing the drawing.
+        var saved = await ParentDrawings("notion", pageId).AsNoTracking().Where(d => ids.Contains(d.Id))
+            .OrderBy(d => d.Id).ToArrayAsync(ct);
+        if (saved.Length != ids.Length && requireReady) throw DrawingValidation.Invalid("invalid_drawing_publication");
+        var result = new List<DrawingPublicationBinding>();
+        foreach (var drawing in saved)
+        {
+            if (drawing.Fingerprint is null) continue;
+            var existing = previous.FirstOrDefault(binding => binding.DrawingId == drawing.Id && binding.Mode == drawing.Mode);
+            if (existing?.Revision == drawing.Revision && existing.Fingerprint == drawing.Fingerprint)
+            {
+                result.Add(existing);
+                continue;
+            }
+            try
+            {
+                var snapshot = drawing.Mode == "snapshot" ? await FreezeAsync(drawing, ct) : null;
+                result.Add(new(drawing.Id, drawing.BlockId, drawing.Mode, snapshot?.Id, drawing.Revision, drawing.Fingerprint));
+            }
+            catch (Exception ex) when (!requireReady && ex is (DrawingException or HttpRequestException))
+            {
+                // A pending preview must never make a snapshot drawing readable as live.
+                if (existing is not null) result.Add(existing);
+            }
         }
         await _db.SaveChangesAsync(ct);
         return result.ToArray();
