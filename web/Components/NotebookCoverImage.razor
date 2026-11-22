@@ -8,34 +8,41 @@
 {
     <img class="notebook-cover-image" src="@_imageUrl" alt="" decoding="async" draggable="false" />
 }
+else if (_loadFailed && ShowRetry)
+{
+    <button type="button" class="secondary notebook-cover-retry" @onclick="() => LoadAsync(retry: true)">Prøv at hente coveret igen</button>
+}
 
 @code {
     [Parameter, EditorRequired] public string Kind { get; set; } = "";
     [Parameter, EditorRequired] public Guid TargetId { get; set; }
     [Parameter] public Guid? CoverId { get; set; }
     [Parameter] public bool PublishedOnly { get; set; }
+    [Parameter] public bool ShowRetry { get; set; }
 
     private (string Kind, Guid Target, Guid? Cover, bool PublishedOnly, string? Subject)? _source;
     private CancellationTokenSource? _load;
-    private IJSObjectReference? _module;
+    private Task<IJSObjectReference>? _module;
     private string? _imageUrl;
+    private bool _loadFailed;
     private bool _disposed;
 
     protected override void OnInitialized() => Auth.AuthStateChanged += OnAuthChanged;
 
     protected override Task OnParametersSetAsync() => LoadAsync();
 
-    private async Task LoadAsync()
+    private async Task LoadAsync(bool retry = false)
     {
         var source = (Kind, TargetId, CoverId, PublishedOnly, Auth.Subject);
-        if (_disposed || _source == source) return;
+        if (_disposed || !retry && _source == source) return;
+        var samePage = _source is { } previous && previous.Kind == Kind && previous.Target == TargetId
+            && previous.PublishedOnly == PublishedOnly && previous.Subject == Auth.Subject;
         _source = source;
         _load?.Cancel();
         _load?.Dispose();
         _load = null;
-        var previous = _imageUrl;
-        _imageUrl = null;
-        if (previous is not null && _module is not null) await RevokeAsync(_module, previous);
+        _loadFailed = false;
+        if (!samePage || CoverId is null || !Auth.IsAuthenticated) await ReplaceImageAsync(null);
         if (_disposed || _source != source || CoverId is not Guid version || TargetId == Guid.Empty || !Auth.IsAuthenticated) return;
 
         _load = new CancellationTokenSource();
@@ -43,22 +50,39 @@
         try
         {
             var bytes = await Client.ReadAsync(Kind, TargetId, version, PublishedOnly, ct);
-            if (bytes is null || ct.IsCancellationRequested) return;
-            var module = _module ?? await Js.InvokeAsync<IJSObjectReference>("import", "./js/notebook-covers.js");
-            if (_disposed)
+            if (ct.IsCancellationRequested || _disposed || _source != source) return;
+            if (bytes is null)
             {
-                await module.DisposeAsync();
+                _loadFailed = true;
+                await ReplaceImageAsync(null);
                 return;
             }
-            _module = module;
-            if (ct.IsCancellationRequested) return;
+            _module ??= Js.InvokeAsync<IJSObjectReference>("import", "./js/notebook-covers.js").AsTask();
+            var module = await _module;
+            if (ct.IsCancellationRequested || _disposed) return;
             var url = await module.InvokeAsync<string>("createCoverUrl", bytes);
             if (ct.IsCancellationRequested || _disposed || _source != source)
                 await RevokeAsync(module, url);
             else
-                _imageUrl = url;
+                await ReplaceImageAsync(url);
         }
-        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or JSException) { }
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or JSException)
+        {
+            if (_module is { IsFaulted: true }) _module = null;
+            if (!ct.IsCancellationRequested && !_disposed && _source == source)
+            {
+                _loadFailed = true;
+                await ReplaceImageAsync(null);
+            }
+        }
+    }
+
+    private async ValueTask ReplaceImageAsync(string? next)
+    {
+        var old = _imageUrl;
+        _imageUrl = next;
+        if (old is not null && _module is { IsCompletedSuccessfully: true })
+            await RevokeAsync(_module.Result, old);
     }
 
     private void OnAuthChanged() => _ = InvokeAsync(async () =>
@@ -81,8 +105,11 @@
         Auth.AuthStateChanged -= OnAuthChanged;
         _load?.Cancel();
         _load?.Dispose();
-        if (_module is null) return;
-        if (_imageUrl is not null) await RevokeAsync(_module, _imageUrl);
-        await _module.DisposeAsync();
+        await ReplaceImageAsync(null);
+        if (_module is not null)
+        {
+            try { await (await _module).DisposeAsync(); }
+            catch (JSException) { }
+        }
     }
 }

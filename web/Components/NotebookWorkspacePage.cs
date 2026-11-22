@@ -24,17 +24,18 @@ public abstract partial class NotebookWorkspacePage : ComponentBase
     {
         const string message = "Indholdet skal være gemt i skyen. Kontrollér forbindelsen, og prøv igen, når siden er gemt.";
         using var wait = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        wait.CancelAfter(TimeSpan.FromSeconds(5));
+        wait.CancelAfter(TimeSpan.FromSeconds(12));
         try
         {
             while (true)
             {
                 wait.Token.ThrowIfCancellationRequested();
                 var (module, element, status) = editor();
-                if (status is "offline" or "error") throw new InvalidOperationException(message);
-                if (module is not null && (status is "saved" or "synced")
-                    && !await module.InvokeAsync<bool>("hasUnsavedChanges", wait.Token, element))
+                // With no local edits, the cover can use the server document even
+                // while the editor is mounting or reconnecting.
+                if (module is null || !await module.InvokeAsync<bool>("hasUnsavedChanges", wait.Token, element))
                     return;
+                if (status is "offline" or "error") throw new InvalidOperationException(message);
                 await Task.Delay(150, wait.Token);
             }
         }
@@ -57,7 +58,7 @@ public abstract partial class NotebookWorkspacePage : ComponentBase
         var element = _workspaceElement;
         try
         {
-            _sidebarModuleTask ??= SidebarJs.InvokeAsync<IJSObjectReference>("import", "/js/notion-sidebar.js?v=keyboard-20261118").AsTask();
+            _sidebarModuleTask ??= SidebarJs.InvokeAsync<IJSObjectReference>("import", "/js/notion-sidebar.js?v=cover-menu-20261122").AsTask();
             var module = await _sidebarModuleTask;
             if (generation != _sidebarGeneration) return;
             if (_sidebarModule is not null && !string.IsNullOrEmpty(_sidebarMountedElement.Id))

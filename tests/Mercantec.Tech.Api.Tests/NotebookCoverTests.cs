@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
 using Mercantec.Tech.Api.Ai.EditorRuns;
 using Mercantec.Tech.Api.Controllers;
 using Mercantec.Tech.Api.Data;
@@ -63,8 +64,11 @@ public sealed class NotebookCoverTests : IAsyncLifetime
 
         Assert.IsType<NotFoundResult>(await student.Generate(TeachingPage, collectionId, default));
         Assert.Empty(generator.Requests);
-        var first = Value<NotebookCoverView>(await editor.Generate(TeachingPage, collectionId, default)).CoverId;
+        var firstResult = Value<NotebookCoverView>(await editor.Generate(TeachingPage, collectionId, default));
+        var first = firstResult.CoverId;
         Assert.NotNull(first);
+        Assert.Null(firstResult.Image);
+        Assert.DoesNotContain("\"Image\"", JsonSerializer.Serialize(firstResult), StringComparison.Ordinal);
         Assert.Equal("Håndtryk og netværksprotokoller.", Assert.Single(Assert.Single(generator.Requests).Excerpts));
         Assert.IsType<NotFoundResult>(await student.Get(TeachingPage, collectionId, default, version: first));
         Assert.IsType<NotFoundResult>(await editor.Get(TeachingPage, collectionId, default, publishedOnly: true));
@@ -72,7 +76,11 @@ public sealed class NotebookCoverTests : IAsyncLifetime
         Assert.False(Value<NotionPageSummary>(await notebook.Publish(collectionId, new(1, Fingerprint, []), default)).HasUnpublishedChanges);
         Assert.IsType<FileContentResult>(await student.Get(TeachingPage, collectionId, default, version: first));
 
-        var second = Value<NotebookCoverView>(await editor.Generate(TeachingPage, collectionId, default)).CoverId;
+        var secondResult = Value<NotebookCoverView>(await editor.Generate(TeachingPage, collectionId, default, includeImage: true));
+        var second = secondResult.CoverId;
+        Assert.NotNull(secondResult.Image);
+        Assert.Equal(secondResult.Image, Assert.IsType<FileContentResult>(
+            await editor.Get(TeachingPage, collectionId, default, version: second)).FileContents);
         var draft = Value<NotionPageContext>(await notebook.Context(collectionId, default));
         var published = Value<NotionPageContext>(await notebook.PublishedContext(collectionId, default));
         Assert.Equal(second, draft.CoverId);
@@ -84,7 +92,9 @@ public sealed class NotebookCoverTests : IAsyncLifetime
         Assert.IsType<FileContentResult>(await student.Get(TeachingPage, collectionId, default, version: first));
         Assert.Equal(2, await db.NotebookCoverAssets.CountAsync());
 
-        Assert.Null(Value<NotebookCoverView>(await editor.Remove(TeachingPage, collectionId, default)).CoverId);
+        var removed = Value<NotebookCoverView>(await editor.Remove(TeachingPage, collectionId, default));
+        Assert.Null(removed.CoverId);
+        Assert.Null(removed.Image);
         Assert.Equal(first, (await db.NotebookCoverAssets.AsNoTracking().SingleAsync()).Id);
         Assert.Equal(first, Value<NotionPageContext>(await notebook.PublishedContext(collectionId, default)).CoverId);
         Assert.False(Value<NotionPageSummary>(await notebook.Publish(collectionId, new(1, Fingerprint, []), default)).HasUnpublishedChanges);
@@ -127,9 +137,14 @@ public sealed class NotebookCoverTests : IAsyncLifetime
         using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
         using var content = new MemoryStream(encoded.ToArray());
         var upload = new FormFile(content, 0, content.Length, "file", "cover.png");
-        var pageCover = Value<NotebookCoverView>(await mine.Upload("notebook-page", noteId, upload, default)).CoverId;
+        var saved = Value<NotebookCoverView>(await mine.Upload("notebook-page", noteId, upload, default, includeImage: true));
+        var pageCover = saved.CoverId;
 
         var downloaded = Assert.IsType<FileContentResult>(await individual.Get("notebook-page", noteId, default, version: pageCover));
+        Assert.NotNull(saved.Image);
+        Assert.Equal(saved.Image, downloaded.FileContents);
+        var json = JsonSerializer.Serialize(saved, JsonSerializerOptions.Web);
+        Assert.Equal(saved.Image, JsonSerializer.Deserialize<NotebookCoverView>(json, JsonSerializerOptions.Web)?.Image);
         Assert.Equal("image/webp", downloaded.ContentType);
         Assert.Equal("RIFF", System.Text.Encoding.ASCII.GetString(downloaded.FileContents, 0, 4));
         Assert.IsType<NotFoundResult>(await individual.Get("notebook", bookId, default, version: bookCover));
@@ -159,13 +174,85 @@ public sealed class NotebookCoverTests : IAsyncLifetime
         generator.BeforeResult = async () => Assert.Null(
             Value<NotebookCoverView>(await mine.Remove("notebook-page", noteId, default)).CoverId);
 
-        Assert.IsType<ConflictObjectResult>(await mine.Generate("notebook-page", noteId, default));
+        Assert.IsType<ConflictObjectResult>(await mine.Generate("notebook-page", noteId, default, includeImage: true));
         Assert.Empty(await db.NotebookCoverAssets.ToListAsync());
         Assert.IsType<NotFoundResult>(await mine.Get("notebook-page", noteId, default));
 
         mine.Request.Headers[NotebookCoverRules.SubjectHeader] = teacher.ToString();
         Assert.IsType<ConflictObjectResult>(await mine.Generate("notebook-page", noteId, default));
         Assert.Equal(2, generator.Requests.Count);
+    }
+
+    [Fact]
+    public async Task Unavailable_projection_preserves_saved_titles_and_other_projected_excerpts()
+    {
+        db.NotionPages.Add(new()
+        {
+            Id = Guid.NewGuid(), CollectionId = collectionId, ParentPageId = collectionId, Title = "Undernet",
+            CreatedBySub = teacher, YjsState = [4, 5, 6]
+        });
+        await db.SaveChangesAsync();
+
+        // Hold the root projection until the sibling starts, then fail only the root.
+        var siblingStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var rootObservedSibling = false;
+        projection.Respond = async (request, ct) =>
+        {
+            var source = await request.Content!.ReadFromJsonAsync<ProjectionRequest>(ct);
+            if (source?.StateBase64 == Convert.ToBase64String([1, 2, 3]))
+            {
+                await siblingStarted.Task.WaitAsync(ct);
+                rootObservedSibling = true;
+                return new(HttpStatusCode.ServiceUnavailable);
+            }
+
+            siblingStarted.TrySetResult();
+            return new(HttpStatusCode.OK) { Content = JsonContent.Create(new NotionAiProjection("Beregn CIDR.")) };
+        };
+
+        var editor = Covers(teacher, isTeacher: true);
+        Assert.IsType<OkObjectResult>(await editor.Generate("collection", collectionId, default));
+        Assert.True(rootObservedSibling);
+        var request = Assert.Single(generator.Requests);
+        Assert.Equal(new[] { "Netværk", "Undernet Beregn CIDR." }, request.Excerpts);
+
+        Assert.IsType<OkObjectResult>(await editor.Generate(TeachingPage, collectionId, default));
+        Assert.Equal("Netværk", generator.Requests[1].Title);
+        Assert.Empty(generator.Requests[1].Excerpts);
+    }
+
+    [Fact]
+    public async Task Slow_projection_has_its_own_deadline_and_uses_the_saved_title()
+    {
+        using var request = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        projection.Respond = async (_, ct) =>
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            throw new InvalidOperationException("The projection delay should be canceled.");
+        };
+
+        var editor = Covers(teacher, isTeacher: true);
+        Assert.IsType<OkObjectResult>(await editor.Generate(TeachingPage, collectionId, request.Token));
+        Assert.False(request.IsCancellationRequested);
+        var generated = Assert.Single(generator.Requests);
+        Assert.Equal("Netværk", generated.Title);
+        Assert.Empty(generated.Excerpts);
+    }
+
+    [Fact]
+    public async Task Canceled_cover_request_does_not_fall_back_to_an_image_provider_call()
+    {
+        using var request = new CancellationTokenSource();
+        projection.Respond = (_, ct) =>
+        {
+            request.Cancel();
+            return Task.FromCanceled<HttpResponseMessage>(ct);
+        };
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            Covers(teacher, isTeacher: true).Generate(TeachingPage, collectionId, request.Token));
+        Assert.Empty(generator.Requests);
+        Assert.Empty(await db.NotebookCoverAssets.ToListAsync());
     }
 
     private NotebookCoversController Covers(Guid userSub, bool isTeacher = false)
@@ -203,12 +290,16 @@ public sealed class NotebookCoverTests : IAsyncLifetime
 
     private sealed class ProjectionHandler : HttpMessageHandler
     {
+        public Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>>? Respond { get; set; }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            Respond?.Invoke(request, cancellationToken) ?? Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = JsonContent.Create(new NotionAiProjection("Håndtryk og netværksprotokoller."))
             });
     }
+
+    private sealed record ProjectionRequest(string StateBase64);
 
     private sealed class HttpFactory(HttpMessageHandler handler) : IHttpClientFactory
     {

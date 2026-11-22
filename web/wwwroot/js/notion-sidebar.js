@@ -330,7 +330,8 @@ export function mount(root, callbacks) {
         if (!more) return;
         const menu = event.target?.closest?.('.notion-document-menu');
         const action = event.target?.closest?.('button,a');
-        if (!more.contains(event.target) || menu && action && more.contains(action)) more.open = false;
+        const coverAction = action?.closest?.('.notebook-cover-actions');
+        if (!more.contains(event.target) || menu && action && more.contains(action) && !coverAction) more.open = false;
     };
     const changed = () => {
         if (!state.active || media.matches === state.mobile) return;

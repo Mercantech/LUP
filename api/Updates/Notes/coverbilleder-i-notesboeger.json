@@ -1,6 +1,6 @@
 {
   "date": "2026-11-22",
   "title": "Giv notesbøger og sider et coverbillede",
-  "description": "Upload et cover, eller generér en illustration med AI ud fra dit indhold. Notesbogens cover vises i oversigten, og sidens cover vises øverst på siden.",
+  "description": "Upload eller AI-generér et cover via menuen med tre prikker. Det nye cover vises, så snart det er gemt. Notesbogens cover vises også i oversigten.",
   "authors": ["Mathias"]
 }
