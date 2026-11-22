@@ -167,7 +167,7 @@ else
                 }
                 @if (_current is null)
                 {
-                    @CoverBanner
+                    <div class="notion-cover-slot">@CoverBanner</div>
                     <div class="nb-empty"><UiIcon Name="book" /><h2>Ingen sider</h2><p>@(TemplateMode ? "Opret eller vælg en skabelon." : "Opret en note eller vælg en logbogsskabelon.")</p>@if (Own) { <button class="action" @onclick="() => BeginCreate(false)">Opret første note</button> }</div>
                 }
                 else
