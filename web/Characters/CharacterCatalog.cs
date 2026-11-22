@@ -71,6 +71,28 @@ public static class CharacterCatalog
              new("Mød Gummianden", "/characters/gummianden", false, false)])
         {
             Reactions = VatsonEmojiCatalog.All,
+            IllustrationsLabel = "infografikker",
+            IllustrationsDescription = "Følg signalet gennem et transportbånd, og brug målinger til at forbedre prototypen.",
+            Illustrations =
+            [
+                new("Fra sensor til handling", "/images/characters/vatson/teaching/fra-sensor-til-handling.png",
+                    "Vatson viser en sensor, en PLC og en motor. Pile viser signalets vej fra sensoren gennem PLC'en til motoren.", 1536, 1024)
+                {
+                    Preview = "/images/characters/vatson/teaching/fra-sensor-til-handling.webp",
+                    Stage = "Automatisering",
+                    Summary = "Sensoren registrerer en kasse. PLC'en læser inputtet og kører programmet, som kan aktivere motoren via et udgangssignal.",
+                    Explanation = ["Prøv selv i en simulator. Lad motoren starte, når sensoren registrerer kassen. Skift sensorens input fra 0 til 1, og følg, hvordan PLC'ens udgang ændrer sig."],
+                    Sources = [new("Siemens · PLC'ens cyklus", "https://support.industry.siemens.com/cs/attachments/109978364/S7-200_SMART_system_manual_en-US.pdf", true, false)]
+                },
+                new("Byg, mål og forbedr", "/images/characters/vatson/teaching/byg-maal-og-forbedr.png",
+                    "Vatson viser et modeltransportbånd, en måling med stopur og en ny udgave med en ekstra styreskinne.", 1536, 1024)
+                {
+                    Preview = "/images/characters/vatson/teaching/byg-maal-og-forbedr.webp",
+                    Stage = "Prototyper",
+                    Summary = "Mål, hvor ofte kassen kommer helt frem på transportbåndet. Tilføj én styreskinne, og prøv igen under samme forhold.",
+                    Explanation = ["Prøv selv. Kør kassen ti gange før og ti gange efter ændringen med samme hastighed og startposition. Notér antal vellykkede ture og tiden for hver kasse, der kommer frem. Hvad ændrede sig?"]
+                }
+            ],
             LargeReactionPreviews = true,
             ReactionsDescription = "Alle Vatsons emojis i stor visning – fra vinken og kaffepause til PLC, VR og værkstedsbesøg. Åbn en original i fuld størrelse, eller hent den som PNG.",
             Scenes = OutfitScenes("vatson",
