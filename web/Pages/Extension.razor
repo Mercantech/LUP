@@ -7,80 +7,146 @@
 
 <PageTitle>Chrome-udvidelse · LUP</PageTitle>
 
-<header class="page-title"><div><h1>LUP til Chrome</h1><p>Forbind udvidelsen, så du kan gemme emojis direkte fra billedvinduet.</p></div></header>
-@if (_error is not null) { <p class="callout" role="alert">@_error</p> }
-@if (_notice is not null) { <p class="callout" role="status">@_notice</p> }
+<div class="extension-page">
+    <header class="extension-hero">
+        <div class="extension-intro">
+            <span class="extension-brand" aria-hidden="true">
+                <svg viewBox="0 0 10 10" focusable="false"><use href="images/branding/pixel-lup.svg?v=2#mark" /></svg>
+            </span>
+            <h1>LUP til Chrome</h1>
+            <p>Få et hurtigt overblik over din kalender, og gem billeder som emojis direkte fra Chrome.</p>
+        </div>
+        <nav class="extension-features" aria-label="Funktioner i LUP til Chrome">
+            <a class="extension-feature" href="/teacher/planner">
+                <span class="extension-icon"><UiIcon Name="calendar" /></span>
+                <span><strong>Kalender</strong><small>Holdplan, frister og Outlook-aftaler</small></span>
+                <UiIcon Name="arrow" />
+            </a>
+            <a class="extension-feature" href="/emojis">
+                <span class="extension-icon emoji"><UiIcon Name="image" /></span>
+                <span><strong>Emojiværksted</strong><small>Find, beskær og gem billeder og GIF’er</small></span>
+                <UiIcon Name="arrow" />
+            </a>
+        </nav>
+    </header>
 
-@if (!Auth.IsInitialized)
-{
-    <p role="status">Indlæser…</p>
-}
-else if (!Auth.IsAuthenticated)
-{
-    <section class="panel extension-panel">
-        <h2>Forbind din udvidelse</h2>
-        <p>Log ind med Mercantec Auth for at oprette din personlige adgang. Denne opsætning skal kun foretages én gang i hver browser.</p>
-        <button type="button" class="action" disabled="@_busy" @onclick="BeginLogin">Log ind og forbind udvidelsen</button>
-    </section>
-}
-else if (_state is null)
-{
-    @if (_error is null) { <p role="status">Henter adgang…</p> }
-    else { <button type="button" class="secondary" disabled="@_busy" @onclick="Reload">Prøv igen</button> }
-}
-else if (!_state.Enabled)
-{
-    <section class="panel extension-panel"><h2>Adgang er begrænset</h2><p>Direkte upload fra Chrome er kun tilgængelig for de godkendte konti. Det almindelige emojibibliotek følger fortsat dine normale LUP-rettigheder.</p><a href="/emojis">Åbn emojibiblioteket</a></section>
-}
-else
-{
-    <section class="panel extension-panel">
-        <h2>Opret forbindelse</h2>
-        <p>Opret en personlig nøgle, og indsæt den i indstillingerne i LUP-udvidelsen. Derefter kan du beskære og gemme en emoji uden at åbne LUP-siden.</p>
-        <label class="field">Navn på forbindelsen<input @bind="_label" maxlength="80" disabled="@_busy" placeholder="LUP i Chrome" /></label>
-        <button type="button" class="action" disabled="@(_busy || string.IsNullOrWhiteSpace(_label))" @onclick="Create">Opret personlig nøgle</button>
-        @if (_rawKey is not null)
-        {
-            <div class="extension-new-key" role="status">
-                <strong>Din nøgle er klar</strong>
-                <p>Kopiér den nu. Du kan ikke hente den igen efter genindlæsning.</p>
-                <label class="field">Personlig adgangsnøgle<input type="password" value="@_rawKey" readonly autocomplete="off" spellcheck="false" /></label>
-                <button type="button" class="secondary" disabled="@_busy" @onclick="Copy">Kopiér nøgle</button>
-                <p class="extension-hint">Åbn LUP-udvidelsens indstillinger, indsæt nøglen, og tryk Forbind. Nøglen giver kun adgang til at tilføje emojis. Den udløber efter 90 dage og kan tilbagekaldes nedenfor.</p>
+    @if (_error is not null) { <p class="extension-message error" role="alert">@_error</p> }
+    @if (_notice is not null) { <p class="extension-message" role="status">@_notice</p> }
+
+    <div class="extension-grid">
+        <section class="extension-panel" aria-labelledby="extension-connect-title">
+            <div class="extension-heading">
+                <span class="extension-icon"><UiIcon Name="lock" /></span>
+                <h2 id="extension-connect-title">Forbind din browser</h2>
             </div>
-        }
-    </section>
-    <section class="panel extension-panel">
-        <h2>Dine forbindelser</h2>
-        @if (_state.Keys.Count == 0)
-        {
-            <p>Du har endnu ingen forbindelser.</p>
-        }
-        else
-        {
-            <ul class="extension-keys">
-            @foreach (var item in _state.Keys)
+            @if (!Auth.IsInitialized)
             {
-                <li @key="item.Id">
-                    <div><strong>@item.Label</strong><p class="extension-hint">Oprettet @Date(item.CreatedAtUtc) · Udløber @Date(item.ExpiresAtUtc)</p>
-                        @if (item.RevokedAtUtc is not null) { <p class="extension-hint">Tilbagekaldt @Date(item.RevokedAtUtc.Value)</p> }
-                        else if (item.ExpiresAtUtc <= DateTimeOffset.UtcNow) { <p class="extension-hint">Udløbet</p> }
-                        else if (item.LastUsedAtUtc is not null) { <p class="extension-hint">Senest brugt @Date(item.LastUsedAtUtc.Value)</p> }
-                    </div>
-                    @if (item.RevokedAtUtc is null && item.ExpiresAtUtc > DateTimeOffset.UtcNow)
-                    { <button type="button" class="secondary" disabled="@_busy" @onclick="() => Revoke(item.Id)">Tilbagekald</button> }
-                </li>
+                <p role="status">Indlæser…</p>
             }
-            </ul>
+            else if (!Auth.IsAuthenticated)
+            {
+                <p>Log ind med Mercantec Auth for at oprette en personlig nøgle til din browser.</p>
+                <button type="button" class="action" disabled="@_busy" @onclick="BeginLogin">Log ind med Mercantec Auth <UiIcon Name="arrow" /></button>
+            }
+            else if (_state is null)
+            {
+                @if (_error is null) { <p role="status">Henter dine forbindelser…</p> }
+                else { <button type="button" class="secondary" disabled="@_busy" @onclick="Reload">Prøv igen</button> }
+            }
+            else if (!_state.Enabled)
+            {
+                <p>Din konto har ikke adgang til Chrome-udvidelsen endnu. Du kan stadig bruge kalenderen og emojibiblioteket på LUP.</p>
+            }
+            else
+            {
+                <label class="field extension-field">Navn på forbindelsen<input @bind="_label" @bind:event="oninput" maxlength="80" disabled="@_busy" placeholder="LUP i Chrome" /></label>
+                <label class="extension-calendar-option">
+                    <input type="checkbox" @bind="_includeCalendar" disabled="@_busy" aria-describedby="extension-calendar-description" />
+                    <span><strong>Giv læseadgang til min kalender</strong><small id="extension-calendar-description">Vis dine hold, frister og tilknyttede Outlook-aftaler i Chrome.</small></span>
+                </label>
+                <button type="button" class="action" disabled="@(_busy || string.IsNullOrWhiteSpace(_label))" @onclick="Create">Opret personlig nøgle <UiIcon Name="arrow" /></button>
+
+                @if (_rawKey is not null)
+                {
+                    <div class="extension-new-key">
+                        <strong role="status">Din nøgle er klar</strong>
+                        <p>Kopiér nøglen nu. Den vises kun her ved oprettelsen.</p>
+                        <label class="field extension-field">Personlig adgangsnøgle<input type="password" value="@_rawKey" readonly autocomplete="off" spellcheck="false" /></label>
+                        <button type="button" class="secondary" disabled="@_busy" @onclick="Copy">Kopiér nøgle</button>
+                    </div>
+                }
+            }
+        </section>
+
+        <aside class="extension-panel extension-setup" aria-labelledby="extension-setup-title">
+            <div class="extension-heading">
+                <span class="extension-icon"><UiIcon Name="panel" /></span>
+                <h2 id="extension-setup-title">Sådan kommer du i gang</h2>
+            </div>
+            <ol>
+                <li>Installér LUP-udvidelsen, og fastgør den i Chrome.</li>
+                <li>Opret og kopiér din personlige nøgle her på siden.</li>
+                <li>Åbn LUP-udvidelsens indstillinger, indsæt nøglen, og vælg <strong>Forbind</strong>.</li>
+            </ol>
+            <details class="extension-install">
+                <summary>Installér fra ZIP</summary>
+                <p>Pak udvidelsens ZIP-fil ud. Gå til <code>chrome://extensions</code>, slå <strong>Udviklertilstand</strong> til, og vælg den udpakkede mappe med <strong>Indlæs upakket</strong>.</p>
+            </details>
+        </aside>
+
+        @if (_state?.Enabled == true)
+        {
+            <section class="extension-panel extension-connections" aria-labelledby="extension-connections-title">
+                <div class="extension-heading">
+                    <span class="extension-icon"><UiIcon Name="shield" /></span>
+                    <h2 id="extension-connections-title">Dine forbindelser</h2>
+                </div>
+                <p>En nøgle udløber efter 90 dage. Du kan tilbagekalde den her når som helst.</p>
+                @if (_state.Keys.Count == 0)
+                {
+                    <p class="extension-empty">Du har endnu ingen forbindelser.</p>
+                }
+                else
+                {
+                    @if (_state.Keys.Any(key => !key.CanReadCalendar && key.RevokedAtUtc is null && key.ExpiresAtUtc > DateTimeOffset.UtcNow))
+                    {
+                        <p class="extension-hint">Har din browser en nøgle til emojis? Opret en ny nøgle med kalenderadgang, og indsæt den i udvidelsen.</p>
+                    }
+                    <ul class="extension-keys">
+                    @foreach (var item in _state.Keys)
+                    {
+                        <li @key="item.Id">
+                            <div class="extension-key-info">
+                                <div class="extension-key-title">
+                                    <strong>@item.Label</strong>
+                                    <span class="extension-scope">@(item.CanReadCalendar ? "Emojis og kalender" : "Emojis")</span>
+                                </div>
+                                <p class="extension-hint">
+                                    Oprettet @Date(item.CreatedAtUtc)
+                                    @if (item.RevokedAtUtc is { } revokedAt) { <span> · Tilbagekaldt @Date(revokedAt)</span> }
+                                    else if (item.ExpiresAtUtc <= DateTimeOffset.UtcNow) { <span> · Udløbet @Date(item.ExpiresAtUtc)</span> }
+                                    else { <span> · Udløber @Date(item.ExpiresAtUtc)</span> }
+                                    @if (item.LastUsedAtUtc is { } lastUsedAt && item.RevokedAtUtc is null) { <span> · Senest brugt @Date(lastUsedAt)</span> }
+                                </p>
+                            </div>
+                            @if (item.RevokedAtUtc is null && item.ExpiresAtUtc > DateTimeOffset.UtcNow)
+                            {
+                                <button type="button" class="secondary" disabled="@_busy" aria-label="@($"Tilbagekald {item.Label}")" @onclick="() => Revoke(item.Id)">Tilbagekald</button>
+                            }
+                        </li>
+                    }
+                    </ul>
+                }
+            </section>
         }
-        <p class="extension-hint">Tilbagekald en forbindelse, hvis en browser ikke længere skal kunne tilføje emojis. Andre LUP-funktioner og dit Mercantec-login berøres ikke.</p>
-    </section>
-}
+    </div>
+</div>
 
 @code {
     private readonly CancellationTokenSource _life = new();
     private ExtensionAccessState? _state;
     private string _label = "LUP i Chrome";
+    private bool _includeCalendar;
     private string? _rawKey, _error, _notice, _subject;
     private Guid? _newKeyId;
     private IJSObjectReference? _module;
@@ -100,6 +166,7 @@ else
         {
             ++_authGeneration;
             _rawKey = null; _newKeyId = null; _state = null; _error = _notice = null;
+            _includeCalendar = false;
             _busy = false;
             _subject = Auth.Subject;
         }
@@ -151,9 +218,10 @@ else
         _busy = true; _rawKey = null; _newKeyId = null; _error = _notice = null;
         try
         {
-            var created = await Access.Create(_label.Trim(), _life.Token);
+            var created = await Access.Create(_label.Trim(), _includeCalendar, _life.Token);
             if (_disposed || generation != _authGeneration || !Auth.IsAuthenticated) return;
             _rawKey = created.Key; _newKeyId = created.Id;
+            _includeCalendar = false;
             await Load(generation);
         }
         catch (ExtensionAccessException error) { if (!_disposed && generation == _authGeneration) _error = error.Message; }
@@ -164,7 +232,7 @@ else
     private async Task Copy()
     {
         if (_rawKey is null || _busy || _disposed) return;
-        try { await (await Module()).InvokeVoidAsync("copyKey", _rawKey); if (!_disposed) _notice = "Nøglen er kopieret. Indsæt den i LUP-udvidelsens indstillinger."; }
+        try { await (await Module()).InvokeVoidAsync("copyKey", _rawKey); if (!_disposed) _notice = "Nøglen er kopieret. Indsæt den i LUP-udvidelsens indstillinger, og vælg Forbind."; }
         catch (Exception error) when (error is JSException or OperationCanceledException) { if (!_disposed) _error = "Nøglen kunne ikke kopieres automatisk. Markér nøglefeltet, og kopiér det manuelt."; }
     }
 

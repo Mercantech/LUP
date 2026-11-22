@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Mercantec.Tech.Api.Controllers;
 using Mercantec.Tech.Api.Data;
+using Mercantec.Tech.Api.Emojis;
 using Mercantec.Tech.Api.Integrations.Azure;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Http;
@@ -219,6 +220,78 @@ public sealed class CalendarControllerTests
             differentCase => Assert.Null(differentCase.LupEventId),
             differentMailbox => Assert.Null(differentMailbox.LupEventId),
             unlinked => Assert.Null(unlinked.LupEventId));
+    }
+
+    [Fact]
+    public async Task ExtensionOutlookUsesTheOwnersMappedMailboxAndRedactsPrivateAppointments()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        var owner = Guid.NewGuid();
+        var monday = new DateTimeOffset(2027, 3, 21, 23, 0, 0, TimeSpan.Zero);
+        var nextMonday = monday.AddDays(7).AddHours(-1);
+        using var transport = new Transport((request, _) =>
+        {
+            if (request.RequestUri!.Host == "login.microsoftonline.com") return Task.FromResult(TokenResponse());
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal("/v1.0/users/owner@mercantec.dk/calendarView", Uri.UnescapeDataString(request.RequestUri.AbsolutePath));
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(new
+                {
+                    value = new[]
+                    {
+                        new
+                        {
+                            id = "fixture-private", subject = "Kun i Outlook", isAllDay = true, sensitivity = "private",
+                            start = new { dateTime = "2027-03-28T00:00:00", timeZone = "Romance Standard Time" },
+                            end = new { dateTime = "2027-03-29T00:00:00", timeZone = "Romance Standard Time" },
+                            location = new { displayName = "Privat sted" }, webLink = "https://example.invalid/private"
+                        },
+                        new
+                        {
+                            id = "fixture-visible", subject = "Synligt møde", isAllDay = false, sensitivity = "normal",
+                            start = new { dateTime = "2027-03-28T10:30:00", timeZone = "Romance Standard Time" },
+                            end = new { dateTime = "2027-03-28T12:00:00", timeZone = "Romance Standard Time" },
+                            location = new { displayName = "Lokale 24" }, webLink = "https://example.invalid/visible"
+                        }
+                    }
+                })
+            });
+        });
+        var graph = CreateGraph(true, transport, $"{owner:D}=owner@mercantec.dk;alias@mercantec.dk=other@mercantec.dk");
+        var principal = new ClaimsPrincipal(new ClaimsIdentity([
+            new("sub", owner.ToString("D")), new("email", "alias@mercantec.dk"), new("role", "Teacher"),
+            new(ExtensionUploadCredentials.ScopeClaim, ExtensionUploadCredentials.CalendarScope),
+            new(ExtensionUploadCredentials.KeyIdClaim, Guid.NewGuid().ToString("D"))
+        ], ExtensionUploadCredentials.Scheme));
+        var controller = new ExtensionCalendarController(db, new(db), graph, new(TimeProvider.System))
+        { ControllerContext = new() { HttpContext = new DefaultHttpContext { User = principal } } };
+
+        var result = Assert.IsType<OkObjectResult>(await controller.Get(monday, nextMonday, default));
+        var view = Assert.IsType<ExtensionCalendarView>(result.Value);
+        Assert.Equal("ready", view.OutlookStatus);
+        Assert.Collection(view.Events,
+            item =>
+            {
+                Assert.True(item.IsAllDay);
+                Assert.Equal("Optaget", item.Title);
+                Assert.Null(item.Location);
+                Assert.Equal(new DateTimeOffset(2027, 3, 28, 0, 0, 0, TimeSpan.Zero), item.Start);
+                Assert.Equal(new DateTimeOffset(2027, 3, 29, 0, 0, 0, TimeSpan.Zero), item.End);
+            },
+            item =>
+            {
+                Assert.Equal("Synligt møde", item.Title);
+                Assert.Equal("Lokale 24", item.Location);
+                Assert.Equal(new DateTimeOffset(2027, 3, 28, 8, 30, 0, TimeSpan.Zero), item.Start);
+            });
+        var json = JsonSerializer.Serialize(view);
+        Assert.DoesNotContain("example.invalid", json);
+        Assert.DoesNotContain("Kun i Outlook", json);
+        Assert.DoesNotContain("Privat sted", json);
     }
 
     private static async Task<IActionResult> MineWithoutDatabase(CalendarController controller)

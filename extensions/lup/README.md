@@ -1,4 +1,4 @@
-# LUP til Chrome – version 0.6
+# LUP til Chrome – version 0.7
 
 Højreklik på et billede → **Tilføj som emoji på LUP.dk**. Udvidelsen
 åbner sit eget billedvindue. Vælg hele billedet eller et kvadratisk udsnit,
@@ -11,12 +11,12 @@ ved upload.
 1. Byg pakken med `scripts/Package-LupExtension.ps1` fra repository-roden.
    Scriptet installerer om nødvendigt de låste billedværktøjsafhængigheder
    og pakker runtime, model, licenser og udvidelse i
-   `.tools/lup-extension/LUP-0.6.0.zip`.
+   `.tools/lup-extension/LUP-0.7.0.zip`.
 2. Pak ZIP-filen ud. Åbn `chrome://extensions`, slå **Udviklertilstand** til,
    og vælg den udpakkede mappe med **Indlæs upakket**. Alternativt kan den
    byggede `extensions/lup`-mappe bruges direkte. Den skal blive liggende.
 3. Åbn [Forbind LUP-udvidelsen](https://lup.dk/extension), og log ind med
-   Mercantec Auth. Opret en personlig uploadnøgle og kopiér den.
+   Mercantec Auth. Opret en personlig nøgle og kopiér den. Vælg kalenderadgang, hvis du vil se din kalender i popupen.
 4. Åbn LUP-ikonet i Chrome, indsæt nøglen, og tryk **Forbind LUP**.
 
 Adgangen er afgrænset til Mathias og Kasper. Oprettelse kræver en godkendt
@@ -31,7 +31,20 @@ Udvidelsen er endnu ikke udgivet i Chrome Web Store.
 
 Ved opdatering pakkes filerne ud oven i den eksisterende udvidelsesmappe.
 Genindlæs derefter i `chrome://extensions`, så den samme Chrome-profil
-beholder sin personlige nøgle. Version 0.5 bruger også Wikimedia til GIF-filer.
+beholder sin personlige nøgle.
+
+## Se din kalender
+
+Åbn LUP-ikonet i Chrome. **Min kalender** viser dagens aftaler og frister.
+Vælg en anden dag i ugen, blad med pilene, eller tryk **I dag**. Under
+**Åbn i LUP** finder du den fulde kalender. Aftaler fra Outlook vises, når
+din konto har en Outlook-kalender forbundet i LUP.
+
+En eksisterende uploadnøgle virker fortsat til emojis. Vil du også se
+kalenderen, skal du oprette en ny nøgle med **kalenderadgang** på
+[LUP.dk](https://lup.dk/extension) og indsætte den i udvidelsen under
+**Forbindelse og indstillinger**. Kalenderen læses for nøglens ejer ved
+åbning og ugeskift. Udvidelsen gemmer ikke aftaler i Chrome.
 
 ## Stabil billedimport og fejlinfo
 
@@ -169,10 +182,12 @@ Storageadgang er begrænset til udvidelsens egne betroede sider; content scripts
 og websider kan ikke hente nøglen gennem beskedprotokollen. Serveren gemmer kun
 SHA256-hashen samt ejer, udløb og tilbagekaldelsesstatus.
 
-Nøglen kan kun bruges mod `GET /api/extension/status` og
-`POST /api/extension/emojis` med scope `emoji:create`. Den giver ikke adgang til
-listning, omdøbning, sletning eller andre API'er og kan ikke oprette nye nøgler.
-Disse nøglefunktioner kræver normal Mercantec JWT-login på LUP-siden.
+En personlig nøgle giver adgang til `GET /api/extension/status` og
+`POST /api/extension/emojis` med scope `emoji:create`. Med kalenderadgang kan
+den desuden læse en uge ad gangen via `GET /api/extension/calendar` med scope
+`calendar:read`. Oprettelse og tilbagekaldelse af nøgler kræver Mercantec-login på
+LUP-siden. Outlook-kalenderen hentes for ejerens egen tilknyttede postkasse.
+Private aftaler vises som optaget.
 Upload genbruger API'ets validering af navn, filsignatur, filstørrelse og
 biblioteksgrænse. Ejerens stabile Auth-`sub` registreres som opretter.
 Der er en grænse på 30 uploadforsøg pr. minut pr. nøgle.
@@ -206,8 +221,8 @@ npm --prefix image-tools test
 npm --prefix editor run build
 ```
 
-Den nye database-migration opretter kun tabellen til hashede forbindelser.
-Normal LUP-login forbliver authorization code + PKCE via Mercantec Auth.
+Databasen gemmer kalenderadgang som et valg på den hashede forbindelse.
+LUP-login bruger authorization code + PKCE via Mercantec Auth.
 Billedruntime/model og tilhørende licenser bygges fra `image-tools/` og pakkes
 lokalt i udvidelsen; Chrome henter ikke eksekverbar kode fra en CDN.
 Se [billedværktøjer](../../image-tools/README.md) for model og kilder.

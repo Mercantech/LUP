@@ -1,0 +1,347 @@
+.lup-workspace {
+  color-scheme: light;
+  --bg: #f6f6fd;
+  --paper: #fff;
+  --ink: #201d39;
+  --muted: #5d5975;
+  --rule: #e0ddef;
+  --blue: #5143b8;
+  --tint: #efedff;
+  --green: #216b52;
+  --workspace-action: #5143b8;
+  --workspace-action-hover: #4334a6;
+  --workspace-surface: #f8f7fe;
+  --workspace-input: #fff;
+  --workspace-checker: #eceaf6;
+  --workspace-checker-light: #faf9ff;
+  --workspace-green-bg: #edf8f2;
+  --workspace-green-border: #cce8d8;
+  --workspace-red-bg: #fff4f6;
+  --workspace-red-border: #edcdd6;
+  --workspace-red-text: #922f45;
+  --workspace-ring: #746ae0;
+  --workspace-hero: linear-gradient(115deg, #eeebff, #f7f7ff 54%, #eaf3ff);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.lup-workspace .app-header {
+  border-bottom-color: var(--rule);
+}
+
+.lup-workspace .app-header .brand-lockup {
+  gap: 10px;
+}
+
+.workspace-logo {
+  display: grid;
+  flex: none;
+  width: 39px;
+  height: 39px;
+  place-items: center;
+  border: 1px solid #e6dff8;
+  border-radius: 11px;
+  background: #faf8ff;
+}
+
+.workspace-brand {
+  font: 700 23px/1 "Space Grotesk", sans-serif;
+  letter-spacing: -.06em;
+}
+
+.workspace-brand-caption {
+  padding-inline-start: 10px;
+  border-inline-start: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.lup-workspace .library-link {
+  color: var(--blue);
+  font-size: .86rem;
+}
+
+.lup-workspace .icon-button {
+  width: 38px;
+  height: 38px;
+}
+
+.lup-workspace :is(a, button, summary, input, textarea):focus-visible {
+  outline-color: var(--workspace-ring);
+}
+
+.lup-workspace .primary-button {
+  background: var(--workspace-action);
+}
+
+.lup-workspace .primary-button:not(:disabled):hover {
+  background: var(--workspace-action-hover);
+}
+
+.lup-workspace :is(.search-intro, .editor-heading) {
+  margin: 24px 0;
+  padding: clamp(20px, 4vw, 40px);
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  background: var(--workspace-hero);
+}
+
+.lup-workspace .search-intro {
+  max-width: none;
+}
+
+.lup-workspace :is(.search-intro, .editor-heading) h1 {
+  margin: 0 0 8px;
+}
+
+.lup-workspace :is(.search-intro, .editor-heading) .subtitle {
+  font-size: 1rem;
+}
+
+.lup-workspace .search-intro .search-form {
+  max-width: 700px;
+}
+
+.lup-workspace .search-input-wrap,
+.lup-workspace .search-result,
+.lup-workspace .search-suggestions button,
+.lup-workspace .result-select,
+.lup-workspace .more-button,
+.lup-workspace .tool-button,
+.lup-workspace .sample-bubble,
+.lup-workspace textarea {
+  color: var(--ink);
+  background: var(--workspace-input);
+  border-color: var(--rule);
+}
+
+.lup-workspace .search-input-wrap:focus-within,
+.lup-workspace .name-input:focus-within,
+.lup-workspace textarea:focus {
+  border-color: var(--workspace-ring);
+  box-shadow: 0 0 0 2px var(--tint);
+}
+
+.lup-workspace .search-suggestions button:hover,
+.lup-workspace .search-suggestions button[data-active=true],
+.lup-workspace .result-select:not(:disabled):hover,
+.lup-workspace .result-select[aria-busy=true],
+.lup-workspace .more-button:not(:disabled):hover,
+.lup-workspace .tool-button:not(:disabled):hover,
+.lup-workspace .icon-button:hover {
+  border-color: var(--workspace-ring);
+  color: var(--blue);
+  background: var(--tint);
+}
+
+.lup-workspace .search-mode-switch {
+  margin-top: 18px;
+}
+
+.lup-workspace[data-search-mode] .search-mode-switch,
+.lup-workspace.editor-page .lup-crop-modes {
+  border-color: var(--rule);
+  background: var(--tint);
+}
+
+.lup-workspace .search-mode-switch button,
+.lup-workspace.editor-page .lup-crop-modes button {
+  color: var(--muted);
+}
+
+.lup-workspace .search-mode-switch button[aria-pressed=true],
+.lup-workspace.editor-page .lup-crop-modes button[aria-pressed=true] {
+  color: var(--blue);
+  background: var(--paper);
+}
+
+.lup-workspace .source-badge {
+  color: var(--green);
+}
+
+.lup-workspace :is(.search-suggestions button, .search-suggestions > span, .search-hint, .search-source-note > p, .source-badge, .search-footer) {
+  font-size: .86rem;
+}
+
+.lup-workspace .search-suggestions button {
+  min-height: 32px;
+}
+
+.lup-workspace .result-title {
+  font-size: .98rem;
+}
+
+.lup-workspace :is(.result-creator, .result-source, .result-select) {
+  font-size: .85rem;
+}
+
+.lup-workspace .result-license {
+  font-size: .75rem;
+}
+
+.lup-workspace[data-search-mode=gifs] .source-badge,
+.lup-workspace .result-source {
+  color: var(--blue);
+}
+
+.lup-workspace :is(.search-empty, .editor-stage, .result-image-fallback, .emoji-sample, .feedback) {
+  background: var(--workspace-surface);
+  border-color: var(--rule);
+}
+
+.lup-workspace .search-empty {
+  padding-block: 35px;
+  min-height: 235px;
+}
+
+.lup-workspace :is(.result-license, .result-opened, .license-badge, .feedback[data-kind=success]) {
+  border-color: var(--workspace-green-border);
+  background: var(--workspace-green-bg);
+  color: var(--green);
+}
+
+.lup-workspace .search-result[data-opened=true] {
+  border-color: var(--workspace-green-border);
+}
+
+.lup-workspace .result-gif-badge {
+  border-color: var(--rule);
+  background: var(--paper);
+  color: var(--muted);
+}
+
+.lup-workspace :is(.result-picture, .search-result[data-media-type=gif] .result-picture),
+.lup-workspace.editor-page .lup-crop-frame {
+  border-color: var(--rule);
+  background: repeating-conic-gradient(var(--workspace-checker) 0% 25%, var(--workspace-checker-light) 0% 50%) 50% / 18px 18px;
+}
+
+.lup-workspace.editor-page #crop-editor.lup-crop {
+  --blue: inherit;
+  --ink: inherit;
+  --paper: inherit;
+  --rule: inherit;
+  --tint: inherit;
+  --muted: inherit;
+  color: var(--ink);
+}
+
+.lup-workspace.editor-page .lup-crop-control input[type=range]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, var(--blue) var(--range-progress, 0%), var(--rule) var(--range-progress, 0%));
+}
+
+.lup-workspace .editor-stage.drag-over .drop-overlay {
+  color: var(--blue);
+  background: var(--tint);
+  border-color: var(--workspace-ring);
+}
+
+.lup-workspace :is(.name-input, .image-help, .lup-crop-precision) {
+  border-color: var(--rule);
+}
+
+.lup-workspace :is(.lup-crop .lup-crop-hint, .field-counter, .image-format, .sample-label, .emoji-sample code, .save-caption, .privacy-note, .privacy-note span, .editor-footer, .editor-footer a) {
+  color: var(--muted);
+}
+
+.lup-workspace .sample-label {
+  font-size: .77rem;
+  letter-spacing: 0;
+}
+
+.lup-workspace :is(input, textarea)::placeholder {
+  color: var(--muted);
+}
+
+.lup-workspace :is(input, textarea):disabled {
+  background: var(--workspace-surface);
+}
+
+.lup-workspace .editor-footer {
+  justify-content: flex-end;
+}
+
+.lup-workspace .connection-prompt {
+  border-color: var(--rule);
+  background: var(--tint);
+}
+
+.lup-workspace .import-method-note {
+  color: var(--green);
+}
+
+.lup-workspace :is(.import-problem, .feedback.error) {
+  color: var(--workspace-red-text);
+  border-color: var(--workspace-red-border);
+  background: var(--workspace-red-bg);
+}
+
+.lup-workspace .import-problem :is(h3, code, .import-error-hint, .text-button, #diagnostic-feedback) {
+  color: var(--workspace-red-text);
+}
+
+@media (max-width: 600px) {
+  .workspace-brand-caption {
+    display: none;
+  }
+
+  .lup-workspace .app-header {
+    gap: 12px;
+  }
+
+  .lup-workspace .library-link {
+    max-width: none;
+    font-size: .78rem;
+  }
+
+  .lup-workspace :is(.search-intro, .editor-heading) {
+    margin: 16px 0;
+    border-radius: 15px;
+  }
+
+  .lup-workspace .connection-pill {
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+
+  .lup-workspace .result-links {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:has(.lup-workspace) {
+    color-scheme: dark;
+  }
+
+  .lup-workspace {
+    color-scheme: dark;
+    --bg: #151324;
+    --paper: #201d33;
+    --ink: #f2efff;
+    --muted: #bdb7d1;
+    --rule: #38334f;
+    --blue: #c1b7ff;
+    --tint: #30294b;
+    --green: #a6e6c7;
+    --workspace-action: #6554cf;
+    --workspace-action-hover: #5e4bc8;
+    --workspace-surface: #1c192f;
+    --workspace-input: #201d33;
+    --workspace-checker: #2a263c;
+    --workspace-checker-light: #211e32;
+    --workspace-green-bg: #20372f;
+    --workspace-green-border: #365949;
+    --workspace-red-bg: #382430;
+    --workspace-red-border: #714052;
+    --workspace-red-text: #ffc1cf;
+    --workspace-ring: #a493f2;
+    --workspace-hero: linear-gradient(115deg, #292241, #201d36 54%, #1c2a45);
+  }
+
+  .lup-workspace img[src^="assets/icons/"]:not(.primary-button img) {
+    filter: brightness(0) invert(1);
+  }
+}

@@ -23,7 +23,7 @@ public sealed class ExtensionAccessController(ExtensionUploadKeyService keys, Ap
         if (!keys.CanManage(User)) return Forbid(JwtBearerDefaults.AuthenticationScheme);
         var label = request?.Label?.Trim() ?? "LUP i Chrome";
         if (label.Length is < 1 or > 80 || label.Any(char.IsControl)) return BadRequest(new { error = "invalid_label" });
-        var created = await keys.Create(User, label, ct);
+        var created = await keys.Create(User, label, ct, includeCalendar: request?.IncludeCalendar == true);
         return created is null ? Conflict(new { error = "extension_key_limit" }) : Ok(created);
     }
 
@@ -35,7 +35,11 @@ public sealed class ExtensionAccessController(ExtensionUploadKeyService keys, Ap
     }
 
     [HttpGet("status"), Authorize(AuthenticationSchemes = ExtensionUploadCredentials.Scheme)]
-    public IActionResult Status() => Ok(new { connected = true, scope = ExtensionUploadCredentials.UploadScope, email = User.FindFirstValue("email") });
+    public IActionResult Status() => Ok(new
+    {
+        connected = true, scope = ExtensionUploadCredentials.UploadScope, email = User.FindFirstValue("email"),
+        canReadCalendar = User.HasClaim(ExtensionUploadCredentials.ScopeClaim, ExtensionUploadCredentials.CalendarScope)
+    });
 
     [HttpPost("emojis"), Authorize(AuthenticationSchemes = ExtensionUploadCredentials.Scheme)]
     [RequestSizeLimit(EmojisController.MaxBytes + 64 * 1024)]
@@ -58,4 +62,4 @@ public sealed class ExtensionAccessController(ExtensionUploadKeyService keys, Ap
     }
 }
 
-public sealed record CreateExtensionAccess(string? Label);
+public sealed record CreateExtensionAccess(string? Label, bool IncludeCalendar = false);

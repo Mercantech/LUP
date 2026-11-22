@@ -3,7 +3,9 @@ using System.Text.Json;
 using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Controllers;
 using Mercantec.Tech.Api.Data;
+using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Emojis;
+using Mercantec.Tech.Api.Integrations.Azure;
 using Mercantec.Tech.Api.Storage;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,6 +16,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Mercantec.Tech.Api.Tests;
@@ -129,10 +132,16 @@ public sealed class ExtensionUploadTests : IAsyncLifetime
     [InlineData("lup_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
     public async Task BadAndUnknownCredentialsNeverAuthenticate(string? raw) => Assert.Null(await _keys.Authenticate(raw, default));
 
-    [Fact]
-    public async Task ScopedCredentialAuthenticatesOnlyUnderTheExplicitExtensionScheme()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ScopedCredentialAuthenticatesOnlyUnderTheExplicitExtensionScheme(bool includeCalendar)
     {
-        var created = (await _keys.Create(Teacher(_mathias, "mags@mercantec.dk"), "Chrome", default))!;
+        var owner = Teacher(_mathias, "mags@mercantec.dk");
+        var create = await Controller(owner).Create(new("Chrome", includeCalendar), default);
+        var created = Assert.IsType<CreatedExtensionUploadKey>(Assert.IsType<OkObjectResult>(create).Value);
+        Assert.Equal(includeCalendar, created.CanReadCalendar);
+        Assert.Equal(includeCalendar, Assert.Single(await _keys.List(owner, default)).CanReadCalendar);
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSingleton(_keys);
@@ -146,9 +155,50 @@ public sealed class ExtensionUploadTests : IAsyncLifetime
         Assert.True(scoped.Succeeded);
         Assert.Equal(_mathias, UserClaims.GetSub(scoped.Principal!));
         Assert.True(scoped.Principal!.HasClaim(ExtensionUploadCredentials.ScopeClaim, "emoji:create"));
+        Assert.Equal(includeCalendar, scoped.Principal.HasClaim(ExtensionUploadCredentials.ScopeClaim, "calendar:read"));
+        var status = Assert.IsType<OkObjectResult>(Controller(scoped.Principal).Status());
+        Assert.Equal(includeCalendar, JsonSerializer.SerializeToElement(status.Value).GetProperty("canReadCalendar").GetBoolean());
         Assert.False(_keys.CanManage(scoped.Principal));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _keys.Create(scoped.Principal, "Escalation", default));
         Assert.False((await auth.AuthenticateAsync(http, JwtBearerDefaults.AuthenticationScheme)).Succeeded);
+    }
+
+    [Fact]
+    public async Task CalendarRequiresOptInAndOnlyReturnsHoldAgendaForItsOwner()
+    {
+        var start = new DateTimeOffset(2027, 3, 21, 23, 0, 0, TimeSpan.Zero);
+        var end = start.AddDays(7).AddHours(-1);
+        var ownHold = new Hold { Name = "Eget hold", Forloeb = new() { Name = "Programmering", CreatedBySub = _mathias } };
+        var otherHold = new Hold { Name = "Andet hold", Forloeb = new() { Name = "Andet fag", CreatedBySub = _kasper } };
+        _db.Hold.AddRange(ownHold, otherHold);
+        _db.HoldCalendarEvents.AddRange(
+            new() { HoldId = ownHold.Id, Title = "Programmering", StartUtc = start.AddHours(9), EndUtc = start.AddHours(10) },
+            new() { HoldId = otherHold.Id, Title = "Skjult", StartUtc = start.AddHours(11), EndUtc = start.AddHours(12) },
+            new() { HoldId = ownHold.Id, Title = "Næste uge", StartUtc = end, EndUtc = end.AddHours(1) });
+        _db.LearningQuests.Add(new() { HoldId = ownHold.Id, Title = "Aflevering", Published = true, DeadlineUtc = start.AddHours(11) });
+        await _db.SaveChangesAsync();
+
+        var principal = Teacher(_mathias, "mags@mercantec.dk");
+        var identity = (ClaimsIdentity)principal.Identity!;
+        identity.AddClaim(new(ExtensionUploadCredentials.KeyIdClaim, Guid.NewGuid().ToString()));
+        identity.AddClaim(new(ExtensionUploadCredentials.ScopeClaim, ExtensionUploadCredentials.UploadScope));
+        var graph = new AzureGraphCalendarClient(null!, Options.Create(new AzureGraphOptions()),
+            NullLogger<AzureGraphCalendarClient>.Instance);
+        var controller = new ExtensionCalendarController(_db, new(_db), graph, new(_clock))
+        { ControllerContext = new() { HttpContext = new DefaultHttpContext { User = principal } } };
+
+        var forbidden = Assert.IsType<ObjectResult>(await controller.Get(start, end, default));
+        Assert.Equal(403, forbidden.StatusCode);
+        Assert.Equal("extension_calendar_not_enabled", JsonSerializer.SerializeToElement(forbidden.Value).GetProperty("error").GetString());
+
+        identity.AddClaim(new(ExtensionUploadCredentials.ScopeClaim, ExtensionUploadCredentials.CalendarScope));
+        Assert.IsType<BadRequestObjectResult>(await controller.Get(start, start.AddDays(9), default));
+        var result = Assert.IsType<OkObjectResult>(await controller.Get(start, end, default));
+        var calendar = Assert.IsType<ExtensionCalendarView>(result.Value);
+        Assert.Equal("not_connected", calendar.OutlookStatus);
+        Assert.Collection(calendar.Events,
+            item => { Assert.Equal("Programmering", item.Title); Assert.Equal("Eget hold", item.Source); Assert.Equal("teaching", item.Kind); },
+            item => { Assert.Equal("Aflevering", item.Title); Assert.Equal("deadline", item.Kind); Assert.Equal(item.Start, item.End); });
     }
 
     [Fact]
@@ -179,6 +229,7 @@ public sealed class ExtensionUploadTests : IAsyncLifetime
         var first = Guid.NewGuid();
         for (var i = 0; i < 30; i++) Assert.True(limit.TryAcquire(first));
         Assert.False(limit.TryAcquire(first));
+        Assert.True(limit.TryAcquire(first, ExtensionUploadCredentials.CalendarScope));
         Assert.True(limit.TryAcquire(Guid.NewGuid()));
         _clock.Advance(TimeSpan.FromSeconds(61));
         Assert.True(limit.TryAcquire(first));

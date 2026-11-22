@@ -36,6 +36,9 @@ public sealed class AzureGraphCalendarClient(
     public string? ResolveTeacherUpn(string? sub, string? email = null) =>
         _options.ResolveTeacherUpn(sub, email);
 
+    internal string? ResolveMappedTeacherUpn(string? sub, string? email) =>
+        _options.ResolveMappedTeacherUpn(sub, email);
+
     public IReadOnlyDictionary<string, string> GetCalendarCopyMailboxes(string? sub, string? email)
     {
         var targets = _options.ParseCalendarWriteTargets();

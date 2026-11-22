@@ -18,27 +18,35 @@ public sealed class ExtensionAccessClientTests
             key = DummyKey, keyHash = "NOT-A-REAL-HASH" } } }));
         var result = await client.Get();
         Assert.True(result.Enabled);
-        Assert.Equal("Min Chrome", Assert.Single(result.Keys).Label);
+        var connection = Assert.Single(result.Keys);
+        Assert.Equal("Min Chrome", connection.Label);
+        Assert.False(connection.CanReadCalendar);
         var displayData = JsonSerializer.Serialize(result);
         Assert.DoesNotContain(DummyKey, displayData);
         Assert.DoesNotContain("NOT-A-REAL-HASH", displayData);
     }
 
-    [Fact]
-    public async Task CreationSendsOnlyALabelAndReturnsTheSingleUseCredential()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreationSendsCalendarOptInAndReturnsTheSingleUseCredential(bool includeCalendar)
     {
         string? path = null, body = null;
         var client = Client(async request => {
             path = request.RequestUri!.PathAndQuery;
             body = await request.Content!.ReadAsStringAsync();
             Assert.Equal(HttpMethod.Post, request.Method);
-            return Json(new { id = Id, key = DummyKey, label = "Arbejde", createdAtUtc = DateTimeOffset.UtcNow, expiresAtUtc = DateTimeOffset.UtcNow.AddDays(90) });
+            return Json(new { id = Id, key = DummyKey, label = "Arbejde", canReadCalendar = includeCalendar,
+                createdAtUtc = DateTimeOffset.UtcNow, expiresAtUtc = DateTimeOffset.UtcNow.AddDays(90) });
         });
-        var result = await client.Create("Arbejde");
+        var result = await client.Create("Arbejde", includeCalendar);
         Assert.Equal("/api/extension/access", path);
-        Assert.Equal("Arbejde", JsonDocument.Parse(body!).RootElement.GetProperty("label").GetString());
+        using var requestBody = JsonDocument.Parse(body!);
+        Assert.Equal("Arbejde", requestBody.RootElement.GetProperty("label").GetString());
+        Assert.Equal(includeCalendar, requestBody.RootElement.GetProperty("includeCalendar").GetBoolean());
         Assert.DoesNotContain(DummyKey, body!);
         Assert.Equal(DummyKey, result.Key);
+        Assert.Equal(includeCalendar, result.CanReadCalendar);
     }
 
     [Theory]

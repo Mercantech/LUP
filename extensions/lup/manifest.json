@@ -1,15 +1,28 @@
 {
   "manifest_version": 3,
   "name": "LUP",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "minimum_chrome_version": "116",
-  "description": "Tilføj billeder fra nettet som emojis på LUP.dk.",
+  "description": "Se din kalender, og tilføj billeder som emojis på LUP.dk.",
   "permissions": ["contextMenus", "storage", "activeTab", "scripting"],
   "host_permissions": ["https://lup.dk/*", "https://api.openverse.org/*", "https://upload.wikimedia.org/*"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
   "background": { "service_worker": "worker.mjs", "type": "module" },
   "content_security_policy": { "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'" },
-  "action": { "default_title": "LUP", "default_popup": "popup.html" },
+  "icons": {
+    "16": "assets/branding/lup-16.png",
+    "32": "assets/branding/lup-32.png",
+    "48": "assets/branding/lup-48.png",
+    "128": "assets/branding/lup-128.png"
+  },
+  "action": {
+    "default_title": "LUP",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/branding/lup-16.png",
+      "32": "assets/branding/lup-32.png"
+    }
+  },
   "content_scripts": [{
     "matches": ["https://lup.dk/*"],
     "js": ["content.js"],

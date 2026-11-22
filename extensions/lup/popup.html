@@ -5,60 +5,86 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LUP til Chrome</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="popup.css">
 </head>
-<body class="popup" data-state="loading" aria-busy="true">
+<body class="popup">
 <main class="popup-shell">
-  <header class="app-header">
-    <div class="brand-lockup"><span class="brand">LUP</span><span class="brand-caption">Emojiværksted</span></div>
-    <span class="extension-tag">Til Chrome</span>
+  <header class="popup-header">
+    <a class="popup-brand" href="https://lup.dk/" target="_blank" rel="noopener noreferrer" aria-label="Åbn LUP.dk">
+      <span class="popup-mark"><img src="assets/branding/pixel-lup.svg" width="23" height="23" alt=""></span>
+      <h1>LUP til Chrome</h1>
+    </a>
+    <span class="popup-connection" id="connection-badge">
+      <span class="status-orb" aria-hidden="true"></span><span id="connection-label">Tjekker forbindelse</span>
+    </span>
   </header>
 
-  <section class="popup-intro" aria-labelledby="popup-title">
-    <h1 id="popup-title">Fra billede til emoji.</h1>
-    <p class="subtitle">Beskær, fjern baggrunden og gem direkte i LUP.</p>
-  </section>
-
-  <form class="popup-image-search" action="search.html" method="get" target="_blank">
-    <label class="visually-hidden" for="image-query">Søg efter billeder</label>
-    <input id="image-query" name="q" type="search" minlength="2" maxlength="100" placeholder="Find billeder eller GIF’er…" required autocomplete="off">
-    <button class="gif-shortcut" type="submit" name="mode" value="gifs" formnovalidate aria-label="Søg efter GIF’er">GIF</button>
-    <button type="submit" aria-label="Søg efter billeder"><img src="assets/icons/search.svg" alt=""></button>
-  </form>
-
-  <section class="connection-card" data-state="loading" aria-labelledby="connection-heading">
-    <span class="status-orb" aria-hidden="true"></span>
-    <div class="connection-copy">
-      <h2 id="connection-heading" tabindex="-1">Tjekker forbindelsen</h2>
-      <p id="connection" role="status" aria-live="polite">Et øjeblik…</p>
-      <span id="connection-account" class="connection-scope" hidden>Kun adgang til emoji-upload</span>
+  <section class="dashboard-card calendar-card" aria-labelledby="calendar-title">
+    <div class="dashboard-heading">
+      <div class="feature-title">
+        <span class="feature-icon calendar-icon" aria-hidden="true"></span>
+        <h2 id="calendar-title">Min kalender</h2>
+      </div>
+      <a class="dashboard-link external-link" href="https://lup.dk/teacher/planner" target="_blank" rel="noopener noreferrer">Åbn i LUP</a>
+    </div>
+    <div id="calendar-gate" class="calendar-gate" role="status">
+      <p id="calendar-gate-message">Tjekker, om kalenderen er tilgængelig…</p>
+      <a id="calendar-access-link" class="dashboard-link" href="https://lup.dk/extension" target="_blank" rel="noopener noreferrer" hidden>Opret nøgle med kalenderadgang <span aria-hidden="true">↗</span></a>
+    </div>
+    <div id="calendar-overview" hidden>
+      <div class="week-toolbar">
+        <span id="calendar-week"></span>
+        <div class="week-actions">
+          <button id="calendar-today" class="today-button" type="button">I dag</button>
+          <button id="calendar-prev" class="week-button" type="button" aria-label="Forrige uge"><img src="assets/icons/chevron-left.svg" alt=""></button>
+          <button id="calendar-next" class="week-button" type="button" aria-label="Næste uge"><img src="assets/icons/chevron-left.svg" alt=""></button>
+        </div>
+      </div>
+      <div id="calendar-days" class="calendar-days" role="group" aria-label="Vælg dag i ugen"></div>
+      <div class="agenda">
+        <h3 id="calendar-date" tabindex="-1"></h3>
+        <p id="calendar-status" role="status"></p>
+        <button id="calendar-retry" class="dashboard-link" type="button" hidden>Prøv igen</button>
+        <ul id="calendar-events" class="calendar-events" aria-labelledby="calendar-date" tabindex="0" hidden></ul>
+        <p id="calendar-note" class="calendar-note" hidden></p>
+      </div>
     </div>
   </section>
 
-  <section id="ready-guide" class="popup-ready" aria-labelledby="ready-heading" hidden>
-    <h2 id="ready-heading" class="section-kicker">Har du allerede fundet et billede?</h2>
-    <p class="popup-context-hint">Højreklik på det, og vælg <b>Tilføj som emoji på LUP.dk</b>. Så åbner dit billedværksted.</p>
+  <section class="dashboard-card emoji-card" aria-labelledby="emoji-title">
+    <div class="dashboard-heading">
+      <div class="feature-title">
+        <span class="feature-icon emoji-icon" aria-hidden="true"></span>
+        <h2 id="emoji-title">Emojiværksted</h2>
+      </div>
+      <a class="dashboard-link external-link" href="https://lup.dk/emojis" target="_blank" rel="noopener noreferrer">Bibliotek</a>
+    </div>
+    <form class="popup-image-search" action="search.html" method="get" target="_blank">
+      <label class="visually-hidden" for="image-query">Søg efter billeder</label>
+      <input id="image-query" name="q" type="search" minlength="2" maxlength="100" placeholder="Find billeder eller GIF’er" required autocomplete="off">
+      <button class="gif-shortcut" type="submit" name="mode" value="gifs" formnovalidate aria-label="Søg efter GIF’er">GIF</button>
+      <button class="search-button" type="submit" aria-label="Søg efter billeder"><img src="assets/icons/search.svg" alt=""></button>
+    </form>
+    <p class="context-hint">Du kan også højreklikke på et billede for at lave en emoji.</p>
   </section>
 
-  <details id="connection-settings" class="connection-settings" open>
-    <summary>Forbind din udvidelse</summary>
+  <details id="connection-settings" class="connection-settings">
+    <summary>
+      <span class="settings-icon" aria-hidden="true"></span>
+      <span id="connection-summary">Forbind udvidelsen</span>
+    </summary>
     <div class="settings-body">
-      <div class="setup-step">
-        <span class="step-number" aria-hidden="true">1</span>
-        <div><strong>Hent din personlige nøgle</strong><p>Opret den én gang med din LUP-konto.</p><a class="setup-link" href="https://lup.dk/extension" target="_blank" rel="noopener noreferrer">Åbn forbindelsessiden</a></div>
-      </div>
+      <p id="connection" role="status"></p>
+      <a class="dashboard-link external-link" href="https://lup.dk/extension" target="_blank" rel="noopener noreferrer">Administrer nøgler på LUP.dk</a>
       <form id="access-form">
-        <div class="setup-step">
-          <span class="step-number" aria-hidden="true">2</span>
-          <div class="key-entry"><label class="field-label" for="access-key">Personlig uploadnøgle</label><div class="input-wrap"><input id="access-key" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Indsæt din nøgle her" maxlength="60" required aria-describedby="key-note"></div><p id="key-note" class="field-hint">Nøglen gemmes kun i denne Chrome-profil.</p></div>
-        </div>
+        <label class="field-label" for="access-key">Personlig LUP-nøgle</label>
+        <input id="access-key" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Indsæt din nøgle" maxlength="60" required>
         <button type="submit" id="connect" class="primary-button">Forbind LUP</button>
       </form>
       <p id="access-error" class="feedback error" role="alert" hidden></p>
       <button type="button" id="disconnect" class="text-button danger" hidden>Glem forbindelse på denne computer</button>
     </div>
   </details>
-
-  <footer class="popup-footer"><span>Personlig adgang til Mathias og Kasper</span><a href="https://lup.dk/emojis" target="_blank" rel="noopener noreferrer">Dit emojibibliotek</a></footer>
 </main>
 <script type="module" src="popup.mjs"></script>
 </body>

@@ -4,13 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Find billeder og GIF’er · LUP</title>
+  <link rel="icon" href="assets/branding/pixel-lup.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="search.css">
+  <link rel="stylesheet" href="assets/branding/workspace.css">
 </head>
-<body class="search-page" data-search-mode="images">
+<body class="search-page lup-workspace" data-search-mode="images">
 <main class="search-shell">
   <header class="app-header">
-    <div class="brand-lockup"><span class="brand">LUP</span><span class="brand-caption">Billeder &amp; GIF’er</span></div>
+    <div class="brand-lockup">
+      <span class="workspace-logo"><img src="assets/branding/pixel-lup.svg" width="22" height="22" alt=""></span>
+      <span class="workspace-brand">LUP</span>
+      <span class="workspace-brand-caption">Billedsøgning</span>
+    </div>
     <nav class="search-header-links" aria-label="LUP-genveje">
       <a class="library-link" href="https://lup.dk/emojis" target="_blank" rel="noopener noreferrer">Dit emojibibliotek<img src="assets/icons/arrow-up-right.svg" alt=""></a>
       <a class="icon-button" href="popup.html" target="_blank" rel="noopener" aria-label="Forbindelse og indstillinger" title="Forbindelse og indstillinger"><img src="assets/icons/sliders-horizontal.svg" alt=""></a>
@@ -18,7 +24,6 @@
   </header>
 
   <section class="search-intro" aria-labelledby="search-title">
-    <p class="section-kicker">PLADS TIL FLERE PERSONLIGHEDER</p>
     <h1 id="search-title">Find dit næste emoji-billede<span class="heading-dot">.</span></h1>
     <p id="search-subtitle" class="subtitle">Find et motiv, du kan lide. Vælg det, og gør det til dit eget i billedværkstedet.</p>
     <div class="search-mode-switch" role="group" aria-label="Vælg søgetype">
@@ -40,7 +45,7 @@
   <section id="results-section" class="search-results" aria-labelledby="results-heading" hidden>
     <div class="results-heading-row"><h2 id="results-heading">Dine søgeresultater</h2><span id="results-count"></span></div>
     <div id="search-gallery" class="search-gallery" aria-busy="false"></div>
-    <div id="more-wrap" class="more-wrap" hidden><button id="load-more" class="more-button" type="button"><span>Vis flere billeder</span><img src="assets/icons/plus.svg" alt=""></button><p>Tag dig tid til at finde det helt rigtige motiv.</p></div>
+    <div id="more-wrap" class="more-wrap" hidden><button id="load-more" class="more-button" type="button"><span>Vis flere billeder</span><img src="assets/icons/plus.svg" alt=""></button></div>
   </section>
 
   <section id="search-empty" class="search-empty" aria-labelledby="empty-heading">
@@ -50,7 +55,7 @@
     <span class="empty-caption">Din søgning bliver her, mens du arbejder videre.</span>
   </section>
 
-  <footer class="search-footer"><p id="search-provider-credit">Billedsøgning via <a href="https://openverse.org" target="_blank" rel="noopener noreferrer">Openverse</a>. LUP er ikke godkendt eller certificeret af Openverse.</p><span id="search-footer-caption">Vælg et billede. Lav det til dit eget.</span></footer>
+  <footer class="search-footer"><p id="search-provider-credit">Billedsøgning via <a href="https://openverse.org" target="_blank" rel="noopener noreferrer">Openverse</a>. LUP er ikke godkendt eller certificeret af Openverse.</p></footer>
 </main>
 <script type="module" src="search.mjs"></script>
 </body>

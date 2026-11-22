@@ -10,6 +10,7 @@ public static class ExtensionUploadCredentials
     public const string KeyIdClaim = "lup_extension_key_id";
     public const string ScopeClaim = "lup_extension_scope";
     public const string UploadScope = "emoji:create";
+    public const string CalendarScope = "calendar:read";
     public const int LifetimeDays = 90;
     public const int MaxActiveKeys = 5;
 
