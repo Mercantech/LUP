@@ -144,12 +144,12 @@ else
                                         @if (NotebookLanding && _loadedNotebookAccess is Guid coverBook)
                                         {
                                             <NotebookCoverActions @key='("notebook", coverBook)' Kind="notebook" TargetId="coverBook" CoverId="NotebookCoverId"
-                                                                  CoverChanged="coverId => UpdateNotebookCover(coverBook, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                                                  CoverChanged="coverId => UpdateNotebookCover(coverBook, coverId)" BeforeGenerate="PrepareCoverGeneration" AdjustRequested="() => _coverEditor?.AdjustPosition()" />
                                         }
                                         else if (_current is { } coverPage)
                                         {
                                             <NotebookCoverActions @key='("notebook-page", coverPage.DocumentId)' Kind="notebook-page" TargetId="coverPage.DocumentId" CoverId="coverPage.CoverId"
-                                                                  CoverChanged="coverId => UpdatePageCover(coverPage.DocumentId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                                                  CoverChanged="coverId => UpdatePageCover(coverPage.DocumentId, coverId)" BeforeGenerate="PrepareCoverGeneration" AdjustRequested="() => _coverEditor?.AdjustPosition()" />
                                         }
                                     </div>
                                 </details>
@@ -210,14 +210,18 @@ else
 }
 
 @code {
+    private NotebookCoverEditor? _coverEditor;
+
     private RenderFragment CoverBanner => @<text>
         @if (NotebookLanding && _loadedNotebookAccess is Guid bookId)
         {
-            <NotebookCoverEditor @key='("notebook", bookId)' Kind="notebook" TargetId="bookId" CoverId="NotebookCoverId" />
+            <NotebookCoverEditor @ref="_coverEditor" @key='("notebook", bookId)' Kind="notebook" TargetId="bookId" CoverId="NotebookCoverId"
+                                 CanAdjust="@CanEditCover" CoverChanged="coverId => UpdateNotebookCover(bookId, coverId)" />
         }
         else if (!TemplateMode && _current is { } page)
         {
-            <NotebookCoverEditor @key='("notebook-page", page.DocumentId)' Kind="notebook-page" TargetId="page.DocumentId" CoverId="page.CoverId" />
+            <NotebookCoverEditor @ref="_coverEditor" @key='("notebook-page", page.DocumentId)' Kind="notebook-page" TargetId="page.DocumentId" CoverId="page.CoverId"
+                                 CanAdjust="@CanEditCover" CoverChanged="coverId => UpdatePageCover(page.DocumentId, coverId)" />
         }
     </text>;
 

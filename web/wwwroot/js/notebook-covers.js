@@ -6,6 +6,12 @@ export function revokeCoverUrl(url) {
     URL.revokeObjectURL(url);
 }
 
+export function focusCoverPosition(slider) {
+    const menu = document.activeElement?.closest(".notion-document-more");
+    if (menu) menu.open = false;
+    slider.focus();
+}
+
 export function downloadCover(bytes, filename) {
     const url = createCoverUrl(bytes);
     const link = document.createElement('a');

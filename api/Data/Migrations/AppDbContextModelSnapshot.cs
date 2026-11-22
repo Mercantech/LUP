@@ -2265,6 +2265,9 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("ArtworkSourceId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("CollectionId")
                         .HasColumnType("uuid");
 
@@ -2280,6 +2283,10 @@ namespace Mercantec.Tech.Api.Data.Migrations
 
                     b.Property<Guid?>("NotionPageId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("PositionY")
+                        .HasColumnType("integer")
+                        .HasDefaultValue(50);
 
                     b.HasKey("Id");
 

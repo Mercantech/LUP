@@ -24,6 +24,8 @@ public partial class AppDbContext
                 """.ReplaceLineEndings("\n")));
             entity.HasKey(asset => asset.Id);
             entity.Property(asset => asset.Id).ValueGeneratedNever();
+            entity.Property(asset => asset.PositionY).HasDefaultValue(Mercantec.Tech.Contracts.NotebookCoverRules.DefaultPositionY)
+                .ValueGeneratedNever();
             entity.HasOne<NotionCollection>().WithMany().HasForeignKey(asset => asset.CollectionId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne<NotionPage>().WithMany().HasForeignKey(asset => asset.NotionPageId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne<Notebook>().WithMany().HasForeignKey(asset => asset.NotebookId).OnDelete(DeleteBehavior.Cascade);

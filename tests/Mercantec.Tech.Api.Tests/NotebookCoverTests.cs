@@ -106,6 +106,37 @@ public sealed class NotebookCoverTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Reposition_keeps_the_original_artwork_and_only_publishes_the_crop_with_the_page()
+    {
+        var editor = Covers(teacher, isTeacher: true, includeArtwork: true);
+        var reader = Covers(owner);
+        var notion = new NotionController(db, new(db)) { ControllerContext = editor.ControllerContext };
+        var original = Value<NotebookCoverView>(await editor.Generate(TeachingPage, collectionId, default,
+            includeImage: true, characterSlug: "karla"));
+        await notion.Publish(collectionId, new(1, Fingerprint, []), default);
+        var request = new RepositionNotebookCoverRequest(original.CoverId!.Value, 0);
+
+        Assert.IsType<NotFoundResult>(await reader.Reposition(TeachingPage, collectionId, request, default));
+        Assert.IsType<BadRequestObjectResult>(await editor.Reposition(TeachingPage, collectionId, request with { PositionY = 101 }, default));
+        var adjusted = Value<NotebookCoverView>(await editor.Reposition(TeachingPage, collectionId, request, default));
+        Assert.Equal(0, adjusted.PositionY);
+        Assert.Equal(original.Image, adjusted.Image);
+        Assert.NotEqual(original.CoverId, adjusted.CoverId);
+        Assert.IsType<ConflictObjectResult>(await editor.Reposition(TeachingPage, collectionId, request, default));
+        Assert.IsType<NotFoundResult>(await reader.Get(TeachingPage, collectionId, default, version: adjusted.CoverId));
+        Assert.IsType<FileContentResult>(await reader.Get(TeachingPage, collectionId, default, version: original.CoverId));
+        Assert.Equal("50", reader.Response.Headers[NotebookCoverRules.PositionHeader].ToString());
+
+        await notion.Publish(collectionId, new(1, Fingerprint, []), default);
+        Assert.IsType<FileContentResult>(await reader.Get(TeachingPage, collectionId, default, version: adjusted.CoverId));
+        Assert.Equal("0", reader.Response.Headers[NotebookCoverRules.PositionHeader].ToString());
+        Assert.Single(await db.NotebookCoverAssets.ToArrayAsync());
+        var artwork = new Mercantec.Tech.Api.Characters.CharacterArtworkLibrary(db);
+        Assert.Single((await artwork.ListAsync(reader.User, "karla", 0, default)).Items);
+        Assert.Single(await db.CharacterGeneratedArtwork.ToArrayAsync());
+    }
+
+    [Fact]
     public async Task Collection_cover_has_the_same_visibility_as_its_collection()
     {
         var editor = Covers(teacher, isTeacher: true);

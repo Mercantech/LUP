@@ -96,6 +96,7 @@ public sealed class CharacterArtworkLibrary(AppDbContext db)
         var readableBooks = notebooks.ReadableWholeNotebooks(user);
         var readableNotes = notebooks.ReadableDocuments(user).Where(note => note.NotebookId.HasValue);
         var editNotes = notebooks.EditableDocuments(user);
+        var positionedCovers = db.NotebookCoverAssets.Where(cover => cover.ArtworkSourceId.HasValue);
 
         // The JSON strings are canonical Guid[] manifests serialized by the existing editor. The
         // full string token, including its quotes, is required so prefix matches cannot grant access.
@@ -103,17 +104,21 @@ public sealed class CharacterArtworkLibrary(AppDbContext db)
         return all.Where(item =>
             item.CollectionId.HasValue && (editCollections.Any(book => book.Id == item.CollectionId)
                 && editTeaching.Any(page => page.Id == item.CollectionId)
-                || teachingCollections.Any(book => book.Id == item.CollectionId && book.CoverId == item.OriginalAssetId)
+                || teachingCollections.Any(book => book.Id == item.CollectionId && (book.CoverId == item.OriginalAssetId
+                    || positionedCovers.Any(cover => cover.Id == book.CoverId && cover.ArtworkSourceId == item.OriginalAssetId)))
                 && teaching.Any(page => page.Id == item.CollectionId))
             || item.NotionPageId.HasValue && (editTeaching.Any(page => page.Id == item.NotionPageId)
                 || teaching.Any(page => page.Id == item.NotionPageId && (item.Kind == Cover
                     ? page.PublishedCoverId == item.OriginalAssetId
+                        || positionedCovers.Any(cover => cover.Id == page.PublishedCoverId && cover.ArtworkSourceId == item.OriginalAssetId)
                     : page.PublishedAssetIdsJson.Contains("\"" + item.OriginalAssetId.ToString().ToLower() + "\""))))
             || item.NotebookId.HasValue && readableBooks.Any(book => book.Id == item.NotebookId
-                && (book.OwnerSub == subject || book.CoverId == item.OriginalAssetId))
+                && (book.OwnerSub == subject || book.CoverId == item.OriginalAssetId
+                    || positionedCovers.Any(cover => cover.Id == book.CoverId && cover.ArtworkSourceId == item.OriginalAssetId)))
             || item.NotebookPageId.HasValue && (editNotes.Any(note => note.Id == item.NotebookPageId)
                 || readableNotes.Any(note => note.Id == item.NotebookPageId && (item.Kind == Cover
                     ? note.CoverId == item.OriginalAssetId
+                        || positionedCovers.Any(cover => cover.Id == note.CoverId && cover.ArtworkSourceId == item.OriginalAssetId)
                     : note.AssetIdsJson.Contains("\"" + item.OriginalAssetId.ToString().ToLower() + "\"")))));
     }
 
