@@ -114,15 +114,29 @@ public sealed class NotionTitleUiTests
 
         await page.InvokeAsync(() => page.Instance.OnNotionStatus("saved", ""));
         Assert.False(Button(page, "Udgiv til holdet").HasAttribute("disabled"));
+        await page.InvokeAsync(() => page.Instance.OnNotebookShortcut("update-publication"));
+        Assert.Empty(api.PublishedTitles);
         page.Find("#notion-title").Input("  SQL :vatson:  ");
         Assert.Single(page.FindAll(".notion-document-toolbar .notion-title-preview"));
-        await Button(page, "Udgiv til holdet").ClickAsync(new MouseEventArgs());
+        await page.Find(".notion-menu-publish").ClickAsync(new MouseEventArgs());
 
         Assert.Equal("SQL :vatson:", Assert.Single(api.PublishedTitles));
+        Assert.False(Assert.Single(api.Publications).UpdateOnly);
         Assert.Equal("SQL :vatson:", page.Find("#notion-title").GetAttribute("value"));
         Assert.Equal("Opdatér", Button(page, "Opdatér udgivelsen").TextContent.Trim());
-        Assert.Contains("Se udgivet", page.Find(".notion-document-menu").TextContent);
+        Assert.Equal("Opdatér udgivelsen", page.Find(".notion-menu-publish").TextContent.Trim());
+        var publishedLink = page.Find(".notion-menu-group[aria-labelledby='notion-more-publish'] a");
+        Assert.Contains("Åbn udgivet side", publishedLink.TextContent);
+        Assert.Contains("published=true", publishedLink.GetAttribute("href"));
+        Assert.Equal("_blank", publishedLink.GetAttribute("target"));
         Assert.Contains("Træk udgivelse tilbage", page.Find(".notion-document-menu").TextContent);
+        javascript.Editor.UnsavedPolls = 1;
+        page.Find("#notion-title").Input("Opdateret titel");
+        await page.InvokeAsync(() => page.Instance.OnNotebookShortcut("update-publication"));
+        Assert.Equal(new[] { "SQL :vatson:", "Opdateret titel" }, api.PublishedTitles.ToArray());
+        Assert.True(api.Publications.Last().UpdateOnly);
+        Assert.Equal(0, javascript.Editor.UnsavedPolls);
+        Assert.Equal("Udgivelsen er opdateret.", page.Find(".notion-notice").TextContent);
         Assert.Single(page.FindAll(".notion-document-toolbar .notion-ai-toggle-slot"));
         Assert.Equal(1, javascript.Editor.Mounts);
         Assert.Equal(0, javascript.Editor.Destroys);
@@ -139,7 +153,7 @@ public sealed class NotionTitleUiTests
         page.WaitForAssertion(() => Assert.Equal(1, javascript.Editor.Mounts), Timeout);
 
         Assert.Equal("Starttitel", page.Find(".notion-document-toolbar .notion-toolbar-title").TextContent);
-        Assert.Empty(page.FindAll(".notion-title-form, .notion-publish-button"));
+        Assert.Empty(page.FindAll(".notion-title-form, .notion-publish-button, .notion-menu-publish"));
         Assert.DoesNotContain("Codex-ændringer", page.Find(".notion-document-menu").TextContent);
         Assert.Single(page.FindAll(".notion-document-toolbar .notion-ai-toggle-slot"));
         Assert.DoesNotContain("Træk udgivelse tilbage", page.Find(".notion-document-menu").TextContent);
@@ -264,7 +278,7 @@ public sealed class NotionTitleUiTests
         });
 
     private static AngleSharp.Dom.IElement Button(IRenderedComponent<NotionPage> page, string label)
-        => page.FindAll("button").Single(button => (button.GetAttribute("aria-label") ?? button.TextContent.Trim()) == label);
+        => page.FindAll("button:not(.notion-menu-publish)").Single(button => (button.GetAttribute("aria-label") ?? button.TextContent.Trim()) == label);
 
     private sealed class TitleJavascript(IJSRuntime original) : IJSRuntime
     {
@@ -286,7 +300,7 @@ public sealed class NotionTitleUiTests
 
     private sealed class EditorModule : IJSObjectReference
     {
-        public int Mounts, Destroys, SetContexts, PublicationReads;
+        public int Mounts, Destroys, SetContexts, PublicationReads, UnsavedPolls;
         public ValueTask<TValue> InvokeAsync<TValue>(string id, object?[]? args)
             => InvokeAsync<TValue>(id, CancellationToken.None, args);
         public ValueTask<TValue> InvokeAsync<TValue>(string id, CancellationToken ct, object?[]? args)
@@ -294,7 +308,12 @@ public sealed class NotionTitleUiTests
             if (id is "mount" or "mountReadOnly") Mounts++;
             if (id == "destroy") Destroys++;
             if (id == "setContext") SetContexts++;
-            if (id == "hasUnsavedChanges") return ValueTask.FromResult((TValue)(object)false);
+            if (id == "hasUnsavedChanges")
+            {
+                var unsaved = UnsavedPolls > 0;
+                if (unsaved) UnsavedPolls--;
+                return ValueTask.FromResult((TValue)(object)unsaved);
+            }
             if (id == "getPublicationData")
             {
                 PublicationReads++;
@@ -320,6 +339,7 @@ public sealed class NotionTitleUiTests
         public TaskCompletionSource<bool>? FirstRenameGate { get; init; }
         public ConcurrentQueue<string> Renames { get; } = new();
         public ConcurrentQueue<string> PublishedTitles { get; } = new();
+        public ConcurrentQueue<PublishNotionPage> Publications { get; } = new();
         public ConcurrentQueue<string> Unexpected { get; } = new();
         private int _renameCount;
         private NotionPageSummary Summary => new(PageId, HoldId, Title, null, DateTimeOffset.UtcNow, PublishedAt);
@@ -340,6 +360,8 @@ public sealed class NotionTitleUiTests
             }
             if (request.Method == HttpMethod.Post && path == $"/api/notion/pages/{PageId}/publish")
             {
+                Publications.Enqueue(await request.Content!.ReadFromJsonAsync<PublishNotionPage>(ct)
+                    ?? throw new InvalidOperationException("A publication request must contain a revision."));
                 PublishedTitles.Enqueue(Title);
                 PublishedAt = DateTimeOffset.UtcNow;
                 return Json(Summary);

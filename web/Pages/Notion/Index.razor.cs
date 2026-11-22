@@ -77,6 +77,10 @@ public partial class Index
     private bool IsLivePreview => ViewAs.IsActive || PublishedPreview && (CanManageHold || Redirect.ShowsTeacherChrome);
     private bool CanManageHold => !ViewAs.IsActive && (_current?.CanEdit == true || _collection?.CanManage == true || _holds.Any(h => h.Id == _holdId && h.CanManage));
     private bool IsEditing => _current?.CanEdit == true && !ForceReadOnly;
+    private bool CanPublish => IsEditing && !_busy && _mounted && _module is not null && _status is not ("connecting" or "offline" or "error");
+    private bool CanUpdatePublication => IsEditing && _current?.PublishedAtUtc is not null;
+    private string PublishActionLabel => CanUpdatePublication ? "Opdatér udgivelsen" : _holdId == Guid.Empty ? "Udgiv til LUP" : "Udgiv til holdet";
+    private string? PublishShortcut => CanUpdatePublication ? "Control+s Meta+s" : null;
     private bool Authoring => CanManageHold && !ForceReadOnly;
     private string RouteKey => $"{PageId}:{CollectionId}:{CollectionSlug}:{HoldQuery}:{WorkspaceQuery}:{CourseQuery}:{ForceReadOnly}";
     private string StatusLabel => _savingTitle ? "Gemmer titel…" : _status switch { "saved" => "Gemt i skyen", "saving" => "Gemmer…", "synced" => "Forbundet", "offline" => "Forbindelsen er afbrudt", "error" => "Forbindelsen kræver opmærksomhed", _ => "Forbinder…" };
@@ -379,7 +383,7 @@ public partial class Index
         var ct = TreeToken;
         if (!await SaveTitle())
             throw new InvalidOperationException(_error ?? "Sidens titel skal være gemt, før du kan generere et cover.");
-        await WaitForCoverContent(() => (_mounted ? _module : null, _editorElement, _status), ct);
+        await WaitForSavedContent(() => (_mounted ? _module : null, _editorElement, _status), ct);
     }
     private async Task PushEditorContext(int generation, CancellationToken ct)
     {
@@ -516,17 +520,32 @@ public partial class Index
         await LoadNavigation(generation, ct, true);
         if (_resourcesLoaded) { _resourcesLoaded = false; await LoadResources(generation, ct); }
     });
+    protected override Task UpdatePublishedPage() => CanUpdatePublication ? PublishPage() : Task.CompletedTask;
     private async Task PublishPage()
     {
-        if (!IsEditing || _current is null || _module is null || !_mounted || !await CanLeave()) return;
+        if (!CanPublish || _current is not { } page || _module is not { } module) return;
+        var generation = _generation;
+        var element = _editorElement;
+        var updateOnly = page.PublishedAtUtc is not null;
         await Work(async ct =>
         {
-            var id = _current.PageId;
-            var data = await _module.InvokeAsync<PublicationData>("getPublicationData", _editorElement);
-            var context = await Client.Context(id, ct, false);
-            await Client.Publish(id, context.DraftRevision, data.ExpectedFingerprint, data.AssetIds, ct, data.Drawings);
+            if (!await SaveTitle() || !IsCurrent(generation, ct)) return;
+            try
+            {
+                await WaitForSavedContent(() => (module, element, _status), ct);
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (IsCurrent(generation, ct)) _error = ex.Message;
+                return;
+            }
+            var data = await module.InvokeAsync<PublicationData>("getPublicationData", ct, element);
+            var context = await Client.Context(page.PageId, ct, false);
+            if (!IsCurrent(generation, ct)) return;
+            await Client.Publish(page.PageId, context.DraftRevision, data.ExpectedFingerprint, data.AssetIds, ct, data.Drawings, updateOnly);
+            if (!IsCurrent(generation, ct)) return;
             await UpdateContext(ct);
-            _notice = "Siden er udgivet.";
+            if (IsCurrent(generation, ct)) _notice = updateOnly ? "Udgivelsen er opdateret." : "Siden er udgivet.";
         });
     }
     private async Task UnpublishPage()

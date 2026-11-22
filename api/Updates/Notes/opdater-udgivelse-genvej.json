@@ -1,0 +1,6 @@
+{
+  "date": "2026-11-22",
+  "title": "Udgiv undervisningssider fra sidemenuen",
+  "description": "Brug menuen med de tre prikker til at udgive, opdatere eller åbne den udgivne side. På en allerede udgivet side kan du opdatere udgivelsen med Ctrl+S eller Cmd+S på Mac.",
+  "authors": ["Mathias"]
+}

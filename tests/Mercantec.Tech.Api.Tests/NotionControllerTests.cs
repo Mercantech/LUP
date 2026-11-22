@@ -561,6 +561,24 @@ public sealed class NotionControllerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task UpdateOnlyRequiresAnActivePublication()
+    {
+        var page = await Create();
+        var draft = await SaveDraft(page.Id, [1, 2]);
+        var update = new PublishNotionPage(draft.DraftRevision, Fingerprint, [], UpdateOnly: true);
+        var controller = As(teacher, true);
+        Assert.IsType<ConflictObjectResult>(await controller.Publish(page.Id, update, default));
+        Assert.IsType<NotFoundResult>(await As(student).Context(page.Id, default));
+
+        await PublishCurrent(page.Id);
+        Value<NotionPageSummary>(await controller.Publish(page.Id, update, default));
+        Value<NotionPageSummary>(await controller.Unpublish(page.Id, default));
+
+        Assert.IsType<ConflictObjectResult>(await controller.Publish(page.Id, update, default));
+        Assert.IsType<NotFoundResult>(await As(student).Context(page.Id, default));
+    }
+
+    [Fact]
     public async Task PublicationGrantsOnlyReferencedFilesOwnedByThatPageAndWithdrawalClearsGrants()
     {
         var page = await Create();

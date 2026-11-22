@@ -13,6 +13,15 @@
         <h2 id="notebook-shortcuts-title">Tastaturgenveje</h2>
         <form method="dialog"><button type="submit" autofocus aria-label="Luk tastaturgenveje" title="Luk (Esc)"><UiIcon Name="close" /></button></form>
     </header>
+    @if (CanUpdatePublication)
+    {
+        <section>
+            <h3>Udgivelse</h3>
+            <dl>
+                <div><dt>Opdatér udgivelsen</dt><dd>@Primary <kbd>S</kbd></dd></div>
+            </dl>
+        </section>
+    }
     <section>
         <h3>Sideoversigt</h3>
         <dl>
@@ -49,6 +58,7 @@
 @code {
     [Parameter] public bool CanCreatePage { get; set; }
     [Parameter] public bool CanCreateChild { get; set; }
+    [Parameter] public bool CanUpdatePublication { get; set; }
     [Parameter] public bool HideTrigger { get; set; }
     [Parameter] public bool Templates { get; set; }
     [Parameter] public string CreateLabel { get; set; } = "Opret side";

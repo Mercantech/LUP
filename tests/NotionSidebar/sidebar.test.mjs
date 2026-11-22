@@ -132,19 +132,25 @@ test('workspace shortcuts cooperate with editors, dialogs, page permissions and 
         assert.equal(f.key('N', editor, { ...create, shiftKey: true }).defaultPrevented, false);
         assert.equal(f.key('n', editor, { ...create, getModifierState: key => key === 'AltGraph' }).defaultPrevented, false);
         assert.equal(f.key('P', editor, { ...ctrl, shiftKey: true }).defaultPrevented, false);
+        assert.equal(f.key('s', editor, ctrl).defaultPrevented, false);
+        f.root.dataset.canUpdatePublication = 'true';
+        assert.equal(f.key('S', editor, { ...ctrl, shiftKey: true }).defaultPrevented, false);
         const dialog = f.makeNode(); dialog.parent = f.background; dialog.setAttribute('role', 'dialog');
         assert.equal(f.key('F1', dialog).defaultPrevented, false);
         f.document.querySelectorAll = () => [dialog];
         assert.equal(f.key('p', editor, ctrl).defaultPrevented, false);
+        assert.equal(f.key('s', editor, ctrl).defaultPrevented, false);
         f.document.querySelectorAll = () => [];
         assert.deepEqual(f.calls, []);
         for (const [key, target, options] of [
             ['b', f.toggle, ctrl], ['p', editor, ctrl], ['E', editor, { ...ctrl, shiftKey: true }],
             ['n', editor, create], ['F1', editor, {}], ['F1', editor, { repeat: true }],
+            ['s', editor, ctrl], ['s', editor, { ...ctrl, repeat: true }],
         ]) assert.equal(f.key(key, target, options).defaultPrevented, true);
         assert.deepEqual(f.calls.map(([method, command]) => [method, command]), [
             ['OnNotebookShortcut', 'toggle-sidebar'], ['OnNotebookShortcut', 'search'],
             ['OnNotebookShortcut', 'explorer'], ['OnNotebookShortcut', 'new-page'], ['OnNotebookShortcut', 'help'],
+            ['OnNotebookShortcut', 'update-publication'],
         ]);
         f.module.focusShortcutTarget(f.root, 'search');
         assert.equal(f.document.activeElement, f.search); assert.equal(f.search.selected, true);
@@ -154,12 +160,14 @@ test('workspace shortcuts cooperate with editors, dialogs, page permissions and 
 test('Mac Command and Option use the platform modifier and support a dead N key', async () => {
     const f = await fixture({ platform: 'MacIntel' });
     try {
-        f.mount(); f.root.dataset.canCreateChild = 'true';
+        f.mount(); f.root.dataset.canCreateChild = 'true'; f.root.dataset.canUpdatePublication = 'true';
         assert.equal(f.root.dataset.shortcutPlatform, 'mac');
         assert.equal(f.key('p', f.toggle, { ctrlKey: true }).defaultPrevented, false);
         assert.equal(f.key('p', f.toggle, { metaKey: true }).defaultPrevented, true);
         assert.equal(f.key('Dead', f.toggle, { metaKey: true, altKey: true, shiftKey: true, code: 'KeyN' }).defaultPrevented, true);
-        assert.deepEqual(f.calls, [['OnNotebookShortcut', 'search'], ['OnNotebookShortcut', 'new-child']]);
+        assert.equal(f.key('s', f.toggle, { ctrlKey: true }).defaultPrevented, false);
+        assert.equal(f.key('s', f.toggle, { metaKey: true }).defaultPrevented, true);
+        assert.deepEqual(f.calls, [['OnNotebookShortcut', 'search'], ['OnNotebookShortcut', 'new-child'], ['OnNotebookShortcut', 'update-publication']]);
     } finally { f.cleanup(); }
 });
 

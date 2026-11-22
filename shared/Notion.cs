@@ -19,7 +19,7 @@ public sealed record NotionPageContext(Guid PageId, Guid? HoldId, string Title, 
     DrawingPublicationBinding[]? Drawings = null, Guid? CollectionId = null, long LifecycleVersion = 0,
     Guid? IconEmojiId = null, Guid? PublishedIconEmojiId = null, Guid? CoverId = null, Guid? PublishedCoverId = null);
 public sealed record PublishNotionPage(long ExpectedRevision, string ExpectedFingerprint, Guid[] AssetIds,
-    DrawingPublicationRequest[]? Drawings = null);
+    DrawingPublicationRequest[]? Drawings = null, bool UpdateOnly = false);
 public sealed record StoreNotionDocument(string StateBase64, string Fingerprint, Guid[]? DrawingIds = null,
     Dictionary<string, string>? DrawingBlocks = null, EntityReference[]? References = null,
     StoreNotionMcpChange? McpChange = null, string? EditorName = null, bool PreserveEditMetadata = false, long LifecycleVersion = 0,

@@ -18,7 +18,7 @@ public abstract partial class NotebookWorkspacePage : ComponentBase
     private DotNetObjectReference<NotebookWorkspacePage>? _callbacks;
     private sealed record SidebarPreferences(bool Mobile, bool DesktopOpen);
 
-    protected static async Task WaitForCoverContent(
+    protected static async Task WaitForSavedContent(
         Func<(IJSObjectReference? Module, ElementReference Element, string Status)> editor,
         CancellationToken cancellationToken)
     {
@@ -31,8 +31,7 @@ public abstract partial class NotebookWorkspacePage : ComponentBase
             {
                 wait.Token.ThrowIfCancellationRequested();
                 var (module, element, status) = editor();
-                // With no local edits, the cover can use the server document even
-                // while the editor is mounting or reconnecting.
+                // Without local edits, the server already has the latest document.
                 if (module is null || !await module.InvokeAsync<bool>("hasUnsavedChanges", wait.Token, element))
                     return;
                 if (status is "offline" or "error") throw new InvalidOperationException(message);
@@ -58,7 +57,7 @@ public abstract partial class NotebookWorkspacePage : ComponentBase
         var element = _workspaceElement;
         try
         {
-            _sidebarModuleTask ??= SidebarJs.InvokeAsync<IJSObjectReference>("import", "/js/notion-sidebar.js?v=cover-menu-20261122").AsTask();
+            _sidebarModuleTask ??= SidebarJs.InvokeAsync<IJSObjectReference>("import", "/js/notion-sidebar.js?v=publication-shortcut-20261122").AsTask();
             var module = await _sidebarModuleTask;
             if (generation != _sidebarGeneration) return;
             if (_sidebarModule is not null && !string.IsNullOrEmpty(_sidebarMountedElement.Id))

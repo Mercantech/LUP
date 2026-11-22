@@ -12,6 +12,7 @@ public abstract partial class NotebookWorkspacePage
     protected abstract bool ShortcutCanCreateChild { get; }
     protected abstract void BeginCreate(bool child);
     protected abstract NotebookTreeTarget? FindTreeTarget(Guid? current, string key);
+    protected virtual Task UpdatePublishedPage() => Task.CompletedTask;
 
     [JSInvokable]
     public Task OnNotebookShortcut(string command) => InvokeAsync(async () =>
@@ -36,6 +37,11 @@ public abstract partial class NotebookWorkspacePage
             case "help" when _shortcutHelp is not null:
                 await _shortcutHelp.OpenAsync();
                 return;
+            case "update-publication":
+                var update = UpdatePublishedPage();
+                StateHasChanged();
+                await update;
+                break;
             default:
                 return;
         }
