@@ -11,7 +11,7 @@
     <div id="lectio-import" class="course-lectio">
         <button type="button" class="@(_open ? "secondary" : "action")" @onclick="ToggleAsync" disabled="@_creating"
                 aria-expanded="@(_open ? "true" : "false")" aria-controls="lectio-import-panel">
-            <UiIcon Name="people" /> @(_open ? "Luk Lectio-import" : "Opret fra Lectio")
+            <UiIcon Name="people" /> @(_open ? "Luk Lectio-import" : Attaching ? "Tilføj Lectio-hold" : "Opret fra Lectio")
         </button>
 
         @if (_open)
@@ -19,8 +19,8 @@
             <section id="lectio-import-panel" class="course-lectio-panel" aria-labelledby="lectio-import-heading">
                 <header class="course-lectio-header">
                     <div>
-                        <h2 id="lectio-import-heading">Opret hold fra Lectio</h2>
-                        <p>Vælg et hold, se elevlisten, og opret holdet her i LUP.</p>
+                        <h2 id="lectio-import-heading">@(Attaching ? "Tilføj et Lectio-hold" : "Opret hold fra Lectio")</h2>
+                        <p>@(Attaching ? "Vælg et Lectio-hold og føj dets elever til dette hold i LUP." : "Vælg et hold, se elevlisten, og opret holdet her i LUP.")</p>
                     </div>
                     <a href="/lectio">Avancerede Lectio-værktøjer</a>
                 </header>
@@ -34,7 +34,12 @@
                 {
                     <div class="course-lectio-result">
                         <div role="status">
-                            @if (result.Total is int total)
+                            @if (Attaching && result.Total is int added)
+                            {
+                                <strong>@result.Name er tilknyttet.</strong>
+                                <p>@StudentCount(added) tilføjet.</p>
+                            }
+                            else if (result.Total is int total)
                             {
                                 <strong>@result.Name er oprettet.</strong>
                                 <p>@StudentCount(total) importeret.</p>
@@ -45,8 +50,11 @@
                             }
                         </div>
                         <div class="course-lectio-actions">
-                            <a class="action" href="@WorkspaceNavigation.View(result.WorkspaceId)">Åbn holdet</a>
-                            <button type="button" class="secondary" @onclick="BackToList">Opret et hold mere</button>
+                            @if (!Attaching)
+                            {
+                                <a class="action" href="@WorkspaceNavigation.View(result.WorkspaceId)">Åbn holdet</a>
+                            }
+                            <button type="button" class="secondary" @onclick="BackToList">@(Attaching ? "Tilføj et hold mere" : "Opret et hold mere")</button>
                         </div>
                     </div>
                 }
@@ -76,12 +84,15 @@
                                 </details>
                             }
                             <form class="course-lectio-form" @onsubmit="ImportAsync" @onsubmit:preventDefault>
-                                <label class="field">
-                                    Navn i LUP
-                                    <input @bind="_name" @bind:event="oninput" maxlength="200" required disabled="@_creating" />
-                                </label>
-                                <button type="submit" class="action" disabled="@(_creating || string.IsNullOrWhiteSpace(_name))">
-                                    @(_creating ? "Opretter hold…" : "Opret hold")
+                                @if (!Attaching)
+                                {
+                                    <label class="field">
+                                        Navn i LUP
+                                        <input @bind="_name" @bind:event="oninput" maxlength="200" required disabled="@_creating" />
+                                    </label>
+                                }
+                                <button type="submit" class="action" disabled="@(_creating || !Attaching && string.IsNullOrWhiteSpace(_name))">
+                                    @(Attaching ? (_creating ? "Tilføjer hold…" : "Tilføj hold og elever") : (_creating ? "Opretter hold…" : "Opret hold"))
                                 </button>
                             </form>
                         }
@@ -132,7 +143,11 @@
                                                 @if (hold.MemberCount is int count) { <span> · @StudentCount(count)</span> }
                                             </p>
                                         </div>
-                                        @if (KnownWorkspace(hold.Key) is Guid workspaceId)
+                                        @if (Attaching && IsLinked(hold.Key))
+                                        {
+                                            <span>Tilknyttet</span>
+                                        }
+                                        else if (KnownWorkspace(hold.Key) is Guid workspaceId)
                                         {
                                             <a class="secondary" href="@WorkspaceNavigation.View(workspaceId)"
                                                aria-label="@($"Åbn {hold.Name} i LUP")">Åbn i LUP</a>
@@ -161,6 +176,10 @@
     [Parameter] public bool OpenInitially { get; set; }
     [Parameter] public IReadOnlyDictionary<string, Guid> ExistingHolds { get; set; } = new Dictionary<string, Guid>();
     [Parameter] public EventCallback OnImported { get; set; }
+    [Parameter] public Guid? TargetWorkspaceId { get; set; }
+    [Parameter] public IReadOnlyList<string> LinkedLectioKeys { get; set; } = [];
+    private bool Attaching => TargetWorkspaceId.HasValue;
+    private bool IsLinked(string key) => LinkedLectioKeys.Contains(key, StringComparer.OrdinalIgnoreCase);
 
     private const int PageSize = 12;
     private readonly CancellationTokenSource _lifetime = new();
@@ -261,7 +280,7 @@
 
     private async Task PreviewAsync(LectioHold hold)
     {
-        if (_loading || _disposed || !Redirect.ShowsTeacherChrome || KnownWorkspace(hold.Key) is not null)
+        if (_loading || _disposed || !Redirect.ShowsTeacherChrome || IsLinked(hold.Key) || KnownWorkspace(hold.Key) is not null)
             return;
 
         _selected = hold;
@@ -305,7 +324,7 @@
     private async Task ImportAsync()
     {
         if (_creating || _disposed || _students is null || _selected is not { } hold
-            || string.IsNullOrWhiteSpace(_name) || !Redirect.ShowsTeacherChrome)
+            || !Attaching && string.IsNullOrWhiteSpace(_name) || !Redirect.ShowsTeacherChrome)
             return;
 
         _creating = true;
@@ -313,13 +332,26 @@
         try
         {
             var name = _name.Trim();
-            using var response = await Http.PostAsJsonAsync("forloeb/from-lectio",
+            using var response = await Http.PostAsJsonAsync(TargetWorkspaceId is Guid target
+                ? $"forloeb/{target:D}/lectio-sources" : "forloeb/from-lectio",
                 new { lectioHoldKey = hold.Key, name, holdName = name }, _lifetime.Token);
             if (response.StatusCode != HttpStatusCode.Conflict)
                 response.EnsureSuccessStatusCode();
 
             var body = await response.Content.ReadFromJsonAsync<JsonElement>(_lifetime.Token);
-            if (response.StatusCode == HttpStatusCode.Conflict)
+            if (TargetWorkspaceId is Guid attachedTo)
+            {
+                if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    _error = Text(body, "error") == "already_imported"
+                        ? "Lectio-holdet er allerede tilknyttet et hold i LUP."
+                        : "Elevlisten er ændret. Prøv at tilføje holdet igen.";
+                    return;
+                }
+                _result = new(attachedTo, Text(body, "name") ?? hold.Name,
+                    Number(body, "added") ?? throw new JsonException("Missing imported student count."));
+            }
+            else if (response.StatusCode == HttpStatusCode.Conflict)
             {
                 var existing = TryArray(body, "conflicts", out var conflicts)
                     ? conflicts.EnumerateArray()
@@ -352,7 +384,8 @@
         catch (Exception exception) when (exception is HttpRequestException or JsonException or OperationCanceledException)
         {
             if (!_disposed)
-                _error = ErrorMessage((exception as HttpRequestException)?.StatusCode, "Holdet kunne ikke oprettes. Prøv igen.");
+                _error = ErrorMessage((exception as HttpRequestException)?.StatusCode,
+                    Attaching ? "Lectio-holdet kunne ikke tilknyttes. Prøv igen." : "Holdet kunne ikke oprettes. Prøv igen.");
         }
         finally
         {

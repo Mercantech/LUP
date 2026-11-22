@@ -227,24 +227,9 @@ public class ForloebController(AppDbContext db, LectioCollectorClient lectio) : 
                 return InvalidLectioRoster(key);
             }
 
-            if (!TryReadRoster(lectioHold, out var details, out var roster))
+            if (ReadLectioRoster(lectioHold, key) is not { } parsed)
                 return InvalidLectioRoster(key);
-
-            var canonicalKey = GetString(details, "lectioHoldKey") ?? GetString(lectioHold, "lectioHoldKey");
-            if (string.IsNullOrWhiteSpace(canonicalKey))
-                canonicalKey = key;
-            var lectioName = GetString(details, "name") ?? GetString(lectioHold, "name") ?? key;
-            var members = new List<(string LectioId, string DisplayName)>();
-            foreach (var member in roster.EnumerateArray())
-            {
-                var elevId = GetString(member, "studentLectioId") ?? GetString(member, "lectioId");
-                if (string.IsNullOrWhiteSpace(elevId))
-                    return InvalidLectioRoster(key);
-                var display = GetString(member, "studentName") ?? GetString(member, "name") ?? elevId;
-                members.Add((elevId, display));
-            }
-
-            fetched.Add((canonicalKey, lectioName, members));
+            fetched.Add(parsed);
         }
 
         fetched = fetched.DistinctBy(source => source.Key, StringComparer.OrdinalIgnoreCase).ToList();
@@ -374,6 +359,100 @@ public class ForloebController(AppDbContext db, LectioCollectorClient lectio) : 
                 lectioHolds = keys.Count
             }
         });
+    }
+
+    public sealed record AttachLectioRequest(string? LectioHoldKey);
+
+    [HttpPost("{id:guid}/lectio-sources")]
+    public async Task<IActionResult> AttachLectio(Guid id, AttachLectioRequest body, CancellationToken ct)
+    {
+        if (!UserClaims.IsTeacher(User)) return Forbid();
+        var manageable = new CourseAccess(db).AccessibleHolds(User, manageOnly: true).Where(h => h.ForloebId == id);
+        var holdId = await manageable.Select(h => (Guid?)h.Id).SingleOrDefaultAsync(ct);
+        if (holdId is null) return NotFound();
+        var key = body.LectioHoldKey?.Trim();
+        if (key is not { Length: > 0 and <= 128 } || key.Any(char.IsControl))
+            return BadRequest(new { error = "invalid_lectio_hold_key" });
+        if (await ExistingLectioImportAsync([key], ct) is { } conflict) return conflict;
+
+        (string Key, string Name, List<(string LectioId, string DisplayName)> Members) roster;
+        IReadOnlyDictionary<string, Guid> links;
+        try
+        {
+            var bearer = RequireBearer();
+            var data = await lectio.GetHoldByLectioKeyAsync(key, bearer, ct);
+            if (ReadLectioRoster(data, key) is not { } parsed) return InvalidLectioRoster(key);
+            roster = parsed;
+            links = roster.Members.Count == 0
+                ? new Dictionary<string, Guid>()
+                : await lectio.ResolveAuthLinksAsync(roster.Members.Select(member => member.LectioId), bearer, ct);
+        }
+        catch (UnauthorizedAccessException) { return Unauthorized(new { error = "missing_bearer" }); }
+        catch (JsonException) { return InvalidLectioRoster(key); }
+        catch (LectioCollectorException ex)
+        {
+            return StatusCode(ex.StatusCode, new { error = "lectio_hold_fetch_failed" });
+        }
+        catch (HttpRequestException) { return StatusCode(502, new { error = "lectio_hold_fetch_failed" }); }
+
+        var now = DateTimeOffset.UtcNow;
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        // Serialize roster changes on the existing hold, including manual additions.
+        if (await manageable.Where(h => h.Id == holdId).ExecuteUpdateAsync(setters =>
+                setters.SetProperty(h => h.Name, h => h.Name), ct) != 1) return NotFound();
+        if (await ExistingLectioImportAsync([roster.Key], ct) is { } canonicalConflict) return canonicalConflict;
+
+        var existing = await db.Memberships.AsNoTracking().Where(member => member.HoldId == holdId)
+            .Select(member => new { member.LectioId, member.UserSub }).ToArrayAsync(ct);
+        var seenLectio = existing.Select(member => member.LectioId).OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var seenAccounts = existing.Where(member => member.UserSub.HasValue).Select(member => member.UserSub!.Value).ToHashSet();
+        var added = 0;
+        foreach (var (lectioId, display) in roster.Members)
+        {
+            if (!seenLectio.Add(lectioId)) continue;
+            Guid? sub = links.TryGetValue(lectioId, out var account) && account != Guid.Empty ? account : null;
+            if (sub is Guid linked && !seenAccounts.Add(linked)) continue;
+            db.Memberships.Add(new()
+            {
+                Id = Guid.NewGuid(), HoldId = holdId.Value, LectioId = lectioId, UserSub = sub,
+                DisplayName = display.Length > 200 ? display[..200] : display, Source = "lectio", CreatedAtUtc = now
+            });
+            added++;
+        }
+        db.HoldLectioSources.Add(new()
+        {
+            Id = Guid.NewGuid(), HoldId = holdId.Value, LectioHoldKey = roster.Key,
+            LectioHoldName = roster.Name.Length > 200 ? roster.Name[..200] : roster.Name, ImportedAtUtc = now
+        });
+        try { await db.SaveChangesAsync(ct); }
+        catch (DbUpdateException ex) when (IsDuplicateLectioSource(ex))
+        {
+            return Conflict(new { error = "already_imported" });
+        }
+        catch (DbUpdateException ex) when (HoldsController.IsDuplicateMembership(ex))
+        {
+            return Conflict(new { error = "roster_changed" });
+        }
+        await tx.CommitAsync(ct);
+        return Ok(new { lectioHoldKey = roster.Key, name = roster.Name, added });
+    }
+
+    private static (string Key, string Name, List<(string LectioId, string DisplayName)> Members)?
+        ReadLectioRoster(JsonElement hold, string key)
+    {
+        if (!TryReadRoster(hold, out var details, out var roster)) return null;
+        var canonicalKey = (GetString(details, "lectioHoldKey") ?? GetString(hold, "lectioHoldKey"))?.Trim();
+        if (string.IsNullOrWhiteSpace(canonicalKey)) canonicalKey = key;
+        if (canonicalKey.Length > 128 || canonicalKey.Any(char.IsControl)) return null;
+        var name = GetString(details, "name") ?? GetString(hold, "name") ?? key;
+        var members = new List<(string LectioId, string DisplayName)>();
+        foreach (var member in roster.EnumerateArray())
+        {
+            var id = (GetString(member, "studentLectioId") ?? GetString(member, "lectioId"))?.Trim();
+            if (id is not { Length: > 0 and <= 64 } || id.Any(char.IsControl)) return null;
+            members.Add((id, GetString(member, "studentName") ?? GetString(member, "name") ?? id));
+        }
+        return (canonicalKey, name, members);
     }
 
     private async Task<ConflictObjectResult?> ExistingLectioImportAsync(List<string> keys, CancellationToken ct)

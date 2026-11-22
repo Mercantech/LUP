@@ -16,6 +16,49 @@ namespace Mercantec.Tech.Api.Tests;
 
 public sealed class ForloebLectioImportTests
 {
+    [Fact]
+    public async Task Attaching_adds_a_source_to_the_existing_hold_and_skips_both_kinds_of_roster_duplicates()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        var teacher = Guid.NewGuid();
+        var alreadyLinked = Guid.NewGuid();
+        var newAccount = Guid.NewGuid();
+        var course = new Forloeb { Id = Guid.NewGuid(), Name = "Mit hold", CreatedBySub = teacher };
+        var hold = new Hold { Id = Guid.NewGuid(), Name = course.Name, Forloeb = course, LectioHoldKey = "he:1" };
+        db.Hold.Add(hold);
+        db.Memberships.AddRange(
+            new Membership { Id = Guid.NewGuid(), HoldId = hold.Id, LectioId = "11", DisplayName = "Manuelt navn", Source = "manual" },
+            new Membership { Id = Guid.NewGuid(), HoldId = hold.Id, UserSub = alreadyLinked, Source = "manual" });
+        await db.SaveChangesAsync();
+
+        using var collector = new HttpClient(new Collector(_ => Task.FromResult<object>(new
+        {
+            hold = new { lectioHoldKey = "he:2", name = "Ekstra hold", members = new[]
+            {
+                new { studentLectioId = "11", studentName = "Samme Lectio-id" },
+                new { studentLectioId = "12", studentName = "Samme konto" },
+                new { studentLectioId = "13", studentName = "Ny elev" },
+                new { studentLectioId = "13", studentName = "Gentaget elev" }
+            }}
+        }), new { links = new[] { new { lectioId = "12", authSub = alreadyLinked }, new { lectioId = "13", authSub = newAccount } } }))
+        { BaseAddress = new Uri("https://collector.example/api/") };
+        var request = new ForloebController.AttachLectioRequest("he:2");
+        Assert.IsType<NotFoundResult>(await Controller(db, collector, Guid.NewGuid()).AttachLectio(course.Id, request, default));
+        var editor = Controller(db, collector, teacher);
+        var result = Assert.IsType<OkObjectResult>(await editor.AttachLectio(course.Id, request, default));
+        Assert.Equal(1, JsonSerializer.SerializeToElement(result.Value).GetProperty("added").GetInt32());
+        Assert.IsType<ConflictObjectResult>(await editor.AttachLectio(course.Id, request, default));
+        Assert.Single(await db.Hold.ToArrayAsync());
+        Assert.Equal("he:2", (await db.HoldLectioSources.SingleAsync()).LectioHoldKey);
+        var roster = await db.Memberships.ToArrayAsync();
+        Assert.Equal(3, roster.Length);
+        Assert.Equal("Manuelt navn", Assert.Single(roster, member => member.LectioId == "11").DisplayName);
+        Assert.Equal(newAccount, Assert.Single(roster, member => member.LectioId == "13").UserSub);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -121,7 +164,7 @@ public sealed class ForloebLectioImportTests
         };
     }
 
-    private sealed class Collector(Func<CancellationToken, Task<object>> loadRoster) : HttpMessageHandler
+    private sealed class Collector(Func<CancellationToken, Task<object>> loadRoster, object? authLinks = null) : HttpMessageHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
@@ -133,7 +176,7 @@ public sealed class ForloebLectioImportTests
                     Content = JsonContent.Create(await loadRoster(ct))
                 };
             }
-            return new(HttpStatusCode.OK) { Content = JsonContent.Create(new { links = Array.Empty<object>() }) };
+            return new(HttpStatusCode.OK) { Content = JsonContent.Create(authLinks ?? new { links = Array.Empty<object>() }) };
         }
     }
 }

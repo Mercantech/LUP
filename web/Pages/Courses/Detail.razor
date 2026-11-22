@@ -143,8 +143,51 @@ else
         {
             <section class="hold-content-panel"><div class="hold-section-heading"><div><h2>Hold og tilknytning</h2><p>Administrér elevlisten og holdets forbindelse til Lectio.</p></div><a class="secondary" href="/lectio">Åbn Lectio</a></div>
                 @if (_workspace.LectioKeys.Length > 0) { <ul class="hold-lectio-list">@foreach (var key in _workspace.LectioKeys) { <li><a href="@($"https://lc.mags.dk/hold/{Uri.EscapeDataString(key)}")" target="_blank" rel="noopener">Lectio-hold @key <UiIcon Name="external" /></a></li> }</ul> }
-                else { <p>Holdet er oprettet manuelt. Du kan hente og organisere Lectio-hold fra Lectio-siden.</p> }
-                <form class="hold-member-form" @onsubmit="AddMember" @onsubmit:preventDefault><h3>Tilføj en elev</h3><label class="field">Elevens navn<input @bind="_memberName" maxlength="200" required /></label><label class="field">Lectio-id<input @bind="_memberLectio" maxlength="64" /></label><details><summary>Tilknyt via brugerkonto</summary><label class="field">Kontoens Auth-id<input @bind="_memberSub" placeholder="GUID" /></label></details><p>Angiv elevens Lectio-id eller kontoens Auth-id for at knytte den rigtige elev til holdet.</p><button class="action" disabled="@_adding">@(_adding ? "Tilføjer…" : "Tilføj elev")</button></form>
+                <CourseLectioImport @key="_workspace.HoldId" TargetWorkspaceId="@Id" LinkedLectioKeys="@_workspace.LectioKeys" OnImported="RefreshSummary" />
+                <section class="hold-member-form" aria-labelledby="hold-add-student">
+                    <h3 id="hold-add-student">Tilføj en elev</h3>
+                    @if (_selectedStudent is { } selected)
+                    {
+                        <div class="hold-student-choice">
+                            <div><strong>@selected.DisplayName</strong><span>@selected.ClassName · @selected.LectioId</span></div>
+                            <button type="button" class="secondary" disabled="@_adding" @onclick="() => _selectedStudent = null">Skift elev</button>
+                        </div>
+                        <button type="button" class="action" disabled="@_adding" @onclick="AddMember">@(_adding ? "Tilføjer…" : "Tilføj elev")</button>
+                    }
+                    else
+                    {
+                        <label class="field">Søg i Lectio-elever
+                            <input type="search" @bind="_studentQuery" @bind:event="oninput" @bind:after="SearchStudents" maxlength="200"
+                                   placeholder="Navn, klasse eller Lectio-id" disabled="@_adding" />
+                        </label>
+                        @if (_studentSearching) { <p role="status">Søger i Lectio…</p> }
+                        else if (_studentSearchError is not null) { <p role="alert">@_studentSearchError</p> }
+                        else if (_students.Length > 0)
+                        {
+                            <ul class="hold-student-results">
+                                @foreach (var student in _students)
+                                {
+                                    <li @key="student.LectioId">
+                                        <button type="button" class="secondary" @onclick="() => _selectedStudent = student">
+                                            <strong>@student.DisplayName</strong><span>@student.ClassName · @student.LectioId</span>
+                                        </button>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else if (_studentQuery.Trim().Length >= 2) { <p role="status">Ingen elever matcher din søgning.</p> }
+                        <details>
+                            <summary>Tilføj manuelt med id</summary>
+                            <form @onsubmit="AddMember" @onsubmit:preventDefault>
+                                <label class="field">Elevens navn<input @bind="_memberName" maxlength="200" required disabled="@_adding" /></label>
+                                <label class="field">Lectio-id<input @bind="_memberLectio" maxlength="64" disabled="@_adding" /></label>
+                                <label class="field">Kontoens Auth-id<input @bind="_memberSub" placeholder="GUID" disabled="@_adding" /></label>
+                                <p>Angiv Lectio-id eller Auth-id.</p>
+                                <button class="action" disabled="@_adding">@(_adding ? "Tilføjer…" : "Tilføj elev")</button>
+                            </form>
+                        </details>
+                    }
+                </section>
             </section>
         }
     </div>

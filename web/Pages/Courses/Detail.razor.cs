@@ -27,6 +27,12 @@ public partial class Detail
     private Guid _loadedId;
     private bool _loading = true, _disposed, _adding;
     private string _memberName = "", _memberSub = "", _memberLectio = "";
+    private string _studentQuery = "";
+    private ElectiveLectioStudent[] _students = [];
+    private ElectiveLectioStudent? _selectedStudent;
+    private CancellationTokenSource? _studentSearch;
+    private bool _studentSearching;
+    private string? _studentSearchError;
     private static readonly CultureInfo Danish = CultureInfo.GetCultureInfo("da-DK");
     private static readonly TimeZoneInfo Copenhagen = TimeZoneInfo.FindSystemTimeZoneById("Europe/Copenhagen");
     private bool CanManage => _workspace?.CanManage == true && !ViewAs.IsActive;
@@ -75,6 +81,7 @@ public partial class Detail
     private async Task Reload()
     {
         _workspace = null; _memberName = _memberSub = _memberLectio = ""; _notice = null;
+        ClearStudentSearch();
         await RefreshSummary();
     }
     private async Task RefreshSummary()
@@ -99,29 +106,93 @@ public partial class Detail
         { if (!ct.IsCancellationRequested) _error = ex is HttpRequestException ? ex.Message : "Holdets overblik kunne ikke læses. Prøv igen."; }
         finally { if (!ct.IsCancellationRequested) _loading = false; }
     }
+    private void ClearStudentSearch()
+    {
+        _studentSearch?.Cancel();
+        _studentSearch = null;
+        _studentQuery = "";
+        _students = [];
+        _selectedStudent = null;
+        _studentSearching = false;
+        _studentSearchError = null;
+    }
+
+    private async Task SearchStudents()
+    {
+        _studentSearch?.Cancel();
+        _studentSearch = null;
+        _students = [];
+        _studentSearchError = null;
+        var query = _studentQuery.Trim();
+        _studentSearching = CanManage && query.Length >= 2;
+        if (!_studentSearching) return;
+
+        using var search = CancellationTokenSource.CreateLinkedTokenSource(_requests.Token);
+        _studentSearch = search;
+        try
+        {
+            await Task.Delay(250, search.Token);
+            var students = await Http.GetFromJsonAsync<ElectiveLectioStudent[]>(
+                $"electives/lectio-students?q={Uri.EscapeDataString(query)}", search.Token);
+            if (!search.IsCancellationRequested) _students = students ?? [];
+        }
+        catch (Exception ex) when (ex is HttpRequestException or System.Text.Json.JsonException or OperationCanceledException)
+        {
+            if (!search.IsCancellationRequested) _studentSearchError = "Eleverne kunne ikke hentes fra Lectio. Prøv igen.";
+        }
+        finally
+        {
+            if (ReferenceEquals(_studentSearch, search))
+            {
+                _studentSearch = null;
+                _studentSearching = false;
+            }
+        }
+    }
+
     private async Task AddMember()
     {
         if (_adding || !CanManage || _workspace is null) return;
-        _error = _notice = null; Guid? sub = null;
-        if (!string.IsNullOrWhiteSpace(_memberSub))
+        _error = _notice = null;
+        var selected = _selectedStudent;
+        var lectioId = selected?.LectioId ?? _memberLectio.Trim();
+        var name = selected?.DisplayName ?? _memberName.Trim();
+        Guid? sub = null;
+        if (selected is null && !string.IsNullOrWhiteSpace(_memberSub))
         {
             if (!Guid.TryParse(_memberSub, out var id) || id == Guid.Empty) { _error = "Kontoens Auth-id skal være en gyldig GUID."; return; }
             sub = id;
         }
-        if (sub is null && string.IsNullOrWhiteSpace(_memberLectio)) { _error = "Angiv et Lectio-id eller kontoens Auth-id."; return; }
+        if (sub is null && lectioId.Length == 0) { _error = "Angiv et Lectio-id eller kontoens Auth-id."; return; }
         _adding = true;
+        var holdId = _workspace.HoldId;
+        var ct = _requests.Token;
         try
         {
-            using var response = await Http.PostAsJsonAsync($"holds/{_workspace.HoldId}/memberships", new
-            { userSub = sub, lectioId = string.IsNullOrWhiteSpace(_memberLectio) ? null : _memberLectio.Trim(), displayName = _memberName.Trim(), source = "manual" }, _requests.Token);
+            if (selected is not null)
+            {
+                using var resolve = await Http.PostAsJsonAsync("lectio/auth-links/resolve", new { lectioIds = new[] { lectioId } }, ct);
+                resolve.EnsureSuccessStatusCode();
+                var matches = await resolve.Content.ReadFromJsonAsync<LectioLinks>(ct);
+                sub = matches?.Links.FirstOrDefault(link => string.Equals(lectioId, link.LectioId, StringComparison.OrdinalIgnoreCase))?.AuthSub;
+            }
+            ct.ThrowIfCancellationRequested();
+            using var response = await Http.PostAsJsonAsync($"holds/{holdId}/memberships", new
+            { userSub = sub, lectioId = lectioId.Length == 0 ? null : lectioId, displayName = name, source = "manual" }, ct);
+            ct.ThrowIfCancellationRequested();
             if (!response.IsSuccessStatusCode) { _error = response.StatusCode == System.Net.HttpStatusCode.Conflict ? "Eleven findes allerede på holdet." : "Eleven kunne ikke tilføjes. Kontrollér oplysningerne, og prøv igen."; return; }
             _memberName = _memberSub = _memberLectio = "";
+            ClearStudentSearch();
             await RefreshSummary(); _notice = "Eleven er tilføjet til holdet.";
         }
         catch (OperationCanceledException) { }
-        catch (HttpRequestException) { _error = "Eleven kunne ikke tilføjes. Kontrollér forbindelsen, og prøv igen."; }
+        catch (Exception ex) when (ex is HttpRequestException or System.Text.Json.JsonException)
+        { if (!ct.IsCancellationRequested) _error = "Eleven kunne ikke tilføjes. Kontrollér forbindelsen, og prøv igen."; }
         finally { _adding = false; }
     }
+    private sealed record LectioLinks(LectioLink[] Links);
+    private sealed record LectioLink(string LectioId, Guid AuthSub);
+
     public void Dispose()
     {
         _disposed = true; Auth.AuthStateChanged -= AccountChanged; ViewAs.Changed -= AccountChanged;
