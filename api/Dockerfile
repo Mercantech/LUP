@@ -38,6 +38,7 @@ COPY web/Characters/BilboMotionMaterials.cs web/Characters/
 COPY web/Characters/GitmejsenMaterials.cs web/Characters/
 WORKDIR /src/api
 RUN --mount=type=bind,from=release-info,source=/src/web/wwwroot/images,target=/src/web/wwwroot/images \
+    --mount=type=bind,from=release-info,source=/src/extensions/lup/assets,target=/src/extensions/lup/assets \
     dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base

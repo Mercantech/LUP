@@ -6,7 +6,7 @@ namespace Mercantec.Tech.Api.Notebooks;
 public sealed record NotebookCoverEmoji(Guid? Id, string? Shortcode);
 
 public sealed record NotebookCoverSource(IReadOnlyList<string> Excerpts, IReadOnlyList<NotebookCoverEmoji> Emojis,
-    string? CourseTitle = null);
+    string? CourseTitle = null, NotebookCoverCourseLabel? CourseLabel = null);
 
 internal static partial class NotebookCoverEmojiSignals
 {

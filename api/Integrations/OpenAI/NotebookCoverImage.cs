@@ -1,3 +1,4 @@
+using Mercantec.Tech.Api.Notebooks;
 using Mercantec.Tech.Api.Students;
 using Mercantec.Tech.Contracts;
 using SkiaSharp;
@@ -6,11 +7,13 @@ namespace Mercantec.Tech.Api.Integrations.OpenAI;
 
 public static class NotebookCoverImage
 {
-    public static byte[]? Normalize(byte[] input) => Normalize(input, 1536, 1024, allowGif: false);
+    public static byte[]? Normalize(byte[] input, NotebookCoverCourseLabel? course = null) =>
+        Normalize(input, 1536, 1024, allowGif: false, course);
 
     internal static byte[]? NormalizeEmoji(byte[] input) => Normalize(input, 512, 512, allowGif: true);
 
-    private static byte[]? Normalize(byte[] input, int maxWidth, int maxHeight, bool allowGif)
+    private static byte[]? Normalize(byte[] input, int maxWidth, int maxHeight, bool allowGif,
+        NotebookCoverCourseLabel? course = null)
     {
         if (input.Length is 0 or > NotebookCoverRules.MaxUploadBytes) return null;
         using var data = SKData.CreateCopy(input);
@@ -37,10 +40,13 @@ public static class NotebookCoverImage
         using (var canvas = new SKCanvas(cover))
         {
             canvas.Clear(SKColors.Transparent);
+            canvas.Save();
             canvas.Scale((float)scale);
             ProfilePhotoImages.Orient(canvas, codec.EncodedOrigin, source.Width, source.Height);
             using var image = SKImage.FromBitmap(decoded);
             canvas.DrawImage(image, 0, 0, new SKSamplingOptions(SKFilterMode.Linear));
+            canvas.Restore();
+            if (course is not null) NotebookCoverCaption.Draw(canvas, cover.Width, cover.Height, course);
         }
 
         // A fresh raster removes EXIF and other source metadata. The same bounded output serves cards and headers.
