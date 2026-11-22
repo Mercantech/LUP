@@ -630,6 +630,19 @@
     },
     {
       "kind": "portræt",
+      "title": "Iben uden baggrund",
+      "alt": "Iben Ildflue svæver med mørke krøller, indigoblå vinger og en ravlysende bagkrop.",
+      "width": 1254,
+      "height": 1254,
+      "image": "/images/characters/iben/iben-fritlagt.png",
+      "preview": "/images/characters/iben/iben-fritlagt.webp",
+      "originalBytes": 2247221,
+      "previewBytes": 139762,
+      "originalSha256": "34c9c901d9674ddbdd9df23b61623bd785687745977d9b5238f93595e0ac4052",
+      "previewSha256": "bc45a2653ff724e2c1067e200bf189cbee86890fb00272d37560c378f2cb42c3"
+    },
+    {
+      "kind": "portræt",
       "title": "Iben Ildflue",
       "alt": "Iben med krøllet hestehale, lilla overskjorte og Blazor-mærke.",
       "width": 1254,
