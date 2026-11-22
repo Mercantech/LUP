@@ -19,7 +19,7 @@ namespace Mercantec.Tech.Api.Controllers;
 [ApiController, Authorize, Route("api/notebook-covers/{kind}/{id:guid}")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class NotebookCoversController(AppDbContext db, CourseAccess courses, NotebookAccess notebooks,
-    NotionAiProjectionClient projection, INotebookCoverGenerator generator) : ControllerBase
+    NotionAiProjectionClient projection, INotebookCoverGenerator generator, NotebookCoverArtwork? artwork = null) : ControllerBase
 {
     private const string Collection = "collection";
     private const string NotionPage = "notion-page";
@@ -100,9 +100,10 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
 
         try
         {
-            var excerpts = await ReadExcerpts(target, ct);
+            var source = await ReadSource(target, ct);
+            var art = artwork is null ? null : await artwork.ResolveAsync(target.Kind, target.Title, source, ct);
             ct.ThrowIfCancellationRequested();
-            var image = await generator.GenerateAsync(target.Title, excerpts, ct);
+            var image = await generator.GenerateAsync(target.Title, source.Excerpts, ct, art);
             return await Save(target, image, ct, includeImage);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
@@ -157,13 +158,13 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
             Collection => notion.ManageableCollections(User).Where(c => c.Id == id)
                 .Select(c => new CoverTarget(kind, c.Id, c.CoverId,
                     editablePages.Where(p => p.Id == c.Id).Select(p => p.Title).FirstOrDefault()
-                        ?? c.Title ?? "Undervisningsnoter", 0)).SingleOrDefaultAsync(ct),
+                        ?? c.Title ?? "Undervisningsnoter", 0, c.IconEmojiId, c.HoldId)).SingleOrDefaultAsync(ct),
             NotionPage => editablePages.Where(p => p.Id == id)
-                .Select(p => new CoverTarget(kind, p.Id, p.CoverId, p.Title, p.LifecycleVersion)).SingleOrDefaultAsync(ct),
+                .Select(p => new CoverTarget(kind, p.Id, p.CoverId, p.Title, p.LifecycleVersion, p.IconEmojiId, p.HoldId)).SingleOrDefaultAsync(ct),
             Notebook => OwnedNotebooks(id)
-                .Select(n => new CoverTarget(kind, n.Id, n.CoverId, "Min notesbog", 0)).SingleOrDefaultAsync(ct),
+                .Select(n => new CoverTarget(kind, n.Id, n.CoverId, "Min notesbog", 0, n.IconEmojiId, null)).SingleOrDefaultAsync(ct),
             NotebookPage => notebooks.EditableDocuments(User).Where(d => d.Id == id)
-                .Select(d => new CoverTarget(kind, d.Id, d.CoverId, d.Title, d.LifecycleVersion)).SingleOrDefaultAsync(ct),
+                .Select(d => new CoverTarget(kind, d.Id, d.CoverId, d.Title, d.LifecycleVersion, d.IconEmojiId, d.HoldId)).SingleOrDefaultAsync(ct),
             _ => Task.FromResult<CoverTarget?>(null)
         };
     }
@@ -220,66 +221,69 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         };
     }
 
-    private async Task<string[]> ReadExcerpts(CoverTarget target, CancellationToken ct)
+    private async Task<NotebookCoverSource> ReadSource(CoverTarget target, CancellationToken ct)
     {
-        var parts = new List<string>();
-        switch (target.Kind)
+        var includePageTitles = target.Kind is Collection or Notebook;
+        CoverDocument[] documents;
+        if (target.Kind is Collection or NotionPage)
         {
-            case Collection:
-            case NotionPage:
-                var pages = notion.ManageablePages(User).AsNoTracking();
-                var isCollection = target.Kind == Collection;
-                pages = isCollection ? pages.Where(p => p.CollectionId == target.Id) : pages.Where(p => p.Id == target.Id);
-                var notionPages = await pages.OrderByDescending(p => p.Id == target.Id).ThenBy(p => p.ParentPageId != null)
-                    .ThenBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Id).Take(MaxSourcePages)
-                    .Select(p => new
-                    {
-                        p.Title,
-                        State = p.YjsState != null && p.YjsState.Length <= MaxSourceStateBytes ? p.YjsState : null
-                    }).ToArrayAsync(ct);
-                using (var projectionBudget = CancellationTokenSource.CreateLinkedTokenSource(ct))
-                {
-                    projectionBudget.CancelAfter(ExcerptProjectionTimeout);
-                    parts.AddRange(await Task.WhenAll(notionPages.Select(page =>
-                        ReadNotionExcerpt(isCollection ? page.Title : null, page.State, projectionBudget.Token, ct))));
-                }
-                break;
-            case Notebook:
-            case NotebookPage:
-                var documents = notebooks.EditableDocuments(User).AsNoTracking();
-                // An overall notebook cover samples ordinary notes. Dedicated journal covers
-                // can use their own text when the owner chooses to generate one explicitly.
-                documents = target.Kind == Notebook
-                    ? documents.Where(d => d.NotebookId == target.Id && d.Kind == "note")
-                    : documents.Where(d => d.Id == target.Id);
-                var notes = await documents.OrderBy(d => d.ParentPageId != null).ThenBy(d => d.SortOrder ?? int.MaxValue)
-                    .ThenBy(d => d.Id).Take(MaxSourcePages)
-                    .Select(d => new { d.Title, Text = d.SearchText.Substring(0, MaxExcerptLength) }).ToArrayAsync(ct);
-                foreach (var note in notes)
-                    parts.Add(Excerpt(target.Kind == Notebook ? note.Title : null, note.Text));
-                break;
+            var pages = notion.ManageablePages(User).AsNoTracking();
+            pages = includePageTitles ? pages.Where(p => p.CollectionId == target.Id) : pages.Where(p => p.Id == target.Id);
+            documents = await pages.OrderByDescending(p => p.Id == target.Id).ThenBy(p => p.ParentPageId != null)
+                .ThenBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Id).Take(MaxSourcePages)
+                .Select(p => new CoverDocument(p.Title, p.IconEmojiId, null,
+                    p.YjsState != null && p.YjsState.Length <= MaxSourceStateBytes ? p.YjsState : null)).ToArrayAsync(ct);
+        }
+        else
+        {
+            var notes = notebooks.EditableDocuments(User).AsNoTracking();
+            // An overall notebook cover samples ordinary notes. Dedicated journal covers use
+            // their own text only when the owner chooses to generate one explicitly.
+            notes = includePageTitles
+                ? notes.Where(d => d.NotebookId == target.Id && d.Kind == "note")
+                : notes.Where(d => d.Id == target.Id);
+            documents = await notes.OrderBy(d => d.ParentPageId != null).ThenBy(d => d.SortOrder ?? int.MaxValue)
+                .ThenBy(d => d.Id).Take(MaxSourcePages)
+                .Select(d => new CoverDocument(d.Title, d.IconEmojiId, d.SearchText.Substring(0, NotebookCoverEmojiSignals.MaxTextLength),
+                    d.YjsState != null && d.YjsState.Length <= MaxSourceStateBytes ? d.YjsState : null)).ToArrayAsync(ct);
         }
 
-        return parts.Where(part => part.Length > 0).Distinct(StringComparer.Ordinal).ToArray();
+        string? courseTitle = null;
+        if (target.HoldId is Guid holdId)
+            courseTitle = await courses.AccessibleHolds(User).Where(hold => hold.Id == holdId)
+                .Select(hold => hold.Forloeb.Name).SingleOrDefaultAsync(ct);
+
+        using var budget = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        budget.CancelAfter(ExcerptProjectionTimeout);
+        var projections = await Task.WhenAll(documents.Select(doc => ReadCoverProjection(doc.State, budget.Token, ct)));
+        var excerpts = new List<string>(documents.Length);
+        var emojis = new List<NotebookCoverEmoji>();
+        if (target.IconEmojiId is Guid icon) emojis.Add(new(icon, null));
+        emojis.AddRange(NotebookCoverEmojiSignals.InText(target.Title));
+
+        foreach (var (document, content) in documents.Zip(projections))
+        {
+            var text = document.SearchText is { Length: > 0 } savedText ? savedText : content?.PlainText ?? "";
+            excerpts.Add(Excerpt(includePageTitles ? document.Title : null, text));
+            if (document.IconEmojiId is Guid pageIcon) emojis.Add(new(pageIcon, null));
+            emojis.AddRange(NotebookCoverEmojiSignals.InText(document.Title));
+            emojis.AddRange(content?.Emojis ?? NotebookCoverEmojiSignals.InText(text));
+        }
+
+        return new(excerpts.Where(part => part.Length > 0).Distinct(StringComparer.Ordinal).ToArray(),
+            NotebookCoverEmojiSignals.Unique(emojis), courseTitle);
     }
 
-    private async Task<string> ReadNotionExcerpt(string? title, byte[]? state, CancellationToken budget, CancellationToken request)
+    private async Task<NotebookCoverProjection?> ReadCoverProjection(byte[]? state, CancellationToken budget, CancellationToken request)
     {
-        if (state is { Length: > 0 })
+        if (state is not { Length: > 0 }) return null;
+        try { return await projection.ProjectCoverAsync(state, budget); }
+        catch (Exception ex) when (!request.IsCancellationRequested &&
+            ex is HttpRequestException or JsonException or InvalidDataException or OperationCanceledException)
         {
-            try
-            {
-                var content = await projection.ProjectAsync(state, budget);
-                return Excerpt(title, content.PlainText ?? "");
-            }
-            catch (Exception ex) when (!request.IsCancellationRequested &&
-                ex is HttpRequestException or JsonException or InvalidDataException or OperationCanceledException)
-            {
-                // One unavailable projection leaves the other sources and saved titles usable.
-            }
+            // Other saved sources and personal search text remain available during a projection failure.
+            return null;
         }
-
-        return Excerpt(title, "");
     }
 
     private static string Excerpt(string? title, string text)
@@ -290,5 +294,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         return string.Join(' ', sliced.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
     }
 
-    private sealed record CoverTarget(string Kind, Guid Id, Guid? CoverId, string Title, long LifecycleVersion);
+    private sealed record CoverTarget(string Kind, Guid Id, Guid? CoverId, string Title, long LifecycleVersion,
+        Guid? IconEmojiId, Guid? HoldId);
+    private sealed record CoverDocument(string Title, Guid? IconEmojiId, string? SearchText, byte[]? State);
 }

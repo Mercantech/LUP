@@ -7,6 +7,8 @@ using Mercantec.Tech.Api.Controllers;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Integrations.OpenAI;
+using Mercantec.Tech.Api.Notebooks;
+using Mercantec.Tech.Api.Storage;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -255,7 +257,58 @@ public sealed class NotebookCoverTests : IAsyncLifetime
         Assert.Empty(await db.NotebookCoverAssets.ToListAsync());
     }
 
-    private NotebookCoversController Covers(Guid userSub, bool isTeacher = false)
+    [Fact]
+    public async Task Personal_page_uses_saved_icon_title_and_body_emojis_before_search_text_fallback()
+    {
+        var icon = Emoji("page_icon", "2b50");
+        var title = Emoji("in_title", "2705");
+        var inline = Emoji("from_yjs", "2764");
+        var fallback = Emoji("search_fallback", "2753");
+        db.CustomEmojis.AddRange(icon, title, inline, fallback);
+        var document = await db.NotebookDocuments.SingleAsync(doc => doc.Id == noteId);
+        document.IconEmojiId = icon.Id;
+        document.Title = ":IN_TITLE: Sensorer";
+        document.SearchText = "Sensorer :search_fallback:";
+        document.YjsState = [7, 8, 9];
+        await db.SaveChangesAsync();
+        var projections = 0;
+        projection.Respond = async (request, ct) =>
+        {
+            var body = await request.Content!.ReadFromJsonAsync<ProjectionRequest>(ct);
+            Assert.Equal("notebook-cover", body?.Mode);
+            Assert.Equal(Convert.ToBase64String([7, 8, 9]), body?.StateBase64);
+            projections++;
+            return new(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(new NotebookCoverProjection("Sensorer",
+                    [new(inline.Id, inline.Name), new(inline.Id, "dublet"), new(icon.Id, icon.Name)]))
+            };
+        };
+        var generatorWithArtwork = Covers(owner, includeArtwork: true);
+
+        Assert.IsType<NotFoundResult>(await Covers(pageReader, includeArtwork: true).Generate("notebook-page", noteId, default));
+        Assert.IsType<OkObjectResult>(await generatorWithArtwork.Generate("notebook-page", noteId, default));
+        var first = Assert.Single(generator.Requests);
+        Assert.Equal(new[] { icon.Name, title.Name, inline.Name }, EmojiReferences(first.Artwork));
+        Assert.Equal(1, projections);
+
+        document.YjsState = null;
+        await db.SaveChangesAsync();
+        Assert.IsType<OkObjectResult>(await generatorWithArtwork.Generate("notebook-page", noteId, default));
+        Assert.Equal(new[] { icon.Name, title.Name, fallback.Name }, EmojiReferences(generator.Requests[1].Artwork));
+        Assert.Equal(1, projections);
+    }
+
+    private static CustomEmoji Emoji(string name, string asset) => new()
+    {
+        Id = Guid.NewGuid(), Name = name, Key = "standard-emojis/" + asset + ".png", ContentType = "image/png", SizeBytes = 1024
+    };
+
+    private static string[] EmojiReferences(NotebookCoverArtDirection? artwork) =>
+        artwork?.References.Where(reference => reference.Role.Contains("emoji used", StringComparison.Ordinal))
+            .Select(reference => reference.Name).ToArray() ?? [];
+
+    private NotebookCoversController Covers(Guid userSub, bool isTeacher = false, bool includeArtwork = false)
     {
         var claims = new List<Claim> { new("sub", userSub.ToString()) };
         if (isTeacher) claims.Add(new(ClaimTypes.Role, "Underviser"));
@@ -266,7 +319,8 @@ public sealed class NotebookCoverTests : IAsyncLifetime
             ["Notion:ServiceSecret"] = new string('s', 40),
             ["Notebook:CollaborationBaseUrl"] = "http://documents"
         }).Build();
-        return new(db, new(db), new(db), new(new HttpFactory(projection), configuration, new(configuration)), generator)
+        return new(db, new(db), new(db), new(new HttpFactory(projection), configuration, new(configuration)), generator,
+            includeArtwork ? new NotebookCoverArtwork(db, new DisabledObjectStorage()) : null)
         {
             ControllerContext = new() { HttpContext = context }
         };
@@ -277,12 +331,13 @@ public sealed class NotebookCoverTests : IAsyncLifetime
     private sealed class RecordingGenerator : INotebookCoverGenerator
     {
         public bool IsConfigured => true;
-        public List<(string Title, IReadOnlyList<string> Excerpts)> Requests { get; } = [];
+        public List<(string Title, IReadOnlyList<string> Excerpts, NotebookCoverArtDirection? Artwork)> Requests { get; } = [];
         public Func<Task>? BeforeResult { get; set; }
 
-        public async Task<byte[]> GenerateAsync(string title, IReadOnlyList<string> excerpts, CancellationToken ct)
+        public async Task<byte[]> GenerateAsync(string title, IReadOnlyList<string> excerpts, CancellationToken ct,
+            NotebookCoverArtDirection? artwork = null)
         {
-            Requests.Add((title, excerpts));
+            Requests.Add((title, excerpts, artwork));
             if (BeforeResult is not null) await BeforeResult();
             return [1, 2, 3];
         }
@@ -299,7 +354,7 @@ public sealed class NotebookCoverTests : IAsyncLifetime
             });
     }
 
-    private sealed record ProjectionRequest(string StateBase64);
+    private sealed record ProjectionRequest(string StateBase64, string? Mode = null);
 
     private sealed class HttpFactory(HttpMessageHandler handler) : IHttpClientFactory
     {

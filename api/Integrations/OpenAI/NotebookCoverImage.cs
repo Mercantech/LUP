@@ -6,12 +6,17 @@ namespace Mercantec.Tech.Api.Integrations.OpenAI;
 
 public static class NotebookCoverImage
 {
-    public static byte[]? Normalize(byte[] input)
+    public static byte[]? Normalize(byte[] input) => Normalize(input, 1536, 1024, allowGif: false);
+
+    internal static byte[]? NormalizeEmoji(byte[] input) => Normalize(input, 512, 512, allowGif: true);
+
+    private static byte[]? Normalize(byte[] input, int maxWidth, int maxHeight, bool allowGif)
     {
         if (input.Length is 0 or > NotebookCoverRules.MaxUploadBytes) return null;
         using var data = SKData.CreateCopy(input);
         using var codec = SKCodec.Create(data);
-        if (codec is null || codec.EncodedFormat is not (SKEncodedImageFormat.Jpeg or SKEncodedImageFormat.Png or SKEncodedImageFormat.Webp))
+        if (codec is null || codec.EncodedFormat is not (SKEncodedImageFormat.Jpeg or SKEncodedImageFormat.Png or SKEncodedImageFormat.Webp)
+            && !(allowGif && codec.EncodedFormat == SKEncodedImageFormat.Gif))
             return null;
 
         var source = codec.Info;
@@ -27,7 +32,7 @@ public static class NotebookCoverImage
             or SKEncodedOrigin.RightBottom or SKEncodedOrigin.LeftBottom;
         var width = swapped ? source.Height : source.Width;
         var height = swapped ? source.Width : source.Height;
-        var scale = Math.Min(1d, Math.Min(1536d / width, 1024d / height));
+        var scale = Math.Min(1d, Math.Min((double)maxWidth / width, (double)maxHeight / height));
         using var cover = new SKBitmap(Math.Max(1, (int)Math.Round(width * scale)), Math.Max(1, (int)Math.Round(height * scale)));
         using (var canvas = new SKCanvas(cover))
         {

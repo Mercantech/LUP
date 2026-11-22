@@ -3,7 +3,10 @@ import * as Y from 'yjs';
 import { fingerprintHash } from './fingerprint.mjs';
 
 const guid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const emptyGuid = '00000000-0000-0000-0000-000000000000';
 const MAX_BYTES = 16 * 1024 * 1024;
+const MAX_COVER_EMOJIS = 16;
+const MAX_COVER_TEXT = 4096;
 
 function decode(encoded) {
   if (typeof encoded !== 'string' || !encoded || encoded.length > Math.ceil(MAX_BYTES * 4 / 3) + 4
@@ -16,23 +19,46 @@ function decode(encoded) {
 }
 
 /** Only integrated, live XML children are visited. Deleted CRDT history is never searchable. */
-export function projectNotebookDocument(doc, domain = 'notebook') {
+export function projectNotebookDocument(doc, domain = 'notebook', includeCoverEmojis = false) {
   const text = [], links = new Set(), assets = new Set(), drawings = new Set(), drawingBlocks = {}, references = new Map();
   const knowledgeCheckBlocks = new Map();
+  const emojis = includeCoverEmojis ? new Map() : null;
+  const addEmoji = (value, name) => {
+    const id = typeof value === 'string' && guid.test(value) && value !== emptyGuid ? value.toLowerCase() : null;
+    const shortcode = typeof name === 'string' && /^[a-z0-9_-]{2,32}$/i.test(name) ? name.toLowerCase() : null;
+    if (!emojis || (!id && (value != null || !shortcode))) return;
+    const key = id ?? ':' + shortcode;
+    if (emojis.has(key)) return;
+    if (emojis.size >= MAX_COVER_EMOJIS) {
+      if (!id) return;
+      // Preserve actual emoji elements ahead of low-confidence text aliases when the sample is full.
+      const textAlias = [...emojis.keys()].reverse().find(item => item.startsWith(':'));
+      if (!textAlias) return;
+      emojis.delete(textAlias);
+    }
+    emojis.set(key, { id, shortcode });
+  };
   const reference = (kind, id) => {
     if (typeof kind !== 'string' || !/^[a-z][a-z0-9-]{0,47}$/.test(kind) || typeof id !== 'string' || !id || id.length > 240 || /[\u0000-\u001f\u007f]/.test(id)) return;
     if (guid.test(id)) id = id.toLowerCase();
     references.set(kind + ':' + id, { kind, id });
   };
   let visited = 0;
-  const visit = (node, depth = 0, blockId) => {
+  const visit = (node, depth = 0, blockId, inCode = false) => {
     if (++visited > 250000 || depth > 256) throw new Error('Notebook document is too complex');
     if (node instanceof Y.XmlText) {
-      text.push(node.toDelta().map(item => typeof item.insert === 'string' ? item.insert : '').join(''));
+      const parts = node.toDelta();
+      text.push(parts.map(item => typeof item.insert === 'string' ? item.insert : '').join(''));
+      if (includeCoverEmojis && !inCode) {
+        const readable = parts.map(item => typeof item.insert === 'string' && !item.attributes?.code ? item.insert : ' ').join('');
+        for (const match of readable.matchAll(/(?<![\p{L}\p{N}_]):([a-zA-Z0-9_-]{2,32}):/gu)) addEmoji(null, match[1]);
+      }
       return;
     }
     if (node instanceof Y.XmlElement) {
       const attrs = node.getAttributes();
+      if (includeCoverEmojis && node.nodeName === 'customEmoji') addEmoji(attrs.emojiId, attrs.name);
+      if (includeCoverEmojis && node.nodeName === 'callout' && attrs.emojiId) addEmoji(attrs.emojiId, attrs.emojiName);
       if (node.nodeName === 'blockContainer' && typeof attrs.id === 'string') blockId = attrs.id;
       if (node.nodeName === 'pageLink' || node.nodeName === 'pageMention') {
         if (typeof attrs.pageId === 'string' && guid.test(attrs.pageId)) { links.add(attrs.pageId.toLowerCase()); reference(domain === 'notion' ? 'notion-page' : 'notebook-page', attrs.pageId); }
@@ -64,12 +90,13 @@ export function projectNotebookDocument(doc, domain = 'notebook') {
       if (node.nodeName === 'mermaidDiagram' && typeof attrs.source === 'string') text.push(attrs.source);
     }
     if (node instanceof Y.XmlElement || node instanceof Y.XmlFragment) {
-      for (const child of node.toArray()) visit(child, depth + 1, blockId);
+      const childInCode = inCode || node.nodeName === 'codeBlock';
+      for (const child of node.toArray()) visit(child, depth + 1, blockId, childInCode);
       if (node instanceof Y.XmlElement && !['pageMention', 'studentMention', 'entityMention', 'customEmoji'].includes(node.nodeName)) text.push('\n');
     }
   };
   visit(doc.getXmlFragment('document-store'));
-  return { plainText: text.join('').replace(/\n{3,}/g, '\n\n').trim(), linkIds: [...links].sort(), references: [...references].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, value]) => value), assetIds: [...assets].sort(), drawingIds: [...drawings].sort(), drawingBlocks: Object.fromEntries(Object.entries(drawingBlocks).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)), ...(domain === 'notion' && { knowledgeCheckBlocks: Object.fromEntries([...knowledgeCheckBlocks].sort()) }) };
+  return { plainText: text.join('').replace(/\n{3,}/g, '\n\n').trim(), linkIds: [...links].sort(), references: [...references].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, value]) => value), assetIds: [...assets].sort(), drawingIds: [...drawings].sort(), drawingBlocks: Object.fromEntries(Object.entries(drawingBlocks).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)), ...(domain === 'notion' && { knowledgeCheckBlocks: Object.fromEntries([...knowledgeCheckBlocks].sort()) }), ...(emojis && { emojis: [...emojis.values()] }) };
 }
 
 export function notebookStateProjection(state, domain = 'notebook') {
@@ -77,6 +104,17 @@ export function notebookStateProjection(state, domain = 'notebook') {
   try {
     Y.applyUpdate(doc, state);
     return { stateBase64: Buffer.from(state).toString('base64'), fingerprint: fingerprintHash(state, Y.encodeStateVector(doc)), ...projectNotebookDocument(doc, domain) };
+  } finally { doc.destroy(); }
+}
+
+/** Cover context needs a single live walk of teaching or personal notebook content. */
+export function projectNotebookCover({ stateBase64 } = {}) {
+  const doc = decode(stateBase64);
+  try {
+    const { plainText, emojis } = projectNotebookDocument(doc, 'notebook', true);
+    // Bound the companion text response while still finding emoji nodes anywhere in the saved sample.
+    const text = plainText.slice(0, MAX_COVER_TEXT).replace(/[\uD800-\uDBFF]$/, '');
+    return { plainText: text, emojis };
   } finally { doc.destroy(); }
 }
 

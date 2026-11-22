@@ -37,7 +37,8 @@ COPY web/Characters/BilboTeachingMaterials.cs web/Characters/
 COPY web/Characters/BilboMotionMaterials.cs web/Characters/
 COPY web/Characters/GitmejsenMaterials.cs web/Characters/
 WORKDIR /src/api
-RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
+RUN --mount=type=bind,from=release-info,source=/src/web/wwwroot/images,target=/src/web/wwwroot/images \
+    dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app

@@ -4,7 +4,7 @@ import { Server, IncomingMessage, MessageType } from '@hocuspocus/server';
 import * as Y from 'yjs';
 import { createApiClient, documentDomainFromName, documentIdFromName, documentLifecycleFromName, resolveServiceSecret, StaleDocumentSessionError, TOKEN_CLOCK_SKEW_MS, versionedDocumentName } from './api-client.mjs';
 import { fingerprintHash } from './fingerprint.mjs';
-import { cloneNotebookDocument, projectLivePresentation, projectNotionContext } from './notebook-documents.mjs';
+import { cloneNotebookDocument, projectLivePresentation, projectNotebookCover, projectNotionContext } from './notebook-documents.mjs';
 import { cloneDrawingDocument, drawingStateProjection, validateDrawingUpdate, MAX_DRAWING_BYTES } from './drawing-documents.mjs';
 import { McpDocumentError, MCP_RECEIPTS, readMcpPage, prepareMcpApply, prepareMcpUndo, makeMcpReceipt, verifyMcpReceipt, revalidateMcpPlan, applyPreparedMcpPlan } from './mcp-documents.mjs';
 
@@ -211,7 +211,8 @@ export function createCollaborationServer({
           let result;
           if (request.url === '/internal/notebook/clone') result = cloneNotebookDocument(body);
           else if (request.url === '/internal/notion/project') {
-            result = body?.mode === 'live-presentation' ? projectLivePresentation(body) : projectNotionContext(body);
+            if (body?.mode === 'notebook-cover') result = projectNotebookCover(body);
+            else result = body?.mode === 'live-presentation' ? projectLivePresentation(body) : projectNotionContext(body);
           }
           else if (request.url === '/internal/drawing/clone') result = cloneDrawingDocument(body);
           else if (request.url === '/internal/drawing/checkpoint') {

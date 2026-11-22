@@ -39,6 +39,37 @@ public sealed class NotebookCoverGeneratorTests
     }
 
     [Fact]
+    public async Task Sends_ordered_reference_bytes_to_the_image_edit_endpoint()
+    {
+        var returnedImage = TestImage();
+        var banner = NotebookCoverImage.Normalize(returnedImage)!;
+        var emoji = NotebookCoverImage.NormalizeEmoji(returnedImage)!;
+        var handler = new CapturingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = JsonContent.Create(new { data = new[] { new { b64_json = Convert.ToBase64String(returnedImage) } } })
+        });
+        var art = new NotebookCoverArtDirection("Brug Game Design-bannerets udtryk.",
+        [
+            new("Game Design", "style reference", "image/webp", banner),
+            new("lupp_wave", "page emoji reference", "image/webp", emoji)
+        ]);
+        using var generator = CreateGenerator(handler);
+
+        await generator.GenerateAsync("Leveldesign", ["Brug sværhedsgrad og rækkefølge."], default, art);
+
+        Assert.Equal("https://images.example.test/v1/images/edits", handler.Url);
+        Assert.Equal("Bearer fixture-key", handler.Authorization);
+        Assert.Collection(handler.Images,
+            bytes => Assert.Equal(banner, bytes),
+            bytes => Assert.Equal(emoji, bytes));
+        Assert.Equal("1536x864", handler.Form["size"]);
+        Assert.Equal("webp", handler.Form["output_format"]);
+        Assert.Contains("Leveldesign", handler.Form["prompt"]);
+        Assert.Contains("2. page emoji reference (lupp_wave)", handler.Form["prompt"]);
+        Assert.Contains("Game Design-bannerets udtryk", handler.Form["prompt"]);
+    }
+
+    [Fact]
     public async Task Rejects_invalid_image_provider_payload()
     {
         var handler = new CapturingHandler(new HttpResponseMessage(HttpStatusCode.OK)
@@ -76,12 +107,29 @@ public sealed class NotebookCoverGeneratorTests
         public string? Url { get; private set; }
         public string? Authorization { get; private set; }
         public string? Body { get; private set; }
+        public Dictionary<string, string> Form { get; } = [];
+        public List<byte[]> Images { get; } = [];
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Url = request.RequestUri?.AbsoluteUri;
             Authorization = request.Headers.Authorization?.ToString();
-            Body = await request.Content!.ReadAsStringAsync(cancellationToken);
+            if (request.Content is MultipartFormDataContent parts)
+            {
+                foreach (var part in parts)
+                {
+                    var name = part.Headers.ContentDisposition!.Name!.Trim('"');
+                    if (name == "image[]")
+                    {
+                        Assert.Equal("image/webp", part.Headers.ContentType?.MediaType);
+                        Images.Add(await part.ReadAsByteArrayAsync(cancellationToken));
+                    }
+                    else
+                        Form.Add(name, await part.ReadAsStringAsync(cancellationToken));
+                }
+            }
+            else
+                Body = await request.Content!.ReadAsStringAsync(cancellationToken);
             return response;
         }
     }

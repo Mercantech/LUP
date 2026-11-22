@@ -9,6 +9,9 @@ public sealed class NotionAiProjectionClient(IHttpClientFactory clients, IConfig
     public Task<NotionAiProjection> ProjectAsync(byte[] state, CancellationToken ct) =>
         ProjectAsync<NotionAiProjection>(state, null, ct);
 
+    internal Task<NotebookCoverProjection> ProjectCoverAsync(byte[] state, CancellationToken ct) =>
+        ProjectAsync<NotebookCoverProjection>(state, "notebook-cover", ct);
+
     internal Task<LiveCourseProjection> ProjectLiveAsync(byte[] state, CancellationToken ct) =>
         ProjectAsync<LiveCourseProjection>(state, "live-presentation", ct);
 
@@ -27,5 +30,6 @@ public sealed class NotionAiProjectionClient(IHttpClientFactory clients, IConfig
 }
 public sealed record NotionAiProjection(string PlainText, NotionAiProjectedBlock[]? Blocks = null);
 public sealed record NotionAiProjectedBlock(string? Id, string Type, string Text, string? Heading);
+internal sealed record NotebookCoverProjection(string PlainText, NotebookCoverEmoji[]? Emojis = null);
 internal sealed record LiveCourseProjection(int SlideCount, LiveCourseBinding[] Bindings);
 internal sealed record LiveCourseBinding(string BlockId, Guid ModuleId, int SlideIndex);
