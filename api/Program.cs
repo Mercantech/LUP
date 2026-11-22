@@ -187,7 +187,12 @@ if (string.IsNullOrWhiteSpace(azure["TeacherUpnMap"]) && !string.IsNullOrWhiteSp
 // OpenAI: understøt både OpenAI__* (compose) og flade OPENAI_* env-navne
 var openAi = builder.Configuration.GetSection(OpenAiOptions.SectionName);
 if (string.IsNullOrWhiteSpace(openAi["ApiKey"]))
-    builder.Configuration["OpenAI:ApiKey"] = builder.Configuration["OPENAI_API_KEY"];
+{
+    var apiKey = builder.Configuration["OPENAI_API_KEY"];
+    builder.Configuration["OpenAI:ApiKey"] = string.IsNullOrWhiteSpace(apiKey)
+        ? builder.Configuration["OPENAI_API"]
+        : apiKey;
+}
 if (string.IsNullOrWhiteSpace(openAi["Model"]) && !string.IsNullOrWhiteSpace(builder.Configuration["OPENAI_MODEL"]))
     builder.Configuration["OpenAI:Model"] = builder.Configuration["OPENAI_MODEL"];
 foreach (var (property, variable) in new[] {
