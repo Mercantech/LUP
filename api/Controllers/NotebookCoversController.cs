@@ -160,7 +160,8 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
                     editablePages.Where(p => p.Id == c.Id).Select(p => p.Title).FirstOrDefault()
                         ?? c.Title ?? "Undervisningsnoter", 0, c.IconEmojiId, c.HoldId)).SingleOrDefaultAsync(ct),
             NotionPage => editablePages.Where(p => p.Id == id)
-                .Select(p => new CoverTarget(kind, p.Id, p.CoverId, p.Title, p.LifecycleVersion, p.IconEmojiId, p.HoldId)).SingleOrDefaultAsync(ct),
+                .Select(p => new CoverTarget(kind, p.Id, p.CoverId, p.Title, p.LifecycleVersion, p.IconEmojiId, p.HoldId,
+                    p.CollectionId)).SingleOrDefaultAsync(ct),
             Notebook => OwnedNotebooks(id)
                 .Select(n => new CoverTarget(kind, n.Id, n.CoverId, "Min notesbog", 0, n.IconEmojiId, null)).SingleOrDefaultAsync(ct),
             NotebookPage => notebooks.EditableDocuments(User).Where(d => d.Id == id)
@@ -249,9 +250,20 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         }
 
         string? courseTitle = null;
+        if (target.CollectionId is Guid collectionId)
+        {
+            var editablePages = notion.ManageablePages(User);
+            courseTitle = await notion.ManageableCollections(User).Where(collection => collection.Id == collectionId)
+                .Select(collection => editablePages.Where(page => page.Id == collection.Id)
+                    .Select(page => page.Title).FirstOrDefault() ?? collection.Title).SingleOrDefaultAsync(ct);
+        }
         if (target.HoldId is Guid holdId)
-            courseTitle = await courses.AccessibleHolds(User).Where(hold => hold.Id == holdId)
+        {
+            var holdCourse = await courses.AccessibleHolds(User).Where(hold => hold.Id == holdId)
                 .Select(hold => hold.Forloeb.Name).SingleOrDefaultAsync(ct);
+            if (!string.IsNullOrWhiteSpace(holdCourse))
+                courseTitle = string.IsNullOrWhiteSpace(courseTitle) ? holdCourse : $"{courseTitle}\n{holdCourse}";
+        }
 
         using var budget = CancellationTokenSource.CreateLinkedTokenSource(ct);
         budget.CancelAfter(ExcerptProjectionTimeout);
@@ -295,6 +307,6 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
     }
 
     private sealed record CoverTarget(string Kind, Guid Id, Guid? CoverId, string Title, long LifecycleVersion,
-        Guid? IconEmojiId, Guid? HoldId);
+        Guid? IconEmojiId, Guid? HoldId, Guid? CollectionId = null);
     private sealed record CoverDocument(string Title, Guid? IconEmojiId, string? SearchText, byte[]? State);
 }

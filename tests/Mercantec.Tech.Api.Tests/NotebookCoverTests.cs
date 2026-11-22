@@ -258,6 +258,29 @@ public sealed class NotebookCoverTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task A_page_in_a_standalone_course_notebook_uses_its_course_art()
+    {
+        var root = await db.NotionPages.SingleAsync(page => page.Id == collectionId);
+        root.Title = "Machine Learning";
+        var pageId = Guid.NewGuid();
+        db.NotionPages.Add(new()
+        {
+            Id = pageId, CollectionId = collectionId, ParentPageId = collectionId,
+            Title = "Dag 6", CreatedBySub = teacher
+        });
+        await db.SaveChangesAsync();
+
+        var editor = Covers(teacher, isTeacher: true, includeArtwork: true);
+        Assert.IsType<OkObjectResult>(await editor.Generate(TeachingPage, pageId, default));
+
+        var request = Assert.Single(generator.Requests);
+        Assert.Equal("Dag 6", request.Title);
+        Assert.NotNull(request.Artwork);
+        Assert.Contains("Use the machine learning banner", request.Artwork.Direction, StringComparison.Ordinal);
+        Assert.Contains(request.Artwork.References, image => image.Name == "chameleon");
+    }
+
+    [Fact]
     public async Task Personal_page_uses_saved_icon_title_and_body_emojis_before_search_text_fallback()
     {
         var icon = Emoji("page_icon", "2b50");
