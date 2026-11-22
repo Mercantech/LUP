@@ -5,8 +5,18 @@
 @implements IDisposable
 
 <details class="notebook-cover-actions">
-    <summary><UiIcon Name="image" /><span>@(CoverId is null ? "Tilføj cover" : "Skift cover")</span></summary>
+    <summary>
+        <UiIcon Name="image" />
+        <span>@(CoverId is null ? "Tilføj cover" : "Coverbillede")</span>
+        <span class="cover-chevron"><UiIcon Name="chevron" /></span>
+    </summary>
     <div class="cover-options" aria-busy="@DemoWorld.Pressed(_busy)">
+        @if (CoverId is not null && AdjustRequested.HasDelegate)
+        {
+            <button type="button" class="secondary cover-adjust" @onclick="AdjustRequested" disabled="@_busy">
+                <UiIcon Name="sliders" />Justér udsnit
+            </button>
+        }
         <label class="cover-character">
             <span>Karakter</span>
             <select @bind="_characterSlug" disabled="@_busy" aria-describedby="@_aiHintId">
@@ -17,20 +27,18 @@
                 }
             </select>
         </label>
-        <label class="secondary cover-upload" aria-disabled="@DemoWorld.Pressed(_busy)">
-            <span>Upload cover</span>
-            <InputFile @key="_fileVersion" class="cover-upload-input" OnChange="Upload"
-                       accept="image/jpeg,image/png,image/webp" aria-label="Upload cover" disabled="@_busy" />
-        </label>
-        <button type="button" class="secondary" @onclick="Generate" disabled="@_busy" aria-describedby="@_aiHintId">Generér med AI</button>
-        <p id="@_aiHintId" class="cover-hint">AI vælger karakter ud fra sidens indhold. Når du uploader et cover, kan du vælge karakteren her for at gemme coveret i dens billedlager.</p>
+        <p id="@_aiHintId" class="cover-hint">Vælg en karakter for at gemme coveret i dens billedlager.</p>
+        <div class="cover-replace">
+            <label class="secondary cover-upload" aria-disabled="@DemoWorld.Pressed(_busy)">
+                <span>Upload cover</span>
+                <InputFile @key="_fileVersion" class="cover-upload-input" OnChange="Upload"
+                           accept="image/jpeg,image/png,image/webp" aria-label="Upload cover" disabled="@_busy" />
+            </label>
+            <button type="button" class="secondary" @onclick="Generate" disabled="@_busy" aria-describedby="@_aiHintId">Generér med AI</button>
+        </div>
         @if (CoverId is not null)
         {
-            @if (AdjustRequested.HasDelegate)
-            {
-                <button type="button" class="secondary" @onclick="AdjustRequested" disabled="@_busy">Justér udsnit</button>
-            }
-            <button type="button" class="secondary" @onclick="Delete" disabled="@_busy">Fjern cover</button>
+            <button type="button" class="secondary cover-remove" @onclick="Delete" disabled="@_busy">Fjern cover</button>
         }
         @if (_status is not null)
         {
