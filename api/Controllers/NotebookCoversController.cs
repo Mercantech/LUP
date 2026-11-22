@@ -3,12 +3,14 @@ using System.Net;
 using System.Text.Json;
 using Mercantec.Tech.Api.Ai.EditorRuns;
 using Mercantec.Tech.Api.Auth;
+using Mercantec.Tech.Api.Characters;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Integrations.OpenAI;
 using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Api.Notebooks;
 using Mercantec.Tech.Api.Notion;
+using Mercantec.Tech.Api.Storage;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +21,9 @@ namespace Mercantec.Tech.Api.Controllers;
 
 [ApiController, Authorize, Route("api/notebook-covers/{kind}/{id:guid}")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public sealed class NotebookCoversController(AppDbContext db, CourseAccess courses, NotebookAccess notebooks,
-    NotionAiProjectionClient projection, INotebookCoverGenerator generator, NotebookCoverArtwork? artwork = null) : ControllerBase
+public sealed partial class NotebookCoversController(AppDbContext db, CourseAccess courses, NotebookAccess notebooks,
+    NotionAiProjectionClient projection, INotebookCoverGenerator generator, NotebookCoverArtwork? artwork = null,
+    IObjectStorage? storage = null) : ControllerBase
 {
     private const string Collection = "collection";
     private const string NotionPage = "notion-page";
@@ -33,6 +36,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
     private static readonly TimeSpan ExcerptProjectionTimeout = TimeSpan.FromSeconds(6);
     private static readonly CultureInfo Danish = CultureInfo.GetCultureInfo("da-DK");
     private readonly NotionAccess notion = new(db, courses);
+    private readonly CharacterArtworkLibrary characterLibrary = new(db);
 
     [HttpGet]
     public async Task<IActionResult> Get(string kind, Guid id, CancellationToken ct, bool publishedOnly = false,
@@ -65,19 +69,20 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
     [RequestSizeLimit(MaxUploadRequestBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadRequestBytes)]
     public async Task<IActionResult> Upload(string kind, Guid id, [FromForm(Name = "file")] IFormFile? file,
-        CancellationToken ct, [FromQuery] bool includeImage = false)
+        CancellationToken ct, [FromQuery] bool includeImage = false, [FromForm] string? characterSlug = null)
     {
         var failure = Guard(required: true);
         if (failure is not null) return failure;
         var target = await FindEditable(kind, id, ct);
         if (target is null) return NotFound();
+        if (!TryCharacter(characterSlug, out var character)) return BadRequest(new { error = "invalid_character" });
         if (file is null || file.Length == 0) return BadRequest(new { error = "invalid_cover_image" });
         if (file.Length > NotebookCoverRules.MaxUploadBytes) return StatusCode(413, new { error = "cover_too_large" });
 
         using var upload = new MemoryStream((int)file.Length);
         await file.CopyToAsync(upload, ct);
         var image = NotebookCoverImage.Normalize(upload.ToArray());
-        return image is null ? BadRequest(new { error = "invalid_cover_image" }) : await Save(target, image, ct, includeImage);
+        return image is null ? BadRequest(new { error = "invalid_cover_image" }) : await Save(target, image, ct, includeImage, character);
     }
 
     [HttpDelete]
@@ -92,21 +97,23 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
 
     [HttpPost("generate")]
     [EnableRateLimiting(NotebookCoverGenerator.RateLimitPolicy)]
-    public async Task<IActionResult> Generate(string kind, Guid id, CancellationToken ct, [FromQuery] bool includeImage = false)
+    public async Task<IActionResult> Generate(string kind, Guid id, CancellationToken ct, [FromQuery] bool includeImage = false,
+        [FromQuery] string? characterSlug = null)
     {
         var failure = Guard(required: true);
         if (failure is not null) return failure;
         var target = await FindEditable(kind, id, ct);
         if (target is null) return NotFound();
+        if (!TryCharacter(characterSlug, out var character)) return BadRequest(new { error = "invalid_character" });
         if (!generator.IsConfigured) return StatusCode(503, new { error = "cover_generation_unavailable" });
 
         try
         {
             var source = await ReadSource(target, ct);
-            var art = artwork is null ? null : await artwork.ResolveAsync(target.Kind, target.Title, source, ct);
+            var art = artwork is null ? null : await artwork.ResolveAsync(target.Kind, target.Title, source, ct, character);
             ct.ThrowIfCancellationRequested();
             var image = await generator.GenerateAsync(target.Title, source.Excerpts, ct, art, source.CourseLabel);
-            return await Save(target, image, ct, includeImage);
+            return await Save(target, image, ct, includeImage, art?.CharacterSlug);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
         {
@@ -167,12 +174,14 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
             Notebook => OwnedNotebooks(id)
                 .Select(n => new CoverTarget(kind, n.Id, n.CoverId, "Min notesbog", 0, n.IconEmojiId, null)).SingleOrDefaultAsync(ct),
             NotebookPage => notebooks.EditableDocuments(User).Where(d => d.Id == id)
-                .Select(d => new CoverTarget(kind, d.Id, d.CoverId, d.Title, d.LifecycleVersion, d.IconEmojiId, d.HoldId)).SingleOrDefaultAsync(ct),
+                .Select(d => new CoverTarget(kind, d.Id, d.CoverId, d.Title, d.LifecycleVersion, d.IconEmojiId, d.HoldId,
+                    null, d.NotebookId)).SingleOrDefaultAsync(ct),
             _ => Task.FromResult<CoverTarget?>(null)
         };
     }
 
-    private async Task<IActionResult> Save(CoverTarget target, byte[]? image, CancellationToken ct, bool includeImage = false)
+    private async Task<IActionResult> Save(CoverTarget target, byte[]? image, CancellationToken ct, bool includeImage = false,
+        string? character = null)
     {
         Guid? coverId = image is null ? null : Guid.NewGuid();
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
@@ -181,7 +190,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
 
         if (image is not null)
         {
-            db.NotebookCoverAssets.Add(new NotebookCoverAsset
+            var asset = new NotebookCoverAsset
             {
                 Id = coverId!.Value,
                 CollectionId = target.Kind == Collection ? target.Id : null,
@@ -189,7 +198,10 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
                 NotebookId = target.Kind == Notebook ? target.Id : null,
                 NotebookPageId = target.Kind == NotebookPage ? target.Id : null,
                 Image = image
-            });
+            };
+            db.NotebookCoverAssets.Add(asset);
+            if (character is not null)
+                characterLibrary.RegisterCover(character, target.Kind, target.Id, asset.Id, image);
             await db.SaveChangesAsync(ct);
         }
 
@@ -199,7 +211,7 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
             await OwnedAssets(target.Kind, target.Id).Where(asset => asset.Id == previous).ExecuteDeleteAsync(ct);
 
         await transaction.CommitAsync(ct);
-        return Ok(new NotebookCoverView(coverId, includeImage ? image : null));
+        return Ok(new NotebookCoverView(coverId, includeImage ? image : null, character));
     }
 
     private Task<int> SetCover(CoverTarget target, Guid? newCoverId, CancellationToken ct)
@@ -350,7 +362,13 @@ public sealed class NotebookCoversController(AppDbContext db, CourseAccess cours
         return string.Join(' ', sliced.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
     }
 
+    private static bool TryCharacter(string? raw, out string? character)
+    {
+        character = string.IsNullOrWhiteSpace(raw) ? null : raw.Trim().ToLowerInvariant();
+        return character is null || NotebookCoverStyle.IsSupportedCharacter(character);
+    }
+
     private sealed record CoverTarget(string Kind, Guid Id, Guid? CoverId, string Title, long LifecycleVersion,
-        Guid? IconEmojiId, Guid? HoldId, Guid? CollectionId = null);
+        Guid? IconEmojiId, Guid? HoldId, Guid? CollectionId = null, Guid? NotebookId = null);
     private sealed record CoverDocument(Guid Id, string Title, Guid? IconEmojiId, string? SearchText, byte[]? State);
 }

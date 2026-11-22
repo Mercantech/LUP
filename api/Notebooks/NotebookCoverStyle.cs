@@ -63,11 +63,11 @@ public static partial class NotebookCoverStyle
             StringComparer.OrdinalIgnoreCase);
 
     public static NotebookCoverArt Select(string kind, string title, IReadOnlyList<string> excerpts,
-        IReadOnlyList<string> characterSlugs, string? courseTitle = null)
+        IReadOnlyList<string> characterSlugs, string? courseTitle = null, string? illustrationDescription = null)
     {
         var titleTopic = FindTopic(title);
         var courseTopic = FindTopic(courseTitle);
-        var subject = titleTopic ?? courseTopic ?? FindTopic(string.Join('\n', excerpts));
+        var subject = FindTopic(illustrationDescription) ?? titleTopic ?? courseTopic ?? FindTopic(string.Join('\n', excerpts));
         var explicitCharacter = characterSlugs.Select(slug => CharacterReferences.GetValueOrDefault(slug))
             .FirstOrDefault(reference => reference is not null);
         var character = explicitCharacter ?? (subject is null ? null : CharacterReferences.GetValueOrDefault(subject.CharacterSlug));
@@ -82,6 +82,8 @@ public static partial class NotebookCoverStyle
         return new NotebookCoverArt(character?.CharacterSlug, characterReference?.Preview.Split('?')[0].TrimStart('/'),
             banner.ImagePath, $"{scope} {banner.Direction} {direction} {CharacterDirection(character)}");
     }
+
+    public static bool IsSupportedCharacter(string? slug) => slug is not null && CharacterReferences.ContainsKey(slug);
 
     private static Topic? FindTopic(string? text)
     {

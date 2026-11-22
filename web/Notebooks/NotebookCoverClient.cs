@@ -29,7 +29,8 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
         return await response.Content.ReadAsByteArrayAsync(ct);
     }
 
-    public async Task<NotebookCoverView> UploadAsync(string kind, Guid id, IBrowserFile file, CancellationToken ct)
+    public async Task<NotebookCoverView> UploadAsync(string kind, Guid id, IBrowserFile file, CancellationToken ct,
+        string? characterSlug = null)
     {
         if (file.Size > NotebookCoverRules.MaxUploadBytes)
             throw new NotebookCoverException("Vælg et billede på højst 5 MB.");
@@ -39,13 +40,17 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
         await stream.CopyToAsync(image, ct);
         using var form = new MultipartFormDataContent();
         form.Add(new ByteArrayContent(image.ToArray()), "file", file.Name);
+        if (!string.IsNullOrEmpty(characterSlug)) form.Add(new StringContent(characterSlug), "characterSlug");
         request.Content = form;
         return await MutateAsync(request, kind, id, ct);
     }
 
-    public async Task<NotebookCoverView> GenerateAsync(string kind, Guid id, CancellationToken ct)
+    public async Task<NotebookCoverView> GenerateAsync(string kind, Guid id, CancellationToken ct,
+        string? characterSlug = null)
     {
-        using var request = CreateRequest(HttpMethod.Post, Path(kind, id) + "/generate?includeImage=true");
+        var path = Path(kind, id) + "/generate?includeImage=true";
+        if (!string.IsNullOrEmpty(characterSlug)) path += "&characterSlug=" + Uri.EscapeDataString(characterSlug);
+        using var request = CreateRequest(HttpMethod.Post, path);
         return await MutateAsync(request, kind, id, ct);
     }
 
@@ -78,6 +83,7 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
 
         throw new NotebookCoverException(error switch
         {
+            "invalid_character" => "Vælg en karakter fra listen.",
             "invalid_cover_image" => "Vælg et gyldigt billede i JPG, PNG eller WebP.",
             "cover_too_large" => "Vælg et billede på højst 5 MB.",
             "cover_changed" => "Coveret er ændret i en anden fane. Genindlæs siden, og prøv igen.",

@@ -106,6 +106,75 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.CharacterGeneratedArtwork", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CharacterSlug")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid?>("CollectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("Image")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<Guid?>("NotebookId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("NotebookPageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("NotionPageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OriginalAssetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SourceKind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<byte[]>("Thumbnail")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CollectionId");
+
+                    b.HasIndex("NotebookId");
+
+                    b.HasIndex("NotebookPageId");
+
+                    b.HasIndex("NotionPageId");
+
+                    b.HasIndex("CreatedAtUtc", "Id");
+
+                    b.HasIndex("CharacterSlug", "CreatedAtUtc", "Id");
+
+                    b.HasIndex("CharacterSlug", "SourceKind", "OriginalAssetId")
+                        .IsUnique();
+
+                    b.ToTable("character_generated_artwork", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_character_generated_artwork_source", "(CASE WHEN \"CollectionId\" IS NULL THEN 0 ELSE 1 END)\n+ (CASE WHEN \"NotionPageId\" IS NULL THEN 0 ELSE 1 END)\n+ (CASE WHEN \"NotebookId\" IS NULL THEN 0 ELSE 1 END)\n+ (CASE WHEN \"NotebookPageId\" IS NULL THEN 0 ELSE 1 END) = 1");
+                        });
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.ChristmasGift", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3684,6 +3753,29 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Profile");
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.CharacterGeneratedArtwork", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.NotionCollection", null)
+                        .WithMany()
+                        .HasForeignKey("CollectionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.Notebook", null)
+                        .WithMany()
+                        .HasForeignKey("NotebookId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.NotebookDocument", null)
+                        .WithMany()
+                        .HasForeignKey("NotebookPageId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.NotionPage", null)
+                        .WithMany()
+                        .HasForeignKey("NotionPageId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.CourseMaterial", b =>

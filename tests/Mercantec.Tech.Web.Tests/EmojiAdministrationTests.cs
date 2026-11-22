@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Bunit;
+using Mercantec.Tech.Contracts;
 using Mercantec.Tech.Web.Emojis;
 using EmojiPage = Mercantec.Tech.Web.Pages.Emojis.Index;
 
@@ -92,6 +93,7 @@ public sealed class EmojiAdministrationTests
         {
             var path = request.RequestUri!.AbsolutePath;
             if (request.Method == HttpMethod.Get && path == "/api/emojis") return Json(Items.ToArray());
+            if (request.Method == HttpMethod.Get && path == "/api/character-artwork") return Json(new CharacterGeneratedArtPage([], null));
             var id = Guid.Parse(path.Split('/')[^1]);
             Assert.NotEqual(Character.Id, id);
             var item = Items.Single(item => item.Id == id);

@@ -54,6 +54,16 @@ const course = { id: C, holdId: H, title: 'Fra sensor til dashboard', descriptio
   endsOn: '2026-11-20', published: true, archived: false, version: 2, resources };
 const page = { id: P, holdId: H, title: course.title, parentPageId: null, updatedAtUtc: stamp,
   publishedAtUtc: '2026-11-06T08:00:00Z', hasUnpublishedChanges: false };
+const characterArtwork = [
+  { kind: 'cover', pageTitle: 'Velkommen til Machine Learning', staticPath: '/images/characters/chameleon/scenes/data-garden.webp' },
+  { kind: 'image', pageTitle: 'Træning og test af en model', staticPath: '/images/characters/chameleon/scenes/workshop.webp' },
+].map(({ kind, pageTitle, staticPath }, index) => {
+  const id = fixtureId(510 + index);
+  const sourceId = fixtureId(512 + index);
+  return { staticPath, item: { id, characterSlug: 'chameleon', kind, sourceKind: 'notion-page', sourceId,
+    notebookTitle: 'Machine Learning · Eksempelforløb', pageTitle, sourceHref: `/notes/${sourceId}?published=true`,
+    createdAtUtc: stamp, imageUrl: `/api/character-artwork/${id}/content` } };
+});
 const workspace = { courseId: W, holdId: H, name: 'H3 · Programmering', description: 'Holdets undervisning og projekter',
   canManage: true, memberCount: 6, groupCount: 3, materialCount: 1, pendingReviews: 2, questCount: 2, draftQuestCount: 0,
   pages: [page], agenda: [{ id: calendar[0].id, title: calendar[0].title, startUtc: calendar[0].startUtc, kind: 'event', location: 'Lokale 204' }],
@@ -179,6 +189,16 @@ export function fixtureResponse(urlLike, method = 'GET') {
       isAllDay: false, location: 'Mødelokale 2', isOnlineMeeting: false, isPrivate: false, isCancelled: false, showAs: 'busy' }] });
   if (p === 'emojis') return json([{ id: fixtureId(500), name: 'vatson', contentType: 'image/webp', sizeBytes: 1000, updatedAtUtc: stamp,
     contentUrl: '/images/characters/vatson/vatson.webp', category: 'people', keywords: ['lup'], altText: 'Vatson – testemoji' }]);
+  if (p === 'character-artwork') {
+    const slug = url.searchParams.get('characterSlug');
+    const offset = Number(url.searchParams.get('offset') || 0);
+    const items = characterArtwork.map(entry => entry.item).filter(item => !slug || item.characterSlug === slug).slice(offset);
+    return json({ items, nextOffset: null });
+  }
+  if (p.startsWith('character-artwork/') && p.endsWith('/content')) {
+    const entry = characterArtwork.find(({ item }) => item.imageUrl === url.pathname);
+    if (entry) return { status: 200, contentType: 'image/webp', staticPath: entry.staticPath };
+  }
   if (p === 'platform-updates') return json([{ id: 'fixture-update', date: '2026-11-09', title: 'Eksempel på en visuel opdatering',
     description: 'Denne fiktive post viser ændringsoversigtens layout.', after: { id: 'fixture-vatson', alt: 'Vatson som testbillede' }, before: null }]);
   if (p === 'platform-updates/images/fixture-vatson') return { status: 200, contentType: 'image/webp', staticPath: '/images/characters/vatson/vatson.webp' };

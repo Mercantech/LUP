@@ -564,6 +564,10 @@ public partial class Index
         _error = "Adgangen til siden er trukket tilbage. Indholdet er lukket.";
     }
     [JSInvokable] public Task<string?> GetNotionToken() => CanUse ? Auth.GetValidAccessTokenAsync() : Task.FromResult<string?>(null);
+    [JSInvokable] public Task PrepareNotionImageGeneration() => InvokeAsync(PrepareCoverGeneration);
+    [JSInvokable] public Task<string?> GetNotionImageToken(string? rejectedAccess) => !Editing || TemplateMode
+        ? Task.FromResult<string?>(null)
+        : string.IsNullOrEmpty(rejectedAccess) ? Auth.GetValidAccessTokenAsync() : Auth.RefreshAfterUnauthorizedAsync(rejectedAccess);
     [JSInvokable] public Task OnNotionStatus(string status, string detail) => InvokeAsync(() =>
     {
         if (_disposed) return;
