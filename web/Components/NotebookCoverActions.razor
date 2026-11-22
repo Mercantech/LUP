@@ -1,0 +1,113 @@
+@using Mercantec.Tech.Web.Notebooks
+@inject NotebookCoverClient Client
+@inject AuthService Auth
+@implements IDisposable
+
+<details class="notebook-cover-actions">
+    <summary class="secondary"><UiIcon Name="image" /><span>@(CoverId is null ? "Tilføj cover" : "Skift cover")</span></summary>
+    <div class="cover-options" aria-busy="@DemoWorld.Pressed(_busy)">
+        <label class="secondary cover-upload" aria-disabled="@DemoWorld.Pressed(_busy)">
+            <span>Upload cover</span>
+            <InputFile @key="_fileVersion" class="cover-upload-input" OnChange="Upload"
+                       accept="image/jpeg,image/png,image/webp" aria-label="Upload cover" disabled="@_busy" />
+        </label>
+        <button type="button" class="secondary" @onclick="Generate" disabled="@_busy" aria-describedby="@_aiHintId">Generér med AI</button>
+        <p id="@_aiHintId" class="cover-hint">AI bruger titlen og korte uddrag af det gemte indhold.</p>
+        @if (CoverId is not null)
+        {
+            <button type="button" class="secondary" @onclick="Delete" disabled="@_busy">Fjern cover</button>
+        }
+        @if (_status is not null)
+        {
+            <p role="status" class="cover-status">@_status</p>
+        }
+        @if (_error is not null)
+        {
+            <p role="alert" class="cover-error">@_error</p>
+        }
+    </div>
+</details>
+
+@code {
+    [Parameter, EditorRequired] public string Kind { get; set; } = "";
+    [Parameter, EditorRequired] public Guid TargetId { get; set; }
+    [Parameter] public Guid? CoverId { get; set; }
+    [Parameter] public EventCallback<Guid?> CoverChanged { get; set; }
+    [Parameter] public EventCallback BeforeGenerate { get; set; }
+
+    private readonly string _aiHintId = $"cover-ai-hint-{Guid.NewGuid():N}";
+    private (string Kind, Guid Target) _target;
+    private CancellationTokenSource? _request;
+    private bool _busy;
+    private int _fileVersion;
+    private string? _status;
+    private string? _error;
+
+    protected override void OnParametersSet()
+    {
+        var target = (Kind, TargetId);
+        if (target == _target) return;
+        _target = target;
+        _request?.Cancel();
+        _request = null;
+        _busy = false;
+        _status = _error = null;
+    }
+
+    private Task Upload(InputFileChangeEventArgs args) =>
+        RunAsync("Gemmer billedet…", "Coveret er gemt.", ct => Client.UploadAsync(Kind, TargetId, args.File, ct));
+
+    private Task Generate() => RunAsync("Genererer cover…", "AI-coveret er gemt.", async ct =>
+    {
+        var subject = Auth.Subject;
+        await BeforeGenerate.InvokeAsync();
+        ct.ThrowIfCancellationRequested();
+        if (subject != Auth.Subject)
+            throw new NotebookCoverException("Den aktive konto er ændret. Genindlæs siden, og prøv igen.");
+        return await Client.GenerateAsync(Kind, TargetId, ct);
+    });
+
+    private Task Delete() => RunAsync("Fjerner cover…", "Coveret er fjernet.", ct => Client.DeleteAsync(Kind, TargetId, ct));
+
+    private async Task RunAsync(string pending, string success, Func<CancellationToken, Task<NotebookCoverView>> operation)
+    {
+        if (_busy || TargetId == Guid.Empty) return;
+        using var request = new CancellationTokenSource();
+        _request = request;
+        _busy = true;
+        _error = null;
+        _status = pending;
+        var saved = false;
+        try
+        {
+            var subject = Auth.Subject;
+            var result = await operation(request.Token);
+            if (!ReferenceEquals(_request, request) || request.IsCancellationRequested || subject != Auth.Subject) return;
+            await CoverChanged.InvokeAsync(result.CoverId);
+            saved = true;
+        }
+        catch (Exception ex) when (ex is NotebookCoverException or InvalidOperationException or HttpRequestException
+            or System.Text.Json.JsonException or OperationCanceledException or IOException)
+        {
+            if (ReferenceEquals(_request, request) && !request.IsCancellationRequested)
+                _error = ex is NotebookCoverException or InvalidOperationException
+                    ? ex.Message : "Coveret kunne ikke ændres. Prøv igen.";
+        }
+        finally
+        {
+            if (ReferenceEquals(_request, request))
+            {
+                _request = null;
+                _busy = false;
+                _fileVersion++;
+                _status = saved ? success : null;
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _request?.Cancel();
+        _request = null;
+    }
+}

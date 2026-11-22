@@ -1,12 +1,12 @@
 namespace Mercantec.Tech.Contracts;
 
 public sealed record NotebookInfo(Guid Id, Guid OwnerSub, string OwnerName, bool CanEdit, bool CanShare,
-    Guid? IconEmojiId = null);
+    Guid? IconEmojiId = null, Guid? CoverId = null);
 public sealed record NotebookPageSummary(Guid Id, Guid NotebookId, string Title, Guid? ParentPageId,
     string Kind, string[] Tags, DateOnly? PeriodStart, Guid? HoldId, Guid? TemplateId,
     DateTimeOffset UpdatedAtUtc, long Revision, string? Snippet = null,
     string? LastEditedByName = null, Guid? NotebookIconEmojiId = null, string? NotebookOwnerName = null,
-    int? SortOrder = null, Guid? IconEmojiId = null);
+    int? SortOrder = null, Guid? IconEmojiId = null, Guid? CoverId = null, Guid? NotebookCoverId = null);
 public sealed record CreateNotebookPage(string Title, Guid? ParentPageId = null);
 public sealed record UpdateNotebookPage(string Title, Guid? ParentPageId, string[] Tags, Guid? HoldId = null,
     bool KeepPlacementAndHold = false);
@@ -14,7 +14,8 @@ public sealed record NotebookPageList(NotebookPageSummary[] Items, int Total);
 public sealed record NotebookDocumentContext(Guid DocumentId, Guid? NotebookId, string Title, string Kind,
     bool CanRead, bool CanEdit, bool CanComment, bool CanShare, string? StateBase64,
     DateTimeOffset UpdatedAtUtc, long Revision, string? Fingerprint, NotionPageLink[] Pages,
-    string[] Tags, DateOnly? PeriodStart = null, Guid? HoldId = null, long LifecycleVersion = 0, Guid? IconEmojiId = null);
+    string[] Tags, DateOnly? PeriodStart = null, Guid? HoldId = null, long LifecycleVersion = 0, Guid? IconEmojiId = null,
+    Guid? CoverId = null, Guid? NotebookCoverId = null);
 public sealed record NotebookGraph(NotebookGraphNode[] Nodes, NotionGraphEdge[] Edges, int Total);
 public sealed record NotebookGraphNode(Guid Id, string Title);
 public sealed record NotebookUser(Guid Sub, string DisplayName, bool IsTeacher);
@@ -26,7 +27,7 @@ public sealed record NotebookCommentView(Guid Id, Guid AuthorSub, string AuthorN
 public sealed record AddNotebookComment(string Text);
 public sealed record TeacherNotebookView(Guid Id, Guid OwnerSub, string OwnerName, string[] Holds,
     DateOnly? LatestJournalDate, DateTimeOffset UpdatedAtUtc,
-    Guid? IconEmojiId = null, string? LastEditedByName = null, bool HasPages = true);
+    Guid? IconEmojiId = null, string? LastEditedByName = null, bool HasPages = true, Guid? CoverId = null);
 public sealed record NotebookTemplateView(Guid Id, Guid DocumentId, string Title, string Cadence,
     bool IsActive, int Version, DateTimeOffset UpdatedAtUtc);
 public sealed record CreateNotebookTemplate(string Title, string Cadence);

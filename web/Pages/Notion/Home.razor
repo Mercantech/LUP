@@ -71,6 +71,13 @@ else
         <div class="books-grid">@foreach (var book in Visible)
         {
             <article @key="(book.Kind, book.Id)" class="books-card" data-kind="@book.Kind">
+                @if (book.CoverId is Guid coverId)
+                {
+                    <div class="books-cover" aria-hidden="true">
+                        <NotebookCoverImage Kind="@book.CoverTargetKind" TargetId="@book.Id" CoverId="@coverId"
+                                            PublishedOnly="@(book.CoverTargetKind == "collection" && !book.CanChangeIcon)" />
+                    </div>
+                }
                 <div class="books-card-top">
                     @if (book.CanChangeIcon)
                     {
@@ -207,7 +214,7 @@ else
             _books = (await collectionsTask).Select(c => new Book(c.Id, c.HoldId is null ? "theory" : "hold", c.Title,
                 c.HoldId is null ? "Fælles for alle i LUP" : c.HoldName ?? "", NotesRoutes.Collection(c.Id, c.Slug),
                 c.HoldId is Guid id ? [id.ToString()] : [], c.RootPageId is null ? null : c.UpdatedAtUtc,
-                c.LastEditedByName, c.IconEmojiId, c.CanManage && Teacher, Slug: c.Slug)).ToArray();
+                c.LastEditedByName, c.IconEmojiId, c.CanManage && Teacher, Slug: c.Slug, CoverId: c.CoverId)).ToArray();
             if (!ViewAs.IsActive)
             {
                 var mineTask = Notebooks.Mine(ct); var sharedTask = Notebooks.Shared(ct); await Task.WhenAll(mineTask, sharedTask);
@@ -215,14 +222,14 @@ else
                 if (ct.IsCancellationRequested) return;
                 var latest = pages.Items.FirstOrDefault();
                 _books = [.. _books, new(mine.Id, "personal", "Min notesbog", mine.OwnerName, "/notebook", [], latest?.UpdatedAtUtc,
-                    latest?.LastEditedByName, mine.IconEmojiId, mine.CanEdit),
+                    latest?.LastEditedByName, mine.IconEmojiId, mine.CanEdit, CoverId: mine.CoverId),
                     .. (await sharedTask).GroupBy(p => p.NotebookId).Select(g =>
                     {
                         var page = g.OrderByDescending(p => p.UpdatedAtUtc).ThenBy(p => p.Id).First();
                         return new Book(g.Key, "shared", page.Title, page.NotebookOwnerName ?? "Sider du har læseadgang til",
                             "/notebook/" + page.Id, g.Where(p => p.HoldId.HasValue)
                                 .Select(p => p.HoldId!.Value.ToString()).Distinct().ToArray(), page.UpdatedAtUtc,
-                            page.LastEditedByName, page.NotebookIconEmojiId, false, g.ToArray());
+                            page.LastEditedByName, page.NotebookIconEmojiId, false, g.ToArray(), CoverId: page.NotebookCoverId);
                     })];
             }
             await LoadIcons(_books, ct);
@@ -244,7 +251,7 @@ else
             _students = result.Select(n => new Book(n.Id, "students", n.OwnerName + "s notesbog",
                 string.Join(" · ", n.Holds), "/notebook?owner=" + n.Id,
                 _holds.Where(h => n.Holds.Contains(h.Name)).Select(h => h.Id.ToString()).ToArray(),
-                n.HasPages ? n.UpdatedAtUtc : null, n.LastEditedByName, n.IconEmojiId, false)).ToArray();
+                n.HasPages ? n.UpdatedAtUtc : null, n.LastEditedByName, n.IconEmojiId, false, CoverId: n.CoverId)).ToArray();
             _studentsLoaded = true;
             await LoadIcons(_students, ct);
         }
@@ -330,9 +337,11 @@ else
     }
     public void Dispose() { _disposed = true; Auth.AuthStateChanged -= Changed; ViewAs.Changed -= Changed; _request.Cancel(); _request.Dispose(); }
     private sealed record Book(Guid Id, string Kind, string Title, string Context, string Href, string[] Holds,
-        DateTimeOffset? Updated, string? EditorName, Guid? IconId, bool CanChangeIcon, NotebookPageSummary[]? Pages = null, string? Slug = null)
+        DateTimeOffset? Updated, string? EditorName, Guid? IconId, bool CanChangeIcon,
+        NotebookPageSummary[]? Pages = null, string? Slug = null, Guid? CoverId = null)
     {
         public bool CanSetSlug => CanChangeIcon && Kind is ("theory" or "hold");
+        public string CoverTargetKind => Kind is "theory" or "hold" ? "collection" : "notebook";
         public string Label => Kind switch
         {
             "theory" => "Teorinotesbog", "hold" => Context, "personal" => "Personlig", "shared" => "Delt med mig", _ => "Elevnotesbog"

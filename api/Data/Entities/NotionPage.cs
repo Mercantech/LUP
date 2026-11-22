@@ -14,6 +14,7 @@ public sealed class NotionPage
     public long LifecycleVersion { get; set; }
     public string Title { get; set; } = "";
     public Guid? IconEmojiId { get; set; }
+    public Guid? CoverId { get; set; }
     public Guid CreatedBySub { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
@@ -24,6 +25,7 @@ public sealed class NotionPage
     public byte[]? PublishedState { get; set; }
     public string? PublishedTitle { get; set; }
     public Guid? PublishedIconEmojiId { get; set; }
+    public Guid? PublishedCoverId { get; set; }
     public DateTimeOffset? PublishedAtUtc { get; set; }
     public Guid? PublishedBySub { get; set; }
     public string? PublishedEditorName { get; set; }
@@ -44,6 +46,7 @@ public sealed class NotionCollection
     public Guid Id { get; set; }
     public string? Slug { get; set; }
     public Guid? IconEmojiId { get; set; }
+    public Guid? CoverId { get; set; }
     public Guid? HoldId { get; set; }
     public Guid CreatedBySub { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }

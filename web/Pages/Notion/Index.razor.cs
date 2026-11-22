@@ -81,6 +81,7 @@ public partial class Index
     private string StatusLabel => _savingTitle ? "Gemmer titel…" : _status switch { "saved" => "Gemt i skyen", "saving" => "Gemmer…", "synced" => "Forbundet", "offline" => "Forbindelsen er afbrudt", "error" => "Forbindelsen kræver opmærksomhed", _ => "Forbinder…" };
     private IEnumerable<NotionPageSummary> VisiblePages => ForceReadOnly ? _pages.Where(p => p.PublishedAtUtc is not null) : _pages;
     private string PageHref(Guid id, bool? publishedOnly = null) => WorkspaceNavigation.Page(id, _returnContext?.WorkspaceId, _returnContext?.CourseId, publishedOnly ?? ForceReadOnly, _holdId);
+    private string CollectionCoverHref(Guid id) => NotesRoutes.Collection(id) + (ForceReadOnly ? "?published=true" : "");
     private string GraphHref(Guid id) => WorkspaceNavigation.Graph(id, _returnContext?.WorkspaceId, _returnContext?.CourseId, ForceReadOnly, _holdId);
     private string HoldGraphHref => WorkspaceNavigation.HoldGraph(_holdId, _returnContext?.WorkspaceId, _returnContext?.CourseId, ForceReadOnly);
     private string WorkspaceHref(string view = "content") => _holdId == Guid.Empty ? "/notes" : _returnContext?.View(view) ?? WorkspaceNavigation.Hold(_holdId, view);
@@ -350,9 +351,34 @@ public partial class Index
     private NotionPageSummary[] ReconcileActivePage(NotionPageSummary[] pages) => _current is not { } current ? pages
         : pages.Select(p => p.Id == current.PageId ? p with
         {
-            Title = current.Title, UpdatedAtUtc = current.UpdatedAtUtc, PublishedAtUtc = current.PublishedAtUtc, IconEmojiId = current.IconEmojiId,
-            HasUnpublishedChanges = current.CanEdit && current.PublishedAtUtc is not null && (current.DraftRevision != current.PublishedRevision || current.Title != current.PublishedTitle || current.IconEmojiId != current.PublishedIconEmojiId)
+            Title = current.Title, UpdatedAtUtc = current.UpdatedAtUtc, PublishedAtUtc = current.PublishedAtUtc,
+            IconEmojiId = current.IconEmojiId, CoverId = current.CoverId, HasUnpublishedChanges = HasUnpublishedChanges(current)
         } : p).ToArray();
+    private static bool HasUnpublishedChanges(NotionPageContext page) =>
+        page.CanEdit && page.PublishedAtUtc is not null && (page.DraftRevision != page.PublishedRevision
+            || page.Title != page.PublishedTitle || page.IconEmojiId != page.PublishedIconEmojiId || page.CoverId != page.PublishedCoverId);
+
+    private void UpdatePageCover(Guid page, Guid? coverId)
+    {
+        if (_disposed || !IsEditing || _current?.PageId != page) return;
+        _current = _current with { CoverId = coverId };
+        SetPages(_pages);
+    }
+
+    private void UpdateCollectionCover(Guid collection, Guid? coverId)
+    {
+        if (!_disposed && !ForceReadOnly && _collection is { CanManage: true } book && book.Id == collection)
+            _collection = book with { CoverId = coverId };
+    }
+
+    private async Task PrepareCoverGeneration()
+    {
+        if (!IsEditing) return;
+        var ct = TreeToken;
+        if (!await SaveTitle())
+            throw new InvalidOperationException(_error ?? "Sidens titel skal være gemt, før du kan generere et cover.");
+        await WaitForCoverContent(() => (_mounted ? _module : null, _editorElement, _status), ct);
+    }
     private async Task PushEditorContext(int generation, CancellationToken ct)
     {
         if (IsCurrent(generation, ct) && _mounted && _module is not null && _current is not null)
@@ -400,7 +426,7 @@ public partial class Index
     private async Task BeforeNavigation(LocationChangingContext context) { if (!await CanLeave()) context.PreventNavigation(); }
     private async Task OpenPage(Guid id)
     {
-        if (_current?.PageId == id) { if (_sidebarMobile) SetSidebarOpen(false); return; }
+        if (!IsCollectionRoute && _current?.PageId == id) { if (_sidebarMobile) SetSidebarOpen(false); return; }
         if (!await CanLeave()) return;
         var href = PageHref(id);
         if (_sidebarMobile) SetSidebarOpen(false);
@@ -541,7 +567,8 @@ public partial class Index
     {
         var pages = VisiblePages.OrderBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Title).ThenBy(p => p.Id).ToArray();
         if (_current is not null && !pages.Any(p => p.Id == _current.PageId))
-            pages = [new(_current.PageId, _current.HoldId, _current.Title, null, _current.UpdatedAtUtc, _current.PublishedAtUtc, CollectionId: _current.CollectionId, IconEmojiId: _current.IconEmojiId), .. pages];
+            pages = [new(_current.PageId, _current.HoldId, _current.Title, null, _current.UpdatedAtUtc, _current.PublishedAtUtc,
+                HasUnpublishedChanges(_current), CollectionId: _current.CollectionId, IconEmojiId: _current.IconEmojiId, CoverId: _current.CoverId), .. pages];
         _parents = pages.ToDictionary(p => p.Id, p => p.ParentPageId);
         _pagesById = pages.ToDictionary(p => p.Id);
         var children = pages.ToLookup(p => p.ParentPageId ?? Guid.Empty);

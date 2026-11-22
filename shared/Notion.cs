@@ -2,7 +2,8 @@ namespace Mercantec.Tech.Contracts;
 
 public sealed record NotionHold(Guid Id, string Name, bool CanManage);
 public sealed record NotionPageSummary(Guid Id, Guid? HoldId, string Title, Guid? ParentPageId, DateTimeOffset UpdatedAtUtc,
-    DateTimeOffset? PublishedAtUtc = null, bool HasUnpublishedChanges = false, Guid? CollectionId = null, int? SortOrder = null, Guid? IconEmojiId = null);
+    DateTimeOffset? PublishedAtUtc = null, bool HasUnpublishedChanges = false, Guid? CollectionId = null, int? SortOrder = null,
+    Guid? IconEmojiId = null, Guid? CoverId = null);
 public sealed record CreateNotionPage(Guid? HoldId, string Title, Guid? ParentPageId = null, Guid? CollectionId = null,
     bool AtRoot = false);
 public sealed record RenameNotionPage(string Title);
@@ -16,7 +17,7 @@ public sealed record NotionPageContext(Guid PageId, Guid? HoldId, string Title, 
     NotionPageLink[]? Pages = null, DateTimeOffset? PublishedAtUtc = null, long DraftRevision = 0,
     long? PublishedRevision = null, string? PublishedStateBase64 = null, string? PublishedTitle = null,
     DrawingPublicationBinding[]? Drawings = null, Guid? CollectionId = null, long LifecycleVersion = 0,
-    Guid? IconEmojiId = null, Guid? PublishedIconEmojiId = null);
+    Guid? IconEmojiId = null, Guid? PublishedIconEmojiId = null, Guid? CoverId = null, Guid? PublishedCoverId = null);
 public sealed record PublishNotionPage(long ExpectedRevision, string ExpectedFingerprint, Guid[] AssetIds,
     DrawingPublicationRequest[]? Drawings = null);
 public sealed record StoreNotionDocument(string StateBase64, string Fingerprint, Guid[]? DrawingIds = null,

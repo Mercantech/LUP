@@ -46,7 +46,7 @@ public partial class Index
     private NotebookUser[] _users = [];
     private NotionHold[] _holds = [];
     private NotebookGraph? _graph;
-    private Guid? _notebookId, _newParent;
+    private Guid? _notebookId, _newParent, _teacherNotebookCoverId;
     private Guid _entryRequest = Guid.NewGuid();
     private string? _account, _route, _error, _notice;
     private string _title = "", _tags = "", _cadence = "daily";
@@ -66,6 +66,9 @@ public partial class Index
     private bool CanUse => Auth.IsAuthenticated && !ViewAs.IsActive;
     private bool Own => _notebookId is not null && _notebookId == _mine?.Id;
     private bool Editing => _current?.CanEdit == true && CanUse;
+    private bool NotebookLanding => _loadedNotebookAccess is not null && PageId is null && !TemplateMode
+        && Nav.ToAbsoluteUri(Nav.Uri).AbsolutePath.TrimEnd('/').Equals("/notebook", StringComparison.OrdinalIgnoreCase);
+    private Guid? NotebookCoverId => Own ? _mine?.CoverId : _current is { } page ? page.NotebookCoverId : _teacherNotebookCoverId;
     private string RouteKey => $"{PageId}:{TemplateId}:{NotebookId}:{RequestedComments}:{NoticeKind}:{NoticeQuery}:{TemplateMode}:{Nav.ToAbsoluteUri(Nav.Uri).AbsolutePath == "/journal"}";
     private NotebookTemplateView? CurrentTemplate => _templates.FirstOrDefault(t => t.Id == TemplateId);
     private string Heading => TemplateMode ? "Logbogsskabeloner" : Own ? "Min notesbog" : _ownerName.Length > 0 ? $"{_ownerName}s notesbog" : "Notesbog";
@@ -158,7 +161,7 @@ public partial class Index
         var generation = ++_generation;
         _route = RouteKey; var route = _route; _loading = true; _error = null; _notice = null; _current = null;
         _treePages = []; _pages = []; _total = 0; _draggingPage = null;
-        _shared = []; _templates = []; _notebookId = null; _mine = null; _ownerName = "";
+        _shared = []; _templates = []; _notebookId = null; _mine = null; _ownerName = ""; _teacherNotebookCoverId = null;
         _loadedNotebookAccess = null; _readNotifications.Clear();
         _showComments = _showShares = _showGraph = false; _comments = []; _shares = []; _graph = null;
         try
@@ -186,7 +189,11 @@ public partial class Index
                     Select(context);
                 }
                 if (!Own && IsTeacher)
-                    _ownerName = (await Client.Teacher("", null, ct)).FirstOrDefault(n => n.Id == _notebookId)?.OwnerName ?? "Elev";
+                {
+                    var info = (await Client.Teacher("", null, ct)).FirstOrDefault(n => n.Id == _notebookId);
+                    _ownerName = info?.OwnerName ?? "Elev";
+                    _teacherNotebookCoverId = info?.CoverId;
+                }
                 if (Nav.ToAbsoluteUri(Nav.Uri).AbsolutePath == "/journal") { _kind = "journal"; _showJournal = Own; }
                 if (_notebookId is Guid notebook)
                 {
@@ -443,11 +450,36 @@ public partial class Index
     }
     private async Task Archive() => await Work(async ct => { if (TemplateId is Guid id) { var updated = await Client.Archive(id, ct); _templates = _templates.Select(t => t.Id == id ? updated : t).ToArray(); _notice = "Skabelonen er arkiveret. Eksisterende indlæg er bevaret."; } });
     private string PageHref(Guid id) => $"/notebook/{id}" + (NotebookId is Guid nb ? $"?owner={nb}" : "");
+    private string NotebookHref(Guid id) => Own ? "/notebook" : $"/notebook?owner={id:D}";
+
+    private void UpdateNotebookCover(Guid notebook, Guid? coverId)
+    {
+        if (_disposed || _mine is not { } current || !Own || current.Id != notebook) return;
+        _mine = current with { CoverId = coverId };
+        if (_current?.NotebookId == notebook) _current = _current with { NotebookCoverId = coverId };
+    }
+
+    private void UpdatePageCover(Guid page, Guid? coverId)
+    {
+        if (_disposed || !Editing || TemplateMode || _current?.DocumentId != page) return;
+        _current = _current with { CoverId = coverId };
+        _pages = _pages.Select(item => item.Id == page ? item with { CoverId = coverId } : item).ToArray();
+    }
+
+    private async Task PrepareCoverGeneration()
+    {
+        if (!Editing) return;
+        if (MetadataDirty)
+            throw new InvalidOperationException("Gem sidens oplysninger, før du genererer et cover.");
+        await WaitForCoverContent(() => (_mounted ? _editor : null, _editorElement, _status), TreeToken);
+    }
+
     private async Task OpenPage(Guid id)
     {
-        if (_current?.DocumentId != id && !await CanLeave()) return;
+        var alreadyOnPage = PageId == id && _current?.DocumentId == id;
+        if (!alreadyOnPage && !await CanLeave()) return;
         if (_sidebarMobile) SetSidebarOpen(false);
-        if (_current?.DocumentId != id) Nav.NavigateTo(PageHref(id));
+        if (!alreadyOnPage) Nav.NavigateTo(PageHref(id));
     }
     private async Task BeforeNavigation(LocationChangingContext context)
     {
@@ -520,7 +552,7 @@ public partial class Index
     private async Task ClearRevoked(Guid page)
     {
         _filterRequest?.Cancel(); _treePages = [];
-        await Unmount(); _current = null; _pages = []; _total = 0; _comments = []; _graph = null;
+        await Unmount(); _current = null; _pages = []; _total = 0; _comments = []; _graph = null; _loadedNotebookAccess = null;
         _shared = _shared.Where(p => p.Id != page).ToArray();
         _showComments = _showShares = _showGraph = false;
         _commentDrafts.Remove(page); _comment = "";

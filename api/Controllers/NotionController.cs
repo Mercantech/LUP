@@ -46,14 +46,16 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
         var pages = await pagesAccess.ReadablePages(User, publishedOnly).AsNoTracking().Where(p => p.HoldId == holdId
                 && (collectionId == null || p.CollectionId == collectionId) && (!legacyOnly || p.CollectionId == null))
             .Select(p => new { p.Id, p.HoldId, p.Title, p.ParentPageId, p.UpdatedAtUtc, p.PublishedTitle,
-                p.PublishedAtUtc, p.DraftRevision, p.PublishedRevision, p.CollectionId, p.SortOrder, p.IconEmojiId, p.PublishedIconEmojiId }).ToListAsync(ct);
+                p.PublishedAtUtc, p.DraftRevision, p.PublishedRevision, p.CollectionId, p.SortOrder,
+                p.IconEmojiId, p.PublishedIconEmojiId, p.CoverId, p.PublishedCoverId }).ToListAsync(ct);
         var visible = pages.Select(p => p.Id).ToHashSet();
         Response.Headers.CacheControl = "no-store";
         return Ok(pages.Select(p => new NotionPageSummary(p.Id, p.HoldId, manage ? p.Title : p.PublishedTitle!,
             manage || p.ParentPageId is not Guid parent || visible.Contains(parent) ? p.ParentPageId : null,
             manage ? p.UpdatedAtUtc : p.PublishedAtUtc!.Value, p.PublishedAtUtc,
-            manage && p.PublishedAtUtc is not null && (p.DraftRevision != p.PublishedRevision || p.Title != p.PublishedTitle || p.IconEmojiId != p.PublishedIconEmojiId),
-            p.CollectionId, p.SortOrder, manage ? p.IconEmojiId : p.PublishedIconEmojiId))
+            manage && p.PublishedAtUtc is not null && (p.DraftRevision != p.PublishedRevision || p.Title != p.PublishedTitle
+                || p.IconEmojiId != p.PublishedIconEmojiId || p.CoverId != p.PublishedCoverId),
+            p.CollectionId, p.SortOrder, manage ? p.IconEmojiId : p.PublishedIconEmojiId, manage ? p.CoverId : p.PublishedCoverId))
             .OrderBy(p => p.Title).ToList());
     }
 
@@ -249,8 +251,9 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
             .SetProperty(p => p.IconEmojiId, input.IconEmojiId).SetProperty(p => p.LastEditedByName, editorName)
             .SetProperty(p => p.UpdatedAtUtc, DateTimeOffset.UtcNow), ct);
         var summary = await page.Select(p => new NotionPageSummary(p.Id, p.HoldId, p.Title, p.ParentPageId, p.UpdatedAtUtc,
-            p.PublishedAtUtc, p.PublishedAtUtc != null && (p.DraftRevision != p.PublishedRevision || p.Title != p.PublishedTitle || p.IconEmojiId != p.PublishedIconEmojiId),
-            p.CollectionId, p.SortOrder, p.IconEmojiId)).SingleOrDefaultAsync(ct);
+            p.PublishedAtUtc, p.PublishedAtUtc != null && (p.DraftRevision != p.PublishedRevision || p.Title != p.PublishedTitle
+                || p.IconEmojiId != p.PublishedIconEmojiId || p.CoverId != p.PublishedCoverId),
+            p.CollectionId, p.SortOrder, p.IconEmojiId, p.CoverId)).SingleOrDefaultAsync(ct);
         Response.Headers.CacheControl = "no-store";
         return summary is null ? NotFound() : Ok(summary);
     }
@@ -288,7 +291,8 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
         var edit = !publishedOnly && await pagesAccess.CanManageScopeAsync(scope.HoldId, User, ct);
         var page = await db.NotionPages.AsNoTracking().Where(p => p.Id == id)
             .Select(p => new { p.Id, p.HoldId, p.Title, p.UpdatedAtUtc, p.PublishedAtUtc, p.PublishedTitle,
-                p.DraftRevision, p.PublishedRevision, p.LifecycleVersion, p.IconEmojiId, p.PublishedIconEmojiId, PublishedState = edit ? null : p.PublishedState,
+                p.DraftRevision, p.PublishedRevision, p.LifecycleVersion, p.IconEmojiId, p.PublishedIconEmojiId,
+                CoverId = edit ? p.CoverId : p.PublishedCoverId, p.PublishedCoverId, PublishedState = edit ? null : p.PublishedState,
                 PublishedDrawingsJson = edit ? null : p.PublishedDrawingsJson }).SingleOrDefaultAsync(ct);
         if (page is null) return NotFound();
         if (!edit && (page.PublishedAtUtc is null || page.PublishedTitle is null || page.PublishedState is not { Length: > 0 })) return NotFound();
@@ -313,7 +317,7 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
             edit ? page.DraftRevision : page.PublishedRevision ?? 0, page.PublishedRevision,
             state is null ? null : Convert.ToBase64String(state), page.PublishedTitle,
             edit ? [] : DrawingAccess.Bindings(page.PublishedDrawingsJson), scope.CollectionId, edit ? page.LifecycleVersion : 0,
-            edit ? page.IconEmojiId : page.PublishedIconEmojiId, page.PublishedIconEmojiId));
+            edit ? page.IconEmojiId : page.PublishedIconEmojiId, page.PublishedIconEmojiId, page.CoverId, page.PublishedCoverId));
     }
 
     [HttpGet("pages/{id:guid}/knowledge-checks")]
@@ -377,7 +381,8 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
             && p.DraftFingerprint == request.ExpectedFingerprint && p.PublicationVersion == page.PublicationVersion
             && p.DraftKnowledgeChecksJson == page.DraftKnowledgeChecksJson)
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.PublishedState, page.YjsState)
-                .SetProperty(p => p.PublishedTitle, page.Title).SetProperty(p => p.PublishedIconEmojiId, p => p.IconEmojiId).SetProperty(p => p.PublishedAtUtc, now)
+                .SetProperty(p => p.PublishedTitle, page.Title).SetProperty(p => p.PublishedIconEmojiId, p => p.IconEmojiId)
+                .SetProperty(p => p.PublishedCoverId, p => p.CoverId).SetProperty(p => p.PublishedAtUtc, now)
                 .SetProperty(p => p.PublishedEditorName, p => p.LastEditedByName)
                 .SetProperty(p => p.PublishedEditedAtUtc, p => p.UpdatedAtUtc)
                 .SetProperty(p => p.PublishedBySub, sub).SetProperty(p => p.PublishedRevision, request.ExpectedRevision)
@@ -385,6 +390,7 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
                 .SetProperty(p => p.PublishedKnowledgeChecksJson, page.DraftKnowledgeChecksJson)
                 .SetProperty(p => p.PublicationVersion, p => p.PublicationVersion + 1), ct);
         if (written == 0) return Conflict(new { error = "draft_changed" });
+        await db.DeleteUnreferencedNotionCoversAsync(id, ct);
         await references.RefreshNotionAsync(id, ct, published: true);
         var published = await db.NotionPages.AsNoTracking().SingleAsync(p => p.Id == id, ct);
         if (transaction is not null) await transaction.CommitAsync(ct);
@@ -410,11 +416,13 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
         await db.NotionPages.Where(p => p.Id == id).ExecuteUpdateAsync(s => s
             .SetProperty(p => p.PublishedState, (byte[]?)null).SetProperty(p => p.PublishedTitle, (string?)null)
             .SetProperty(p => p.PublishedIconEmojiId, (Guid?)null)
+            .SetProperty(p => p.PublishedCoverId, (Guid?)null)
             .SetProperty(p => p.PublishedAtUtc, (DateTimeOffset?)null).SetProperty(p => p.PublishedBySub, (Guid?)null)
             .SetProperty(p => p.PublishedEditorName, (string?)null).SetProperty(p => p.PublishedEditedAtUtc, (DateTimeOffset?)null)
             .SetProperty(p => p.PublishedRevision, (long?)null).SetProperty(p => p.PublishedAssetIdsJson, "[]").SetProperty(p => p.PublishedDrawingsJson, "[]")
             .SetProperty(p => p.PublishedKnowledgeChecksJson, "{}")
             .SetProperty(p => p.PublicationVersion, p => p.PublicationVersion + 1), ct);
+        await db.DeleteUnreferencedNotionCoversAsync(id, ct);
         await references.RefreshNotionAsync(id, ct, published: true);
         var unpublished = await db.NotionPages.AsNoTracking().SingleAsync(p => p.Id == id, ct);
         await transaction.CommitAsync(ct);
@@ -453,6 +461,7 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
     private static bool ValidTitle(string? title) => !string.IsNullOrWhiteSpace(title)
         && title.Length <= 200 && !title.Any(char.IsControl);
     private static NotionPageSummary View(NotionPage p) => new(p.Id, p.HoldId, p.Title, p.ParentPageId, p.UpdatedAtUtc,
-        p.PublishedAtUtc, p.PublishedAtUtc is not null && (p.DraftRevision != p.PublishedRevision || p.Title != p.PublishedTitle || p.IconEmojiId != p.PublishedIconEmojiId),
-        p.CollectionId, p.SortOrder, p.IconEmojiId);
+        p.PublishedAtUtc, p.PublishedAtUtc is not null && (p.DraftRevision != p.PublishedRevision || p.Title != p.PublishedTitle
+            || p.IconEmojiId != p.PublishedIconEmojiId || p.CoverId != p.PublishedCoverId),
+        p.CollectionId, p.SortOrder, p.IconEmojiId, p.CoverId);
 }

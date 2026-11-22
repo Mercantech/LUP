@@ -22,6 +22,15 @@
 .books-card[data-kind="personal"] { --book-accent:#9b64bf; }
 .books-card[data-kind="shared"] { --book-accent:#b47629; }
 .books-card[data-kind="students"] { --book-accent:#387caa; }
+.books-cover {
+    flex:none;
+    block-size:clamp(5rem,9vw,7rem);
+    margin:-20px -20px 2px;
+    overflow:hidden;
+    border-radius:9px 9px 0 0;
+    background:color-mix(in srgb,var(--book-accent) 10%,var(--paper));
+}
+.books-cover ::deep .notebook-cover-image { display:block; inline-size:100%; block-size:100%; object-fit:cover; }
 .books-card-top,.books-card-actions { display:flex; align-items:center; gap:8px; }
 .books-card-top { margin-bottom:4px; }
 .books-icon,.books-card-top ::deep button.books-icon {
