@@ -21,10 +21,25 @@
         <p><strong>@Direction</strong></p>
         <code>brightness = @brightness</code>
     </div>
-    <details>
-        <summary>Se Razor-koden</summary>
-        <p><code>@@bind</code> kobler skyderen og C#-feltet sammen. <code>oninput</code> opdaterer feltet, mens du trækker. Når knappen ændrer feltet fra C#, afspejler skyderen den nye værdi ved næste gengivelse.</p>
-        <pre><code>@Example</code></pre>
+    <details class="binding-code">
+        <summary><UiIcon Name="chevron" /><span>Se Razor-koden</span></summary>
+        <div class="binding-code-content">
+            <dl class="binding-code-guide">
+                <div>
+                    <dt><code>@@bind</code></dt>
+                    <dd>Skyderen læser fra og skriver til det samme C#-felt, <code>brightness</code>.</dd>
+                </div>
+                <div>
+                    <dt><code>@@bind:event="oninput"</code></dt>
+                    <dd>Blazor opdaterer feltet, mens du trækker. Procenttallet læser den samme værdi.</dd>
+                </div>
+                <div>
+                    <dt><code>@@onclick</code></dt>
+                    <dd>Knappen kalder <code>ToggleLight</code>. Når metoden ændrer feltet, følger skyderen med.</dd>
+                </div>
+            </dl>
+            <CourseCodeBlock Code="@Example" Language="razor" />
+        </div>
     </details>
 </section>
 
@@ -53,7 +68,7 @@
         <input id="lys" type="range" min="0" max="100"
                @bind="brightness" @bind:event="oninput" />
         <output for="lys">@brightness %</output>
-        <button @onclick="ToggleLight">
+        <button type="button" @onclick="ToggleLight">
             @(brightness > 0 ? "Sluk lanternen" : "Tænd lanternen")
         </button>
 
