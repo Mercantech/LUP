@@ -11,7 +11,7 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
 {
     private SavedPreview? _savedPreview;
 
-    public async Task<byte[]?> ReadAsync(string kind, Guid id, Guid version, bool publishedOnly, CancellationToken ct)
+    public async Task<CoverImage?> ReadAsync(string kind, Guid id, Guid version, bool publishedOnly, CancellationToken ct)
     {
         if (!publishedOnly && _savedPreview is { } saved && saved.Kind == kind && saved.TargetId == id
             && saved.Version == version && saved.Subject == auth.Subject && auth.IsAuthenticated)
@@ -26,7 +26,9 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
         response.EnsureSuccessStatusCode();
         if (response.Content.Headers.ContentType?.MediaType != "image/webp") return null;
-        return await response.Content.ReadAsByteArrayAsync(ct);
+        var position = response.Headers.TryGetValues(NotebookCoverRules.PositionHeader, out var values)
+            && int.TryParse(values.FirstOrDefault(), out var y) && y is >= 0 and <= 100 ? y : NotebookCoverRules.DefaultPositionY;
+        return new(await response.Content.ReadAsByteArrayAsync(ct), position);
     }
 
     public async Task<NotebookCoverView> UploadAsync(string kind, Guid id, IBrowserFile file, CancellationToken ct,
@@ -60,6 +62,13 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
         return await MutateAsync(request, kind, id, ct);
     }
 
+    public async Task<NotebookCoverView> RepositionAsync(string kind, Guid id, Guid version, int positionY, CancellationToken ct)
+    {
+        using var request = CreateRequest(HttpMethod.Put, Path(kind, id) + "/position");
+        request.Content = JsonContent.Create(new RepositionNotebookCoverRequest(version, positionY));
+        return await MutateAsync(request, kind, id, ct);
+    }
+
     private async Task<NotebookCoverView> MutateAsync(HttpRequestMessage request, string kind, Guid id, CancellationToken ct)
     {
         using var response = await http.SendAsync(request, ct);
@@ -73,7 +82,7 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
                 && Guid.TryParse(auth.Subject, out var subject)
                 && request.Headers.TryGetValues(NotebookCoverRules.SubjectHeader, out var values)
                 && values.Contains(subject.ToString("D"))
-                    ? new(kind, id, version, auth.Subject!, image) : null;
+                    ? new(kind, id, version, auth.Subject!, new(image, saved.PositionY)) : null;
             return saved;
         }
 
@@ -105,7 +114,8 @@ public sealed class NotebookCoverClient(HttpClient http, AuthService auth)
     }
 
     private static string Path(string kind, Guid id) => $"notebook-covers/{Uri.EscapeDataString(kind)}/{id:D}";
-    private sealed record SavedPreview(string Kind, Guid TargetId, Guid Version, string Subject, byte[] Image);
+    public sealed record CoverImage(byte[] Bytes, int PositionY);
+    private sealed record SavedPreview(string Kind, Guid TargetId, Guid Version, string Subject, CoverImage Image);
     private sealed record CoverError(string? Error);
 }
 

@@ -1,7 +1,8 @@
 @if (CoverId is not null)
 {
-    <div class="notebook-cover-banner">
-        <NotebookCoverImage Kind="@Kind" TargetId="@TargetId" CoverId="@CoverId" PublishedOnly="@PublishedOnly" ShowRetry="true" />
+    <div class="notebook-cover-editor">
+        <NotebookCoverImage @ref="_image" Kind="@Kind" TargetId="@TargetId" CoverId="@CoverId" PublishedOnly="@PublishedOnly"
+                            ShowRetry="true" Banner="true" CoverChanged="@(CanAdjust ? CoverChanged : default)" />
     </div>
 }
 
@@ -10,4 +11,9 @@
     [Parameter, EditorRequired] public Guid TargetId { get; set; }
     [Parameter] public Guid? CoverId { get; set; }
     [Parameter] public bool PublishedOnly { get; set; }
+    [Parameter] public bool CanAdjust { get; set; }
+    [Parameter] public EventCallback<Guid?> CoverChanged { get; set; }
+    private NotebookCoverImage? _image;
+
+    public void AdjustPosition() => _image?.AdjustPosition();
 }

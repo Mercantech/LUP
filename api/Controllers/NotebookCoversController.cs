@@ -57,11 +57,30 @@ public sealed partial class NotebookCoversController(AppDbContext db, CourseAcce
 
         // Access, version selection and byte read form a single query. Even a known draft
         // version cannot be used to read unpublished content via a reader's URL.
-        var image = await OwnedAssets(kind, id).Where(asset => (version == null || asset.Id == version)
-            && visible.Contains(asset.Id)).Select(asset => asset.Image).SingleOrDefaultAsync(ct);
-        if (image is null) return NotFound();
+        var cover = await OwnedAssets(kind, id).Where(asset => (version == null || asset.Id == version)
+            && visible.Contains(asset.Id)).Select(asset => new { asset.Image, asset.PositionY }).SingleOrDefaultAsync(ct);
+        if (cover is null) return NotFound();
         Response.Headers["X-Content-Type-Options"] = "nosniff";
-        return File(image, "image/webp");
+        Response.Headers[NotebookCoverRules.PositionHeader] = cover.PositionY.ToString(CultureInfo.InvariantCulture);
+        return File(cover.Image, "image/webp");
+    }
+
+    [HttpPut("position")]
+    public async Task<IActionResult> Reposition(string kind, Guid id, RepositionNotebookCoverRequest request, CancellationToken ct)
+    {
+        var failure = Guard(required: true);
+        if (failure is not null) return failure;
+        if (request.PositionY is < 0 or > 100) return BadRequest(new { error = "invalid_cover_position" });
+        var target = await FindEditable(kind, id, ct);
+        if (target is null) return NotFound();
+        if (target.CoverId != request.CoverId) return Conflict(new { error = "cover_changed" });
+
+        var current = await OwnedAssets(kind, id).AsNoTracking().SingleOrDefaultAsync(asset => asset.Id == request.CoverId, ct);
+        if (current is null) return Conflict(new { error = "cover_changed" });
+        if (current.PositionY == request.PositionY) return Ok(new NotebookCoverView(current.Id, PositionY: current.PositionY));
+
+        return await Save(target, current.Image, ct, includeImage: true, positionY: request.PositionY,
+            artworkSourceId: current.ArtworkSourceId ?? current.Id);
     }
 
     [HttpPut]
@@ -181,7 +200,7 @@ public sealed partial class NotebookCoversController(AppDbContext db, CourseAcce
     }
 
     private async Task<IActionResult> Save(CoverTarget target, byte[]? image, CancellationToken ct, bool includeImage = false,
-        string? character = null)
+        string? character = null, int positionY = NotebookCoverRules.DefaultPositionY, Guid? artworkSourceId = null)
     {
         Guid? coverId = image is null ? null : Guid.NewGuid();
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
@@ -197,7 +216,9 @@ public sealed partial class NotebookCoversController(AppDbContext db, CourseAcce
                 NotionPageId = target.Kind == NotionPage ? target.Id : null,
                 NotebookId = target.Kind == Notebook ? target.Id : null,
                 NotebookPageId = target.Kind == NotebookPage ? target.Id : null,
-                Image = image
+                Image = image,
+                PositionY = positionY,
+                ArtworkSourceId = artworkSourceId
             };
             db.NotebookCoverAssets.Add(asset);
             if (character is not null)
@@ -211,7 +232,7 @@ public sealed partial class NotebookCoversController(AppDbContext db, CourseAcce
             await OwnedAssets(target.Kind, target.Id).Where(asset => asset.Id == previous).ExecuteDeleteAsync(ct);
 
         await transaction.CommitAsync(ct);
-        return Ok(new NotebookCoverView(coverId, includeImage ? image : null, character));
+        return Ok(new NotebookCoverView(coverId, includeImage ? image : null, character, positionY));
     }
 
     private Task<int> SetCover(CoverTarget target, Guid? newCoverId, CancellationToken ct)

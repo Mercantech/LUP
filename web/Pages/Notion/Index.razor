@@ -97,12 +97,12 @@ else
                                 @if (!_loading && IsCollectionRoute && !ForceReadOnly && _collection is { CanManage: true } coverBook)
                                 {
                                     <NotebookCoverActions @key='("collection", coverBook.Id)' Kind="collection" TargetId="coverBook.Id" CoverId="coverBook.CoverId"
-                                                          CoverChanged="coverId => UpdateCollectionCover(coverBook.Id, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                                          CoverChanged="coverId => UpdateCollectionCover(coverBook.Id, coverId)" BeforeGenerate="PrepareCoverGeneration" AdjustRequested="() => _coverEditor?.AdjustPosition()" />
                                 }
                                 else if (!_loading && !IsCollectionRoute && IsEditing && _current is { } coverPage)
                                 {
                                     <NotebookCoverActions @key='("notion-page", coverPage.PageId)' Kind="notion-page" TargetId="coverPage.PageId" CoverId="coverPage.CoverId"
-                                                          CoverChanged="coverId => UpdatePageCover(coverPage.PageId, coverId)" BeforeGenerate="PrepareCoverGeneration" />
+                                                          CoverChanged="coverId => UpdatePageCover(coverPage.PageId, coverId)" BeforeGenerate="PrepareCoverGeneration" AdjustRequested="() => _coverEditor?.AdjustPosition()" />
                                 }
                                 @if (_current is not null)
                                 {
@@ -150,15 +150,17 @@ else
                     @if (IsCollectionRoute && _collection is { } book)
                     {
                         <div class="notion-cover-slot">
-                            <NotebookCoverEditor @key="(book.Id, ForceReadOnly)" Kind="collection" TargetId="book.Id" CoverId="book.CoverId"
-                                                 PublishedOnly="@(ForceReadOnly || !book.CanManage)" />
+                            <NotebookCoverEditor @ref="_coverEditor" @key="(book.Id, ForceReadOnly)" Kind="collection" TargetId="book.Id" CoverId="book.CoverId"
+                                                 PublishedOnly="@(ForceReadOnly || !book.CanManage)" CanAdjust="@(!ForceReadOnly && book.CanManage)"
+                                                 CoverChanged="coverId => UpdateCollectionCover(book.Id, coverId)" />
                         </div>
                     }
                     else if (_current is { } page)
                     {
                         <div class="notion-cover-slot">
-                            <NotebookCoverEditor @key="(page.PageId, IsEditing)" Kind="notion-page" TargetId="page.PageId"
-                                                 CoverId="@(IsEditing ? page.CoverId : page.PublishedCoverId)" PublishedOnly="@(!IsEditing)" />
+                            <NotebookCoverEditor @ref="_coverEditor" @key="(page.PageId, IsEditing)" Kind="notion-page" TargetId="page.PageId"
+                                                 CoverId="@(IsEditing ? page.CoverId : page.PublishedCoverId)" PublishedOnly="@(!IsEditing)"
+                                                 CanAdjust="@IsEditing" CoverChanged="coverId => UpdatePageCover(page.PageId, coverId)" />
                         </div>
                     }
                 }
@@ -193,6 +195,8 @@ else
 }
 
 @code {
+    private NotebookCoverEditor? _coverEditor;
+
     private RenderFragment PageFeedback => @<text>
         @if (_error is not null) { <div class="notion-error" role="alert">@_error <button class="secondary" @onclick="Retry" disabled="@_busy">Prøv igen</button></div> }
         @if (_notice is not null) { <p class="notion-notice" role="status">@_notice</p> }

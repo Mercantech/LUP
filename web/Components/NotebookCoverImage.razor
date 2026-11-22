@@ -1,16 +1,43 @@
 @using Mercantec.Tech.Web.Notebooks
+@using Mercantec.Tech.Contracts
 @inject NotebookCoverClient Client
 @inject AuthService Auth
 @inject IJSRuntime Js
 @implements IAsyncDisposable
 
-@if (_imageUrl is not null)
+@if (Banner)
 {
-    <img class="notebook-cover-image" src="@_imageUrl" alt="" decoding="async" draggable="false" />
+    <div class="notebook-cover-banner">@ImageContent</div>
+    @if (CoverChanged.HasDelegate && !PublishedOnly && _imageUrl is not null && _loadedVersion == CoverId)
+    {
+        <div class="notebook-cover-position">
+            @if (_adjusting)
+            {
+                <label for="@_rangeId">Lodret udsnit</label>
+                <div class="notebook-cover-range">
+                    <span>Top</span>
+                    <input @ref="_range" id="@_rangeId" type="range" min="0" max="100" @bind="_draftY" @bind:event="oninput" disabled="@_saving" />
+                    <span>Bund</span>
+                </div>
+                <div class="notebook-cover-position-buttons">
+                    <button type="button" class="action" @onclick="SavePositionAsync" disabled="@(_saving || _draftY == _positionY)">Gem udsnit</button>
+                    <button type="button" class="secondary" @onclick="CancelPosition" disabled="@_saving">Annullér</button>
+                </div>
+            }
+            else
+            {
+                <button type="button" class="secondary" @onclick="AdjustPosition">Justér udsnit</button>
+            }
+            @if (_positionError is not null)
+            {
+                <p role="alert">@_positionError</p>
+            }
+        </div>
+    }
 }
-else if (_loadFailed && ShowRetry)
+else
 {
-    <button type="button" class="secondary notebook-cover-retry" @onclick="() => LoadAsync(retry: true)">Prøv at hente coveret igen</button>
+    @ImageContent
 }
 
 @code {
@@ -19,6 +46,8 @@ else if (_loadFailed && ShowRetry)
     [Parameter] public Guid? CoverId { get; set; }
     [Parameter] public bool PublishedOnly { get; set; }
     [Parameter] public bool ShowRetry { get; set; }
+    [Parameter] public bool Banner { get; set; }
+    [Parameter] public EventCallback<Guid?> CoverChanged { get; set; }
 
     private (string Kind, Guid Target, Guid? Cover, bool PublishedOnly, string? Subject)? _source;
     private CancellationTokenSource? _load;
@@ -26,6 +55,78 @@ else if (_loadFailed && ShowRetry)
     private string? _imageUrl;
     private bool _loadFailed;
     private bool _disposed;
+    private readonly string _rangeId = $"cover-position-{Guid.NewGuid():N}";
+    private Guid? _loadedVersion;
+    private int _positionY = NotebookCoverRules.DefaultPositionY;
+    private int _draftY;
+    private bool _adjusting;
+    private bool _saving;
+    private string? _positionError;
+    private ElementReference _range;
+    private bool _focusRange;
+
+    private RenderFragment ImageContent => @<text>
+        @if (_imageUrl is not null)
+        {
+            <img class="notebook-cover-image" src="@_imageUrl" alt="" decoding="async" draggable="false"
+                 style="object-position: 50% @(_adjusting ? _draftY : _positionY)%" />
+        }
+        else if (_loadFailed && ShowRetry)
+        {
+            <button type="button" class="secondary notebook-cover-retry" @onclick="() => LoadAsync(retry: true)">Prøv at hente coveret igen</button>
+        }
+    </text>;
+
+    public void AdjustPosition()
+    {
+        if (_saving || !CoverChanged.HasDelegate || PublishedOnly) return;
+        _draftY = _positionY;
+        _positionError = null;
+        _adjusting = true;
+        _focusRange = true;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_focusRange || !_adjusting || _imageUrl is null || _loadedVersion != CoverId || _module is null) return;
+        _focusRange = false;
+        try { await (await _module).InvokeVoidAsync("focusCoverPosition", _range); }
+        catch (JSException) { }
+    }
+
+    private void CancelPosition()
+    {
+        _adjusting = false;
+        _positionError = null;
+    }
+
+    private async Task SavePositionAsync()
+    {
+        if (_saving || !_adjusting || CoverId is not Guid version || _loadedVersion != version || _load is null
+            || !CoverChanged.HasDelegate || PublishedOnly) return;
+        var source = _source;
+        var ct = _load.Token;
+        _saving = true;
+        _positionError = null;
+        try
+        {
+            var result = await Client.RepositionAsync(Kind, TargetId, version, _draftY, ct);
+            if (ct.IsCancellationRequested || _source != source || Auth.Subject != source?.Subject) return;
+            _positionY = result.PositionY;
+            _adjusting = false;
+            await CoverChanged.InvokeAsync(result.CoverId);
+        }
+        catch (Exception ex) when (ex is NotebookCoverException or HttpRequestException or System.Text.Json.JsonException or OperationCanceledException)
+        {
+            if (!ct.IsCancellationRequested && _source == source)
+                _positionError = ex is NotebookCoverException ? ex.Message : "Udsnittet kunne ikke gemmes. Prøv igen.";
+        }
+        finally
+        {
+            if (_source == source) _saving = false;
+        }
+    }
 
     protected override void OnInitialized() => Auth.AuthStateChanged += OnAuthChanged;
 
@@ -38,6 +139,10 @@ else if (_loadFailed && ShowRetry)
         var samePage = _source is { } previous && previous.Kind == Kind && previous.Target == TargetId
             && previous.PublishedOnly == PublishedOnly && previous.Subject == Auth.Subject;
         _source = source;
+        _loadedVersion = null;
+        _adjusting = _saving = false;
+        _focusRange = false;
+        _positionError = null;
         _load?.Cancel();
         _load?.Dispose();
         _load = null;
@@ -49,9 +154,9 @@ else if (_loadFailed && ShowRetry)
         var ct = _load.Token;
         try
         {
-            var bytes = await Client.ReadAsync(Kind, TargetId, version, PublishedOnly, ct);
+            var image = await Client.ReadAsync(Kind, TargetId, version, PublishedOnly, ct);
             if (ct.IsCancellationRequested || _disposed || _source != source) return;
-            if (bytes is null)
+            if (image is null)
             {
                 _loadFailed = true;
                 await ReplaceImageAsync(null);
@@ -60,11 +165,16 @@ else if (_loadFailed && ShowRetry)
             _module ??= Js.InvokeAsync<IJSObjectReference>("import", "./js/notebook-covers.js").AsTask();
             var module = await _module;
             if (ct.IsCancellationRequested || _disposed) return;
-            var url = await module.InvokeAsync<string>("createCoverUrl", bytes);
+            var url = await module.InvokeAsync<string>("createCoverUrl", image.Bytes);
             if (ct.IsCancellationRequested || _disposed || _source != source)
                 await RevokeAsync(module, url);
             else
+            {
+                _positionY = image.PositionY;
+                if (_adjusting) _draftY = _positionY;
+                _loadedVersion = version;
                 await ReplaceImageAsync(url);
+            }
         }
         catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or JSException)
         {
