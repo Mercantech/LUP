@@ -470,6 +470,11 @@ public sealed class CharacterDetailTests
         var page = context.Render<CharacterDetail>(p => p.Add(x => x.Slug, "iben"));
 
         Assert.Contains("Iben Sanderson Edwards Fowler", page.Find(".character-description").TextContent);
+        Assert.Equal("/images/characters/iben/iben-fritlagt.webp", page.Find(".character-main-art img").GetAttribute("src"));
+        var appearances = page.FindAll(".character-appearance-picker button");
+        Assert.Equal("true", appearances[0].GetAttribute("aria-pressed"));
+        appearances[1].Click();
+        Assert.Equal("/images/characters/iben/portrait.webp", page.Find(".character-main-art img").GetAttribute("src"));
         Assert.Equal(48, page.FindAll(".character-reactions figure").Count);
         Assert.Equal(12, page.FindAll(".character-gallery figure pre code").Count);
         Assert.Equal(2, page.FindAll(".character-scenes figure").Count);
