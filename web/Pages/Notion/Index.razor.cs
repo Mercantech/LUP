@@ -556,6 +556,9 @@ public partial class Index
         finally { _busy = false; }
     }
     [JSInvokable] public Task<string?> GetNotionToken() => Auth.IsAuthenticated ? Auth.GetValidAccessTokenAsync() : Task.FromResult<string?>(null);
+    [JSInvokable] public Task PrepareNotionImageGeneration() => InvokeAsync(PrepareCoverGeneration);
+    [JSInvokable] public Task<string?> GetNotionImageToken(string? rejectedAccess) => IsEditing
+        ? GetNotionKnowledgeCheckToken(rejectedAccess) : Task.FromResult<string?>(null);
     [JSInvokable] public Task<string?> GetNotionKnowledgeCheckToken(string? rejectedAccess) => !Auth.IsAuthenticated || ViewAs.IsActive
         ? Task.FromResult<string?>(null)
         : string.IsNullOrEmpty(rejectedAccess) ? Auth.GetValidAccessTokenAsync() : Auth.RefreshAfterUnauthorizedAsync(rejectedAccess);

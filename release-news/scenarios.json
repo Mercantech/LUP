@@ -33,5 +33,6 @@
   {"id":"assignment-feedback","title":"Aflevering og privat feedback","route":"/quests/00000044-0000-4000-8000-000000000001?submission=00000055-0000-4000-8000-000000000001&hold=00000022-0000-4000-8000-000000000001","selector":".assignment-work","ready":".assignment-revision"},
   {"id":"editor","title":"Udgivne undervisningssider","route":"/notion/00000077-0000-4000-8000-000000000001?hold=00000022-0000-4000-8000-000000000001&published=true","selector":".notion-document","ready":".notion-editor-root .bn-editor"},
   {"id":"page-graph","title":"Holdets sidegraf","route":"/notion/holds/00000022-0000-4000-8000-000000000001/graph","selector":".reference-graph","ready":".reference-canvas canvas"},
-  {"id":"emojis","title":"Emojibiblioteket","route":"/emojis","selector":"section[aria-labelledby=emoji-library-title]","ready":".emoji-library img"}
+  {"id":"emojis","title":"Emojibiblioteket","route":"/emojis","selector":"section[aria-labelledby=emoji-library-title]","ready":".emoji-library img"},
+  {"id":"character-artwork","title":"Karakterbilleder fra notesbøger","route":"/emojis","selector":".generated-character-art","ready":".generated-art-preview img"}
 ]

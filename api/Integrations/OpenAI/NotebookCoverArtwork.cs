@@ -13,7 +13,7 @@ namespace Mercantec.Tech.Api.Integrations.OpenAI;
 
 public sealed record NotebookCoverArtReference(string Name, string Role, string ContentType, byte[] Bytes);
 public sealed record NotebookCoverArtDirection(string Direction, IReadOnlyList<NotebookCoverArtReference> References,
-    IReadOnlyList<string>? EmojiContext = null);
+    IReadOnlyList<string>? EmojiContext = null, string? CharacterSlug = null);
 
 public sealed class NotebookCoverArtwork(AppDbContext db, IObjectStorage storage)
 {
@@ -29,7 +29,8 @@ public sealed class NotebookCoverArtwork(AppDbContext db, IObjectStorage storage
     private static readonly FrozenDictionary<string, CharacterEmojiAsset> CharactersByName =
         CharacterEmojiCatalog.All.ToFrozenDictionary(emoji => emoji.Name, StringComparer.OrdinalIgnoreCase);
 
-    public async Task<NotebookCoverArtDirection> ResolveAsync(string kind, string title, NotebookCoverSource source, CancellationToken ct)
+    public async Task<NotebookCoverArtDirection> ResolveAsync(string kind, string title, NotebookCoverSource source,
+        CancellationToken ct, string? selectedCharacter = null, string? illustrationDescription = null)
     {
         var signals = source.Emojis.Take(MaxEmojiSignals)
             .Select(signal => signal with { Shortcode = EmojiName.Normalize(signal.Shortcode) })
@@ -48,6 +49,7 @@ public sealed class NotebookCoverArtwork(AppDbContext db, IObjectStorage storage
         var publicCharacters = CharacterEmojiPolicy.Available(uploaded).Select(character => character.Id).ToHashSet();
         var used = new HashSet<Guid>();
         var characterSlugs = new List<string>();
+        if (selectedCharacter is not null) characterSlugs.Add(selectedCharacter);
         var referencedCharacters = new HashSet<string>(StringComparer.Ordinal);
         var emojiImages = new List<NotebookCoverArtReference>();
         var emojiContext = new List<string>();
@@ -98,7 +100,7 @@ public sealed class NotebookCoverArtwork(AppDbContext db, IObjectStorage storage
         }
 
         ct.ThrowIfCancellationRequested();
-        var style = NotebookCoverStyle.Select(kind, title, source.Excerpts, characterSlugs, source.CourseTitle);
+        var style = NotebookCoverStyle.Select(kind, title, source.Excerpts, characterSlugs, source.CourseTitle, illustrationDescription);
         var references = new List<NotebookCoverArtReference>();
         if (ReadEmbedded(style.StyleAssetPath) is { } banner)
             references.Add(new("lup-valgfag", "LUP style and composition reference", "image/webp", banner));
@@ -108,7 +110,7 @@ public sealed class NotebookCoverArtwork(AppDbContext db, IObjectStorage storage
             references.Add(new(style.CharacterSlug ?? "lupp", style.CharacterSlug is null
                 ? "LUP character materials and shape language" : "canonical LUP character design", "image/webp", characterImage));
         references.AddRange(emojiImages);
-        return new(style.PromptDirection, references, emojiContext);
+        return new(style.PromptDirection, references, emojiContext, style.CharacterSlug);
     }
 
     private static CharacterEmojiAsset? GetCharacter(NotebookCoverEmoji signal) => signal.Id is Guid id

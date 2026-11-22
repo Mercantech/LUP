@@ -251,12 +251,55 @@ const createGroup=createReactBlockSpec({type:'holdGroup',propSchema:{schemaVersi
 });
 
 interface AssetAccess {url:string;downloadUrl:string;expiresAtUtc:string;originalName:string;contentType:string;kind:string;sizeBytes:number;}
+interface ImageCharacter { slug: string; name: string; }
+
 async function validToken(session:Session) {
   if(!session.callbacks)return session.accessToken;
   const token=await session.callbacks.invokeMethodAsync('GetNotionToken');
   if(typeof token!=='string' || !token)throw new Error('Log ind igen for at åbne filen.');
   return token;
 }
+
+async function requestImageApi(session: Session, path: string, options: RequestInit, signal: AbortSignal) {
+  const getToken = async (rejected?: string) => {
+    if (!session.callbacks) return session.accessToken.replace(/^Bearer /i, '');
+    const token = await session.callbacks.invokeMethodAsync('GetNotionImageToken', rejected ?? '');
+    if (typeof token !== 'string' || !token) throw new Error('Log ind igen for at generere billeder.');
+    return token.replace(/^Bearer /i, '');
+  };
+  const url = (session.context.apiBase || '/api').replace(/\/+$/, '') + path;
+  const send = (token: string) => {
+    signal.throwIfAborted();
+    const headers = new Headers(options.headers);
+    headers.set('Authorization', 'Bearer ' + token);
+    return fetch(url, { ...options, headers, signal, cache: 'no-store' });
+  };
+  const token = await getToken();
+  let response = await send(token);
+  if (response.status === 401 && !signal.aborted) {
+    const renewed = await getToken(token);
+    if (renewed && renewed !== token) response = await send(renewed);
+  }
+  return response;
+}
+
+async function imageGenerationError(response: Response) {
+  const { error } = await response.json().catch(() => ({}));
+  switch (error) {
+    case 'account_changed': return 'Den aktive konto er skiftet. Genindlæs siden, og prøv igen.';
+    case 'page_changed': return 'Siden er ændret. Genindlæs den, og prøv igen.';
+    case 'invalid_character': return 'Karakteren er ikke længere tilgængelig. Vælg en anden, eller brug sidens indhold.';
+    case 'invalid_image_description': return 'Gør billedbeskrivelsen kortere, og prøv igen.';
+    case 'image_generation_unavailable':
+    case 'object_storage_disabled': return 'Billedgenerering er ikke tilgængelig lige nu.';
+    case 'image_generation_busy': return 'Der er kø til at generere billeder. Vent et øjeblik, og prøv igen.';
+  }
+  if (response.status === 401) return 'Log ind igen for at generere billeder.';
+  if (response.status === 403 || response.status === 404) return 'Du har ikke længere adgang til at redigere siden.';
+  if (response.status === 429) return 'Vent et øjeblik, før du genererer flere billeder.';
+  return 'Billedet kunne ikke genereres. Prøv igen.';
+}
+
 function UploadConfirmation({file,onConfirm}:{file:File;onConfirm:(confirmed:boolean)=>void}) {
   const dialog=useRef<HTMLDialogElement>(null);
   const titleId=useId();
@@ -272,7 +315,7 @@ function UploadConfirmation({file,onConfirm}:{file:File;onConfirm:(confirmed:boo
     <div className="notion-upload-confirm-actions"><button type="button" autoFocus onClick={()=>onConfirm(false)}>Annuller</button><button type="button" onClick={()=>onConfirm(true)}>Upload fil</button></div>
   </dialog>;
 }
-function MediaBlock({assetId,pageId,kind,displayTitle,onUpload,editable}:{assetId:string;pageId:string;kind:string;displayTitle:string;onUpload:(id:string,kind:string)=>void;editable:boolean}) {
+function MediaBlock({assetId,pageId,blockId,kind,displayTitle,onUpload,editable}:{assetId:string;pageId:string;blockId:string;kind:string;displayTitle:string;onUpload:(id:string,kind:string)=>void;editable:boolean}) {
   const session=useContext(Runtime);
   const [container,nearViewport]=useViewport<HTMLElement>();
   const [access,setAccess]=useState<AssetAccess|null>(null);
@@ -282,6 +325,15 @@ function MediaBlock({assetId,pageId,kind,displayTitle,onUpload,editable}:{assetI
   const [uploading,setUploading]=useState(false);
   const [uploadProgress,setUploadProgress]=useState({sent:0,total:0});
   const [uploadName,setUploadName]=useState('');
+  const [generationOpen, setGenerationOpen] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState('');
+  const [description, setDescription] = useState('');
+  const [characterSlug, setCharacterSlug] = useState('');
+  const [characters, setCharacters] = useState<ImageCharacter[]>([]);
+  const characterLabelId = useId();
+  const generatorDetails = useRef<HTMLDetailsElement>(null);
+  const generatorInput = useRef<HTMLTextAreaElement>(null);
+  const openGenerator = session?.imageGeneratorBlock === blockId;
   const uploadController=useRef<AbortController|null>(null);
   const uploadInput=useRef<HTMLInputElement|null>(null);
   const cancelUploadButton=useRef<HTMLButtonElement|null>(null);
@@ -293,6 +345,26 @@ function MediaBlock({assetId,pageId,kind,displayTitle,onUpload,editable}:{assetI
   const resumePlaying=useRef(false);
   const [retry,setRetry]=useState(0);
   useEffect(()=>()=>{uploadController.current?.abort();confirmationResolve.current?.(false);},[]);
+  useEffect(() => {
+    if (!openGenerator || !session || !generatorDetails.current) return;
+    session.imageGeneratorBlock = undefined;
+    generatorDetails.current.open = true;
+    generatorInput.current?.focus();
+  }, [openGenerator, session]);
+  useEffect(() => {
+    if (!generationOpen || !editable || !session || assetId) return;
+    const controller = new AbortController();
+    void (async () => {
+      try {
+        const response = await requestImageApi(session, '/character-artwork/characters', {}, controller.signal);
+        if (!response.ok) return;
+        const items = await response.json();
+        if (!controller.signal.aborted && Array.isArray(items))
+          setCharacters(items.filter(item => item && typeof item.slug === 'string' && typeof item.name === 'string'));
+      } catch { /* Automatic character selection works even if the optional list cannot load. */ }
+    })();
+    return () => controller.abort();
+  }, [generationOpen, editable, session, assetId]);
   useEffect(()=>{
     accessRef.current=null;setAccess(null);setError('');setPlaybackError(false);setPlaying(false);
     resumeAt.current=0;resumePlaying.current=false;
@@ -340,13 +412,90 @@ function MediaBlock({assetId,pageId,kind,displayTitle,onUpload,editable}:{assetI
     }catch(ex){if(!session.destroyed && uploadController.current===controller)setError(controller.signal.aborted?'Upload annulleret.':ex instanceof Error?ex.message:'Upload kunne ikke gennemføres.');}
     finally {session.pendingUploads--;if(uploadController.current===controller)uploadController.current=null;if(!session.destroyed){setUploading(false);if(!session.dirty && !session.pendingUploads)notify(session,'synced','Forbundet til dokumentet');}}
   };
+  const generate = async () => {
+    if (!session || !editable || uploadController.current) return;
+    const { userSub, domain } = session.context;
+    if (!userSub) { setError('Log ind igen for at generere billeder.'); return; }
+    const controller = new AbortController();
+    uploadController.current = controller;
+    setError('');
+    setGenerationStatus('Gemmer siden…');
+    let pending = false;
+    const canAttach = () => {
+      const liveBlock = session.editor?.getBlock(blockId);
+      return !session.destroyed && canEdit(session) && session.context.userSub === userSub
+        && liveBlock?.type === 'pageMedia' && liveBlock.props.pageId === pageId
+        && liveBlock.props.kind === 'image' && !liveBlock.props.assetId;
+    };
+    try {
+      if (session.callbacks) {
+        try { await session.callbacks.invokeMethodAsync('PrepareNotionImageGeneration'); }
+        catch { throw new Error('Indholdet skal være gemt, før du genererer et billede. Prøv igen, når siden er gemt.'); }
+      } else if (session.dirty || session.pendingUploads || session.drawingDirty) {
+        throw new Error('Vent på, at siden er gemt, og prøv igen.');
+      }
+      controller.signal.throwIfAborted();
+      if (!canAttach()) throw new Error('Billedblokken eller siden er ændret. Prøv igen.');
+      session.pendingUploads++;
+      pending = true;
+      setGenerationStatus('Genererer billede…');
+      notify(session, 'saving', 'Genererer billede…');
+      const kindPath = domain === 'notebook' ? 'notebook-page' : 'notion-page';
+      const response = await requestImageApi(session, '/notebook-covers/' + kindPath + '/' + encodeURIComponent(pageId) + '/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-LUP-Expected-Subject': userSub },
+        body: JSON.stringify({ description: description.trim() || null, characterSlug: characterSlug || null }),
+      }, AbortSignal.any([controller.signal, AbortSignal.timeout(120000)]));
+      if (!response.ok) throw new Error(await imageGenerationError(response));
+      const result = await response.json();
+      controller.signal.throwIfAborted();
+      if (typeof result?.id !== 'string' || !result.id || result.kind !== 'image')
+        throw new Error('Billedet kunne ikke indsættes. Prøv igen.');
+      if (!canAttach()) throw new Error('Billedet blev gemt, men blokken er ændret.');
+      onUpload(result.id, result.kind);
+    } catch (ex) {
+      if (!session.destroyed && !controller.signal.aborted) {
+        const message = ex instanceof Error && ex.name !== 'TimeoutError' && ex.name !== 'TypeError'
+          ? ex.message : 'Billedet kunne ikke hentes. Kontrollér forbindelsen, og prøv igen.';
+        setError(message);
+      }
+    } finally {
+      if (pending) session.pendingUploads--;
+      if (uploadController.current === controller) uploadController.current = null;
+      if (!session.destroyed) {
+        setGenerationStatus('');
+        if (pending && session.connected && session.inSync && !session.dirty && !session.pendingUploads)
+          notify(session, 'synced', 'Forbundet til dokumentet');
+      }
+    }
+  };
   const loaded=()=>{if(media.current){media.current.currentTime=resumeAt.current;if(resumePlaying.current)void media.current.play().catch(()=>{});}};
   const customTitle=access?.kind==='image' ? displayTitle.trim() : '';
   const mediaTitle=customTitle || access?.originalName;
   const accept=kind==='video'?'video/mp4,video/webm':kind==='image'?'image/png,image/jpeg,image/gif,image/webp':kind==='audio'?'audio/mpeg,audio/wav,audio/ogg':'.mp4,.webm,.mp3,.wav,.ogg,.jpg,.jpeg,.png,.gif,.webp,.pdf,.zip,.docx,.xlsx,.pptx,.txt';
-  return <section ref={container} className="notion-media-block" contentEditable={false} aria-label="Uploadet medie">
+  return <section ref={container} className="notion-media-block" contentEditable={false} aria-label="Medie på siden">
     {confirmationFile && <UploadConfirmation file={confirmationFile} onConfirm={confirmed=>{setConfirmationFile(null);confirmationResolve.current?.(confirmed);confirmationResolve.current=null;requestAnimationFrame(()=>{if(confirmed)cancelUploadButton.current?.focus();else uploadInput.current?.focus();});}}/>}
-    {!assetId && editable && <label className="notion-upload-label">{kind==='video'?'Upload video':kind==='image'?'Upload billede':kind==='audio'?'Upload lyd':'Upload fil'}<input ref={uploadInput} type="file" accept={accept} disabled={uploading} onChange={event=>{const file=event.target.files?.[0];if(file)void upload(file);event.target.value='';}}/><span>{session?.context.domain==='notebook'?'Højst 100 MiB. Filen følger sidens læseadgang.':'Filer over 100 MiB kræver din bekræftelse. Filen deles med holdet, når siden udgives.'}</span></label>}
+    {!assetId && editable && <label className="notion-upload-label">{kind==='video'?'Upload video':kind==='image'?'Upload billede':kind==='audio'?'Upload lyd':'Upload fil'}<input ref={uploadInput} type="file" accept={accept} disabled={uploading || Boolean(generationStatus)} onChange={event=>{const file=event.target.files?.[0];if(file)void upload(file);event.target.value='';}}/><span>{session?.context.domain==='notebook'?'Højst 100 MiB. Filen følger sidens læseadgang.':'Filer over 100 MiB kræver din bekræftelse. Filen deles med holdet, når siden udgives.'}</span></label>}
+    {!assetId && editable && kind === 'image' && session && allowsImageGeneration(session) && <details className="notion-image-generator" ref={generatorDetails} onToggle={event => setGenerationOpen(event.currentTarget.open)}>
+      <summary>Generér billede med AI</summary>
+      <form onSubmit={event => { event.preventDefault(); void generate(); }} aria-busy={Boolean(generationStatus)}>
+        <label>Hvad skal billedet vise? (valgfrit)
+          <textarea ref={generatorInput} value={description} onChange={event => setDescription(event.target.value)} maxLength={500} rows={2}
+            placeholder="Brug sidens indhold, eller beskriv dit motiv" disabled={uploading || Boolean(generationStatus)} />
+        </label>
+        {characters.length > 0 && <label><span id={characterLabelId}>Karakter</span>
+          <select aria-labelledby={characterLabelId} value={characterSlug} onChange={event => setCharacterSlug(event.target.value)} disabled={uploading || Boolean(generationStatus)}>
+            <option value="">Vælg automatisk ud fra siden</option>
+            {characters.map(character => <option key={character.slug} value={character.slug}>{character.name}</option>)}
+          </select>
+        </label>}
+        <div className="notion-image-generator-actions">
+          <button type="submit" disabled={uploading || Boolean(generationStatus)}>Generér og indsæt</button>
+          {generationStatus && <button type="button" onClick={() => uploadController.current?.abort()}>Annullér</button>}
+        </div>
+      </form>
+    </details>}
+    {generationStatus && <p className="notion-image-generator-status" role="status">{generationStatus}</p>}
     {uploading && <div className="notion-upload-progress"><p role="status">{uploadProgress.sent===uploadProgress.total?'Færdiggør upload…':'Uploader '+uploadName+' — '+(uploadProgress.total?Math.floor(uploadProgress.sent/uploadProgress.total*100):0)+' %'} <span>{formatUploadSize(uploadProgress.sent)} af {formatUploadSize(uploadProgress.total)}. Hold siden åben.</span></p><progress max={uploadProgress.total || 1} value={uploadProgress.sent} aria-label="Uploadstatus"/><button ref={cancelUploadButton} type="button" onClick={()=>uploadController.current?.abort()}>Annuller upload</button></div>}
     {error && <div className="notion-media-error" role="alert">{error}{assetId && <button type="button" onClick={()=>{accessRef.current=null;setRetry(value=>value+1);}}>Prøv igen</button>}</div>}
     {access && <>
@@ -363,7 +512,7 @@ function MediaBlock({assetId,pageId,kind,displayTitle,onUpload,editable}:{assetI
   </section>;
 }
 const createMedia=createReactBlockSpec({type:'pageMedia',propSchema:{schemaVersion:{default:1},pageId:{default:''},assetId:{default:''},kind:{default:'download'},displayTitle:{default:''}},content:'none'},{
-  render:({block,editor})=>{const context=useData();return <MediaBlock assetId={block.props.assetId} pageId={block.props.pageId} kind={block.props.kind} displayTitle={block.props.displayTitle} editable={Boolean(context?.canEdit && editor.isEditable)} onUpload={(id,kind)=>editor.updateBlock(block,{props:{assetId:id,kind}})}/>;},
+  render:({block,editor})=>{const context=useData();return <MediaBlock assetId={block.props.assetId} pageId={block.props.pageId} blockId={block.id} kind={block.props.kind} displayTitle={block.props.displayTitle} editable={Boolean(context?.canEdit && editor.isEditable)} onUpload={(id,kind)=>editor.updateBlock(block.id,{props:{assetId:id,kind}})}/>;},
   toExternalHTML:()=> <p>Vedhæftet undervisningsfil</p>,
 });
 const schema = BlockNoteSchema.create({
@@ -376,7 +525,7 @@ interface Session {
   root: Root; element: HTMLElement; context: EditorContext; callbacks?: DotnetCallbacks; doc: Y.Doc; provider?: HocuspocusProvider;
   editor?: Editor; ready: boolean; inSync: boolean; connected: boolean; dirty: boolean; generation: number;
   destroyed: boolean; status: Status; detail: string; presenting: boolean; slides: ReturnType<typeof splitSlides>;
-  readOnly:boolean; accessToken:string; pendingUploads:number; drawingDirty?:boolean;
+  readOnly:boolean; accessToken:string; pendingUploads:number; drawingDirty?:boolean; imageGeneratorBlock?:string;
   resourcesTask?:Promise<void>;
   theme: 'light' | 'dark'; render: () => void; removeListeners: () => void;
 }
@@ -388,6 +537,7 @@ function notify(session: Session, status: Status, detail: string) {
   void session.callbacks?.invokeMethodAsync('OnNotionStatus',status,detail).catch(() => {});
 }
 function canEdit(session: Session) { return !session.readOnly && session.context.canEdit && session.connected && session.inSync && !session.presenting; }
+function allowsImageGeneration(session: Session) { return session.context.domain !== 'notebook' || Boolean(session.context.collectionId); }
 function canUseLiveDraft(session: Session) {
   const context = session.context;
   return context.liveHost === true && !session.readOnly && session.inSync && !session.dirty
@@ -605,15 +755,17 @@ function ConnectedEditor({session}:{session:Session}) {
     editor.focus();
     const cursor=editor.getTextCursorPosition().block;
     const add=(block: Parameters<Editor['insertBlocks']>[0][number])=>{
-      if(cursor.content!==undefined) insertOrUpdateBlockForSlashMenu(editor,block);
-      else {const inserted=editor.insertBlocks([block,{type:'paragraph'}],cursor,'after');editor.setTextCursorPosition(inserted[1],'end');}
+      if(cursor.content!==undefined) return insertOrUpdateBlockForSlashMenu(editor,block);
+      const inserted=editor.insertBlocks([block,{type:'paragraph'}],cursor,'after');
+      editor.setTextCursorPosition(inserted[1],'end');
+      return inserted[0];
     };
     if(type==='classRoster') add({type,props:{holdId:session.context.holdId || ''}});
     else if(type==='holdPoll') add({type,props:{holdId:session.context.holdId || ''}});
     else if(type==='liveCourseActivity') add({type,props:{kind}});
     else if(type==='learningGoal') add({type,content:'Efter aktiviteten kan du…'});
     else if(type==='holdGroup')add({type,props:{holdId:session.context.holdId || ''}});
-    else if(type==='pageMedia')add({type,props:{pageId:session.context.pageId,kind}});
+    else if(type==='pageMedia')return add({type,props:{pageId:session.context.pageId,kind}});
     else if(type==='mermaidDiagram')add({type,props:{source:DEFAULT_MERMAID_SOURCE}});
     else if(type==='codeBlock')add({type,props:{language:'latex'}});
     else if(type==='callout')add({type,props:{tone:'info'},content:'Skriv din note her…'});
@@ -641,6 +793,10 @@ function ConnectedEditor({session}:{session:Session}) {
     {title:'Gemt gruppe',subtext:'Indsæt en gemt gruppe fra holdet',aliases:['gruppe','grupper'],group:'Undervisning',onItemClick:()=>insert('holdGroup')},
     {title:'Upload video',subtext:notebook?'Tilføj MP4 eller WebM til siden':'Del MP4 eller WebM med holdet ved udgivelse',aliases:['video','upload'],group:'Medier',onItemClick:()=>insert('pageMedia','video')},
     {title:'Upload billede',subtext:'Tilføj et billede fra din computer',aliases:['billede','foto','image'],group:'Medier',onItemClick:()=>insert('pageMedia','image')},
+    ...(allowsImageGeneration(session) ? [{title:'Generér billede med AI',subtext:'Brug sidens indhold eller beskriv en illustration',aliases:['generer billede','ai-billede','illustration','image'],group:'Medier',onItemClick:()=>{
+      const block=insert('pageMedia','image');
+      if (block) { session.imageGeneratorBlock=block.id; session.render(); }
+    }}] : []),
     {title:'Upload lyd',subtext:'Tilføj MP3, WAV eller OGG',aliases:['lyd','audio'],group:'Medier',onItemClick:()=>insert('pageMedia','audio')},
     {title:'Upload fil',subtext:'PDF, dokument, ZIP eller mediefil',aliases:['fil','vedhæftning','upload'],group:'Medier',onItemClick:()=>insert('pageMedia')},
     {title:'Emoji',subtext:'Vælg en emoji eller tilføj din egen',aliases:['emoji','emojis','smiley'],group:'Medier',onItemClick:openEmoji},

@@ -14,6 +14,11 @@ internal sealed class CharacterQuizTestApi(
     {
         cancellationToken.ThrowIfCancellationRequested();
         var path = request.RequestUri?.AbsolutePath;
+        if (request.Method == HttpMethod.Get && path == "/api/character-artwork")
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(new CharacterGeneratedArtPage([], null))
+            });
         if (request.Method != HttpMethod.Get || path is null || !path.StartsWith(Prefix, StringComparison.Ordinal)
             || CharacterCatalog.Find(path[Prefix.Length..]) is null)
             throw new InvalidOperationException($"Unexpected character profile request: {request.Method} {request.RequestUri}");

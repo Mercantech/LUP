@@ -24,6 +24,7 @@ public sealed class NotebookCoverTests : IAsyncLifetime
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     private readonly RecordingGenerator generator = new();
     private readonly ProjectionHandler projection = new();
+    private readonly GeneratedImageStorage storage = new();
     private AppDbContext db = null!;
     private readonly Guid teacher = Guid.NewGuid(), owner = Guid.NewGuid(), pageReader = Guid.NewGuid(), bookReader = Guid.NewGuid();
     private readonly Guid collectionId = Guid.NewGuid(), bookId = Guid.NewGuid(), noteId = Guid.NewGuid();
@@ -184,6 +185,74 @@ public sealed class NotebookCoverTests : IAsyncLifetime
         mine.Request.Headers[NotebookCoverRules.SubjectHeader] = teacher.ToString();
         Assert.IsType<ConflictObjectResult>(await mine.Generate("notebook-page", noteId, default));
         Assert.Equal(2, generator.Requests.Count);
+    }
+
+    [Fact]
+    public async Task A_generated_cover_files_each_version_under_the_depicted_character()
+    {
+        var root = await db.NotionPages.SingleAsync(page => page.Id == collectionId);
+        root.Title = "Træningsdata til lineær regression";
+        await db.SaveChangesAsync();
+        var editor = Covers(teacher, isTeacher: true, includeArtwork: true);
+
+        var first = Value<NotebookCoverView>(await editor.Generate(TeachingPage, collectionId, default, includeImage: true));
+        var next = Value<NotebookCoverView>(await editor.Generate(TeachingPage, collectionId, default, characterSlug: "Raymond"));
+
+        Assert.Equal("chameleon", first.CharacterSlug);
+        Assert.Equal("raymond", next.CharacterSlug);
+        Assert.Equal("raymond", generator.Requests[1].Artwork?.CharacterSlug);
+        Assert.Equal(next.CoverId, await db.NotionPages.Where(page => page.Id == collectionId).Select(page => page.CoverId).SingleAsync());
+        var archived = await db.CharacterGeneratedArtwork.AsNoTracking().ToArrayAsync();
+        Assert.Equal(2, archived.Length);
+        var previous = Assert.Single(archived, item => item.OriginalAssetId == first.CoverId);
+        Assert.Equal("chameleon", previous.CharacterSlug);
+        Assert.Equal(first.Image, previous.Image);
+        Assert.All(archived, item => Assert.Equal(collectionId, item.NotionPageId));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Inline_image_is_a_page_attachment_and_reusable_character_art(bool teaching)
+    {
+        var kind = teaching ? TeachingPage : "notebook-page";
+        var pageId = teaching ? collectionId : noteId;
+        var editor = Covers(teaching ? teacher : owner, isTeacher: teaching, includeArtwork: true);
+        var subjectMismatch = Covers(pageReader);
+        subjectMismatch.Request.Headers[NotebookCoverRules.SubjectHeader] = owner.ToString();
+        Assert.IsType<ConflictObjectResult>(await subjectMismatch.GenerateImage(kind, pageId, new(), default));
+        Assert.Empty(generator.Requests);
+
+        var saved = Value<NotionAssetView>(await editor.GenerateImage(kind, pageId,
+            new("Vis Raymond sortere relationer i en database.", "raymond"), default));
+        Assert.Equal("image", saved.Kind);
+        Assert.Equal("image/webp", saved.ContentType);
+        Assert.Contains("raymond", saved.OriginalName, StringComparison.Ordinal);
+        var request = Assert.Single(generator.Requests);
+        Assert.Null(request.Course);
+        Assert.Equal("raymond", request.Artwork?.CharacterSlug);
+        Assert.Equal("Vis Raymond sortere relationer i en database.", request.IllustrationDescription);
+
+        var key = teaching
+            ? await db.NotionAssets.Where(asset => asset.Id == saved.Id && asset.PageId == pageId).Select(asset => asset.Key).SingleAsync()
+            : await db.NotebookAssets.Where(asset => asset.Id == saved.Id && asset.DocumentId == pageId).Select(asset => asset.Key).SingleAsync();
+        var art = await db.CharacterGeneratedArtwork.AsNoTracking().SingleAsync();
+        Assert.Equal(pageId, teaching ? art.NotionPageId : art.NotebookPageId);
+        Assert.Equal(saved.Id, art.OriginalAssetId);
+        Assert.Equal(art.Image, storage.Objects[key]);
+    }
+
+    [Fact]
+    public async Task Inline_image_does_not_commit_after_the_source_page_is_deleted_during_generation()
+    {
+        var editor = Covers(teacher, isTeacher: true, includeArtwork: true);
+        generator.BeforeResult = () => db.NotionPages.Where(page => page.Id == collectionId)
+            .ExecuteUpdateAsync(update => update.SetProperty(page => page.DeletedAtUtc, DateTimeOffset.UtcNow));
+
+        Assert.IsType<ConflictObjectResult>(await editor.GenerateImage(TeachingPage, collectionId, new(null, "raymond"), default));
+        Assert.False(await db.NotionAssets.AnyAsync());
+        Assert.False(await db.CharacterGeneratedArtwork.AnyAsync());
+        Assert.Empty(storage.Objects);
     }
 
     [Fact]
@@ -428,7 +497,7 @@ public sealed class NotebookCoverTests : IAsyncLifetime
             ["Notebook:CollaborationBaseUrl"] = "http://documents"
         }).Build();
         return new(db, new(db), new(db), new(new HttpFactory(projection), configuration, new(configuration)), generator,
-            includeArtwork ? new NotebookCoverArtwork(db, new DisabledObjectStorage()) : null)
+            includeArtwork ? new NotebookCoverArtwork(db, new DisabledObjectStorage()) : null, storage)
         {
             ControllerContext = new() { HttpContext = context }
         };
@@ -440,16 +509,50 @@ public sealed class NotebookCoverTests : IAsyncLifetime
     {
         public bool IsConfigured => true;
         public List<(string Title, IReadOnlyList<string> Excerpts, NotebookCoverArtDirection? Artwork,
-            NotebookCoverCourseLabel? Course)> Requests { get; } = [];
+            NotebookCoverCourseLabel? Course, string? IllustrationDescription)> Requests { get; } = [];
         public Func<Task>? BeforeResult { get; set; }
+        private static readonly byte[] Image = MakeImage();
 
         public async Task<byte[]> GenerateAsync(string title, IReadOnlyList<string> excerpts, CancellationToken ct,
-            NotebookCoverArtDirection? artwork = null, NotebookCoverCourseLabel? course = null)
+            NotebookCoverArtDirection? artwork = null, NotebookCoverCourseLabel? course = null, string? illustrationDescription = null)
         {
-            Requests.Add((title, excerpts, artwork, course));
+            Requests.Add((title, excerpts, artwork, course, illustrationDescription));
             if (BeforeResult is not null) await BeforeResult();
-            return [1, 2, 3];
+            return Image;
         }
+
+        private static byte[] MakeImage()
+        {
+            using var bitmap = new SKBitmap(8, 8);
+            bitmap.Erase(SKColors.Teal);
+            using var image = SKImage.FromBitmap(bitmap);
+            using var webp = image.Encode(SKEncodedImageFormat.Webp, 80);
+            return webp.ToArray();
+        }
+    }
+
+    private sealed class GeneratedImageStorage : IObjectStorage
+    {
+        public bool IsConfigured => true;
+        public string Bucket => "notebook-test";
+        public Dictionary<string, byte[]> Objects { get; } = [];
+
+        public async Task<ObjectPutResult> PutAsync(string key, Stream content, string contentType, CancellationToken ct)
+        {
+            using var buffer = new MemoryStream();
+            await content.CopyToAsync(buffer, ct);
+            Objects[key] = buffer.ToArray();
+            return new(key, Bucket, contentType, buffer.Length);
+        }
+
+        public Task DeleteAsync(string key, CancellationToken ct)
+        {
+            Objects.Remove(key);
+            return Task.CompletedTask;
+        }
+
+        public Task<ObjectGetResult?> GetAsync(string key, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Uri?> GetPresignedGetUrlAsync(string key, TimeSpan expiry, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class ProjectionHandler : HttpMessageHandler

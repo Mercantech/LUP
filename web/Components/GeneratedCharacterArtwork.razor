@@ -1,0 +1,143 @@
+@using System.Globalization
+@using Mercantec.Tech.Web.Characters
+@inject AuthService Auth
+@inject ViewAsStudentContext ViewAs
+@inject HttpClient Http
+@implements IDisposable
+
+@if (CanRead && (ShowEmpty || _items.Count > 0 || _nextOffset.HasValue || _retryOffset.HasValue))
+{
+    <section class="panel generated-character-art" aria-labelledby="@_headingId" aria-busy="@DemoWorld.Pressed(_loading)">
+        <h2 id="@_headingId">Karakterbilleder fra notesbøger</h2>
+        @if (_items.Count > 0)
+        {
+            @foreach (var group in _items.GroupBy(item => item.CharacterSlug))
+            {
+                <div class="generated-character-group" @key="(_scope.Subject, group.Key)">
+                    @if (CharacterSlug is null && CharacterCatalog.Find(group.Key) is { } character)
+                    {
+                        <h3><a href="@character.Path">@character.Name</a></h3>
+                    }
+                    <ul class="generated-character-grid">
+                        @foreach (var item in group)
+                        {
+                            <li @key="item.Id"><GeneratedCharacterArtworkCard Item="item" /></li>
+                        }
+                    </ul>
+                </div>
+            }
+        }
+        else if (!_loading && !_retryOffset.HasValue)
+        {
+            <p>Her vises covers og AI-illustrationer fra de notesbøger, du har adgang til.</p>
+        }
+        @if (_loading)
+        {
+            <p role="status">Henter karakterbilleder…</p>
+        }
+        @if (_retryOffset is int retry)
+        {
+            <p role="alert">Karakterbillederne kunne ikke hentes.</p>
+            <button type="button" class="secondary" @onclick="() => LoadPageAsync(retry)">Prøv igen</button>
+        }
+        else if (_nextOffset is int next)
+        {
+            <button type="button" class="secondary" disabled="@_loading" @onclick="() => LoadPageAsync(next)">Vis flere billeder</button>
+        }
+    </section>
+}
+
+@code {
+    [Parameter] public string? CharacterSlug { get; set; }
+    [Parameter] public bool ShowEmpty { get; set; }
+
+    private readonly string _headingId = $"generated-character-art-{Guid.NewGuid():N}";
+    private readonly List<CharacterGeneratedArtItem> _items = [];
+    private (string? Subject, string? Character) _scope;
+    private CancellationTokenSource? _request;
+    private int? _nextOffset;
+    private int? _retryOffset;
+    private bool _loading;
+    private bool _disposed;
+
+    private (string? Subject, string? Character) Scope =>
+        (Auth.IsAuthenticated && !ViewAs.IsActive ? Auth.Subject : null, CharacterSlug);
+    private bool CanRead => _scope.Subject is not null && _scope == Scope;
+
+    protected override void OnInitialized()
+    {
+        Auth.AuthStateChanged += OnScopeChanged;
+        ViewAs.Changed += OnScopeChanged;
+    }
+
+    protected override Task OnParametersSetAsync() => ReadScopeAsync();
+
+    private Task ReadScopeAsync()
+    {
+        var scope = Scope;
+        if (_disposed || scope == _scope) return Task.CompletedTask;
+        _scope = scope;
+        _request?.Cancel();
+        _request = null;
+        _items.Clear();
+        _nextOffset = _retryOffset = null;
+        _loading = false;
+        return CanRead ? LoadPageAsync(0) : Task.CompletedTask;
+    }
+
+    private async Task LoadPageAsync(int offset)
+    {
+        if (!CanRead || _loading || _disposed) return;
+        using var request = new CancellationTokenSource();
+        _request = request;
+        _loading = true;
+        _retryOffset = null;
+        var path = $"character-artwork?offset={offset.ToString(CultureInfo.InvariantCulture)}";
+        if (_scope.Character is { } slug) path += $"&characterSlug={Uri.EscapeDataString(slug)}";
+        try
+        {
+            var page = await Http.GetFromJsonAsync<CharacterGeneratedArtPage>(path, request.Token);
+            if (!IsCurrent(request)) return;
+            if (page?.Items is not { } items)
+            {
+                _retryOffset = offset;
+                return;
+            }
+
+            var known = _items.Select(item => item.Id).ToHashSet();
+            _items.AddRange(items.Where(item => known.Add(item.Id)));
+            _nextOffset = page.NextOffset is int next && next > offset ? next : null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or System.Text.Json.JsonException or OperationCanceledException)
+        {
+            if (IsCurrent(request)) _retryOffset = offset;
+        }
+        finally
+        {
+            if (ReferenceEquals(_request, request))
+            {
+                _request = null;
+                _loading = false;
+            }
+        }
+    }
+
+    private bool IsCurrent(CancellationTokenSource request) => !_disposed && CanRead
+        && !request.IsCancellationRequested && ReferenceEquals(_request, request);
+
+    private void OnScopeChanged() => _ = InvokeAsync(async () =>
+    {
+        var load = ReadScopeAsync();
+        if (!_disposed) StateHasChanged();
+        await load;
+        if (!_disposed) StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Auth.AuthStateChanged -= OnScopeChanged;
+        ViewAs.Changed -= OnScopeChanged;
+        _request?.Cancel();
+    }
+}

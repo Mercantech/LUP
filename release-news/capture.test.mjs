@@ -174,7 +174,7 @@ test('browser launch failures return safe codes for every selected scenario with
 });
 
 test('fixtures and metadata use matching hold/workspace IDs and safe stable filenames', () => {
-  assert.equal(scenarios.length, 35);
+  assert.equal(scenarios.length, 36);
   assert.equal(new Set(scenarios.map(scenario => scenario.id)).size, scenarios.length);
   for (const scenario of scenarios) assert.match(scenario.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
   const route = scenarios.find(scenario => scenario.id === 'hold-overview').route;
@@ -182,4 +182,11 @@ test('fixtures and metadata use matching hold/workspace IDs and safe stable file
   const workspace = JSON.parse(fixtureResponse(`/api/hold-workspace/${ids.workspace}`).body);
   assert.equal(workspace.holdId, ids.hold);
   assert.equal(JSON.parse(fixtureResponse('/api/notebooks/mine', 'POST').body).ownerSub, ids.teacher);
+  const art = scenarios.find(scenario => scenario.id === 'character-artwork');
+  assert.equal(art.route, '/emojis');
+  const { items } = JSON.parse(fixtureResponse('/api/character-artwork?characterSlug=chameleon').body);
+  assert.deepEqual(items.map(item => item.kind), ['cover', 'image']);
+  assert.ok(items.every(item => item.notebookTitle.includes('Eksempelforløb') && item.sourceHref.startsWith('/notes/')));
+  assert.equal(fixtureResponse(`${items[0].imageUrl}?thumbnail=true`).contentType, 'image/webp');
+  assert.deepEqual(JSON.parse(fixtureResponse('/api/character-artwork?characterSlug=raymond').body).items, []);
 });

@@ -355,6 +355,17 @@
 .notion-blocknote-host .notion-upload-label{display:grid;gap:12px;font-weight:600}
 .notion-blocknote-host .notion-upload-label span{font-size:12px;font-weight:400;color:var(--muted,#63728b)}
 .notion-blocknote-host .notion-upload-label input{font-size:13px;max-width:100%;padding:9px;border:1px dashed var(--rule,#dfe7f2);border-radius:6px}
+.notion-blocknote-host .notion-image-generator { margin-block-start: 12px; border-block-start: 1px solid var(--rule,#dfe7f2); }
+.notion-blocknote-host .notion-image-generator summary { min-height: 44px; padding-block: 11px; color: var(--blue,#2452e8); cursor: pointer; font-weight: 600; }
+.notion-blocknote-host .notion-image-generator form { display: grid; gap: 12px; }
+.notion-blocknote-host .notion-image-generator label { display: grid; gap: 5px; font-size: 13px; font-weight: 600; }
+.notion-blocknote-host .notion-image-generator :is(select,textarea) { min-height: 44px; min-width: 0; width: 100%; padding: 8px; border: 1px solid var(--rule,#dfe7f2); border-radius: 6px; color: inherit; background: var(--paper,#fff); font: inherit; font-weight: 400; }
+.notion-blocknote-host .notion-image-generator-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.notion-blocknote-host .notion-image-generator-actions button { min-height: 44px; padding: 7px 12px; border: 1px solid var(--rule,#dfe7f2); border-radius: 6px; background: var(--paper,#fff); color: inherit; font: inherit; cursor: pointer; }
+.notion-blocknote-host .notion-image-generator-actions button[type="submit"] { border-color: transparent; background: var(--blue,#2452e8); color: #fff; }
+.notion-blocknote-host .notion-image-generator-actions button:disabled { opacity: .6; cursor: default; }
+.notion-blocknote-host .notion-image-generator :is(summary,button,textarea,select):focus-visible { outline: 2px solid var(--blue,#2452e8); outline-offset: 2px; }
+.notion-blocknote-host .notion-image-generator-status { margin: 8px 0 0; color: var(--muted,#63728b); font-size: 13px; }
 .notion-blocknote-host .notion-upload-progress{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
 .notion-blocknote-host .notion-upload-progress p{flex-basis:100%;margin:0;font-size:13px;overflow-wrap:anywhere}
 .notion-blocknote-host .notion-upload-progress p span{display:block;color:var(--muted,#63728b);font-size:12px;margin-top:4px}

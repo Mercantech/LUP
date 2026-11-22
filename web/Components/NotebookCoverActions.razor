@@ -1,4 +1,5 @@
 @using Mercantec.Tech.Web.Notebooks
+@using Mercantec.Tech.Web.Characters
 @inject NotebookCoverClient Client
 @inject AuthService Auth
 @implements IDisposable
@@ -6,13 +7,23 @@
 <details class="notebook-cover-actions">
     <summary><UiIcon Name="image" /><span>@(CoverId is null ? "Tilføj cover" : "Skift cover")</span></summary>
     <div class="cover-options" aria-busy="@DemoWorld.Pressed(_busy)">
+        <label class="cover-character">
+            <span>Karakter</span>
+            <select @bind="_characterSlug" disabled="@_busy" aria-describedby="@_aiHintId">
+                <option value="">Automatisk ved AI</option>
+                @foreach (var character in CoverCharacters)
+                {
+                    <option value="@character.Slug">@character.Name</option>
+                }
+            </select>
+        </label>
         <label class="secondary cover-upload" aria-disabled="@DemoWorld.Pressed(_busy)">
             <span>Upload cover</span>
             <InputFile @key="_fileVersion" class="cover-upload-input" OnChange="Upload"
                        accept="image/jpeg,image/png,image/webp" aria-label="Upload cover" disabled="@_busy" />
         </label>
         <button type="button" class="secondary" @onclick="Generate" disabled="@_busy" aria-describedby="@_aiHintId">Generér med AI</button>
-        <p id="@_aiHintId" class="cover-hint">AI bruger titlen, korte uddrag og relevante emojis fra det gemte indhold sammen med LUP’s illustrationer.</p>
+        <p id="@_aiHintId" class="cover-hint">AI vælger karakter ud fra sidens indhold. Når du uploader et cover, kan du vælge karakteren her for at gemme coveret i dens billedlager.</p>
         @if (CoverId is not null)
         {
             <button type="button" class="secondary" @onclick="Delete" disabled="@_busy">Fjern cover</button>
@@ -35,9 +46,12 @@
     [Parameter] public EventCallback<Guid?> CoverChanged { get; set; }
     [Parameter] public EventCallback BeforeGenerate { get; set; }
 
+    private static readonly CharacterProfile[] CoverCharacters = CharacterCatalog.All
+        .Where(character => CharacterEmojiCatalog.All.Any(emoji => emoji.CharacterSlug == character.Slug)).ToArray();
     private readonly string _aiHintId = $"cover-ai-hint-{Guid.NewGuid():N}";
     private (string Kind, Guid Target) _target;
     private CancellationTokenSource? _request;
+    private string? _characterSlug;
     private bool _busy;
     private int _fileVersion;
     private string? _status;
@@ -51,11 +65,12 @@
         _request?.Cancel();
         _request = null;
         _busy = false;
+        _characterSlug = null;
         _status = _error = null;
     }
 
     private Task Upload(InputFileChangeEventArgs args) =>
-        RunAsync("Gemmer billedet…", "Coveret er gemt.", ct => Client.UploadAsync(Kind, TargetId, args.File, ct));
+        RunAsync("Gemmer billedet…", "Coveret er gemt.", ct => Client.UploadAsync(Kind, TargetId, args.File, ct, _characterSlug));
 
     private Task Generate() => RunAsync("Genererer cover…", "AI-coveret er gemt.", async ct =>
     {
@@ -64,7 +79,7 @@
         ct.ThrowIfCancellationRequested();
         if (subject != Auth.Subject)
             throw new NotebookCoverException("Den aktive konto er ændret. Genindlæs siden, og prøv igen.");
-        return await Client.GenerateAsync(Kind, TargetId, ct);
+        return await Client.GenerateAsync(Kind, TargetId, ct, _characterSlug);
     });
 
     private Task Delete() => RunAsync("Fjerner cover…", "Coveret er fjernet.", ct => Client.DeleteAsync(Kind, TargetId, ct));
@@ -77,14 +92,15 @@
         _busy = true;
         _error = null;
         _status = pending;
-        var saved = false;
+        string? completed = null;
         try
         {
             var subject = Auth.Subject;
             var result = await operation(request.Token);
             if (!ReferenceEquals(_request, request) || request.IsCancellationRequested || subject != Auth.Subject) return;
             await CoverChanged.InvokeAsync(result.CoverId);
-            saved = true;
+            completed = CharacterCatalog.Find(result.CharacterSlug) is { } character
+                ? $"{success} Du kan finde det under {character.Name} i billedlageret." : success;
         }
         catch (Exception ex) when (ex is NotebookCoverException or InvalidOperationException or HttpRequestException
             or System.Text.Json.JsonException or OperationCanceledException or IOException)
@@ -100,7 +116,7 @@
                 _request = null;
                 _busy = false;
                 _fileVersion++;
-                _status = saved ? success : null;
+                _status = completed;
             }
         }
     }

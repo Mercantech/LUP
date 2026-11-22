@@ -1,0 +1,158 @@
+@using Mercantec.Tech.Web.Characters
+@inject AuthService Auth
+@inject ViewAsStudentContext ViewAs
+@inject HttpClient Http
+@inject IJSRuntime Js
+@implements IAsyncDisposable
+
+<article class="generated-art-card">
+    <div class="generated-art-preview">
+        @if (_previewUrl is not null)
+        {
+            <img src="@_previewUrl" alt="@ImageDescription" loading="lazy" decoding="async" />
+        }
+        else if (_previewFailed)
+        {
+            <button class="secondary" type="button" @onclick="LoadPreviewAsync">Prøv at hente billedet igen</button>
+        }
+        else
+        {
+            <span role="status" class="visually-hidden">Henter billedet…</span>
+        }
+    </div>
+    <div class="generated-art-details">
+        <p class="generated-art-kind">@KindLabel</p>
+        <dl>
+            <div><dt>Notesbog</dt><dd>@Item.NotebookTitle</dd></div>
+            @if (!string.IsNullOrWhiteSpace(Item.PageTitle))
+            {
+                <div><dt>Side</dt><dd>@Item.PageTitle</dd></div>
+            }
+        </dl>
+        <div class="generated-art-actions">
+            @if (AuthReturnPath.Normalize(Item.SourceHref) is { } source)
+            {
+                <a href="@source" aria-label="@($"Åbn kilden {SourceName}")">Åbn kilden</a>
+            }
+            <button type="button" class="secondary" disabled="@_downloading" @onclick="DownloadAsync"
+                    aria-label="@($"Hent {KindLabel} fra {SourceName} som WebP")">
+                @(_downloading ? "Henter…" : "Hent WebP")
+            </button>
+        </div>
+        @if (_downloadFailed)
+        {
+            <p role="alert">Billedet kunne ikke downloades. Prøv igen.</p>
+        }
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public CharacterGeneratedArtItem Item { get; set; } = null!;
+
+    private readonly CancellationTokenSource _lifetime = new();
+    private string? _subject;
+    private string? _previewUrl;
+    private Task<IJSObjectReference>? _module;
+    private Task? _previewWork;
+    private bool _previewFailed;
+    private bool _downloading;
+    private bool _downloadFailed;
+    private bool _disposed;
+
+    private string KindLabel => Item.Kind == "cover" ? "Cover" : "AI-illustration";
+    private string ImageDescription => $"{KindLabel} med {CharacterCatalog.Find(Item.CharacterSlug)?.Name ?? Item.CharacterSlug}";
+    private string SourceName => string.IsNullOrWhiteSpace(Item.PageTitle) ? Item.NotebookTitle : Item.PageTitle;
+    private bool CanRead => !_disposed && _subject is not null && Auth.IsAuthenticated
+        && _subject == Auth.Subject && !ViewAs.IsActive;
+
+    protected override Task OnInitializedAsync()
+    {
+        _subject = Auth.Subject;
+        return LoadPreviewAsync();
+    }
+
+    private Task LoadPreviewAsync() => _previewWork = ReadPreviewAsync();
+
+    private async Task ReadPreviewAsync()
+    {
+        if (!CanRead) return;
+        _previewFailed = false;
+        try
+        {
+            var data = await ReadImageAsync(thumbnail: true);
+            if (!CanRead) return;
+            var module = await GetModuleAsync();
+            if (!CanRead) return;
+            var url = await module.InvokeAsync<string>("createCoverUrl", data);
+            if (!CanRead) await ReleaseUrlAsync(module, url);
+            else _previewUrl = url;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JSException or OperationCanceledException)
+        {
+            if (CanRead) _previewFailed = true;
+        }
+    }
+
+    private async Task DownloadAsync()
+    {
+        if (!CanRead || _downloading) return;
+        _downloading = true;
+        _downloadFailed = false;
+        try
+        {
+            var data = await ReadImageAsync(thumbnail: false);
+            if (!CanRead) return;
+            var module = await GetModuleAsync();
+            if (!CanRead) return;
+            await module.InvokeVoidAsync("downloadCover", data, $"{Item.CharacterSlug}-{Item.Kind}-{Item.Id:D}.webp");
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JSException or OperationCanceledException)
+        {
+            if (CanRead) _downloadFailed = true;
+        }
+        finally
+        {
+            _downloading = false;
+        }
+    }
+
+    private async Task<byte[]> ReadImageAsync(bool thumbnail)
+    {
+        var ct = _lifetime.Token;
+        using var response = await Http.GetAsync($"character-artwork/{Item.Id:D}/content" + (thumbnail ? "?thumbnail=true" : ""), ct);
+        response.EnsureSuccessStatusCode();
+        if (response.Content.Headers.ContentType?.MediaType != "image/webp")
+            throw new HttpRequestException("Character artwork must be returned as WebP.");
+        return await response.Content.ReadAsByteArrayAsync(ct);
+    }
+
+    private async Task<IJSObjectReference> GetModuleAsync()
+    {
+        if (_module is { IsFaulted: true } or { IsCanceled: true }) _module = null;
+        _module ??= Js.InvokeAsync<IJSObjectReference>("import", "./js/notebook-covers.js").AsTask();
+        return await _module ?? throw new JSException("Character artwork image module could not be loaded.");
+    }
+
+    private static async Task ReleaseUrlAsync(IJSObjectReference module, string url)
+    {
+        try { await module.InvokeVoidAsync("revokeCoverUrl", url); }
+        catch (JSException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+        if (_previewWork is not null) await _previewWork;
+        if (_module is null) return;
+        try
+        {
+            var module = await _module;
+            if (module is null) return;
+            if (_previewUrl is not null) await ReleaseUrlAsync(module, _previewUrl);
+            await module.DisposeAsync();
+        }
+        catch (Exception ex) when (ex is JSException or OperationCanceledException) { }
+    }
+}
