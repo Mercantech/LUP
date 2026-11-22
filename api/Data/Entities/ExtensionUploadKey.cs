@@ -7,6 +7,7 @@ public sealed class ExtensionUploadKey
     public string OwnerEmail { get; set; } = "";
     public string Label { get; set; } = "";
     public string KeyHash { get; set; } = "";
+    public bool CanReadCalendar { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset ExpiresAtUtc { get; set; }
     public DateTimeOffset? LastUsedAtUtc { get; set; }

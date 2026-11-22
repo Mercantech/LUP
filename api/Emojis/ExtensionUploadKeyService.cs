@@ -35,7 +35,8 @@ public sealed class ExtensionUploadKeyService(AppDbContext db, IOptions<Extensio
         return keys.OrderByDescending(item => item.CreatedAtUtc).Select(Info).ToList();
     }
 
-    public async Task<CreatedExtensionUploadKey?> Create(ClaimsPrincipal user, string label, CancellationToken ct)
+    public async Task<CreatedExtensionUploadKey?> Create(ClaimsPrincipal user, string label, CancellationToken ct,
+        bool includeCalendar = false)
     {
         if (!CanManage(user)) throw new UnauthorizedAccessException();
         var sub = UserClaims.GetSub(user)!.Value;
@@ -46,12 +47,12 @@ public sealed class ExtensionUploadKeyService(AppDbContext db, IOptions<Extensio
         var key = new ExtensionUploadKey
         {
             Id = Guid.NewGuid(), OwnerSub = sub, OwnerEmail = ExtensionUploadOptions.Email(user)!.Trim().ToLowerInvariant(),
-            Label = label, KeyHash = ExtensionUploadCredentials.Hash(raw), CreatedAtUtc = now,
+            Label = label, KeyHash = ExtensionUploadCredentials.Hash(raw), CanReadCalendar = includeCalendar, CreatedAtUtc = now,
             ExpiresAtUtc = now.AddDays(ExtensionUploadCredentials.LifetimeDays)
         };
         db.ExtensionUploadKeys.Add(key);
         await db.SaveChangesAsync(ct);
-        return new(key.Id, raw, key.Label, key.CreatedAtUtc, key.ExpiresAtUtc);
+        return new(key.Id, raw, key.Label, key.CreatedAtUtc, key.ExpiresAtUtc, key.CanReadCalendar);
     }
 
     public async Task<bool> Revoke(ClaimsPrincipal user, Guid id, CancellationToken ct)
@@ -66,9 +67,10 @@ public sealed class ExtensionUploadKeyService(AppDbContext db, IOptions<Extensio
     }
 
     private static ExtensionUploadKeyInfo Info(ExtensionUploadKey key) =>
-        new(key.Id, key.Label, key.CreatedAtUtc, key.ExpiresAtUtc, key.LastUsedAtUtc, key.RevokedAtUtc);
+        new(key.Id, key.Label, key.CreatedAtUtc, key.ExpiresAtUtc, key.LastUsedAtUtc, key.RevokedAtUtc, key.CanReadCalendar);
 }
 
 public sealed record ExtensionUploadKeyInfo(Guid Id, string Label, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc,
-    DateTimeOffset? LastUsedAtUtc, DateTimeOffset? RevokedAtUtc);
-public sealed record CreatedExtensionUploadKey(Guid Id, string Key, string Label, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc);
+    DateTimeOffset? LastUsedAtUtc, DateTimeOffset? RevokedAtUtc, bool CanReadCalendar);
+public sealed record CreatedExtensionUploadKey(Guid Id, string Key, string Label, DateTimeOffset CreatedAtUtc,
+    DateTimeOffset ExpiresAtUtc, bool CanReadCalendar);

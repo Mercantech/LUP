@@ -1,38 +1,47 @@
+import { bindCalendar } from './calendar.mjs';
+
+const badge = document.querySelector('#connection-badge');
+const label = document.querySelector('#connection-label');
 const status = document.querySelector('#connection');
-const heading = document.querySelector('#connection-heading');
 const error = document.querySelector('#access-error');
 const key = document.querySelector('#access-key');
 const connect = document.querySelector('#connect');
 const disconnect = document.querySelector('#disconnect');
 const settings = document.querySelector('#connection-settings');
 const summary = settings.querySelector('summary');
-const card = document.querySelector('.connection-card');
-const ready = document.querySelector('#ready-guide');
-const scope = document.querySelector('#connection-account');
+const summaryLabel = document.querySelector('#connection-summary');
 let busy = false;
 let lastConnected = null;
+let connection;
 let revision = 0;
 
+const showCalendarAccess = bindCalendar({
+  onAccessChanged: code => show(code === 'calendar_access'
+    ? { ...connection, canReadCalendar: false }
+    : { connected: false, message: 'Forbindelsen er udløbet eller tilbagekaldt. Tilføj en ny nøgle.' }),
+});
+
 function show(state) {
+  connection = state;
   const connected = state?.connected === true;
-  const next = connected ? 'connected' : 'disconnected';
-  document.body.dataset.state = card.dataset.state = next;
-  document.body.setAttribute('aria-busy', 'false');
-  heading.textContent = connected ? 'Du er klar' : 'Forbind LUP, og kom i gang';
+  badge.dataset.state = connected ? 'connected' : 'disconnected';
+  label.textContent = connected ? 'Forbundet' : 'Ikke forbundet';
   status.textContent = connected
-    ? `Forbundet${state.email ? ' som ' + state.email : ''}.`
-    : state?.message || 'Tilføj din personlige nøgle for at gemme emojis direkte herfra.';
-  disconnect.hidden = ready.hidden = scope.hidden = !connected;
-  summary.textContent = connected ? 'Administrer forbindelse' : 'Forbind din udvidelse';
-  // A status update must never close an open form while someone is typing.
+    ? (state.email ? 'Forbundet som ' + state.email + '.' : 'Denne Chrome-profil er forbundet med LUP.')
+    : state?.message || 'Hent en personlig nøgle på LUP.dk, og indsæt den her.';
+  disconnect.hidden = !connected;
+  summaryLabel.textContent = connected ? 'Forbindelse og indstillinger' : 'Forbind udvidelsen';
+
+  // Avoid closing a form while someone is entering a replacement key.
   if (lastConnected !== connected) settings.open = !connected;
   lastConnected = connected;
+  showCalendarAccess(connected ? (state.canReadCalendar ? 'ready' : 'upgrade') : 'disconnected');
 }
 
 function setBusy(value, clearing = false) {
   busy = value;
   key.disabled = connect.disabled = disconnect.disabled = value;
-  document.body.setAttribute('aria-busy', String(value));
+  settings.setAttribute('aria-busy', String(value));
   connect.textContent = value && !clearing ? 'Forbinder…' : 'Forbind LUP';
 }
 
@@ -40,6 +49,16 @@ function showError(message) {
   error.textContent = message;
   error.hidden = false;
   settings.open = true;
+}
+
+async function refreshConnection() {
+  const request = ++revision;
+  try {
+    const state = await chrome.runtime.sendMessage({ type: 'settings:status' });
+    if (revision === request && !busy) show(state);
+  } catch {
+    if (revision === request && !busy) show({ connected: false, message: 'LUP kunne ikke kontaktes. Prøv igen senere.' });
+  }
 }
 
 document.querySelector('#access-form').addEventListener('submit', async event => {
@@ -54,8 +73,10 @@ document.querySelector('#access-form').addEventListener('submit', async event =>
     const response = await chrome.runtime.sendMessage({ type: 'settings:save', key: key.value });
     if (!response?.ok) throw new Error(response?.message || 'Forbindelsen kunne ikke gemmes.');
     key.value = '';
+    showCalendarAccess('loading');
     show(response);
-    heading.focus({ preventScroll: true });
+    settings.open = false;
+    summary.focus({ preventScroll: true });
   } catch (failure) {
     failed = true;
     showError(failure.message || 'LUP kunne ikke kontaktes. Prøv igen.');
@@ -78,13 +99,19 @@ disconnect.addEventListener('click', async () => {
     const response = await chrome.runtime.sendMessage({ type: 'settings:clear' });
     if (!response?.ok) throw new Error('Forbindelsen kunne ikke fjernes. Prøv igen.');
     key.value = '';
-    show({ connected: false, message: 'Forbindelsen er fjernet fra denne Chrome-profil. Du kan forbinde igen med en nøgle.' });
+    show({ connected: false, message: 'Forbindelsen er fjernet fra denne Chrome-profil.' });
     cleared = true;
-  } catch (failure) { showError(failure.message || 'Forbindelsen kunne ikke fjernes. Prøv igen.'); }
-  finally { setBusy(false); if (cleared) key.focus(); }
+  } catch (failure) {
+    showError(failure.message || 'Forbindelsen kunne ikke fjernes. Prøv igen.');
+  } finally {
+    setBusy(false);
+    if (cleared) key.focus();
+  }
 });
 
-const initialRevision = ++revision;
-chrome.runtime.sendMessage({ type: 'settings:status' })
-  .then(state => { if (revision === initialRevision && !busy) show(state); })
-  .catch(() => { if (revision === initialRevision && !busy) show({ connected: false, message: 'LUP kunne ikke kontaktes. Prøv igen senere.' }); });
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !Object.hasOwn(changes, 'lup.upload.access') || busy) return;
+  showCalendarAccess('loading');
+  void refreshConnection();
+});
+void refreshConnection();

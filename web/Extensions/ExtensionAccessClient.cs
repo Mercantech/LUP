@@ -5,9 +5,10 @@ using System.Text.Json;
 namespace Mercantec.Tech.Web.Extensions;
 
 public sealed record ExtensionAccessKey(Guid Id, string Label, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc,
-    DateTimeOffset? LastUsedAtUtc, DateTimeOffset? RevokedAtUtc);
+    DateTimeOffset? LastUsedAtUtc, DateTimeOffset? RevokedAtUtc, bool CanReadCalendar);
 public sealed record ExtensionAccessState(bool Enabled, IReadOnlyList<ExtensionAccessKey> Keys);
-public sealed record NewExtensionAccess(Guid Id, string Key, string Label, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc);
+public sealed record NewExtensionAccess(Guid Id, string Key, string Label, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc,
+    bool CanReadCalendar);
 
 /// <summary>Uses the application's Mercantec-authenticated client. Credentials are never persisted here.</summary>
 public sealed class ExtensionAccessClient(HttpClient http)
@@ -18,9 +19,9 @@ public sealed class ExtensionAccessClient(HttpClient http)
         return await Read<ExtensionAccessState>(response, ct);
     }
 
-    public async Task<NewExtensionAccess> Create(string label, CancellationToken ct = default)
+    public async Task<NewExtensionAccess> Create(string label, bool includeCalendar = false, CancellationToken ct = default)
     {
-        using var response = await Send(() => http.PostAsJsonAsync("extension/access", new { label }, ct), ct);
+        using var response = await Send(() => http.PostAsJsonAsync("extension/access", new { label, includeCalendar }, ct), ct);
         var value = await Read<NewExtensionAccess>(response, ct);
         if (value.Id == Guid.Empty || value.Key is not { Length: 47 } || !value.Key.StartsWith("lup_", StringComparison.Ordinal))
             throw new ExtensionAccessException("Nøglen kunne ikke læses. Genindlæs listen, og tilbagekald den nye nøgle, før du prøver igen.");

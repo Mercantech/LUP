@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Mercantec.Tech.Api.Auth;
 using Mercantec.Tech.Api.Data.Entities;
+using Mercantec.Tech.Api.Learning;
 using Mercantec.Tech.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -89,7 +90,7 @@ public sealed partial class HoldCalendarController
         {
             using var graphBudget = CancellationTokenSource.CreateLinkedTokenSource(ct);
             graphBudget.CancelAfter(CopyTimeBudget);
-            var appointment = View(source.Event);
+            var appointment = HoldCalendarAccess.View(source.Event);
             var outcomes = await Task.WhenAll(attempts.Select(attempt => SendToOutlook(appointment, source.HoldName, attempt, graphBudget.Token)));
 
             // Save acknowledgements even if the browser disconnected after Outlook created its copy.

@@ -3,22 +3,30 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ny emoji · LUP</title><link rel="stylesheet" href="style.css">
+  <link rel="icon" href="assets/branding/pixel-lup.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/branding/workspace.css">
 </head>
-<body class="editor-page" data-busy="true">
+<body class="editor-page lup-workspace" data-busy="true">
 <main class="editor-shell">
   <header class="app-header">
-    <div class="brand-lockup"><span class="brand">LUP</span><span class="brand-caption">Dit emojiværksted</span></div>
+    <div class="brand-lockup">
+      <span class="workspace-logo"><img src="assets/branding/pixel-lup.svg" width="22" height="22" alt=""></span>
+      <span class="workspace-brand">LUP</span>
+      <span class="workspace-brand-caption">Emojiværksted</span>
+    </div>
     <div class="header-actions">
       <a class="icon-button" href="search.html" target="_blank" rel="noopener" aria-label="Søg efter billeder" title="Søg efter billeder"><img src="assets/icons/search.svg" alt=""></a>
       <span class="connection-pill" id="connection-wrap" data-state="loading"><span class="status-orb" aria-hidden="true"></span><span id="connection" role="status">Forbinder…</span></span>
       <a class="icon-button" href="popup.html" target="_blank" rel="noopener" aria-label="Forbindelse og indstillinger" title="Forbindelse og indstillinger"><img src="assets/icons/sliders-horizontal.svg" alt=""></a>
     </div>
   </header>
-  <div class="editor-heading"><div><p class="section-kicker">NY EMOJI</p><h1>Fra billede til emoji<span class="heading-dot">.</span></h1><p class="subtitle">Find dit udsnit. Giv det et navn. Gør det til en del af LUP.</p></div><span class="local-badge"><img src="assets/icons/shield-check.svg" alt="">Redigeres kun på din computer</span></div>
+  <div class="editor-heading">
+    <div><h1>Lav en emoji<span class="heading-dot">.</span></h1><p class="subtitle">Beskær dit billede, giv din emoji et navn, og gem den på LUP.</p></div>
+  </div>
   <div class="connection-prompt" id="connect-prompt" hidden><div><strong>Forbind LUP for at gemme</strong><p>Du kan redigere billedet imens. Forbind din personlige nøgle i indstillingerne.</p></div><a href="popup.html" target="_blank" rel="noopener">Åbn indstillinger<img src="assets/icons/arrow-up-right.svg" alt=""></a></div>
   <div class="editor-workspace">
     <section class="image-card" aria-labelledby="image-heading">
-      <div class="card-heading"><div class="card-title"><span class="step-index">01</span><h2 id="image-heading">Gør billedet klar</h2></div><label class="file-button" title="Vælg et billede fra computeren"><img src="assets/icons/image-plus.svg" alt="">Skift billede<input class="visually-hidden" id="file" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" aria-label="Vælg et billede fra computeren"></label></div>
+      <div class="card-heading"><h2 id="image-heading">Gør billedet klar</h2><label class="file-button" title="Vælg et billede fra computeren"><img src="assets/icons/image-plus.svg" alt="">Skift billede<input class="visually-hidden" id="file" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" aria-label="Vælg et billede fra computeren"></label></div>
       <section id="import-problem" class="import-problem" aria-labelledby="import-error-title" hidden>
         <div class="import-error-heading"><h3 id="import-error-title"></h3><code id="import-error-code"></code></div>
         <p id="import-error-message"></p><p id="import-error-hint" class="import-error-hint"></p>
@@ -39,9 +47,9 @@
     </section>
     <aside class="save-column">
       <section class="save-card" aria-labelledby="save-heading">
-        <div class="card-heading"><div class="card-title"><span class="step-index">02</span><h2 id="save-heading">Giv den personlighed</h2></div></div>
+        <div class="card-heading"><h2 id="save-heading">Navn og beskrivelse</h2></div>
         <form id="form">
-          <div class="emoji-sample" aria-label="Forhåndsvisning i emojistørrelse"><span class="sample-label">ET LILLE SMUGKIG</span><div class="sample-bubble"><span>Godt gået!</span><span class="sample-image"><img id="emoji-preview" alt="Din emoji i lille format" hidden><img id="emoji-placeholder" src="assets/icons/image.svg" alt=""></span></div><code id="emoji-token">:din_emoji:</code></div>
+          <div class="emoji-sample" aria-label="Forhåndsvisning i emojistørrelse"><span class="sample-label">Forhåndsvisning</span><div class="sample-bubble"><span>Godt gået!</span><span class="sample-image"><img id="emoji-preview" alt="Din emoji i lille format" hidden><img id="emoji-placeholder" src="assets/icons/image.svg" alt=""></span></div><code id="emoji-token">:din_emoji:</code></div>
           <label class="field-label" for="name">Kort navn</label><div class="name-input"><span aria-hidden="true">:</span><input id="name" maxlength="32" pattern="[a-z0-9_\-]{2,32}" autocomplete="off" required placeholder="glad_kat" aria-describedby="name-hint"><span aria-hidden="true">:</span></div><p class="field-hint" id="name-hint">2–32 små bogstaver, tal, _ eller -.</p>
           <div class="field-label-row"><label class="field-label" for="alt-text">Beskrivelse</label><span id="description-count" class="field-counter" aria-hidden="true">0/240</span></div><textarea id="alt-text" rows="2" maxlength="240" required placeholder="Hvad viser din emoji?" aria-describedby="description-hint"></textarea><p class="field-hint" id="description-hint">Beskriv motivet, så alle kan være med.</p>
           <button id="continue" class="primary-button save-button" type="submit" disabled><span id="save-label">Gem emoji på LUP</span><img src="assets/icons/arrow-right.svg" alt=""></button>
@@ -53,7 +61,7 @@
       <div class="privacy-note"><img src="assets/icons/shield-check.svg" alt=""><p>Dit billede bliver hos dig, indtil du gemmer.<span id="upload-account">Forbind LUP én gang med din personlige nøgle.</span></p></div>
     </aside>
   </div>
-  <footer class="editor-footer"><span>Små billeder. Mere personlighed.</span><a href="https://lup.dk/emojis" target="_blank" rel="noopener noreferrer">Åbn emojibiblioteket<img src="assets/icons/arrow-up-right.svg" alt=""></a></footer>
+  <footer class="editor-footer"><a href="https://lup.dk/emojis" target="_blank" rel="noopener noreferrer">Åbn emojibiblioteket<img src="assets/icons/arrow-up-right.svg" alt=""></a></footer>
 </main>
 <script type="module" src="prepare.mjs"></script>
 </body>

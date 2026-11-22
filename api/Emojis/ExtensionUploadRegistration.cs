@@ -17,16 +17,16 @@ public static class ExtensionUploadRegistration
     }
 }
 
-/// <summary>Small per-process upload budget. Every credential remains revocable in the database.</summary>
+/// <summary>Per-process request budget for each credential and scope.</summary>
 public sealed class ExtensionUploadRateLimit(TimeProvider clock)
 {
-    private readonly ConcurrentDictionary<Guid, Window> _windows = new();
+    private readonly ConcurrentDictionary<(Guid Id, string Scope), Window> _windows = new();
 
-    public bool TryAcquire(Guid id)
+    public bool TryAcquire(Guid id, string scope = ExtensionUploadCredentials.UploadScope)
     {
         var now = clock.GetUtcNow();
         foreach (var old in _windows.Where(item => item.Value.Start < now.AddMinutes(-2))) _windows.TryRemove(old.Key, out _);
-        var window = _windows.GetOrAdd(id, _ => new Window(now));
+        var window = _windows.GetOrAdd((id, scope), _ => new Window(now));
         lock (window)
         {
             if (window.Start < now.AddMinutes(-1)) { window.Start = now; window.Count = 0; }

@@ -38,6 +38,7 @@ function emptyView() {
 const views = { images: emptyView(), gifs: emptyView() };
 let mode = 'images', storageTimer = null;
 const view = () => views[mode];
+const countLabel = (count, copy) => `${count} ${count === 1 ? copy.singular : copy.noun}`;
 
 function text(value, limit = 180) {
   return typeof value === 'string' ? value.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit) : '';
@@ -165,7 +166,7 @@ function renderResults(appendFrom = null) {
   else gallery.replaceChildren(...current.items.map(item => createCard(item)));
   document.querySelector('#results-section').hidden = current.items.length === 0;
   document.querySelector('#results-heading').textContent = current.query ? `${gif ? 'GIF’er' : 'Billeder'} for “${current.query}”` : gif ? 'GIF’er at starte med' : 'Dine søgeresultater';
-  document.querySelector('#results-count').textContent = `${current.items.length} ${copy.noun}`;
+  document.querySelector('#results-count').textContent = countLabel(current.items.length, copy);
   empty.hidden = current.items.length > 0;
   document.querySelector('#empty-heading').textContent = current.hasSearched ? 'Prøv et andet søgeord' : gif ? 'En lille animation siger det hele' : 'Et godt billede er en god start';
   document.querySelector('#empty-description').textContent = current.hasSearched
@@ -198,7 +199,6 @@ function renderMode() {
     description.replaceChildren(document.createTextNode('Søger via '), externalLink('Openverse', 'https://openverse.org'), document.createTextNode('. Se kildesiden for oplysninger om det enkelte billede.'));
     credit.replaceChildren(document.createTextNode('Billedsøgning via '), externalLink('Openverse', 'https://openverse.org'), document.createTextNode('. LUP er ikke godkendt eller certificeret af Openverse.'));
   }
-  document.querySelector('#search-footer-caption').textContent = gif ? 'Find en reaktion. Giv den et hjem på LUP.' : 'Vælg et billede. Lav det til dit eget.';
   document.title = gif ? 'Find GIF’er · LUP' : 'Find billeder · LUP';
   if (view().feedback) displayMessage(view().feedback.value, view().feedback.kind); else status.hidden = true;
 }
@@ -255,10 +255,11 @@ async function search(raw, page = 1, append = false) {
     current.expired = false;
     if (requestedMode === mode) renderResults(appendToView ? previousCount : null);
     const added = current.items.length - previousCount;
+    const resultCount = countLabel(current.items.length, copy);
     message(!current.items.length ? `Ingen ${copy.noun} fundet. Prøv et andet søgeord.` : append
-      ? `${Math.max(0, added)} nye ${copy.noun} er tilføjet nedenfor.`
-      : `${current.items.length} ${copy.noun} klar. Vælg et motiv for at åbne billedværkstedet.`, 'info', requestedMode);
-    if (requestedMode === mode) { announcement.textContent = `${current.items.length} ${copy.noun}${requested ? ` for ${requested}` : ''}.`; updateUrl(); }
+      ? `${countLabel(added, copy)} tilføjet nedenfor.`
+      : `${resultCount} fundet. Vælg et motiv for at åbne billedværkstedet.`, 'info', requestedMode);
+    if (requestedMode === mode) { announcement.textContent = `${resultCount}${requested ? ` for ${requested}` : ''}.`; updateUrl(); }
     persistView();
   } catch {
     if (requestGeneration === current.generation) message('Søgningen kunne ikke gennemføres. Kontrollér forbindelsen, og prøv igen.', 'error', requestedMode);

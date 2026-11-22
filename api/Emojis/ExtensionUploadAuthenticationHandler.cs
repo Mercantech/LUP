@@ -20,6 +20,8 @@ public sealed class ExtensionUploadAuthenticationHandler(IOptionsMonitor<Authent
             new Claim("role", "Teacher"), new Claim(ExtensionUploadCredentials.KeyIdClaim, key.Id.ToString()),
             new Claim(ExtensionUploadCredentials.ScopeClaim, ExtensionUploadCredentials.UploadScope)
         ], ExtensionUploadCredentials.Scheme, "sub", "role");
+        if (key.CanReadCalendar)
+            identity.AddClaim(new Claim(ExtensionUploadCredentials.ScopeClaim, ExtensionUploadCredentials.CalendarScope));
         return AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), ExtensionUploadCredentials.Scheme));
     }
 

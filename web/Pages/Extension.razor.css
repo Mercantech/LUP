@@ -1,9 +1,216 @@
-.extension-panel { display: grid; gap: 12px; max-width: 48rem; margin-bottom: 18px; }
-.extension-panel h2, .extension-panel p { margin: 0; }
+.extension-page {
+    --extension-violet: var(--lup-logo-l, #763ca7);
+    --extension-lilac: color-mix(in srgb, var(--extension-violet) 11%, var(--paper));
+    display: grid;
+    gap: 20px;
+    width: min(100%, 1080px);
+    margin-inline: auto;
+}
+
+.extension-hero {
+    display: grid;
+    grid-template-columns: 1.15fr minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(22px, 5vw, 76px);
+    padding: clamp(24px, 5vw, 56px);
+    border: 1px solid color-mix(in srgb, var(--extension-violet) 18%, var(--rule));
+    border-radius: 24px;
+    background:
+        radial-gradient(ellipse at 0 0, color-mix(in srgb, var(--extension-violet) 15%, transparent), transparent 68%),
+        linear-gradient(125deg, var(--paper), var(--sky));
+}
+
+.extension-brand {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 22px;
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    background: var(--paper);
+}
+
+.extension-brand svg { width: 27px; height: 27px; }
+
+.extension-intro h1 {
+    margin: 0;
+    color: var(--ink);
+    font-size: clamp(2.15rem, 4.4vw, 4rem);
+    font-weight: 700;
+    line-height: .98;
+    letter-spacing: -.065em;
+}
+
+.extension-intro p {
+    max-width: 36ch;
+    margin: 15px 0 0;
+    color: var(--muted);
+    font-size: clamp(.95rem, 1.6vw, 1.08rem);
+    line-height: 1.6;
+}
+
+.extension-features { display: grid; gap: 10px; min-width: 0; }
+
+.extension-feature {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 13px;
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    background: var(--paper);
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color .15s ease;
+}
+
+.extension-feature:hover { border-color: var(--extension-violet); color: var(--ink); }
+.extension-feature strong, .extension-feature small { display: block; }
+.extension-feature small { margin-top: 2px; color: var(--muted); line-height: 1.35; }
+.extension-feature > ::deep .ui-icon { color: var(--blue); }
+
+.extension-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border-radius: 10px;
+    background: var(--tint);
+    color: var(--blue);
+}
+
+.extension-feature .extension-icon { width: 42px; height: 42px; }
+.extension-icon.emoji { background: var(--extension-lilac); color: var(--extension-violet); }
+.extension-icon ::deep .ui-icon { width: 19px; height: 19px; }
+
+.extension-message {
+    margin: 0;
+    padding: 12px 16px;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    background: var(--tint);
+    color: var(--ink);
+}
+
+.extension-message.error {
+    background: var(--lup-danger-bg, light-dark(#fff0f1, #432b35));
+    color: var(--lup-danger, light-dark(#a82039, #ffadba));
+}
+
+.extension-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 16px;
+}
+
+.extension-panel {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+    padding: clamp(17px, 3vw, 28px);
+    border: 1px solid var(--rule);
+    border-radius: 18px;
+    background: var(--paper);
+    color: var(--ink);
+}
+
+.extension-heading { display: flex; align-items: center; gap: 11px; }
+.extension-heading h2 { margin: 0; font-size: 1.25rem; line-height: 1.16; }
+.extension-panel p { margin: 0; color: var(--muted); line-height: 1.55; }
 .extension-panel > button, .extension-new-key button { justify-self: start; }
-.extension-new-key { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--rule, #dfe7f2); border-radius: 8px; background: var(--tint, #eaf0ff); }
+.extension-panel > .action { display: inline-flex; align-items: center; gap: 8px; }
+.extension-panel .extension-field { margin: 0; }
+.extension-panel .extension-field input { width: 100%; }
+.extension-page :is(a, button, input, summary):focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+.extension-calendar-option {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 12px 14px;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    background: var(--extension-lilac);
+    cursor: pointer;
+}
+
+.extension-calendar-option input {
+    width: 17px;
+    height: 17px;
+    margin: 2px 0 0;
+    accent-color: var(--extension-violet);
+    cursor: inherit;
+}
+
+.extension-calendar-option:has(input:disabled) { cursor: default; }
+.extension-calendar-option strong, .extension-calendar-option small { display: block; }
+.extension-calendar-option small { margin-top: 3px; color: var(--muted); line-height: 1.45; }
+
+.extension-new-key {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    background: var(--tint);
+}
+
 .extension-new-key input { font-family: ui-monospace, monospace; }
-.extension-hint { color: var(--muted, #63728b); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
-.extension-keys { list-style: none; display: grid; gap: 12px; margin: 0; padding: 0; }
-.extension-keys li { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--rule, #dfe7f2); padding-top: 12px; }
-.extension-keys li > div { min-width: 0; }
+
+.extension-setup ol {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding-left: 1.5rem;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.extension-setup li { padding-inline-start: .2rem; }
+.extension-setup li::marker { color: var(--blue); font-weight: 700; }
+.extension-setup :is(strong, code) { color: var(--ink); }
+.extension-install { padding-top: 12px; border-top: 1px solid var(--rule); }
+.extension-install summary { width: fit-content; color: var(--blue); font-weight: 600; cursor: pointer; }
+.extension-install p { padding-top: 8px; }
+
+.extension-connections { grid-column: 1 / -1; }
+.extension-hint { font-size: .85rem; overflow-wrap: anywhere; }
+.extension-empty { padding: 12px 14px; border-radius: 10px; background: var(--bg); }
+.extension-keys { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+
+.extension-keys li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-block: 13px;
+    border-top: 1px solid var(--rule);
+}
+
+.extension-keys li:last-child { padding-bottom: 0; }
+.extension-key-info { min-width: 0; }
+.extension-key-title { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 8px; }
+.extension-key-title strong { overflow-wrap: anywhere; }
+
+.extension-scope {
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: var(--extension-lilac);
+    color: var(--extension-violet);
+    font-size: .75rem;
+    font-weight: 650;
+}
+
+@media (max-width: 740px) {
+    .extension-hero, .extension-grid { grid-template-columns: 1fr; }
+    .extension-intro h1 { font-size: clamp(2rem, 7vw, 3rem); }
+    .extension-brand { margin-bottom: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) { .extension-feature { transition: none; } }

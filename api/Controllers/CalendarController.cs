@@ -58,9 +58,7 @@ public sealed class CalendarController(AzureGraphCalendarClient graph) : Control
 
         try
         {
-            var events = await graph.GetCalendarViewAsync(upn, start, end, ct);
-            var active = await MarkLupCopies(db, upn, events.Where(e => !e.IsCancelled).ToList(), ct);
-            var visible = TeacherCalendarHoldFilter.HideDuplicateHolds(active);
+            var visible = await ReadOutlookAsync(graph, db, upn, start, end, ct);
             return Ok(new TeacherCalendarView(upn, start, end, Configured: true, Events: visible));
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -112,6 +110,14 @@ public sealed class CalendarController(AzureGraphCalendarClient graph) : Control
             return StatusCode(StatusCodes.Status502BadGateway,
                 new { error = "graph_unavailable", message = "Aftalen kunne ikke hentes fra Outlook." });
         }
+    }
+
+    internal static async Task<IReadOnlyList<TeacherCalendarEvent>> ReadOutlookAsync(AzureGraphCalendarClient graph,
+        AppDbContext db, string upn, DateTimeOffset start, DateTimeOffset end, CancellationToken ct)
+    {
+        var events = await graph.GetCalendarViewAsync(upn, start, end, ct);
+        var active = await MarkLupCopies(db, upn, events.Where(e => !e.IsCancelled).ToList(), ct);
+        return TeacherCalendarHoldFilter.HideDuplicateHolds(active);
     }
 
     private static async Task<List<TeacherCalendarEvent>> MarkLupCopies(AppDbContext db, string upn,

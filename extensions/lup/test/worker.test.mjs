@@ -428,7 +428,7 @@ test('successful connection and status reveal identity/scope status without retu
   const calls = [];
   globalThis.fetch = async (url, options) => { calls.push({ url, options }); return jsonResponse(statusResponse()); };
   const saved = await handleMessage({ type: 'settings:save', key: '  ' + accessKey + '  ' }, popupSender());
-  assert.deepEqual(saved, { ok: true, connected: true, email: 'teacher@example.test' });
+  assert.deepEqual(saved, { ok: true, connected: true, email: 'teacher@example.test', canReadCalendar: false });
   assert.equal(localRecords.get(accessSlot), accessKey);
   const status = await handleMessage({ type: 'settings:status' }, popupSender());
   assert.deepEqual(status, saved);
@@ -747,4 +747,41 @@ test('expired GIF entries and unsafe download hosts or licenses cannot create im
   for (const resultId of ['gif:not-a-uuid', `video:${searchId}`, `gif:${searchId}/extra`])
     assert.equal((await handleMessage({ type: 'search:select', resultId }, searchSender())).ok, false);
   assert.equal(createdTabs.length, 0);
+});
+
+
+test('calendar scope is visible in status and calendar data stays inside the trusted popup', async () => {
+  const week = { type: 'calendar:week', from: '2026-03-22T23:00:00.000Z', to: '2026-03-29T22:00:00.000Z' };
+  const event = { kind: 'outlook', title: 'Optaget', start: '2026-03-23T08:00:00Z',
+    end: '2026-03-23T09:00:00Z', isAllDay: false, source: 'Outlook', location: '' };
+  assert.deepEqual(await handleMessage(week, popupSender()), { ok: false, code: 'connection_required' });
+  localRecords.set(accessSlot, accessKey);
+  for (const sender of [lupSender(), prepareSender(), searchSender(), {}, { url: 'chrome-extension://other-id/popup.html' }]) {
+    assert.equal((await handleMessage(week, sender)).ok, false);
+  }
+  assert.equal((await handleMessage({ ...week, to: '2026-04-29T22:00:00.000Z' }, popupSender())).ok, false);
+
+  globalThis.fetch = async (url, options) => {
+    const request = new URL(url);
+    assert.equal(request.origin, 'https://lup.dk');
+    assert.equal(options.headers.Authorization, 'Bearer ' + accessKey);
+    assert.equal(options.credentials, 'omit');
+    assert.equal(options.cache, 'no-store');
+    if (request.pathname.endsWith('/status')) return jsonResponse(statusResponse({ canReadCalendar: true }));
+    assert.equal(request.pathname, '/api/extension/calendar');
+    assert.equal(request.searchParams.get('from'), week.from);
+    assert.equal(request.searchParams.get('to'), week.to);
+    return jsonResponse({ events: [{ ...event, privateBody: 'discard' }], outlookStatus: 'ready' });
+  };
+  assert.equal((await handleMessage({ type: 'settings:status' }, popupSender())).canReadCalendar, true);
+  assert.deepEqual(await handleMessage(week, popupSender()), { ok: true, events: [event], outlookStatus: 'ready' });
+  assert.equal(records.size, 0);
+
+  globalThis.fetch = async () => jsonResponse({ error: 'extension_calendar_not_enabled' }, 403);
+  assert.deepEqual(await handleMessage(week, popupSender()), { ok: false, code: 'calendar_access' });
+  globalThis.fetch = async () => {
+    localRecords.delete(accessSlot);
+    return jsonResponse({ events: [event], outlookStatus: 'ready' });
+  };
+  assert.equal((await handleMessage(week, popupSender())).ok, false);
 });

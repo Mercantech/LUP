@@ -10,6 +10,8 @@ const MAX_PENDING = 8;
 const MAX_SEARCH_RESULTS = 200;
 const ACCESS_KEY = 'lup.upload.access';
 const KEY_PATTERN = /^lup_[A-Za-z0-9_-]{43}$/;
+const ISO_WEEK_BOUNDARY = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+const DAY_MS = 86_400_000;
 const fail = (message, retry = false) => ({ ok: false, message, retry });
 const importFailure = code => ({ ok: false, code });
 const activeUploads = new Set();
@@ -102,7 +104,7 @@ async function apiRequest(path, key, init = {}) {
   try { data = await response.json(); } catch { }
   if (!response.ok) {
     const messages = {
-      extension_access_invalid: 'Forbindelsen er udløbet eller tilbagekaldt. Tilføj en ny uploadnøgle i indstillingerne.',
+      extension_access_invalid: 'Forbindelsen er udløbet eller tilbagekaldt. Tilføj en ny nøgle i indstillingerne.',
       extension_access_forbidden: 'Denne forbindelse har ikke adgang til at tilføje emojis.',
       name_taken: 'Navnet bruges allerede. Vælg et andet kort navn.',
       emoji_limit: 'Emojibiblioteket er fyldt. Fjern en emoji på LUP.dk først.',
@@ -112,8 +114,11 @@ async function apiRequest(path, key, init = {}) {
       invalid_file_signature: 'Billedet kunne ikke læses. Vælg det igen.',
       object_storage_disabled: 'LUPs billedlager er ikke tilgængeligt lige nu. Prøv igen senere.',
     };
-    throw new Error(messages[data?.error] ?? (response.status === 401 || response.status === 403
-      ? 'Uploadnøglen virker ikke. Kontrollér forbindelsen i indstillingerne.' : 'LUP kunne ikke gemme billedet. Prøv igen senere.'));
+    const message = messages[data?.error] ?? (response.status === 401 || response.status === 403
+      ? 'Nøglen virker ikke. Kontrollér forbindelsen i indstillingerne.'
+      : init.method === 'POST' ? 'LUP kunne ikke gemme billedet. Prøv igen senere.'
+        : 'LUP kunne ikke gennemføre kaldet. Prøv igen senere.');
+    throw Object.assign(new Error(message), { code: data?.error, status: response.status });
   }
   return data;
 }
@@ -123,7 +128,8 @@ async function connectionStatus() {
   if (!KEY_PATTERN.test(key ?? '')) return { ok: true, connected: false };
   try {
     const state = await apiRequest('status', key);
-    return { ok: true, connected: state?.connected === true && state.scope === 'emoji:create', email: state?.email };
+    const connected = state?.connected === true && state.scope === 'emoji:create';
+    return { ok: true, connected, email: state?.email, canReadCalendar: connected && state.canReadCalendar === true };
   } catch (error) { return { ok: true, connected: false, message: publicError(error) }; }
 }
 
@@ -132,15 +138,57 @@ async function settingsMessage(message, sender) {
   if (message.type === 'settings:status') return connectionStatus();
   if (message.type === 'settings:clear') { await chrome.storage.local.remove(ACCESS_KEY); return { ok: true }; }
   if (message.type !== 'settings:save' || typeof message.key !== 'string' || !KEY_PATTERN.test(message.key.trim()))
-    return fail('Indsæt din personlige LUP-uploadnøgle.');
+    return fail('Indsæt din personlige LUP-nøgle.');
   const key = message.key.trim();
   try {
     const state = await apiRequest('status', key);
     if (state?.connected !== true || state.scope !== 'emoji:create') return fail('Nøglen giver ikke adgang til emoji-upload.');
     // Local profile only, never sync storage or a source-controlled file.
     await chrome.storage.local.set({ [ACCESS_KEY]: key });
-    return { ok: true, connected: true, email: state.email };
+    return { ok: true, connected: true, email: state.email, canReadCalendar: state.canReadCalendar === true };
   } catch (error) { return fail(publicError(error)); }
+}
+
+function calendarBoundary(value) {
+  if (typeof value !== 'string' || !ISO_WEEK_BOUNDARY.test(value)) return NaN;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value ? timestamp : NaN;
+}
+
+function calendarEvent(value) {
+  if (!value || !['teaching', 'deadline', 'outlook'].includes(value.kind)
+    || typeof value.title !== 'string' || typeof value.isAllDay !== 'boolean'
+    || typeof value.start !== 'string' || typeof value.end !== 'string') return null;
+  const start = Date.parse(value.start), end = Date.parse(value.end);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+  return {
+    kind: value.kind, title: value.title, start: value.start, end: value.end, isAllDay: value.isAllDay,
+    source: typeof value.source === 'string' ? value.source : '',
+    location: typeof value.location === 'string' ? value.location : '',
+  };
+}
+
+async function calendarMessage(message, sender) {
+  if (!ownPopup(sender)) return fail('Kalenderen kan kun åbnes fra LUP-udvidelsens popup.');
+  const duration = calendarBoundary(message.to) - calendarBoundary(message.from);
+  // A local week can be shorter or longer when the time zone changes offset.
+  if (!(duration >= 6 * DAY_MS && duration <= 8 * DAY_MS)) return fail('Vælg en gyldig kalenderuge.');
+
+  const key = (await chrome.storage.local.get(ACCESS_KEY))[ACCESS_KEY];
+  if (!KEY_PATTERN.test(key ?? '')) return { ok: false, code: 'connection_required' };
+  try {
+    const range = new URLSearchParams({ from: message.from, to: message.to });
+    const data = await apiRequest('calendar?' + range, key);
+    if (!Array.isArray(data?.events)) return fail('Kalenderen kunne ikke hentes.');
+    const currentKey = (await chrome.storage.local.get(ACCESS_KEY))[ACCESS_KEY];
+    if (currentKey !== key) return fail('Forbindelsen er ændret. Prøv igen.');
+    return { ok: true, events: data.events.map(calendarEvent).filter(Boolean),
+      outlookStatus: data.outlookStatus };
+  } catch (error) {
+    if (error?.code === 'extension_calendar_not_enabled') return { ok: false, code: 'calendar_access' };
+    if (error?.status === 401 || error?.status === 403) return { ok: false, code: 'connection_required' };
+    return fail('Kalenderen kunne ikke hentes.');
+  }
 }
 
 async function prune() {
@@ -305,6 +353,7 @@ function prepareSender(sender, id, job) {
 }
 
 export async function handleMessage(message, sender) {
+  if (message?.type === 'calendar:week') return calendarMessage(message, sender);
   if (typeof message?.type === 'string' && message.type.startsWith('settings:')) return settingsMessage(message, sender);
   if (typeof message?.type === 'string' && message.type.startsWith('search:')) return searchMessage(message, sender);
   if (!message || typeof message !== 'object' || !validId(message.id)) return typeof message?.type === 'string' && message.type.startsWith('prepare:')
