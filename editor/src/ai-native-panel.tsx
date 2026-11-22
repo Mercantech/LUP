@@ -63,7 +63,9 @@ export function NativeAiPanel({ review, pageId, pageTitle, enabled, open, panelI
     const sidebar = layoutRoot?.querySelector<HTMLElement>('#notion-sidebar');
     const measure = () => {
       frame = 0;
-      const sidebarWidth = sidebar && getComputedStyle(sidebar).position !== 'fixed' ? sidebar.getBoundingClientRect().width : 0;
+      const sidebarWidth = layoutRoot
+        ? Number.parseFloat(getComputedStyle(layoutRoot).getPropertyValue('--notion-sidebar-space')) || 0
+        : 0;
       const next = { viewportWidth: window.innerWidth, workspaceWidth: layoutRoot?.clientWidth || window.innerWidth, sidebarWidth };
       setGeometry(current => current.viewportWidth === next.viewportWidth && current.workspaceWidth === next.workspaceWidth && current.sidebarWidth === next.sidebarWidth ? current : next);
     };
