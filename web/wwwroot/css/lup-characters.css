@@ -15,6 +15,7 @@
 .lup .character-bat { --character-accent:#805475; }
 .lup .character-bilbo { --character-accent:#627744; }
 .lup .character-gitmejsen { --character-accent:#445fa8; }
+.lup .character-iben { --character-accent:#7252b3; }
 .lup .character-beaver { --character-accent:#426fa8; }
 .lup .character-fox { --character-accent:#b44d42; }
 .lup .character-card { display:flex; flex-direction:column; min-width:0; border:1px solid var(--rule); background:var(--paper); border-radius:16px; overflow:hidden; color:var(--ink); transition:border-color .15s,box-shadow .15s; }

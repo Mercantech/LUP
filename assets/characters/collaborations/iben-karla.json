@@ -1,0 +1,30 @@
+{
+  "id": "iben-karla",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/iben/workshop.png",
+      "sha256": "41addb8e40d28a753d74b9646f474c87295442ef332bcecacdfcbb57eedbb3b6"
+    },
+    {
+      "path": "web/wwwroot/images/characters/karla/portrait.png",
+      "sha256": "a15ba962ae680010da2caca71e4d89164c790956c89f33933947176d354c39ff"
+    }
+  ],
+  "prompt": "3:2 hand-sculpted stop-motion clay illustration with the approved Iben character reference, curly dark ponytail, two feelers, indigo wing covers, a glowing segmented abdomen and no glasses. Two distinct established characters from the two references, equal prominence, at a contemporary shared developer table. Karla the tall standing orange hermit crab with big orange eyestalks, purple vest and magnificent thick wavy turquoise shell exactly as reference 2, holds up her phone with one orange claw. Iben the young dark-haired firefly in her purple overshirt, no glasses, shows a full-size browser on a laptop. On both phone and browser the SAME single clay lantern listing and a purple heart-shaped favorite toggle visibly filled with violet; one shared teaching subject, two platforms. Two close expressions as they compare results after a tap, both facing the screens, large clear readable purely pictorial state with NO text or numbers; retain clear view of Karla's shell and Iben's amber glow. Warm and modern innovation studio by the coast.",
+  "alt": "Karla viser et lanternekort på mobilen, mens Iben peger på det tilsvarende kort med en hjerteknap i browseren.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/iben-karla.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2645010,
+    "sha256": "195782d06d6877d18f8f25b875057eedf76884729834aa55a83b29d290c667e2"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/iben-karla.webp",
+    "width": 1099,
+    "height": 733,
+    "bytes": 174982,
+    "sha256": "aced6687c6dbcfcd9a742c646837c6c8fd40930d9794fc5aa41f5224c7123647"
+  }
+}

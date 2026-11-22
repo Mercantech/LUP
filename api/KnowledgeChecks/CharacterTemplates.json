@@ -2535,6 +2535,128 @@
           }
         ]
       }
+    },
+    {
+      "key": "iben-blazor-lanterner",
+      "characterSlug": "iben",
+      "intro": "Se på min lanterne, og følg lysstyrken fra skyderen til C# og tilbage. Bagefter prøver vi det samme med flere lanterner.",
+      "difficulty": "Begynder",
+      "draft": {
+        "title": "Fra skyder til lys med Blazor",
+        "topic": "Blazor og C#",
+        "description": "Seks spørgsmål om binding, komponentparametre, hændelser, nøgler og interaktiv rendering.",
+        "estimatedMinutes": 6,
+        "questions": [
+          {
+            "id": "79b00b22-d4c3-54a5-9fa5-ab7f0256ab0a",
+            "kind": "single",
+            "prompt": "Du trækker i skyderen. Hvad skal forbinde lysstyrken i feltet med værdien i C# i begge retninger?",
+            "options": [
+              "Skriv kun value=\"@brightness\".",
+              "Brug @bind=\"brightness\".",
+              "Giv slideren samme id som feltet."
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "@bind viser værdien fra C# og skriver den nye værdi tilbage, når den valgte hændelse indtræffer.",
+            "learnMoreUrl": "https://learn.microsoft.com/aspnet/core/blazor/components/data-binding",
+            "learnMoreTitle": "Microsoft Learn · Databinding"
+          },
+          {
+            "id": "58f46138-b50b-556b-ae39-d19e24a92837",
+            "kind": "single",
+            "prompt": "Navnet på lanternen skal ændre sig på skærmen ved hvert tastetryk. Hvilken hændelse passer til tekstfeltets @bind:event?",
+            "options": [
+              "onclick",
+              "onblur",
+              "oninput"
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "oninput udløses, når brugeren redigerer tekstfeltet. Derfor kan det andet sted på siden vise navnet med det samme.",
+            "learnMoreUrl": "https://learn.microsoft.com/aspnet/core/blazor/components/data-binding",
+            "learnMoreTitle": "Microsoft Learn · Databinding"
+          },
+          {
+            "id": "49f097b3-ac25-5972-93db-d50a49dbbf69",
+            "kind": "single",
+            "prompt": "Et lanternekort skal vise den titel, det får fra sin forælder. Hvordan tager kortet imod titlen?",
+            "options": [
+              "Med en offentlig property markeret med [Parameter].",
+              "Med et privat felt med samme navn i begge komponenter.",
+              "Ved at kalde StateHasChanged i forælderen."
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Forælderen angiver titlen som en attribut på kortet, og Blazor sætter komponentens parameter.",
+            "learnMoreUrl": "https://learn.microsoft.com/aspnet/core/blazor/components/",
+            "learnMoreTitle": "Microsoft Learn · Komponentparametre"
+          },
+          {
+            "id": "a604cbe9-c638-5e50-a129-e34e2dafa1d5",
+            "kind": "single",
+            "prompt": "Listen ejer værdien for den valgte lanterne. Hvordan kan et barn fortælle listen, at eleven trykkede på det?",
+            "options": [
+              "Gem id’et i en ny lokal variabel i barnet.",
+              "Kald InvokeAsync med id’et på en EventCallback<int> fra forælderen.",
+              "Giv knappen et HTML-id, der svarer til lanternens id."
+            ],
+            "correctOptions": [
+              1
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Barnet sender id’et via callbacken. Forælderen kan gemme valget, som de andre kort derefter kan vise.",
+            "learnMoreUrl": "https://learn.microsoft.com/aspnet/core/blazor/components/event-handling",
+            "learnMoreTitle": "Microsoft Learn · Hændelser og EventCallback"
+          },
+          {
+            "id": "51cde70b-05e2-5539-9482-692fea6baf96",
+            "kind": "single",
+            "prompt": "Et nyt kort indsættes først i en liste med redigerbare lanterner. Hvad hjælper Blazor med at bevare forbindelsen mellem en lanterne og dens komponent?",
+            "options": [
+              "Brug det aktuelle indeks som nøgle.",
+              "Sortér lanternens navn alfabetisk.",
+              "Brug @key med lanternens stabile, unikke id."
+            ],
+            "correctOptions": [
+              2
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "Når rækkefølgen ændrer sig, identificerer nøglen stadig den samme lanterne blandt søskende.",
+            "learnMoreUrl": "https://learn.microsoft.com/aspnet/core/blazor/components/element-component-model-relationships",
+            "learnMoreTitle": "Microsoft Learn · Lister og nøgler"
+          },
+          {
+            "id": "255ce16b-27e0-5c2a-9d19-1413481a00b5",
+            "kind": "single",
+            "prompt": "I en Blazor Web App vises knappens HTML med statisk serverrendering. Hvad skal være på plads, for at et klik kan køre dens C#-handler?",
+            "options": [
+              "Komponenten skal have en interaktiv rendertilstand, som appen understøtter.",
+              "Siden skal indeholde en EditForm.",
+              "Knappen skal have autofocus."
+            ],
+            "correctOptions": [
+              0
+            ],
+            "acceptedAnswers": [],
+            "manualGrading": false,
+            "explanation": "En interaktiv rendertilstand forbinder browserens hændelser med C#-komponenten. Interactive Server er én mulighed.",
+            "learnMoreUrl": "https://learn.microsoft.com/aspnet/core/blazor/components/render-modes",
+            "learnMoreTitle": "Microsoft Learn · Rendertilstande"
+          }
+        ]
+      }
     }
   ]
 }

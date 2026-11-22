@@ -510,6 +510,28 @@ internal static class CharacterCollaborations
                 TeachingSource = new("ML-VUF · Dag 7 om modelkvalitet og clustering", "https://ml.mercantec.tech/vuf/#/dag/7", true, false)
             }
         },
+        new("iben-karla", ["iben", "karla"], "Iben og Karla · Et hjerte på to skærme",
+            "Iben bygger en favoritknap i Blazor, og Karla bygger den samme funktion i Flutter. De sammenligner, hvilken værdi hvert klik gemmer, og hvordan hjertet viser den.",
+            "Karla viser et lanternekort på mobilen, mens Iben peger på det tilsvarende kort med en hjerteknap i browseren.")
+        {
+            Exercise = new("Blazor og Flutter · Klik og lokal tilstand",
+                "Start med favorit slået fra i begge apps. Lad et klik skifte en boolsk værdi med @onclick i Ibens komponent og setState i Karlas widget. Tryk to gange i hver app.",
+                "Hver app viser først et fyldt hjerte og derefter et tomt. Klikket ændrer den lokale favoritværdi på den enhed, hvor du trykker.")
+            {
+                TeachingSource = new("Microsoft Learn · Hændelser i Blazor", "https://learn.microsoft.com/en-us/aspnet/core/blazor/components/event-handling", true, false)
+            }
+        },
+        new("iben-bilbo", ["iben", "bilbo"], "Iben og Bilbo · Fra syltetøjsglas til varekort",
+            "Bilbo sender varerne fra sit C#-API. Iben lader Blazor vise et kort pr. glas og prøver, hvad kunden ser, når hylden er tom.",
+            "Bilbo viser hindbær- og brombærsyltetøj, mens Iben peger på de to tilsvarende varekort i browseren.")
+        {
+            Exercise = new("Blazor og C# · Vis en samling fra et API",
+                "Lad Bilbos API returnere hindbær og brombær som to varer med id og navn. Hent listen i Ibens komponent, og vis et varekort pr. element med @foreach. Prøv igen med en tom liste.",
+                "Med to varer vises to kort med de rigtige navne. En tom liste giver en besked om, at hylden er tom.")
+            {
+                TeachingSource = new("Microsoft Learn · Kald et web-API fra Blazor", "https://learn.microsoft.com/en-us/aspnet/core/blazor/call-web-api", true, false)
+            }
+        },
         new("karla-lupp", ["karla", "lupp"], "Karla og LUPP · Find tilbage til listen",
             "LUPP afprøver Karlas opskriftsapp på en mobil. Karla lægger mærke til, hvor han leder efter tilbageknappen, og om han finder tilbage til samme sted på listen.",
             "Karla og LUPP afprøver den samme prototype på mobil og tablet ved det varme arbejdsbord.")

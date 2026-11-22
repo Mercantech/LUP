@@ -1,0 +1,40 @@
+<section class="binding-lab" aria-labelledby="@SectionId">
+    <div class="controls">
+        <h2 id="@SectionId">Ibens lysdæmper</h2>
+        <p>Træk i skyderen, og hold øje med lanternen og procenttallet. Sluk derefter med knappen, og se skyderen følge med.</p>
+        <label for="iben-brightness">Lysstyrke <output for="iben-brightness">@brightness %</output></label>
+        <input id="iben-brightness" type="range" min="0" max="100" @bind="brightness" @bind:event="oninput" />
+        <button type="button" class="secondary" @onclick="ToggleLight">@(brightness > 0 ? "Sluk lanternen" : "Tænd lanternen")</button>
+    </div>
+    <div class="lantern" aria-hidden="true">
+        <img src="/images/characters/iben/lantern.webp" alt="" width="160" height="160"
+             style="filter: brightness(@(22 + brightness * 78 / 100)%) saturate(@brightness%)" />
+    </div>
+    <details>
+        <summary>Se Razor-koden</summary>
+        <p>Prøv koden i en interaktiv Razor-komponent. <code>@@bind</code> kobler skyderen og C#-feltet sammen. Med <code>oninput</code> opdateres feltet, mens du trækker. Knappen ændrer det samme felt fra C#.</p>
+        <pre><code>@Example</code></pre>
+    </details>
+</section>
+
+@code {
+    public const string SectionId = "iben-binding";
+    private int brightness = 65;
+
+    private void ToggleLight() => brightness = brightness > 0 ? 0 : 100;
+
+    private const string Example = """
+        <label for="lys">Lysstyrke</label>
+        <input id="lys" type="range" min="0" max="100"
+               @bind="brightness" @bind:event="oninput" />
+        <output for="lys">@brightness %</output>
+        <button @onclick="ToggleLight">
+            @(brightness > 0 ? "Sluk lanternen" : "Tænd lanternen")
+        </button>
+
+        @code {
+            private int brightness = 65;
+            private void ToggleLight() => brightness = brightness > 0 ? 0 : 100;
+        }
+        """;
+}

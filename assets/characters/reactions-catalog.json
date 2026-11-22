@@ -5344,6 +5344,486 @@
       "alt": "Karla sender et lille papirfly af sted.",
       "width": 1254,
       "height": 1254
+    },
+    {
+      "guid": "b7d7c0db-68ea-5ad7-ab74-cc3a7f464e4f",
+      "character": "iben",
+      "name": "iben_hello",
+      "title": "Hej fra Iben",
+      "image": "/images/characters/iben/reactions/hello.png",
+      "alt": "Iben vinker med et stort smil.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "46866a14-100e-51b8-9ddb-7c045f7c5c8a",
+      "character": "iben",
+      "name": "iben_thanks",
+      "title": "Tusind tak",
+      "image": "/images/characters/iben/reactions/thanks.png",
+      "alt": "Iben former et hjerte med hænderne.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "f4599d45-53ef-50e3-b617-fccf877d54f6",
+      "character": "iben",
+      "name": "iben_idea",
+      "title": "En lys idé",
+      "image": "/images/characters/iben/reactions/idea.png",
+      "alt": "Iben løfter en finger ved en lysende pære.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "15bdba7b-879c-5ffa-b188-bcb49e73c957",
+      "character": "iben",
+      "name": "iben_thinking",
+      "title": "Tænkepause",
+      "image": "/images/characters/iben/reactions/thinking.png",
+      "alt": "Iben lægger en finger ved hagen.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "df1e483a-b088-5800-a5e7-032b5f478eb1",
+      "character": "iben",
+      "name": "iben_success",
+      "title": "Det lyser!",
+      "image": "/images/characters/iben/reactions/success.png",
+      "alt": "Iben viser tommelfingeren op.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "6b276344-c40c-59e0-9b1a-0dc5972aefb0",
+      "character": "iben",
+      "name": "iben_help",
+      "title": "Brug for en hånd?",
+      "image": "/images/characters/iben/reactions/help.png",
+      "alt": "Iben rækker en hånd frem.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "dfdccde7-3c60-53f3-b717-8d172dac929a",
+      "character": "iben",
+      "name": "iben_surprise",
+      "title": "Hov!",
+      "image": "/images/characters/iben/reactions/surprise.png",
+      "alt": "Iben spærrer øjnene op af overraskelse.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "351198ee-fa9b-59d1-86c9-921e494ccb76",
+      "character": "iben",
+      "name": "iben_debug",
+      "title": "Find fejlen",
+      "image": "/images/characters/iben/reactions/debug.png",
+      "alt": "Iben undersøger en lille fejl med lup.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "766179ae-1f91-584d-a355-f7b6193f68e7",
+      "character": "iben",
+      "name": "iben_celebrate",
+      "title": "Det lykkedes",
+      "image": "/images/characters/iben/reactions/celebrate.png",
+      "alt": "Iben kaster armene op i jubel.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "1b40b98d-e893-5f0b-bfa6-7f472eee4d62",
+      "character": "iben",
+      "name": "iben_focus",
+      "title": "Fordybelse",
+      "image": "/images/characters/iben/reactions/focus.png",
+      "alt": "Iben kniber øjnene sammen i koncentration.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "b376429c-5fb3-5dbc-995a-a1869d3a39a7",
+      "character": "iben",
+      "name": "iben_break",
+      "title": "Pause i labbet",
+      "image": "/images/characters/iben/reactions/break.png",
+      "alt": "Iben tager en pause med en varm kop.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "e9cd3612-c12f-58cc-babe-04cca22eb87a",
+      "character": "iben",
+      "name": "iben_fast",
+      "title": "Blazing fast",
+      "image": "/images/characters/iben/reactions/fast.png",
+      "alt": "Iben suser frem med et ravfarvet lysspor.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "f847bd77-f35c-5804-a9fd-9c0a45437dd8",
+      "character": "iben",
+      "name": "iben_component",
+      "title": "En komponent",
+      "image": "/images/characters/iben/reactions/component.png",
+      "alt": "Iben holder et enkelt komponentkort.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "ee62e87b-1c6e-5c12-b0cc-e51ebe46b743",
+      "character": "iben",
+      "name": "iben_composition",
+      "title": "Saml komponenter",
+      "image": "/images/characters/iben/reactions/composition.png",
+      "alt": "Iben sætter to komponentbrikker sammen.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "8e09c1b3-f1c0-5439-be9a-706eba17fcbd",
+      "character": "iben",
+      "name": "iben_parameter",
+      "title": "En parameter til barnet",
+      "image": "/images/characters/iben/reactions/parameter.png",
+      "alt": "Iben giver en ravfarvet brik videre.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "fe1fcad5-9c31-5664-aca7-11dc1998528d",
+      "character": "iben",
+      "name": "iben_callback",
+      "title": "En besked tilbage",
+      "image": "/images/characters/iben/reactions/callback.png",
+      "alt": "Iben sender en pil tilbage til en større brik.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "b6b683d2-16c4-54ab-91f3-9ff8b966d606",
+      "character": "iben",
+      "name": "iben_bind",
+      "title": "Tovejsbinding",
+      "image": "/images/characters/iben/reactions/bind.png",
+      "alt": "Iben viser to felter med pile i begge retninger.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "21cc3b6f-d6b7-5949-9888-506904ee1439",
+      "character": "iben",
+      "name": "iben_input",
+      "title": "Opdatér mens du skriver",
+      "image": "/images/characters/iben/reactions/input.png",
+      "alt": "Iben skriver i et felt på en lille skærm.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "9f950c98-5407-539b-8e2f-60709a25a839",
+      "character": "iben",
+      "name": "iben_change",
+      "title": "Når værdien er ændret",
+      "image": "/images/characters/iben/reactions/change.png",
+      "alt": "Iben bekræfter et færdigudfyldt felt.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "993ba146-db1d-5419-9d67-97721c396266",
+      "character": "iben",
+      "name": "iben_click",
+      "title": "Et klik",
+      "image": "/images/characters/iben/reactions/click.png",
+      "alt": "Iben trykker på en lilla knap.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "f6b1c20c-1272-522f-bd02-a60327ee7feb",
+      "character": "iben",
+      "name": "iben_counter",
+      "title": "Tæl et klik",
+      "image": "/images/characters/iben/reactions/counter.png",
+      "alt": "Iben løfter en tællebrik ved en plusknap.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "1074017f-00d0-5577-9a6a-51e5cffb0841",
+      "character": "iben",
+      "name": "iben_toggle",
+      "title": "Slå lyset til",
+      "image": "/images/characters/iben/reactions/toggle.png",
+      "alt": "Iben skubber en kontakt til tændt.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "02683186-d501-5493-88bc-ccb112f7dfae",
+      "character": "iben",
+      "name": "iben_state",
+      "title": "Gemt tilstand",
+      "image": "/images/characters/iben/reactions/state.png",
+      "alt": "Iben holder en lysende lanterne ind til sig.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "8c0bd45d-e9cb-59a7-904b-74b97d740ce5",
+      "character": "iben",
+      "name": "iben_render",
+      "title": "Ny visning",
+      "image": "/images/characters/iben/reactions/render.png",
+      "alt": "Iben viser et opdateret skærmkort.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "0d321160-93d6-5607-a61c-716550d55b16",
+      "character": "iben",
+      "name": "iben_conditional",
+      "title": "Vis eller skjul",
+      "image": "/images/characters/iben/reactions/conditional.png",
+      "alt": "Iben trækker et forhæng fra en lanterne.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "747bd4ac-e590-5389-91bb-495e206d6a52",
+      "character": "iben",
+      "name": "iben_loop",
+      "title": "Gentag med foreach",
+      "image": "/images/characters/iben/reactions/loop.png",
+      "alt": "Iben lægger ens kort på række.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "1cb26ee1-7f98-5748-8670-6aac7d3b5cce",
+      "character": "iben",
+      "name": "iben_key",
+      "title": "Bevar identiteten med @key",
+      "image": "/images/characters/iben/reactions/key.png",
+      "alt": "Iben løfter en nøgle ved sit kort.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "5277740d-8445-5212-a712-cf144faee8c1",
+      "character": "iben",
+      "name": "iben_route",
+      "title": "Find siden med @page",
+      "image": "/images/characters/iben/reactions/route.png",
+      "alt": "Iben peger på et vejskilt.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "2905419b-1f56-5eca-b2ed-47bf62bba94e",
+      "character": "iben",
+      "name": "iben_navlink",
+      "title": "Det aktive link",
+      "image": "/images/characters/iben/reactions/navlink.png",
+      "alt": "Iben fremhæver det valgte menupunkt.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "2279a6cd-718d-532f-b70b-6bddd953ec1f",
+      "character": "iben",
+      "name": "iben_layout",
+      "title": "Fælles layout",
+      "image": "/images/characters/iben/reactions/layout.png",
+      "alt": "Iben sætter et indholdskort i en ramme.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "5154ff4f-785b-56c7-95d9-b5cfc44195f9",
+      "character": "iben",
+      "name": "iben_form",
+      "title": "EditForm",
+      "image": "/images/characters/iben/reactions/form.png",
+      "alt": "Iben holder en formular med tre felter.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "dc7563ad-3eb3-577d-949b-28244530035f",
+      "character": "iben",
+      "name": "iben_validation",
+      "title": "Feltet kræver en rettelse",
+      "image": "/images/characters/iben/reactions/validation.png",
+      "alt": "Iben peger på et felt med fejl.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "b5144649-56e0-5e69-9da6-bf198ecb3fa8",
+      "character": "iben",
+      "name": "iben_submit",
+      "title": "Send formularen",
+      "image": "/images/characters/iben/reactions/submit.png",
+      "alt": "Iben sender en formular med et flueben.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "808c1d81-2210-542b-9d45-2d52a30b6854",
+      "character": "iben",
+      "name": "iben_loading",
+      "title": "Henter data",
+      "image": "/images/characters/iben/reactions/loading.png",
+      "alt": "Iben vender et lille timeglas.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "a88f3828-22d5-52a6-a0ec-b913ffa939d6",
+      "character": "iben",
+      "name": "iben_async",
+      "title": "Afvent svaret",
+      "image": "/images/characters/iben/reactions/async.png",
+      "alt": "Iben lytter efter svar med et ur i hånden.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "8c42014c-c6a3-5b75-a9a9-cfefc080a983",
+      "character": "iben",
+      "name": "iben_api",
+      "title": "Kald et API",
+      "image": "/images/characters/iben/reactions/api.png",
+      "alt": "Iben sender en kuvert til en server.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "f113b506-bab3-54f9-af1e-1665c0bc81c5",
+      "character": "iben",
+      "name": "iben_empty",
+      "title": "Tom liste",
+      "image": "/images/characters/iben/reactions/empty.png",
+      "alt": "Iben viser en tom bakke frem.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "c1d54803-3cca-5e7a-a2f7-0c2eed82dbd2",
+      "character": "iben",
+      "name": "iben_retry",
+      "title": "Prøv igen",
+      "image": "/images/characters/iben/reactions/retry.png",
+      "alt": "Iben drejer en rund pil fremad.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "82179750-f5cd-587f-bbb8-7faf995d6bb3",
+      "character": "iben",
+      "name": "iben_static_ssr",
+      "title": "Statisk serverrendering",
+      "image": "/images/characters/iben/reactions/static-ssr.png",
+      "alt": "Iben viser et færdigt sideark.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "1b74dc4c-7435-5031-a20c-f7bb5cb5679e",
+      "character": "iben",
+      "name": "iben_interactive_server",
+      "title": "Interaktiv server",
+      "image": "/images/characters/iben/reactions/interactive-server.png",
+      "alt": "Iben forbinder en skærm og en server.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "3a2dbd91-3d9e-5f85-a4ab-e19f0a199160",
+      "character": "iben",
+      "name": "iben_webassembly",
+      "title": "Kode i browseren",
+      "image": "/images/characters/iben/reactions/webassembly.png",
+      "alt": "Iben placerer en chip i et browservindue.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "e8462bb8-716e-57b1-98c8-89db935698c1",
+      "character": "iben",
+      "name": "iben_hot_reload",
+      "title": "Hot Reload",
+      "image": "/images/characters/iben/reactions/hot-reload.png",
+      "alt": "Iben viser en ændring med et gyldent lyn.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "5b696ad2-04bb-5cee-b1a1-fe6b4a6cba66",
+      "character": "iben",
+      "name": "iben_service",
+      "title": "En delt tjeneste",
+      "image": "/images/characters/iben/reactions/service.png",
+      "alt": "Iben fordeler en værktøjskasse til to komponenter.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "0edda5fe-273b-56fc-88a0-d99fcccfdad8",
+      "character": "iben",
+      "name": "iben_cascade",
+      "title": "CascadingValue",
+      "image": "/images/characters/iben/reactions/cascade.png",
+      "alt": "Iben lader en ravfarvet brik falde ned gennem tre niveauer.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "2e37e492-28a4-5aaf-8882-8ab82d2b1395",
+      "character": "iben",
+      "name": "iben_fragment",
+      "title": "Et stykke brugerflade",
+      "image": "/images/characters/iben/reactions/fragment.png",
+      "alt": "Iben indsætter en dekorativ brik i en åben ramme.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "75f232a8-c512-53b3-94e1-b6afb62af728",
+      "character": "iben",
+      "name": "iben_focus_key",
+      "title": "Fokus med tastaturet",
+      "image": "/images/characters/iben/reactions/focus-key.png",
+      "alt": "Iben viser en tast og en tydelig fokusramme.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "b06ac85c-89e1-56bb-9f9d-f49263ee22c8",
+      "character": "iben",
+      "name": "iben_test",
+      "title": "Test komponenten",
+      "image": "/images/characters/iben/reactions/test.png",
+      "alt": "Iben sætter flueben ved en afprøvet komponent.",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "guid": "9e1c37e8-4194-5228-994c-6e4f0fbd7342",
+      "character": "iben",
+      "name": "iben_release",
+      "title": "Klar til udgivelse",
+      "image": "/images/characters/iben/reactions/release.png",
+      "alt": "Iben sender en lille raket af sted.",
+      "width": 1254,
+      "height": 1254
     }
   ]
 }

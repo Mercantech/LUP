@@ -1,0 +1,30 @@
+{
+  "id": "iben-bilbo",
+  "generator": "Built-in ImageGen",
+  "references": [
+    {
+      "path": "web/wwwroot/images/characters/iben/workshop.png",
+      "sha256": "41addb8e40d28a753d74b9646f474c87295442ef332bcecacdfcbb57eedbb3b6"
+    },
+    {
+      "path": "web/wwwroot/images/characters/bilbo/portrait.webp",
+      "sha256": "5a27013e1d2232b5513138a5eeac8e558c831bd6a181c5709716bb7a0422c1ce"
+    }
+  ],
+  "prompt": "3:2 hand-sculpted stop-motion clay illustration with the approved Iben character reference, curly dark ponytail, two feelers, indigo wing covers, a glowing segmented abdomen and no glasses. Two distinct established characters, Iben the young curly-haired firefly from the first reference in purple overshirt and dark jeans, plus Bilbo Backend from the second reference, small round man with pointy ears, brown curly hair, green velvet waistcoat, smiling, bare feet, and a jar of dark berry jam in his hand exactly like reference 2. Scene: they build a Blazor jam catalogue at a modern countertop in Bilbo's cozy berry jam shop. Bilbo lines up two differently colored real jam jars (raspberry red and blackberry purple) in order to demonstrate two records supplied by his API. Iben presents the laptop, its web browser clearly displaying corresponding TWO jam cards, red jar at left and purple jar at right. Both faces and the artifacts are clear, a small cluster of berries and simple clean shape icons on shelf. Tender and joyful, no token arrows or floating graphics, absolutely no written text. No extra figures.",
+  "alt": "Bilbo viser hindbær- og brombærsyltetøj, mens Iben peger på de to tilsvarende varekort i browseren.",
+  "original": {
+    "path": "web/wwwroot/images/characters/collaborations/iben-bilbo.png",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2686440,
+    "sha256": "559d1409277bd711ca473ede376b9277759dd72450e29b8e6cc27b08bb601422"
+  },
+  "preview": {
+    "path": "web/wwwroot/images/characters/collaborations/iben-bilbo.webp",
+    "width": 1099,
+    "height": 733,
+    "bytes": 184418,
+    "sha256": "4c20fa7c1f8ee2e2473df488b4015a8ec3c7a07fde97013a382147fe2c414ac2"
+  }
+}

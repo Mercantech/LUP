@@ -154,6 +154,8 @@ public sealed class LibraryCharactersTests
     [InlineData("emojis", "/characters/beaver")]
     [InlineData("emojis", "/characters/fox")]
     [InlineData("emojis", "/characters/lupp")]
+    [InlineData("Iben Sanderson Edwards Fowler", "/characters/iben")]
+    [InlineData("Blazor binding", "/characters/iben")]
     [InlineData("LUPP playtest", "/characters/lupp")]
     [InlineData("GIF", "/characters/raymond")]
     [InlineData("illustrationer", "/characters/lupp")]

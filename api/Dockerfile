@@ -37,6 +37,7 @@ COPY web/Characters/BilboTeachingMaterials.cs web/Characters/
 COPY web/Characters/BilboMotionMaterials.cs web/Characters/
 COPY web/Characters/GitmejsenMaterials.cs web/Characters/
 COPY web/Characters/KarlaMaterials.cs web/Characters/
+COPY web/Characters/IbenMaterials.cs web/Characters/
 WORKDIR /src/api
 RUN --mount=type=bind,from=release-info,source=/src/web/wwwroot/images,target=/src/web/wwwroot/images \
     --mount=type=bind,from=release-info,source=/src/extensions/lup/assets,target=/src/extensions/lup/assets \

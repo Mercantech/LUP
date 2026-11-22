@@ -1,0 +1,28 @@
+.binding-lab {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 200px);
+    gap: 12px 24px;
+    align-items: center;
+    margin-block: 24px;
+    padding: clamp(16px, 3vw, 28px);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+}
+
+.controls { display: grid; justify-items: start; gap: 8px; }
+.controls h2, .controls p { margin: 0; }
+.controls label { margin-top: 6px; font-weight: 600; }
+.controls output { margin-inline-start: 8px; font-variant-numeric: tabular-nums; }
+.controls input { width: min(100%, 23rem); accent-color: var(--character-accent); }
+.lantern { display: grid; place-items: center; background: #29223a; border-radius: 12px; }
+.lantern img { width: min(100%, 170px); height: auto; aspect-ratio: 1; object-fit: contain; }
+details { grid-column: 1 / -1; min-width: 0; }
+summary { cursor: pointer; font-weight: 600; }
+pre { overflow-x: auto; padding: 12px; background: var(--tint); border-radius: 8px; }
+
+@media (max-width: 560px) {
+    .binding-lab { grid-template-columns: minmax(0, 1fr); }
+    .lantern { grid-row: 2; }
+    .lantern img { height: 110px; }
+}

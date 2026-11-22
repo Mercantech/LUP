@@ -453,12 +453,39 @@ public sealed class CharacterDetailTests
         Assert.Equal("Bilbo Backend", page.Find("a[href='/characters/bilbo'] h2").TextContent);
         Assert.Equal("Gitmejsen", page.Find("a[href='/characters/gitmejsen'] h2").TextContent);
         Assert.Equal("Karla Eremitkrebs", page.Find("a[href='/characters/karla'] h2").TextContent);
+        Assert.Equal("Iben Ildflue", page.Find("a[href='/characters/iben'] h2").TextContent);
         Assert.Equal("Bæver", page.Find("a[href='/characters/beaver'] h2").TextContent);
         Assert.Equal("Ræv", page.Find("a[href='/characters/fox'] h2").TextContent);
         Assert.Equal("Docker", page.Find("a[href='/characters/whale'] h2").TextContent);
         Assert.Equal("Gummianden", page.Find("a[href='/characters/gummianden'] h2").TextContent);
         Assert.Equal("Cyberbien", page.Find("a[href='/characters/bee'] h2").TextContent);
         Assert.Equal("Næsebladet", page.Find("a[href='/characters/bat'] h2").TextContent);
+    }
+
+    [Fact]
+    public async Task IbenProfileBindsLampInBothDirectionsAndLinksTeachingMaterial()
+    {
+        using var api = new CharacterQuizTestApi();
+        using var context = await LearningUiTestContext.CreateAsync(api);
+        var page = context.Render<CharacterDetail>(p => p.Add(x => x.Slug, "iben"));
+
+        Assert.Contains("Iben Sanderson Edwards Fowler", page.Find(".character-description").TextContent);
+        Assert.Equal(48, page.FindAll(".character-reactions figure").Count);
+        Assert.Equal(12, page.FindAll(".character-gallery figure pre code").Count);
+        Assert.Equal(2, page.FindAll(".character-scenes figure").Count);
+        Assert.Equal(2, page.FindAll(".character-residence figure").Count);
+        Assert.Equal(2, page.FindAll(".character-collaborations figure").Count);
+        Assert.Equal("65 %", page.Find(".binding-lab output").TextContent);
+        page.Find("#iben-brightness").Input("33");
+        Assert.Equal("33 %", page.Find(".binding-lab output").TextContent);
+        page.Find(".binding-lab button").Click();
+        Assert.Equal("0", page.Find("#iben-brightness").GetAttribute("value"));
+        page.Find(".binding-lab button").Click();
+        Assert.Equal("100 %", page.Find(".binding-lab output").TextContent);
+        Assert.Contains("@bind:event=\"oninput\"", page.Find(".binding-lab pre").TextContent);
+
+        page.Render(parameters => parameters.Add(p => p.Slug, "karla"));
+        Assert.Empty(page.FindAll(".binding-lab"));
     }
 
     [Fact]
@@ -485,7 +512,8 @@ public sealed class CharacterDetailTests
         Assert.Equal(new[] { "/images/characters/karla/home/outside.webp", "/images/characters/karla/home/inside.webp" },
             page.FindAll(".character-residence figure img").Select(image => image.GetAttribute("src")));
 
-        Assert.Equal(2, page.FindAll(".character-collaborations figure").Count);
+        Assert.Equal(3, page.FindAll(".character-collaborations figure").Count);
+        Assert.Equal("/characters/iben#collaboration-iben-karla", page.Find("#collaboration-iben-karla .character-collaboration-links a").GetAttribute("href"));
         Assert.Equal("/characters/lupp#collaboration-karla-lupp", page.Find("#collaboration-karla-lupp .character-collaboration-links a").GetAttribute("href"));
         Assert.Equal("/characters/bilbo#collaboration-karla-bilbo", page.Find("#collaboration-karla-bilbo .character-collaboration-links a").GetAttribute("href"));
 

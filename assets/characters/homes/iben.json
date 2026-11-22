@@ -1,0 +1,58 @@
+{
+  "slug": "iben",
+  "name": "Lysloftet",
+  "description": "Iben bor mellem to gamle træer i udkanten af parken. Fra vinduespladsen kan hun se byens lys, mens hun tegner nye lanterner til sit Blazor-værksted.",
+  "generator": "ImageGen",
+  "scenes": [
+    {
+      "id": "outside",
+      "alt": "Iben flyver hen mod Lysloftets store buede vindue. En cykel står ved trappen op til den ravgule dør.",
+      "prompt": "3:2 hand-sculpted stop-motion clay illustration with the approved Iben character reference, curly dark ponytail, two feelers, indigo wing covers, a glowing segmented abdomen and no glasses. One beautiful environmental establishing shot of Iben's home exterior at blue hour. Modern compact loft nestled between tree trunks at the edge of a Danish city park, curved cedar timber facade with a broad arched window, ochre-lit round doorway and little sheltered balcony. Handmade ceramic lantern with leaf cutouts hangs at the entrance, a bicycle at the foot of the stairs, rain-speckled leaves. Iben, in her signature purple casual overshirt and straight black jeans, small but recognisable, flies home down a curving amber light trail. Her portrait should not dominate: the building is the subject. Side perspective with clean contemporary shapes, subtle lived-in details; a house she could inhabit, no face in the facade and no generic fantasy hut. This is an architectural miniature exterior, no device screens and no words.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/iben/workshop.png",
+          "sha256": "41addb8e40d28a753d74b9646f474c87295442ef332bcecacdfcbb57eedbb3b6"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/iben/home/outside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 3074078,
+        "sha256": "a92871b67588658d53c4c9782a4631644c14aac8d719f26c371382ba709b77ed"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/iben/home/outside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 140164,
+        "sha256": "89082bd14eba5df8122a41c086dfdaa9c6467a2c78ea98dada951cc0718a56d6"
+      }
+    },
+    {
+      "id": "inside",
+      "alt": "Iben sidder i vindueskarmen med sin skitsebog og tegner lanterner. Ved siden af hende lyser en lille lerlanterne.",
+      "prompt": "3:2 hand-sculpted stop-motion clay illustration with the approved Iben character reference, curly dark ponytail, two feelers, indigo wing covers, a glowing segmented abdomen and no glasses. A quiet intimate wide architectural interior of Iben's modern treehouse loft at night: the same large arched window between two thick trunks as the visual anchor, curved warm wood ribs overhead, a small low mustard reading couch, music turntable and bookcase, a simple mug on a side table, one hand-cut ceramic lantern. Young Iben in her open purple overshirt, off-white tee and charcoal jeans curls up on the window seat drawing three alternate lantern shapes in a small open sketchbook; her indigo wing covers and amber glow gently illuminate the pages. Character in profile with her dark high ponytail visible. Wide candid photograph of a handcrafted set, contemplative not posing, contemporary lived-in space, soft reflected indigo night light outside. No text, no big classroom monitors.",
+      "references": [
+        {
+          "path": "web/wwwroot/images/characters/iben/workshop.png",
+          "sha256": "41addb8e40d28a753d74b9646f474c87295442ef332bcecacdfcbb57eedbb3b6"
+        }
+      ],
+      "original": {
+        "path": "web/wwwroot/images/characters/iben/home/inside.png",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2817272,
+        "sha256": "fd82e667f3c0637588fe6debf5a76aba722df7fe620d26901311a4a0c4bc2829"
+      },
+      "preview": {
+        "path": "web/wwwroot/images/characters/iben/home/inside.webp",
+        "width": 768,
+        "height": 512,
+        "bytes": 108074,
+        "sha256": "c5d7cf8514ba6d96060c0dcd00aeb0cf0a428f57a03675d6b3469150b88ce63f"
+      }
+    }
+  ]
+}
