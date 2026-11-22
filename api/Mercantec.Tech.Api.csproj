@@ -56,6 +56,7 @@
     <Compile Include="../web/Characters/BilboMotionMaterials.cs" Link="References/Catalog/BilboMotionMaterials.cs" />
     <Compile Include="../web/Characters/GitmejsenMaterials.cs" Link="References/Catalog/GitmejsenMaterials.cs" />
     <Compile Include="../web/Characters/KarlaMaterials.cs" Link="References/Catalog/KarlaMaterials.cs" />
+    <Compile Include="../web/Characters/IbenMaterials.cs" Link="References/Catalog/IbenMaterials.cs" />
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.4.0" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     <ProjectReference Include="../shared/Mercantec.Tech.Contracts.csproj" />

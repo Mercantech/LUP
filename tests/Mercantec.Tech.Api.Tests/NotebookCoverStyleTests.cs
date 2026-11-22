@@ -12,6 +12,8 @@ public sealed class NotebookCoverStyleTests
     [InlineData("SQL · INNER JOIN", "raymond", "valgfag-overblik")]
     [InlineData("IoT over MQTT", "bat", "valgfag-overblik")]
     [InlineData("Flutter og LayoutBuilder", "karla", "valgfag-overblik")]
+    [InlineData("ASP.NET Core Blazor", "iben", "valgfag-overblik")]
+    [InlineData("EventCallback i C#", "iben", "valgfag-overblik")]
     [InlineData("Regressionstest med breakpoints", "gummianden", "valgfag-overblik")]
     public void Recognizes_specific_subjects_and_uses_existing_art(string title, string expectedCharacter, string expectedBanner)
     {

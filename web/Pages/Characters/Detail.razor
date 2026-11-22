@@ -81,6 +81,11 @@ else
             </div>
         </section>
 
+        @if (character.Slug == "iben")
+        {
+            <IbenBindingLab />
+        }
+
         @if (character.Residence is { } residence)
         {
             <CharacterHomeGallery Home="@residence" CharacterSlug="@character.Slug" />
@@ -205,7 +210,8 @@ else
 
         _handledLocation = location;
         var fragment = Uri.UnescapeDataString(uri.Fragment.TrimStart('#'));
-        var hasTarget = character.Materials.Any(material => material.SectionId == fragment)
+        var hasTarget = (character.Slug == "iben" && fragment == IbenBindingLab.SectionId)
+            || character.Materials.Any(material => material.SectionId == fragment)
             || character.Animations.Any(animation => $"animation-{animation.Id}" == fragment)
             || character.Collaborations.Any(scene => scene.Anchor == fragment);
         _pendingSection = hasTarget ? (fragment, location) : null;

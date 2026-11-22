@@ -30,6 +30,7 @@ public static class CharacterEmojiPolicy
             "bilbo" => "Bilbo Backend",
             "gitmejsen" => "Gitmejsen",
             "karla" => "Karla Eremitkrebs",
+            "iben" => "Iben Ildflue",
             _ => "raymond"
         };
         var reaction = emoji.Name[(emoji.CharacterSlug.Length + 1)..];
@@ -47,6 +48,7 @@ public static class CharacterEmojiPolicy
             "bilbo" => new[] { "backend", "API", "EF Core", "C#" },
             "gitmejsen" => new[] { "Git", "versionsstyring", "version control", "topmejse" },
             "karla" => new[] { "Flutter", "Dart", "mobiludvikling", "app", "eremitkrebs" },
+            "iben" => new[] { "Blazor", "Razor", "C#", ".NET", "Ildflue" },
             _ => new[] { "sikkerhed", "test", emoji.CharacterSlug == "beaver" ? "blåt team" : "rødt team" }
         };
         var keywords = EmojiMetadataPolicy.Keywords(new[] { characterName, emoji.CharacterSlug, emoji.Title, "emoji", "reaktion" }
@@ -120,6 +122,11 @@ public static class CharacterEmojiPolicy
             "success" when emoji.CharacterSlug == "karla" => "gestures",
             "idea" or "prototype" when emoji.CharacterSlug == "karla" => "learning",
             _ when emoji.CharacterSlug == "karla" => "technology",
+            "idea" or "focus" when emoji.CharacterSlug == "iben" => "learning",
+            "success" or "thanks" or "celebrate" when emoji.CharacterSlug == "iben" => "gestures",
+            "thinking" or "surprise" when emoji.CharacterSlug == "iben" => "smileys",
+            "break" when emoji.CharacterSlug == "iben" => "everyday",
+            _ when emoji.CharacterSlug == "iben" => "technology",
             _ => "smileys"
         };
         return new(EmojiMetadataPolicy.CleanText(emoji.Alt, EmojiMetadataPolicy.MaxAltText), category, keywords);
