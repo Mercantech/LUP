@@ -16,6 +16,62 @@
 .lup .character-bilbo { --character-accent:#627744; }
 .lup .character-gitmejsen { --character-accent:#445fa8; }
 .lup .character-iben { --character-accent:#7252b3; }
+.lup .binding-lab {
+    display:grid;
+    grid-template-columns:minmax(0, 1.25fr) minmax(0, 1fr);
+    gap:16px 24px;
+    align-items:stretch;
+    margin-block:24px;
+    padding:clamp(16px, 3vw, 28px);
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:16px;
+}
+.lup .binding-controls { display:grid; align-content:center; gap:12px; min-width:0; }
+.lup .binding-controls h2, .lup .binding-controls p { margin:0; }
+.lup .binding-control-row, .lup .binding-actions, .lup .binding-trace {
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px 12px;
+}
+.lup .binding-control-row { justify-content:space-between; font-weight:600; }
+.lup .binding-control-row output { font-variant-numeric:tabular-nums; }
+.lup .binding-controls input { width:100%; min-height:32px; accent-color:var(--character-accent); }
+.lup .binding-actions button { min-height:42px; }
+.lup .binding-lab .lantern {
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    display:grid;
+    place-items:center;
+    min-height:220px;
+    padding:12px;
+    border-radius:12px;
+    background:#211c30;
+}
+.lup .binding-light {
+    position:absolute;
+    inset:0;
+    z-index:-1;
+    background:radial-gradient(ellipse at 50% 65%, #b76731 0%, #663951 42%, transparent 76%);
+}
+.lup .binding-lab .lantern img { width:min(100%, 210px); height:auto; aspect-ratio:1; object-fit:contain; }
+.lup .binding-trace, .lup .binding-lab details { grid-column:1 / -1; min-width:0; }
+.lup .binding-trace {
+    justify-content:space-between;
+    padding:10px 14px;
+    background:var(--tint);
+    border-radius:8px;
+}
+.lup .binding-trace p { margin:0; }
+.lup .binding-lab summary { cursor:pointer; font-weight:600; }
+.lup .binding-lab pre { overflow-x:auto; padding:12px; background:var(--tint); border-radius:8px; }
+@media (max-width:560px) {
+    .lup .binding-lab { grid-template-columns:minmax(0, 1fr); }
+    .lup .binding-lab .lantern { min-height:170px; }
+    .lup .binding-lab .lantern img { width:min(100%, 150px); }
+}
 .lup .character-beaver { --character-accent:#426fa8; }
 .lup .character-fox { --character-accent:#b44d42; }
 .lup .character-card { display:flex; flex-direction:column; min-width:0; border:1px solid var(--rule); background:var(--paper); border-radius:16px; overflow:hidden; color:var(--ink); transition:border-color .15s,box-shadow .15s; }
