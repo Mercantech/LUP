@@ -476,7 +476,7 @@ public partial class Index
         ct.ThrowIfCancellationRequested();
         if (MetadataDirty)
             throw new InvalidOperationException(_error ?? "Gem sidens titel og oplysninger, før du genererer et cover.");
-        await WaitForCoverContent(() => (_mounted ? _editor : null, _editorElement, _status), ct);
+        await WaitForSavedContent(() => (_mounted ? _editor : null, _editorElement, _status), ct);
     }
 
     private async Task OpenPage(Guid id)

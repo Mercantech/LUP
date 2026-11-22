@@ -82,6 +82,7 @@ function shortcutCommand(state, event) {
         return state.root.dataset.canCreatePage === 'true' ? 'new-page' : null;
     }
     if (event.shiftKey) return key === 'e' ? 'explorer' : null;
+    if (key === 's' && state.root.dataset.canUpdatePublication === 'true') return 'update-publication';
     if (key === 'p') return 'search';
     if (key === 'b' && !event.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]'))
         return 'toggle-sidebar';

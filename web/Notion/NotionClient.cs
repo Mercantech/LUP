@@ -57,7 +57,8 @@ public sealed class NotionClient(HttpClient http)
         await Ensure(response, ct);
     }
     public Task<NotionPageSummary> Publish(Guid id, long expectedRevision, string expectedFingerprint, Guid[] assetIds, CancellationToken ct,
-        DrawingPublicationRequest[]? drawings = null) => Post<NotionPageSummary>($"notion/pages/{id}/publish", new { expectedRevision, expectedFingerprint, assetIds, drawings }, ct);
+        DrawingPublicationRequest[]? drawings = null, bool updateOnly = false)
+        => Post<NotionPageSummary>($"notion/pages/{id}/publish", new PublishNotionPage(expectedRevision, expectedFingerprint, assetIds, drawings, updateOnly), ct);
     public Task<NotionPageSummary> Unpublish(Guid id, CancellationToken ct) => Post<NotionPageSummary>($"notion/pages/{id}/unpublish", new {}, ct);
     public Task<NotionGroupView> CreateGroup(Guid holdId, string name, Guid[] membershipIds, CancellationToken ct, Guid? groupSetId = null) => Post<NotionGroupView>($"notion/holds/{holdId}/groups", new SaveNotionGroup(name, membershipIds, GroupSetId: groupSetId), ct);
     public Task<NotionGroupView[]> CreateGroupBatch(Guid holdId, SaveNotionGroup[] groups, CancellationToken ct, Guid? groupSetId = null, Guid? requestId = null) => Post<NotionGroupView[]>($"notion/holds/{holdId}/groups/batch", new SaveNotionGroupBatch(groups, groupSetId, requestId), ct);
@@ -109,6 +110,7 @@ public sealed class NotionClient(HttpClient http)
                 "batch_request_changed" => "Denne runde er allerede gemt med et andet indhold. Start en ny runde for at gemme en ny fordeling.",
                 "group_changed" => "Gruppen er ændret af en anden. Opdatér listen, og prøv igen.",
                 "draft_changed" or "stale_draft" or "publication_conflict" => "Kladden er ændret. Vent på lagring, og prøv at udgive igen.",
+                "publication_missing" => "Udgivelsen er trukket tilbage. Genindlæs siden, hvis du vil udgive den igen.",
                 "invalid_assets" => "En vedhæftning er ikke tilgængelig på denne side. Fjern den, eller upload den igen.",
                 "invalid_knowledge_check_publication" => "Et videnstjek på siden er lukket eller tilhører et andet hold. Vælg en anden udgivelse, eller fjern blokken.",
                 "invalid_collection_slug" => "Brug højst 64 små bogstaver (a-z), tal eller bindestreger. Vælg en adresse, som ikke er reserveret.",

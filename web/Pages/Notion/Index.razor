@@ -22,7 +22,7 @@ else
     }
     else
     {
-        <div @ref="_workspaceElement" class="notion-workspace @(_sidebarOpen ? "sidebar-open" : null) @(_workspaceFocused ? "notion-focus-mode" : null)" data-can-create-page="@(ShortcutCanCreatePage ? "true" : "false")" data-can-create-child="@(ShortcutCanCreateChild ? "true" : "false")" data-edge-to-edge="true" data-sidebar-ready="@_sidebarReady.ToString().ToLowerInvariant()" data-focus-mode="@_workspaceFocused.ToString().ToLowerInvariant()">
+        <div @ref="_workspaceElement" class="notion-workspace @(_sidebarOpen ? "sidebar-open" : null) @(_workspaceFocused ? "notion-focus-mode" : null)" data-can-create-page="@(ShortcutCanCreatePage ? "true" : "false")" data-can-create-child="@(ShortcutCanCreateChild ? "true" : "false")" data-can-update-publication="@(CanUpdatePublication ? "true" : "false")" data-edge-to-edge="true" data-sidebar-ready="@_sidebarReady.ToString().ToLowerInvariant()" data-focus-mode="@_workspaceFocused.ToString().ToLowerInvariant()">
             @if (_sidebarOpen) { <button id="notion-sidebar-backdrop" class="notion-sidebar-backdrop" type="button" tabindex="-1" aria-label="Luk sidemenu" @onclick="() => SetSidebarOpen(false)"></button> }
             <aside id="notion-sidebar" class="notion-sidebar" tabindex="-1" hidden="@(!_sidebarOpen)" role="@(_sidebarMobile && _sidebarOpen ? "dialog" : null)" aria-modal="@(_sidebarMobile && _sidebarOpen ? "true" : null)" aria-label="Notesbogens sider">
                 <div class="notion-sidebar-heading"><div><span class="notion-sidebar-eyebrow">@(_holdId == Guid.Empty ? "Teori" : "Undervisning")</span><h2>Sider</h2></div><button type="button" class="notion-icon-button notion-sidebar-close" aria-label="Skjul sidemenu" title="Skjul sidemenu" @onclick="() => SetSidebarOpen(false)"><UiIcon Name="panel" /></button></div>
@@ -60,7 +60,7 @@ else
             <section class="notion-document" tabindex="-1" aria-label="@(IsEditing ? "Dokumenteditor" : "Udgivet dokument")">
                 <div class="notion-document-toolbar">
                     <h1 class="notion-visually-hidden">@(_current?.Title ?? (_holdId == Guid.Empty ? "Teorinotesbog" : "Holdets indhold"))</h1>
-                    <NotebookShortcutHelp @ref="_shortcutHelp" HideTrigger="true" CanCreatePage="ShortcutCanCreatePage" CanCreateChild="ShortcutCanCreateChild" />
+                    <NotebookShortcutHelp @ref="_shortcutHelp" HideTrigger="true" CanCreatePage="ShortcutCanCreatePage" CanCreateChild="ShortcutCanCreateChild" CanUpdatePublication="CanUpdatePublication" />
                     @if (_current is not null)
                     {
                         @if (IsEditing)
@@ -84,13 +84,33 @@ else
                             else { <span class="notion-save-status saved"><i aria-hidden="true"></i><span class="notion-save-label">Udgivet @(_current.PublishedAtUtc?.ToLocalTime().ToString("d. MMM"))</span></span> }
                         }
                         <span class="notion-ai-toggle-slot"></span>
-                        @if (IsEditing && _current is not null)
+                        @if (IsEditing)
                         {
-                            <button type="button" class="action notion-publish-button" aria-label="@(_current.PublishedAtUtc is null ? (_holdId == Guid.Empty ? "Udgiv til LUP" : "Udgiv til holdet") : "Opdatér udgivelsen")" disabled="@(_busy || !_mounted || _status is "connecting" or "offline" or "error")" @onclick="PublishPage">@(_current.PublishedAtUtc is null ? "Udgiv" : "Opdatér")</button>
+                            <button type="button" class="action notion-publish-button" aria-label="@PublishActionLabel" aria-keyshortcuts="@PublishShortcut" disabled="@(!CanPublish)" @onclick="PublishPage">@(CanUpdatePublication ? "Opdatér" : "Udgiv")</button>
                         }
                         <details class="notion-document-more">
                             <summary aria-label="Flere sidehandlinger"><UiIcon Name="more" /><span>Mere</span></summary>
                             <div class="notion-document-menu">
+                                @if (_current is { } publicationPage)
+                                {
+                                    <div class="notion-menu-group" role="group" aria-labelledby="notion-more-publish">
+                                        <p class="notion-menu-label" id="notion-more-publish">Udgivelse</p>
+                                        <p class="notion-publication-status">@(publicationPage.PublishedAtUtc is { } publishedAt ? $"Udgivet {publishedAt.ToLocalTime():d. MMM HH:mm}" : "Kladde")</p>
+                                        @if (IsEditing)
+                                        {
+                                            <button type="button" class="notion-menu-publish" aria-keyshortcuts="@PublishShortcut" disabled="@(!CanPublish)" @onclick="PublishPage"><UiIcon Name="@(CanUpdatePublication ? "loop" : "check")" />@PublishActionLabel</button>
+                                            @if (CanUpdatePublication)
+                                            {
+                                                <a href="@PageHref(publicationPage.PageId, true)" target="_blank" rel="noopener"><UiIcon Name="external" />Åbn udgivet side<span class="notion-visually-hidden"> (ny fane)</span></a>
+                                                <button type="button" class="notion-menu-danger" disabled="@_busy" @onclick="UnpublishPage"><UiIcon Name="close" />Træk udgivelse tilbage</button>
+                                            }
+                                        }
+                                        else if (CanManageHold)
+                                        {
+                                            <a href="@PageHref(publicationPage.PageId, false)"><UiIcon Name="file" />Til kladden</a>
+                                        }
+                                    </div>
+                                }
                                 @if (!_loading && IsCollectionRoute && !ForceReadOnly && _collection is { CanManage: true } coverBook)
                                 {
                                     <div class="notion-menu-group">
@@ -146,19 +166,6 @@ else
                                         }
                                         <a href="@GraphHref(_current.CollectionId ?? CollectionRoot(_current.PageId))"><UiIcon Name="chart" />Graf for kollektionen</a>
                                         <nav class="breadcrumbs notion-toolbar-breadcrumbs" aria-label="Brødkrummer"><a href="/notes">Notesbøger</a><span>›</span><a href="@WorkspaceHref()">Undervisning</a><span>›</span><span>@(_holdId == Guid.Empty ? "Teori" : "Holdets indhold")</span></nav>
-                                    </div>
-                                    <div class="notion-menu-group" role="group" aria-labelledby="notion-more-publish">
-                                        <p class="notion-menu-label" id="notion-more-publish">Udgivelse</p>
-                                        <p class="notion-publication-status">@(_current.PublishedAtUtc is null ? "Kladde" : $"Udgivet {_current.PublishedAtUtc.Value.ToLocalTime():d. MMM HH:mm}")</p>
-                                        @if (IsEditing && _current.PublishedAtUtc is not null)
-                                        {
-                                            <a href="@PageHref(_current.PageId, true)"><UiIcon Name="external" />Se udgivet</a>
-                                            <button type="button" class="notion-menu-danger" disabled="@_busy" @onclick="UnpublishPage"><UiIcon Name="close" />Træk udgivelse tilbage</button>
-                                        }
-                                        else if (!IsEditing && CanManageHold)
-                                        {
-                                            <a href="@PageHref(_current.PageId, false)"><UiIcon Name="file" />Til kladden</a>
-                                        }
                                     </div>
                                 }
                             </div>

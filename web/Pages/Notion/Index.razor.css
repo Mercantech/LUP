@@ -168,6 +168,8 @@
 }
 .notion-menu-group > :is(a,button:not(:disabled)):is(:hover,:focus-visible) { background:var(--bg); text-decoration:none; }
 .notion-menu-group > .notion-focus-toggle[aria-pressed=true] { background:var(--tint); color:var(--blue); }
+.notion-menu-group > .notion-menu-publish { background:var(--tint); color:var(--blue); font-weight:600; }
+.notion-menu-group > .notion-menu-publish:not(:disabled):is(:hover,:focus-visible) { background:var(--tint); color:var(--blue); text-decoration:underline; }
 .notion-menu-group > :disabled { opacity:.55; }
 .notion-menu-group > .notion-menu-danger { color:var(--danger,#b42318); }
 .notion-document-menu ::deep .ui-icon{width:16px;height:16px;flex:none;color:var(--muted)}

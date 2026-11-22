@@ -337,6 +337,8 @@ public sealed partial class NotionController(AppDbContext db, CourseAccess acces
         if (UserClaims.GetSub(User) is not Guid sub) return Unauthorized();
         var page = await FindEditable(id, ct);
         if (page is null) return NotFound();
+        if (request.UpdateOnly && page.PublishedAtUtc is null)
+            return Conflict(new { error = "publication_missing" });
         if (request.ExpectedRevision < 0 || !NotionStorageController.IsFingerprint(request.ExpectedFingerprint)
             || request.AssetIds is null || request.AssetIds.Length > 1000 || request.AssetIds.Any(id => id == Guid.Empty)
             || request.AssetIds.Distinct().Count() != request.AssetIds.Length)
