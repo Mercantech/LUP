@@ -12,7 +12,7 @@
                        accept="image/jpeg,image/png,image/webp" aria-label="Upload cover" disabled="@_busy" />
         </label>
         <button type="button" class="secondary" @onclick="Generate" disabled="@_busy" aria-describedby="@_aiHintId">Generér med AI</button>
-        <p id="@_aiHintId" class="cover-hint">AI bruger titlen og korte uddrag af det gemte indhold.</p>
+        <p id="@_aiHintId" class="cover-hint">AI bruger titlen, korte uddrag og relevante emojis fra det gemte indhold sammen med LUP’s illustrationer.</p>
         @if (CoverId is not null)
         {
             <button type="button" class="secondary" @onclick="Delete" disabled="@_busy">Fjern cover</button>

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as Y from 'yjs';
-import { cloneNotebookDocument, defaultNotebookTemplate, notebookStateProjection, projectLivePresentation, projectNotebookDocument, projectNotionContext } from '../src/notebook-documents.mjs';
+import { cloneNotebookDocument, defaultNotebookTemplate, notebookStateProjection, projectLivePresentation, projectNotebookCover, projectNotebookDocument, projectNotionContext } from '../src/notebook-documents.mjs';
 
 const id = '11111111-2222-4333-8444-555555555555';
 const targetId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
@@ -118,6 +118,47 @@ test('notebook projection searches live content and references, excluding delete
   assert.deepEqual(projection.assetIds, [oldAsset]);
   assert.ok(Buffer.from(encode(doc), 'base64').includes(Buffer.from('SKJULT SLETTET')), 'the deleted source really remains in CRDT history');
   doc.destroy();
+});
+
+test('cover projection reads ordered real inline and callout emojis plus shortcodes from live text', () => {
+  const doc = new Y.Doc({ gc: false });
+  const group = element('blockGroup', {}, [
+    element('heading', { level: 2 }, [
+      element('customEmoji', { emojiId: id.toUpperCase(), name: 'Raymond_Hello' }),
+      new Y.XmlText(' SQL :live-text: and prefix:ignore-this: '),
+      element('customEmoji', { emojiId: id, name: 'raymond_hello' })
+    ]),
+    element('callout', { emojiId: targetId, emojiName: 'test-callout' }, [new Y.XmlText('Think about the join.')]),
+    element('codeBlock', { language: 'text' }, [new Y.XmlText(':code-example:')]),
+    element('paragraph', {}, [element('customEmoji', { emojiId: oldAsset, name: 'removed' })])
+  ]);
+  try {
+    doc.getXmlFragment('document-store').insert(0, [group]);
+    group.delete(3, 1);
+    doc.getMap('private').set('emojiId', newAsset);
+    const result = projectNotebookCover({ stateBase64: encode(doc) });
+    assert.match(result.plainText, /SQL/);
+    assert.deepEqual(result.emojis, [
+      { id, shortcode: 'raymond_hello' },
+      { id: null, shortcode: 'live-text' },
+      { id: targetId, shortcode: 'test-callout' }
+    ]);
+    assert.doesNotMatch(JSON.stringify(result.emojis), /removed|code-example|ignore-this/);
+    assert.equal(projectNotebookDocument(doc).emojis, undefined);
+  } finally { doc.destroy(); }
+});
+
+test('cover projection retains real emoji IDs when many raw shortcodes exhaust the context budget', () => {
+  const doc = new Y.Doc();
+  try {
+    doc.getXmlFragment('document-store').insert(0, [
+      new Y.XmlText(Array.from({ length: 30 }, (_, index) => `:text_${index}:`).join(' ')),
+      element('customEmoji', { emojiId: id, name: 'first-real' })
+    ]);
+    const result = projectNotebookCover({ stateBase64: encode(doc) });
+    assert.equal(result.emojis.length, 16);
+    assert.deepEqual(result.emojis.at(-1), { id, shortcode: 'first-real' });
+  } finally { doc.destroy(); }
 });
 
 test('template copies get fresh CRDT/block identities and local asset IDs without deleted source content', () => {

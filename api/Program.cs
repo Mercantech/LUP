@@ -145,6 +145,7 @@ builder.Services.AddHttpClient(NotebookCoverGenerator.ClientName, (sp, client) =
     client.MaxResponseContentBufferSize = 8 * 1024 * 1024;
 }).RemoveAllLoggers();
 builder.Services.AddSingleton<INotebookCoverGenerator, NotebookCoverGenerator>();
+builder.Services.AddScoped<NotebookCoverArtwork>();
 builder.Services.AddRateLimiter(options =>
     options.AddPolicy(NotebookCoverGenerator.RateLimitPolicy, NotebookCoverGenerator.LimitRequests));
 builder.Services.AddHttpClient("openai-editor", (sp, client) =>
