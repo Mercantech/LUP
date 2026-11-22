@@ -483,10 +483,15 @@ public sealed class CharacterDetailTests
         Assert.Equal("65 %", page.Find(".binding-lab output").TextContent);
         page.Find("#iben-brightness").Input("33");
         Assert.Equal("33 %", page.Find(".binding-lab output").TextContent);
+        Assert.Equal("Skyder → C#", page.Find(".binding-trace strong").TextContent);
         page.Find(".binding-lab button").Click();
         Assert.Equal("0", page.Find("#iben-brightness").GetAttribute("value"));
+        Assert.Equal("C# → Skyder", page.Find(".binding-trace strong").TextContent);
         page.Find(".binding-lab button").Click();
         Assert.Equal("100 %", page.Find(".binding-lab output").TextContent);
+        page.FindAll(".binding-actions button")[1].Click();
+        Assert.Equal("65", page.Find("#iben-brightness").GetAttribute("value"));
+        Assert.Equal("brightness = 65", page.Find(".binding-trace code").TextContent);
         Assert.Contains("@bind:event=\"oninput\"", page.Find(".binding-lab pre").TextContent);
 
         page.Render(parameters => parameters.Add(p => p.Slug, "karla"));
