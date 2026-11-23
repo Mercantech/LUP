@@ -14,6 +14,19 @@ Y.Doc og bevarer editoren og viewporten. Medsend `revision`, så et forsinket sv
 kan overskrive en nyere kontekst. Værten kontrollerer adgang og revision hvert 15. sekund
 og ved genaktivering af fanen; en tilbagekaldt adgang skal afmontere læsevisningen.
 
+### Kolonner på en notesbogsside
+
+Vælg **Kolonner** i værktøjslinjen eller skriv `/kolonner`. Den aktuelle blok bliver
+første blok i rækken, og hver kolonne kan indeholde de samme blokke som resten af siden.
+Rækkens menu styrer antal og bredde. **Saml til én kolonne** lægger indholdet tilbage
+på siden i rækkefølge fra venstre mod højre. I blokmenuen kan en blok flyttes til
+nabokolonnen. På smalle sider stables kolonnerne i samme rækkefølge.
+Når flere skriver på siden, indsættes nye rækker tomme, så hver forfatters tekst
+bliver på sin plads. Alle kan skrive i kolonnerne og ændre deres bredde.
+
+`columnLayout` gemmer breddevalget. Hver `layoutColumn` indeholder almindelige
+BlockNote-underblokke. Kladde, læsevisning og præsentation bruger det samme schema.
+
 Self-hosted React editor island for the existing Blazor app. Uses BlockNote (MPL-2.0), Yjs13 and Hocuspocus4 (MIT). No XL packages, external collaboration service, browser document database or editor subscription.
 
 Use the [component standard and template](COMPONENT_TEMPLATE.md) when creating or changing editor blocks. It covers the platform UI, all themes, source preservation and the expected behavior in drafts, published pages, presentations and exports.
@@ -70,7 +83,7 @@ DotNet object methods:
 - OnNotionStatus(status, detail): connecting, synced, saving, saved, offline or error. synced means connected; saved means a persisted snapshot matches the current Yjs state.
 - GetNotionToken(): returns a current access token for connections and private media access, including authenticated read-only students.
 
-The editor uses same-origin WebSockets at /collaboration?schemaVersion=11 for notion:<pageId>, notebook:<documentId>, and drawing:<drawingId>. A missing or incompatible client version is rejected before document loading; the current editor asks the user to reload. The server authorizes each room against ASP.NET. A server stateless {type:'persisted',fingerprintHash:<sha256 hex>,savedAtUtc:<ISO>,stateVector:<base64>} acknowledges storage. The client compares a canonical SHA256 fingerprint of sorted state-vector entries and normalized DeleteSet ranges plus its local edit generation before clearing dirty state. This includes deletions, which a state vector alone cannot detect, and remains stable when server garbage collection encodes deleted structs differently from client UndoManager retention. A persistenceError event preserves dirty state and displays a storage error until a matching successful acknowledgement arrives.
+The editor uses same-origin WebSockets at /collaboration?schemaVersion=12 for notion:<pageId>, notebook:<documentId>, and drawing:<drawingId>. A missing or incompatible client version is rejected before document loading; the current editor asks the user to reload. The server authorizes each room against ASP.NET. A server stateless {type:'persisted',fingerprintHash:<sha256 hex>,savedAtUtc:<ISO>,stateVector:<base64>} acknowledges storage. The client compares a canonical SHA256 fingerprint of sorted state-vector entries and normalized DeleteSet ranges plus its local edit generation before clearing dirty state. This includes deletions, which a state vector alone cannot detect, and remains stable when server garbage collection encodes deleted structs differently from client UndoManager retention. A persistenceError event preserves dirty state and displays a storage error until a matching successful acknowledgement arrives.
 
 ## Custom blocks
 

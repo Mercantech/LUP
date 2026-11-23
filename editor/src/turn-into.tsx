@@ -19,6 +19,8 @@ import {
   type IconType,
 } from '@blocknote/react';
 import { notionCodeBlockOptions } from './code-block';
+import { applyColumnChange, insertColumnLayout } from './column-layout';
+import { columnLayoutShared, useColumnLayoutShared } from './column-presence';
 import { buildTurnIntoUpdate, type TurnIntoBlock, type TurnIntoOptions } from './turn-into-content';
 
 const icon = (label: string): IconType =>
@@ -149,11 +151,55 @@ function TurnIntoItem({ children }: { children: ReactNode }) {
   );
 }
 
-/** Drag-handle menu: Turn into, AI helper on this block, delete, colors. */
+function ColumnMenuItems() {
+  const Components = useComponentsContext()!;
+  const editor = useBlockNoteEditor<any, any, any>();
+  const block = useExtensionState(SideMenuExtension, { editor, selector: state => state?.block });
+  const shared = useColumnLayoutShared(editor);
+  if (!block || !editor.isEditable || shared || block.type === 'layoutColumn' || block.type === 'columnLayout') return null;
+  const column = editor.getParentBlock(block.id);
+  if (column?.type !== 'layoutColumn') {
+    return <Components.Generic.Menu.Item className="bn-menu-item" onClick={() => insertColumnLayout(editor, 2, block.id)}>
+      Sæt i to kolonner
+    </Components.Generic.Menu.Item>;
+  }
+  const columnId = column.id;
+  const blockId = block.id;
+  const row = editor.getParentBlock(columnId);
+  if (row?.type !== 'columnLayout') return null;
+  const index = row.children.findIndex(child => child.id === column.id);
+  const neighbors = [
+    { column: row.children[index - 1], label: 'Flyt til venstre kolonne' },
+    { column: row.children[index + 1], label: 'Flyt til højre kolonne' },
+  ];
+  function moveTo(targetId: string) {
+    const current = editor.getBlock(blockId);
+    const target = editor.getBlock(targetId);
+    if (!editor.isEditable || columnLayoutShared(editor) || !current || target?.type !== 'layoutColumn' || editor.getParentBlock(current.id)?.id !== columnId) return;
+    applyColumnChange(editor, () => {
+      editor.removeBlocks([current.id]);
+      const placeholder = target.children.length === 1 ? target.children[0] : undefined;
+      if (placeholder?.type === 'paragraph' && Array.isArray(placeholder.content) && !placeholder.content.length && !placeholder.children.length) {
+        editor.replaceBlocks([placeholder.id], [current]);
+      } else {
+        editor.insertBlocks([current], targetId, 'last-child');
+      }
+      if (!editor.getBlock(columnId)?.children.length) editor.insertBlocks([{ type: 'paragraph' }], columnId, 'first-child');
+      editor.setTextCursorPosition(current.id, 'start');
+    });
+    editor.focus();
+  }
+  return <>{neighbors.map(neighbor => neighbor.column?.type === 'layoutColumn' &&
+    <Components.Generic.Menu.Item key={neighbor.column.id} className="bn-menu-item" onClick={() => moveTo(neighbor.column.id)}>
+      {neighbor.label}
+    </Components.Generic.Menu.Item>)}</>;
+}
+
 export function NotionDragHandleMenu() {
   return (
     <DragHandleMenu>
       <TurnIntoItem>Omdan til</TurnIntoItem>
+      <ColumnMenuItems />
       <AiDragHandleItem />
       <RemoveBlockItem>Slet</RemoveBlockItem>
       <BlockColorsItem>Farver</BlockColorsItem>

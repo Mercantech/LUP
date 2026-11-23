@@ -5,7 +5,8 @@ export const MCP_RECEIPTS = 'mcp-operation-receipts';
 const HASH = /^[0-9a-f]{64}$/;
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const TEXT_TYPES = new Set(['paragraph', 'heading', 'bulletListItem', 'numberedListItem', 'checkListItem', 'toggleListItem', 'quote', 'codeBlock', 'callout', 'learningGoal']);
-const CONTENT_TYPES = new Set([...TEXT_TYPES, 'table', 'mermaidDiagram']);
+const COLUMN_TYPES = new Set(['columnLayout', 'layoutColumn']);
+const CONTENT_TYPES = new Set([...TEXT_TYPES, ...COLUMN_TYPES, 'table', 'mermaidDiagram']);
 const STRUCTURAL = new Set(['blockContainer', 'blockGroup', 'tableRow', 'tableCell', 'tableHeader', 'tableParagraph']);
 const INLINE_TYPES = new Set(['customEmoji', 'hardBreak']);
 const MARKS = new Set(['bold', 'italic', 'underline', 'strike', 'code', 'link', 'textColor', 'backgroundColor']);
@@ -13,7 +14,7 @@ const COMMON_ATTRIBUTES = new Set(['backgroundColor', 'textColor', 'textAlignmen
 const NODE_ATTRIBUTES = {
   blockContainer: ['id'], blockGroup: [], heading: ['level', 'isToggleable'], numberedListItem: ['start'], checkListItem: ['checked'],
   toggleListItem: ['isToggleable'], codeBlock: ['language'], callout: ['schemaVersion', 'tone', 'emojiId', 'emojiName'],
-  mermaidDiagram: ['schemaVersion', 'source'], learningGoal: ['schemaVersion'], tableRow: [],
+  mermaidDiagram: ['schemaVersion', 'source'], learningGoal: ['schemaVersion'], columnLayout: ['layout'], tableRow: [],
   tableCell: ['colspan', 'rowspan', 'colwidth'], tableHeader: ['colspan', 'rowspan', 'colwidth'], tableParagraph: [],
   customEmoji: ['emojiId', 'name'], hardBreak: [],
 };
@@ -96,6 +97,26 @@ function describeEntry(entry, mode = 'block', includeAnchor = true) {
     fingerprint: mcpHash(serializeMcpXml(entry.node)), block: serializeMcpXml(entry.node) };
 }
 
+// The browser may be midway through moving a block. Only reject MCP writes
+// that introduce a new layout problem, so unrelated text can still be edited.
+function columnStructureError(entry, index) {
+  if (entry?.content.nodeName === 'layoutColumn' && index.blocks.get(entry.parentId)?.content.nodeName !== 'columnLayout')
+    return 'En kolonne skal ligge i et kolonnelayout.';
+  if (entry?.content.nodeName === 'columnLayout') {
+    const children = groupOf(entry.node)?.toArray() || [];
+    if (children.length < 2 || children.length > 3 || children.some(child => contentOf(child)?.nodeName !== 'layoutColumn'))
+      return 'Et kolonnelayout skal have to eller tre kolonner som underblokke.';
+  }
+  return null;
+}
+
+function validateColumnChanges(before, after) {
+  for (const entry of after.ordered) {
+    const error = columnStructureError(entry, after);
+    if (error && error !== columnStructureError(before.blocks.get(entry.id), before)) fail('invalid_column_layout', error);
+  }
+}
+
 export function readMcpPage(doc, { pageId, cursor = null, limit = 50 } = {}) {
   if (!ID.test(pageId || '') || !Number.isInteger(limit) || limit < 1 || limit > 100) fail('invalid_request', 'Ugyldigt side-id eller limit (1–100).');
   const index = documentIndex(doc);
@@ -131,11 +152,12 @@ function protectedParts(node, result = []) {
   return result.sort();
 }
 
-function validateXmlSchema(node, original = null) {
+function validateXmlSchema(node, original = null, preservedChildren = null) {
   // Unknown inline widgets can only be carried through byte-for-byte; Codex cannot create them or delete them implicitly.
   if (canonicalMcpJson(protectedParts(node)) !== canonicalMcpJson(original ? protectedParts(original) : [])) fail('protected_content', 'Medier, referencer og ukendte noder skal bevares uændret.');
   const known = value => value.kind === 'element' && (CONTENT_TYPES.has(value.name) || STRUCTURAL.has(value.name) || INLINE_TYPES.has(value.name));
   const visit = (value, parent = null) => {
+    if (value === preservedChildren) return;
     if (value.kind === 'text') {
       for (const part of value.delta) {
         if (typeof part.insert !== 'string') fail('invalid_block', 'Tekst skal være en streng.');
@@ -168,6 +190,10 @@ function validateXmlSchema(node, original = null) {
       if (typeof value.attributes.id !== 'string' || !value.attributes.id || value.attributes.id.length > 200 || value.children.some(child => child.kind !== 'element') || elements.length < 1 || elements.length > 2 || !CONTENT_TYPES.has(elements[0].name) || (elements[1] && elements[1].name !== 'blockGroup')) fail('invalid_block', 'En blok skal indeholde ét understøttet indholdsfelt og valgfri underblokke.');
     } else if (value.name === 'blockGroup') {
       if (value.children.some(child => child.kind !== 'element' || child.name !== 'blockContainer')) fail('invalid_block', 'En blokgruppe må kun indeholde blokke.');
+    } else if (COLUMN_TYPES.has(value.name)) {
+      if (value.children.length) fail('invalid_column_layout', 'Indsæt indhold som blokke i kolonnerne.');
+      if (value.name === 'columnLayout' && value.attributes.layout !== undefined && !['equal', 'wideLeft', 'wideRight'].includes(value.attributes.layout))
+        fail('invalid_column_layout', 'Vælg lige brede kolonner, bred venstre eller bred højre kolonne.');
     } else if (value.name === 'table') {
       if (!elements.length || value.children.some(child => child.kind !== 'element' || child.name !== 'tableRow')) fail('invalid_table', 'En tabel skal have rækker.');
       const occupied = []; let width = null, area = 0;
@@ -224,7 +250,11 @@ function normalizeBlock(value, operationId, order, existingId = null, path = '')
   const id = existingId || value.id || deterministicId(operationId, order, path);
   const props = cloneJson(value.props || {});
   let children;
-  if (typeof value.content === 'string' || value.content === undefined) children = value.type === 'mermaidDiagram' ? [] : [{ kind: 'text', delta: [{ insert: value.content || '' }] }];
+  if (COLUMN_TYPES.has(value.type)) {
+    if (value.content !== undefined && value.content !== '' && !(Array.isArray(value.content) && !value.content.length))
+      fail('invalid_column_layout', 'Indsæt indhold som blokke i kolonnerne.');
+    children = [];
+  } else if (typeof value.content === 'string' || value.content === undefined) children = value.type === 'mermaidDiagram' ? [] : [{ kind: 'text', delta: [{ insert: value.content || '' }] }];
   else if (Array.isArray(value.content)) children = [{ kind: 'text', delta: value.content.map(part => typeof part === 'string' ? { insert: part } : { insert: part.text, ...(part.styles ? { attributes: Object.fromEntries(Object.entries(part.styles).filter(([, style]) => style !== false).map(([key, style]) => [key, style === true ? {} : { stringValue: style }])) } : {}) }) }];
   else fail('invalid_block', 'Brug tekst eller XML for denne blok.');
   if (value.type === 'mermaidDiagram') props.source = props.source ?? value.content ?? '';
@@ -382,7 +412,7 @@ export function prepareMcpApply(doc, request) {
           const newChildren = block.children.find(node => node.name === 'blockGroup');
           if (oldChildren && !newChildren) block.children.push(oldChildren);
           else if (canonicalMcpJson(newChildren || null) !== canonicalMcpJson(oldChildren || null)) fail('protected_children', 'Opdatér underblokke særskilt; en forældreopdatering skal bevare dem.');
-          validateXmlSchema(block, old);
+          validateXmlSchema(block, old, newChildren || oldChildren);
           const contentIndex = entry.node.toArray().indexOf(entry.content);
           entry.node.delete(contentIndex, 1); entry.node.insert(contentIndex, [deserializeMcpXml(block.children[0])]);
           afterIds.add(entry.id); modes.set(entry.id, 'content');
@@ -410,6 +440,7 @@ export function prepareMcpApply(doc, request) {
       }
     });
     const afterIndex = documentIndex(scratch);
+    validateColumnChanges(original, afterIndex);
     if (!afterIndex.ordered.length) fail('empty_document', 'Bevar mindst én tom tekstblok i dokumentet.');
     const before = { version: 1, blocks: captureEntries(original, beforeIds, modes) };
     const after = { version: 1, blocks: captureEntries(afterIndex, afterIds, modes, false) };
@@ -464,6 +495,7 @@ export function prepareMcpUndo(doc, request) {
       }
     });
     const restored = documentIndex(scratch), ids = new Set(before.map(entry => entry.id));
+    validateColumnChanges(original, restored);
     return { update: Y.encodeStateAsUpdate(scratch, vector), expected, missing: before.filter(entry => !afterIds.has(entry.id)).map(entry => entry.id),
       before: { version: 1, blocks: captureEntries(original, new Set(after.map(entry => entry.id)), new Map(after.map(entry => [entry.id, entry.mode]))) },
       after: { version: 1, blocks: captureEntries(restored, ids, new Map(before.map(entry => [entry.id, entry.mode])), false) } };
@@ -478,6 +510,7 @@ export function revalidateMcpPlan(doc, plan) {
     if (!entry || entry.parentId !== expected.parentId || mcpHash(serializeMcpXml(expected.contentOnly ? entry.content : entry.node)) !== expected.fingerprint) fail('target_changed', 'En berørt blok er ændret. Ingen ændringer er gennemført.', 409);
   }
   for (const id of plan.missing || []) if (index.blocks.has(id)) fail('undo_conflict', 'Et tidligere blok-id er genopstået.', 409);
+  return index;
 }
 
 export function makeMcpReceipt(secret, request, plan) {
@@ -496,12 +529,13 @@ export function verifyMcpReceipt(secret, request, receipt) {
 }
 
 export function applyPreparedMcpPlan(doc, plan, receipt, editorName) {
-  revalidateMcpPlan(doc, plan);
+  const current = revalidateMcpPlan(doc, plan);
   // Put the signed receipt in the same update before applying it. Mixing a remote applyUpdate
   // with local writes inside one Yjs transaction can reuse the live client's clock range.
   const candidate = scratchOf(doc);
   try {
     Y.applyUpdate(candidate, plan.update);
+    validateColumnChanges(current, documentIndex(candidate));
     candidate.getMap(MCP_RECEIPTS).set(receipt.operationId, receipt);
     Y.applyUpdate(doc, Y.encodeStateAsUpdate(candidate, Y.encodeStateVector(doc)), { source: 'mcp', operationId: receipt.operationId, editorName });
   } finally { candidate.destroy(); }
