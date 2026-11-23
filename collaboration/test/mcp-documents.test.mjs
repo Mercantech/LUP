@@ -53,6 +53,39 @@ test('MCP rejects malformed column writes and rechecks sibling changes before ap
   doc.destroy();
 });
 
+test('MCP preserves legacy presets and can set, undo or reset custom shares on existing rows', () => {
+  const row = block('row', 'columnLayout', [], { layout: 'wideLeft' }, [block('a', 'layoutColumn'), block('b', 'layoutColumn')]);
+  const doc = document([row]);
+  const updateWidths = widths => request([{ type: 'update_block', blockId: 'row', fingerprint: find(doc, 'row').fingerprint,
+    block: { type: 'columnLayout', props: { layout: 'wideLeft', widths } } }]);
+  const props = () => find(doc, 'row').block.children[0].attributes;
+  const { plan } = apply(doc, updateWidths('4532,5468'));
+  assert.deepEqual(props(), { layout: 'wideLeft', widths: '4532,5468' });
+  const undoRequest = { ...request([]), operationId: randomOperationId(), originalChange: plan };
+  const undo = prepareMcpUndo(doc, undoRequest);
+  applyPreparedMcpPlan(doc, undo, makeMcpReceipt(secret, undoRequest, undo));
+  assert.deepEqual(find(doc, 'row').block, row);
+  apply(doc, updateWidths('1000,9000'));
+  apply(doc, updateWidths(''));
+  assert.deepEqual(props(), { layout: 'wideLeft', widths: '' });
+  doc.destroy();
+});
+
+test('MCP writes require one integer width per current column, at least ten percent each and one whole row in total', () => {
+  const doc = document([]);
+  const children = ['left', 'middle', 'right'].map(id => ({ id, type: 'layoutColumn' }));
+  const append = widths => request([{ type: 'append_block', block: { id: 'row', type: 'columnLayout', props: { widths }, children } }]);
+  for (const widths of ['5000,5000', '999,5000,4001', '1000,5000,3999', '0.1,0.5,0.4', ' 1000,5000,4000', '1e03,5000,4000', [1000, 5000, 4000], null]) {
+    assert.throws(() => prepareMcpApply(doc, append(widths)), error => error.code === 'invalid_column_layout');
+  }
+  apply(doc, append('1000,3456,5544'));
+  assert.equal(find(doc, 'row').block.children[0].attributes.widths, '1000,3456,5544');
+  // A separate structural edit must not leave stale shares on a row.
+  assert.throws(() => prepareMcpApply(doc, request([{ type: 'delete_block', blockId: 'middle', fingerprint: find(doc, 'middle').fingerprint }])),
+    error => error.code === 'invalid_column_layout');
+  doc.destroy();
+});
+
 test('draft text remains editable while a column is missing, and resizing retains nested media', () => {
   const media = block('image', 'pageMedia', [], { pageId, assetId: actorSub, kind: 'image' });
   const doc = document([block('row', 'columnLayout', [], {}, [

@@ -2,12 +2,16 @@
 .bn-block:has(> [data-content-type="columnLayout"], > .bn-react-node-view-renderer > [data-content-type="columnLayout"]) {
   container: notebook-row / inline-size;
   margin-block: .65em;
+  --notion-column-gap: clamp(20px, 2.5cqi, 28px);
 }
 
 :is([data-content-type="columnLayout"], .bn-react-node-view-renderer:has(> [data-content-type="columnLayout"])) ~ .bn-block-group {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-template-columns: var(--notion-column-preview, var(--notion-column-tracks, none));
   align-items: stretch;
-  gap: clamp(12px, 2.5%, 28px);
+  gap: var(--notion-column-gap);
   margin-inline-start: 0;
 }
 
@@ -25,25 +29,17 @@
 }
 
 .bn-block-outer:has(> .bn-block > [data-content-type="layoutColumn"], > .bn-block > .bn-react-node-view-renderer > [data-content-type="layoutColumn"]) {
-  flex: 1 1 0px;
   min-width: 0;
   overflow-wrap: anywhere;
-}
-
-/* data-layout is BlockNote's serialization of the row's width setting. */
-:is([data-layout="wideLeft"], .bn-react-node-view-renderer:has(> [data-layout="wideLeft"])) ~ .bn-block-group > .bn-block-outer:first-child,
-:is([data-layout="wideRight"], .bn-react-node-view-renderer:has(> [data-layout="wideRight"])) ~ .bn-block-group > .bn-block-outer:last-child {
-  flex-grow: 2;
 }
 
 .notion-blocknote-host [data-content-type="columnLayout"],
 .notion-blocknote-host [data-content-type="layoutColumn"] {
   padding: 0;
 }
-.notion-blocknote-host [data-content-type="layoutColumn"] { position: relative; }
 .notion-column-placeholder {
   position: absolute;
-  inset: 3px 0 auto;
+  inset: calc(.45em + 3px) .65em auto;
   color: var(--notion-muted);
   font-size: .9em;
   line-height: 1.65;
@@ -58,6 +54,7 @@
 }
 
 .notion-blocknote-host .bn-editor[contenteditable="true"] .bn-block:has(> [data-content-type="layoutColumn"], > .bn-react-node-view-renderer > [data-content-type="layoutColumn"]) {
+  position: relative;
   min-height: 3.25em;
   height: 100%;
   box-sizing: border-box;
@@ -80,8 +77,8 @@
   font: 500 12px/1.4 'DM Sans', sans-serif;
 }
 
-.notion-column-toolbar select,
-.notion-column-launcher select,
+.notion-column-toolbar button,
+button.notion-column-launcher,
 .notion-column-empty {
   box-sizing: border-box;
   border: 1px solid var(--notion-rule, var(--rule, #dfe7f2));
@@ -95,23 +92,27 @@
   max-width: 100%;
 }
 
-.notion-column-toolbar select:focus-visible,
-.notion-column-launcher select:focus-visible,
+.notion-column-toolbar button:focus-visible,
+.notion-column-launcher:focus-visible,
 .notion-column-empty:focus-visible {
   outline: 2px solid var(--notion-blue, var(--blue, #2452e8));
   outline-offset: 2px;
 }
 
 .notion-column-toggle-slot:empty { display: none; }
-.notion-column-launcher {
+button.notion-column-launcher {
   display: inline-flex;
-  position: relative;
   align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding-inline: 9px;
   vertical-align: middle;
   font: 600 12px/1.4 'DM Sans', sans-serif;
 }
-.notion-column-launcher select { min-height: 36px; padding-inline-start: 29px; }
-.notion-column-launcher > .notion-column-icon { position: absolute; left: 9px; pointer-events: none; }
+.notion-column-toolbar button:disabled { opacity: .6; cursor: default; }
+.notion-column-toolbar button:enabled:hover, button.notion-column-launcher:hover {
+  background: var(--notion-tint, var(--tint, #eaf0ff));
+}
 .notion-column-icon {
   display: inline-block;
   box-sizing: border-box;
@@ -125,23 +126,59 @@
   background: linear-gradient(90deg, transparent 29%, currentColor 29% 36%, transparent 36% 64%, currentColor 64% 71%, transparent 71%);
 }
 
+/* Each handle lies over the gap to the right of its column, outside its text. */
+.notion-column-resizer {
+  position: absolute;
+  z-index: 2;
+  inset-block: 0;
+  right: calc(var(--notion-column-gap) / -2 - 1px);
+  width: var(--notion-column-gap);
+  transform: translateX(50%);
+  display: grid;
+  place-items: center;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+  outline: none;
+}
+.notion-column-resizer::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  border-left: 1px solid var(--notion-rule);
+}
+.notion-column-resizer::after {
+  content: '';
+  width: 4px;
+  height: 24px;
+  border-radius: 3px;
+  background: var(--notion-muted);
+}
+.notion-column-resizer:is(:hover, :focus-visible, [data-dragging])::before { border-color: var(--notion-blue); }
+.notion-column-resizer:is(:hover, :focus-visible, [data-dragging])::after { background: var(--notion-blue); }
+.notion-column-resizer:focus-visible { outline: 2px solid var(--notion-blue); outline-offset: -2px; border-radius: 5px; }
+
 @container notebook-row (max-width: 550px) {
   :is([data-content-type="columnLayout"], .bn-react-node-view-renderer:has(> [data-content-type="columnLayout"])) ~ .bn-block-group {
+    display: flex;
     flex-direction: column;
     gap: .65em;
   }
-  .bn-block-group > .bn-block-outer { flex-basis: auto; }
+  .notion-column-resizer { display: none; }
 }
 
 @media (pointer: coarse) {
-  .notion-column-launcher select, .notion-column-toolbar select, .notion-column-empty { min-height: 44px; }
+  button.notion-column-launcher, .notion-column-toolbar button, .notion-column-empty { min-height: 44px; }
+  .notion-column-resizer { width: 44px; }
 }
 
 .bn-editor[contenteditable="false"] .notion-column-toolbar,
-.bn-editor[contenteditable="false"] .notion-column-empty { display: none; }
+.bn-editor[contenteditable="false"] .notion-column-empty,
+.bn-editor[contenteditable="false"] .notion-column-resizer { display: none; }
 
 @media print {
-  .notion-column-toolbar, .notion-column-launcher, .notion-column-empty, .notion-column-placeholder { display: none !important; }
+  .notion-column-toolbar, .notion-column-launcher, .notion-column-empty, .notion-column-placeholder, .notion-column-resizer { display: none !important; }
   .notion-blocknote-host .bn-editor[contenteditable] .bn-block:has(> [data-content-type="layoutColumn"], > .bn-react-node-view-renderer > [data-content-type="layoutColumn"]) {
     border: 0;
     padding: 0;
