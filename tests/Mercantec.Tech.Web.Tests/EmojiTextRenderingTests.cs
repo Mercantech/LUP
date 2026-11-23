@@ -4,6 +4,7 @@ using Bunit;
 using Mercantec.Tech.Contracts;
 using Mercantec.Tech.Web.Components;
 using Mercantec.Tech.Web.Emojis;
+using Mercantec.Tech.Web.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Mercantec.Tech.Web.Tests;
@@ -12,6 +13,29 @@ public sealed class EmojiTextRenderingTests
 {
     private static readonly CustomEmojiItem Raymond = new(Guid.NewGuid(), "raymond_applause", "image/png", 12,
         DateTimeOffset.UtcNow, "/api/emojis/raymond", AltText: "Raymond klapper");
+
+    [Fact]
+    public async Task Saved_notebook_favorite_renders_the_emoji_in_its_title()
+    {
+        using var api = new EmojiApi
+        {
+            Favorites = new FavoriteShortcutsDto(Guid.NewGuid(),
+                [new("/notes/blazor", "Blazor :raymond_applause:", "", "book")])
+        };
+        using var context = await LearningUiTestContext.CreateAsync(api, teacher: true,
+            configure: services => services.AddSingleton<FavoriteShortcutsState>());
+        var favorites = context.Render<FavoriteShortcutsPanel>();
+
+        favorites.WaitForAssertion(() =>
+        {
+            var title = favorites.Find("a[href='/notes/blazor'] h3");
+            Assert.Equal("Blazor", title.TextContent.Trim());
+            var emoji = title.QuerySelector("img.custom-emoji");
+            Assert.NotNull(emoji);
+            Assert.Equal(Raymond.ContentUrl, emoji.GetAttribute("src"));
+            Assert.Equal(Raymond.AltText, emoji.GetAttribute("alt"));
+        });
+    }
 
     [Fact]
     public async Task Returning_to_a_loaded_title_during_another_pending_load_restores_the_correct_label()
@@ -81,6 +105,7 @@ public sealed class EmojiTextRenderingTests
 
     private sealed class EmojiApi : HttpMessageHandler
     {
+        public FavoriteShortcutsDto? Favorites { get; init; }
         public TaskCompletionSource? Gate { get; set; }
         public TaskCompletionSource Requested { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource Completed { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -88,6 +113,9 @@ public sealed class EmojiTextRenderingTests
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
+            if (request.RequestUri!.AbsolutePath == "/api/me/favorite-shortcuts" && Favorites is { } favorites)
+                return new(HttpStatusCode.OK) { Content = JsonContent.Create(favorites) };
+
             if (request.RequestUri!.AbsolutePath == "/api/emojis")
             {
                 Interlocked.Increment(ref Requests); Requested.TrySetResult();
