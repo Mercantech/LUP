@@ -68,7 +68,7 @@ try {
   assert.equal((await editor.innerText()).trim(), '', 'Start the publishing fixture with a fresh document');
   await editor.click();
   await page.keyboard.type('/kolonner');
-  await page.getByRole('option', { name: /2 kolonner/i }).click();
+  await page.getByRole('listbox').getByRole('option', { name: /2 kolonner/i }).click();
   await checkGeometry(page, 2, false);
   await fillColumn(page, 0);
   await page.keyboard.press('Tab');
@@ -136,7 +136,7 @@ try {
   await page.keyboard.press('End');
   await page.keyboard.press('Enter');
   await page.keyboard.type('/kolonner');
-  await page.getByRole('option', { name: /2 kolonner/i }).click();
+  await page.getByRole('listbox').getByRole('option', { name: /2 kolonner/i }).click();
   await peer.locator(rowSelector).nth(1).waitFor();
   for (const tab of [page, peer]) {
     assert.equal(await tab.locator(rowSelector).count(), 2);
