@@ -30,6 +30,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         ConfigureDailyGameRanking(modelBuilder);
         ConfigureKnowledgeChecks(modelBuilder);
         ConfigureActionCenter(modelBuilder);
+        ConfigureOnboarding(modelBuilder);
         ConfigureLearning(modelBuilder);
         ConfigureGroupSets(modelBuilder);
         ConfigureHoldCalendar(modelBuilder);
