@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Discord.Net.WebSocket" Version="3.20.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.15" />
+    <Compile Include="../shared/DailyGames.cs" Link="Contracts/DailyGames.cs" />
+    <Compile Include="../shared/LiveKnowledgeChecks.cs" Link="Contracts/LiveKnowledgeChecks.cs" />
+  </ItemGroup>
+</Project>

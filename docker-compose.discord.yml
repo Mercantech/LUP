@@ -1,0 +1,13 @@
+name: lup-discord
+services:
+  discord-bot:
+    build:
+      context: .
+      dockerfile: discord-bot/Dockerfile
+    environment:
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:?Angiv DISCORD_BOT_TOKEN}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      LUP_PUBLIC_ORIGIN: ${LUP_PUBLIC_ORIGIN:-https://lup.dk}
+    labels:
+      traefik.enable: "false"
+    restart: unless-stopped

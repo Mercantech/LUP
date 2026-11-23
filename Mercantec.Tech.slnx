@@ -2,10 +2,14 @@
   <Folder Name="/api/">
     <Project Path="api/Mercantec.Tech.Api.csproj" />
   </Folder>
+  <Folder Name="/discord-bot/">
+    <Project Path="discord-bot/Lup.DiscordBot.csproj" />
+  </Folder>
   <Folder Name="/shared/">
     <Project Path="shared/Mercantec.Tech.Contracts.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Lup.DiscordBot.Tests/Lup.DiscordBot.Tests.csproj" />
     <Project Path="tests/Mercantec.Tech.Api.Tests/Mercantec.Tech.Api.Tests.csproj" />
     <Project Path="tests/Mercantec.Tech.Web.Tests/Mercantec.Tech.Web.Tests.csproj" />
   </Folder>
