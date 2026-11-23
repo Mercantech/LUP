@@ -2968,6 +2968,65 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("notion_pages", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.OnboardingDismissal", b =>
+                {
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserSub");
+
+                    b.ToTable("onboarding_dismissals", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.OnboardingStep", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Audience")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("onboarding_steps", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            Audience = "student",
+                            SortOrder = 1,
+                            Text = "Start i Mine hold. Her finder du dine forløb, quests og afleveringer. Under Mine handlinger kan du se, hvad der venter på dig.",
+                            Title = "Velkommen til LUP"
+                        },
+                        new
+                        {
+                            Id = -2,
+                            Audience = "teacher",
+                            SortOrder = 1,
+                            Text = "Start i Mine hold for at åbne undervisning, quests og afstemninger. Under Til opfølgning finder du afleveringer, der venter på feedback.",
+                            Title = "Velkommen til LUP"
+                        });
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.PollResponse", b =>
                 {
                     b.Property<Guid>("PollId")

@@ -19,6 +19,11 @@ else if (!Auth.IsAuthenticated) { <p>Du skal være logget ind. <a href="@Auth.Lo
 else if (!CanUseStudentUi) { <p><a href="@Redirect.PostLoginPath()">Gå til dit overblik</a></p> }
 else
 {
+    if (!ViewAs.IsActive && Guid.TryParse(Auth.Subject, out var subject))
+    {
+        <HomeOnboarding @key="subject" Subject="subject" />
+    }
+
     var displayName = ViewAs.IsActive ? ViewAs.DisplayName : Auth.DisplayName;
     var firstName = string.IsNullOrEmpty(displayName) ? null : displayName.Split(' ')[0];
 

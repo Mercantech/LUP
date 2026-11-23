@@ -13,6 +13,10 @@
 }
 else if (Auth.IsAuthenticated && Redirect.ShowsTeacherChrome)
 {
+    @if (Guid.TryParse(Auth.Subject, out var subject))
+    {
+        <HomeOnboarding @key="subject" Subject="subject" />
+    }
     <header class="page-title">
         <div>
             <h1>Goddag@(string.IsNullOrEmpty(Auth.DisplayName) ? "" : $", {Auth.DisplayName.Split(' ')[0]}")</h1>

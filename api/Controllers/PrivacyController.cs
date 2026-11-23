@@ -104,6 +104,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
         object[] liveCourseReactions = [];
         object[] electiveEnrollments = [];
         object[] actionReadReceipts = [];
+        var onboardingDismissed = false;
         object[] uploadedGames = [];
         object[] wordlePlays = [];
         object[] dailyGamePlays = [];
@@ -112,6 +113,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
         var dailyRankingVisible = false;
         if (subGuid is not null)
         {
+            onboardingDismissed = await db.OnboardingDismissals.AnyAsync(x => x.UserSub == subGuid.Value, ct);
             displayName = await db.ProfileNames.AsNoTracking().Where(profile => profile.UserSub == subGuid.Value)
                 .Select(profile => profile.DisplayName).SingleOrDefaultAsync(ct);
             var shortcuts = await db.FavoriteShortcutLists.AsNoTracking()
@@ -241,6 +243,7 @@ public class PrivacyController(AppDbContext db) : ControllerBase
                 knowledgeCheckAttempts,
                 electiveEnrollments,
                 actionReadReceipts,
+                onboardingDismissed,
                 favoriteShortcuts,
                 submissions = Array.Empty<object>(),
                 deletionRequests = Array.Empty<object>()
