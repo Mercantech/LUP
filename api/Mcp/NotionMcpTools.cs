@@ -30,7 +30,7 @@ public sealed record NotionMcpEdit
     public string? Text { get; init; }
     [Description("Optional exact existing plain text in the replace_text range. If it no longer matches, the operation conflicts without changing the document.")]
     public string? ExpectedText { get; init; }
-    [Description("For structural insertion/update: lossless block XML from read_page, or {type:'paragraph',content:'Text',props:{},children:[]}. Preserve existing block IDs and protected content on update.")]
+    [Description("Use lossless block XML from read_page, or {type:'paragraph',content:'Text',props:{},children:[]}. A columnLayout has two or three layoutColumn children, each containing ordinary blocks. Its optional layout prop is equal, wideLeft or wideRight. Preserve existing block IDs and protected content on update.")]
     public JsonElement? Block { get; init; }
 }
 

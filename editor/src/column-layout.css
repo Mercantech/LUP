@@ -1,0 +1,149 @@
+/* The two wrapper blocks keep each column's content in the ordinary document tree. */
+.bn-block:has(> [data-content-type="columnLayout"], > .bn-react-node-view-renderer > [data-content-type="columnLayout"]) {
+  container: notebook-row / inline-size;
+  margin-block: .65em;
+}
+
+:is([data-content-type="columnLayout"], .bn-react-node-view-renderer:has(> [data-content-type="columnLayout"])) ~ .bn-block-group {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(12px, 2.5%, 28px);
+  margin-inline-start: 0;
+}
+
+:is([data-content-type="layoutColumn"], .bn-react-node-view-renderer:has(> [data-content-type="layoutColumn"])) ~ .bn-block-group {
+  margin-inline-start: 0;
+}
+
+/* These two levels arrange the page. Nested lists inside a column keep their indent guides. */
+.bn-block > :is([data-content-type="columnLayout"], [data-content-type="layoutColumn"], .bn-react-node-view-renderer:has(> :is([data-content-type="columnLayout"], [data-content-type="layoutColumn"]))) ~ .bn-block-group > .bn-block-outer {
+  margin-left: 0;
+  transition: none;
+}
+.bn-block > :is([data-content-type="columnLayout"], [data-content-type="layoutColumn"], .bn-react-node-view-renderer:has(> :is([data-content-type="columnLayout"], [data-content-type="layoutColumn"]))) ~ .bn-block-group > .bn-block-outer::before {
+  display: none;
+}
+
+.bn-block-outer:has(> .bn-block > [data-content-type="layoutColumn"], > .bn-block > .bn-react-node-view-renderer > [data-content-type="layoutColumn"]) {
+  flex: 1 1 0px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* data-layout is BlockNote's serialization of the row's width setting. */
+:is([data-layout="wideLeft"], .bn-react-node-view-renderer:has(> [data-layout="wideLeft"])) ~ .bn-block-group > .bn-block-outer:first-child,
+:is([data-layout="wideRight"], .bn-react-node-view-renderer:has(> [data-layout="wideRight"])) ~ .bn-block-group > .bn-block-outer:last-child {
+  flex-grow: 2;
+}
+
+.notion-blocknote-host [data-content-type="columnLayout"],
+.notion-blocknote-host [data-content-type="layoutColumn"] {
+  padding: 0;
+}
+.notion-blocknote-host [data-content-type="layoutColumn"] { position: relative; }
+.notion-column-placeholder {
+  position: absolute;
+  inset: 3px 0 auto;
+  color: var(--notion-muted);
+  font-size: .9em;
+  line-height: 1.65;
+  pointer-events: none;
+  user-select: none;
+}
+.bn-block:focus-within > :is([data-content-type="layoutColumn"], .bn-react-node-view-renderer) .notion-column-placeholder {
+  visibility: hidden;
+}
+.bn-block:has(> .bn-block-group > .bn-block-outer [data-is-empty-and-focused]) > :is([data-content-type="layoutColumn"], .bn-react-node-view-renderer) .notion-column-placeholder {
+  visibility: hidden;
+}
+
+.notion-blocknote-host .bn-editor[contenteditable="true"] .bn-block:has(> [data-content-type="layoutColumn"], > .bn-react-node-view-renderer > [data-content-type="layoutColumn"]) {
+  min-height: 3.25em;
+  height: 100%;
+  box-sizing: border-box;
+  padding: .45em .65em;
+  border: 1px dashed var(--notion-rule);
+  border-radius: 6px;
+}
+
+.notion-blocknote-host .bn-editor[contenteditable="true"] .bn-block:has(> [data-content-type="layoutColumn"], > .bn-react-node-view-renderer > [data-content-type="layoutColumn"]):focus-within {
+  border-color: var(--notion-blue);
+}
+
+.notion-column-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-block: 3px 8px;
+  color: var(--notion-muted);
+  font: 500 12px/1.4 'DM Sans', sans-serif;
+}
+
+.notion-column-toolbar select,
+.notion-column-launcher select,
+.notion-column-empty {
+  box-sizing: border-box;
+  border: 1px solid var(--notion-rule, var(--rule, #dfe7f2));
+  border-radius: 6px;
+  background: var(--notion-paper, var(--paper, white));
+  color: var(--notion-ink, var(--ink, #17243b));
+  font: inherit;
+  cursor: pointer;
+  padding: 4px 7px;
+  min-height: 30px;
+  max-width: 100%;
+}
+
+.notion-column-toolbar select:focus-visible,
+.notion-column-launcher select:focus-visible,
+.notion-column-empty:focus-visible {
+  outline: 2px solid var(--notion-blue, var(--blue, #2452e8));
+  outline-offset: 2px;
+}
+
+.notion-column-toggle-slot:empty { display: none; }
+.notion-column-launcher {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  vertical-align: middle;
+  font: 600 12px/1.4 'DM Sans', sans-serif;
+}
+.notion-column-launcher select { min-height: 36px; padding-inline-start: 29px; }
+.notion-column-launcher > .notion-column-icon { position: absolute; left: 9px; pointer-events: none; }
+.notion-column-icon {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 15px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent 46%, currentColor 46% 54%, transparent 54%);
+}
+.notion-column-icon[data-count="3"] {
+  background: linear-gradient(90deg, transparent 29%, currentColor 29% 36%, transparent 36% 64%, currentColor 64% 71%, transparent 71%);
+}
+
+@container notebook-row (max-width: 550px) {
+  :is([data-content-type="columnLayout"], .bn-react-node-view-renderer:has(> [data-content-type="columnLayout"])) ~ .bn-block-group {
+    flex-direction: column;
+    gap: .65em;
+  }
+  .bn-block-group > .bn-block-outer { flex-basis: auto; }
+}
+
+@media (pointer: coarse) {
+  .notion-column-launcher select, .notion-column-toolbar select, .notion-column-empty { min-height: 44px; }
+}
+
+.bn-editor[contenteditable="false"] .notion-column-toolbar,
+.bn-editor[contenteditable="false"] .notion-column-empty { display: none; }
+
+@media print {
+  .notion-column-toolbar, .notion-column-launcher, .notion-column-empty, .notion-column-placeholder { display: none !important; }
+  .notion-blocknote-host .bn-editor[contenteditable] .bn-block:has(> [data-content-type="layoutColumn"], > .bn-react-node-view-renderer > [data-content-type="layoutColumn"]) {
+    border: 0;
+    padding: 0;
+  }
+}

@@ -187,6 +187,32 @@ test('template copies get fresh CRDT/block identities and local asset IDs withou
   source.destroy(); firstDoc.destroy(); secondDoc.destroy();
 });
 
+test('template copies retain column widths, reading order and page-local media inside columns', () => {
+  const source = new Y.Doc();
+  const block = (id, content, children = []) => element('blockContainer', { id }, [
+    content, ...(children.length ? [element('blockGroup', {}, children)] : [])
+  ]);
+  const row = block('row', element('columnLayout', { layout: 'wideLeft' }), [
+    block('left', element('layoutColumn', {}), [block('caption', element('paragraph', {}, [new Y.XmlText('Først')]))]),
+    block('right', element('layoutColumn', {}), [
+      block('photo', element('pageMedia', { pageId: id, assetId: oldAsset, kind: 'image' })),
+      block('last', element('paragraph', {}, [new Y.XmlText('Sidst')]))
+    ])
+  ]);
+  source.getXmlFragment('document-store').insert(0, [element('blockGroup', {}, [row])]);
+  const copy = cloneNotebookDocument({ stateBase64: encode(source), pageId: targetId, assetMap: { [oldAsset]: newAsset } });
+  const copied = decode(copy.stateBase64);
+  try {
+    const copiedRow = copied.getXmlFragment('document-store').get(0).get(0);
+    assert.equal(copiedRow.get(0).getAttribute('layout'), 'wideLeft');
+    assert.equal(copiedRow.get(1).length, 2);
+    assert.deepEqual(copy.assetIds, [newAsset]);
+    const contents = projectNotionContext({ stateBase64: copy.stateBase64 }).blocks;
+    assert.deepEqual(contents.map(block => block.type), ['columnLayout', 'layoutColumn', 'paragraph', 'layoutColumn', 'pageMedia', 'paragraph']);
+    assert.deepEqual(contents.filter(block => block.text).map(block => block.text), ['Først', 'Sidst']);
+  } finally { source.destroy(); copied.destroy(); }
+});
+
 test('default template has three editable H2 prompts and empty answers; blank note starts empty', () => {
   const doc = defaultNotebookTemplate();
   const group = doc.getXmlFragment('document-store').get(0);

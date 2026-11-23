@@ -25,7 +25,12 @@ const server=http.createServer(async(req,res)=>{
     if(url.pathname==='/api/internal/notion/documents/'+pageId+'/state'){
       if(req.headers['x-notion-service-key']!==secret)return json(res,403,{error:'forbidden'});
       if(req.method==='GET'){res.writeHead(state?200:204,{'Content-Type':'application/octet-stream'});return res.end(state);}
-      if(req.method==='PUT'){state=await body(req);return json(res,200,{savedAtUtc:new Date().toISOString()});}
+      if(req.method==='PUT'){
+        const projection=JSON.parse((await body(req)).toString());
+        if(typeof projection.stateBase64!=='string')return json(res,400,{error:'missing_state'});
+        state=Buffer.from(projection.stateBase64,'base64');
+        return json(res,200,{savedAtUtc:new Date().toISOString()});
+      }
     }
     if(req.method==='POST' && url.pathname==='/qa/publish'){if(!state)return json(res,409,{error:'not_saved'});publication={state:Buffer.from(state),at:new Date().toISOString()};return json(res,200,{published:true});}
     if(url.pathname==='/qa/stats')return json(res,200,{upgradeCount,published:Boolean(publication),uploadCount,uploadBytes,abortedUploads,completedUploads});

@@ -17,6 +17,58 @@ const find = (doc, id) => {
 const request = changes => ({ pageId, actorSub, operationId, requestHash: 'a'.repeat(64), changes });
 const apply = (doc, req) => { const plan = prepareMcpApply(doc, req); const receipt = makeMcpReceipt(secret, req, plan); applyPreparedMcpPlan(doc, plan, receipt); return { plan, receipt }; };
 
+test('column layouts round-trip through MCP, retaining child block identities during edits', () => {
+  const doc = document([]);
+  const columns = ['left', 'right'].map(id => ({ id, type: 'layoutColumn', children: [{ id: 'p-' + id, type: 'paragraph', content: id }] }));
+  apply(doc, request([{ type: 'append_block', block: { id: 'row', type: 'columnLayout', props: { layout: 'wideRight' }, children: columns } }]));
+  const row = find(doc, 'row');
+  assert.equal(row.block.children[0].attributes.layout, 'wideRight');
+  assert.deepEqual(snapshot(doc).blocks.map(({ id, parentId }) => [id, parentId]),
+    [['row', null], ['left', 'row'], ['p-left', 'left'], ['right', 'row'], ['p-right', 'right']]);
+  const firstContent = find(doc, 'p-left').contentFingerprint;
+  apply(doc, request([{ type: 'update_block', blockId: 'row', fingerprint: row.fingerprint, block: { type: 'columnLayout', props: { layout: 'equal' } } }]));
+  apply(doc, request([{ type: 'replace_text', blockId: 'p-left', contentFingerprint: firstContent, text: 'Ændret' }]));
+  assert.equal(find(doc, 'p-left').text, 'Ændret');
+  assert.equal(find(doc, 'p-right').text, 'right');
+  assert.equal(find(doc, 'row').block.children[0].attributes.layout, 'equal');
+  doc.destroy();
+});
+
+test('MCP rejects malformed column writes and rechecks sibling changes before applying an update', () => {
+  const column = id => block(id, 'layoutColumn', [], {}, [block('p-' + id, 'paragraph')]);
+  const doc = document([block('row', 'columnLayout', [], {}, [column('a'), column('b')])]);
+  const change = (id, proposed) => ({ type: 'insert_after', blockId: id, fingerprint: find(doc, id).fingerprint, block: proposed });
+  for (const invalid of [
+    change('a', { type: 'paragraph', content: 'Fejlplaceret' }),
+    change('row', column('orphan')),
+    change('row', { type: 'columnLayout', children: [column('single')] }),
+    change('row', { type: 'columnLayout', props: { layout: 'other' }, children: [column('l'), column('r')] }),
+    { type: 'delete_block', blockId: 'a', fingerprint: find(doc, 'a').fingerprint },
+  ]) assert.throws(() => prepareMcpApply(doc, request([invalid])), error => error.code === 'invalid_column_layout');
+  const planned = request([change('a', column('c'))]);
+  const plan = prepareMcpApply(doc, planned);
+  apply(doc, request([change('b', column('d'))]));
+  assert.throws(() => applyPreparedMcpPlan(doc, plan, makeMcpReceipt(secret, planned, plan)), error => error.code === 'invalid_column_layout');
+  assert.deepEqual(snapshot(doc).blocks.filter(entry => entry.type === 'layoutColumn').map(entry => entry.id), ['a', 'b', 'd']);
+  doc.destroy();
+});
+
+test('draft text remains editable while a column is missing, and resizing retains nested media', () => {
+  const media = block('image', 'pageMedia', [], { pageId, assetId: actorSub, kind: 'image' });
+  const doc = document([block('row', 'columnLayout', [], {}, [
+    block('left', 'layoutColumn', [], {}, [media]),
+  ]), block('outside', 'paragraph', [txt('Før')])]);
+  apply(doc, request([{ type: 'replace_text', blockId: 'outside', fingerprint: find(doc, 'outside').fingerprint, text: 'Efter' }]));
+  assert.equal(find(doc, 'outside').text, 'Efter');
+  apply(doc, request([{ type: 'insert_after', blockId: 'left', fingerprint: find(doc, 'left').fingerprint,
+    block: { id: 'right', type: 'layoutColumn', children: [{ type: 'paragraph' }] } }]));
+  apply(doc, request([{ type: 'update_block', blockId: 'row', fingerprint: find(doc, 'row').fingerprint,
+    block: { type: 'columnLayout', props: { layout: 'wideLeft' } } }]));
+  assert.deepEqual(find(doc, 'image').block, media);
+  assert.equal(find(doc, 'row').block.children[0].attributes.layout, 'wideLeft');
+  doc.destroy();
+});
+
 test('live lossless snapshots retain marks, nested nodes and opaque widgets; cursor pages do not clip text', () => {
   const original = block('parent', 'paragraph', [txt('Start ', { bold: {} }), el('entityMention', [], { kind: 'notion-page', id: pageId }), txt(' slut')], {}, [block('nested', 'codeBlock', [txt('x'.repeat(100000))], { language: 'csharp' })]);
   const doc = document([original, block('media', 'pageMedia', [], { assetId: pageId, kind: 'image' })]);

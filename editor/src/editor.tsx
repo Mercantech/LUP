@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { createPortal } from 'react-dom';
 import { NativeAiLauncher } from './ai-native-launcher';
 import { BlockNoteSchema, defaultBlockSpecs, defaultInlineContentSpecs, trackPosition, type BlockNoteEditor } from '@blocknote/core';
 import { filterSuggestionItems, insertOrUpdateBlockForSlashMenu, SuggestionMenu } from '@blocknote/core/extensions';
@@ -17,6 +18,9 @@ import { canonicalFingerprint, publishedDocumentFromBase64, applyReadOnlySnapsho
 import { pollUrl, pollCreateUrl, selectedMembers, splitSlides, pageUrl, studentUrl, collectPublicationAssetIds } from './document-utils.mjs';
 import { createMermaidDiagram, DEFAULT_MERMAID_SOURCE } from './mermaid-block';
 import { createCallout } from './callout-block';
+import { createColumnLayout, createLayoutColumn, insertColumnLayout } from './column-layout';
+import { columnPresence } from './column-presence';
+import './column-layout.css';
 import { createNotionCodeBlock, syntaxHighlighter } from './code-block';
 import { NotionBlockTypeSelect, NotionDragHandleMenu } from './turn-into';
 import { OpenAiOnBlockProvider } from './ai-helper';
@@ -516,7 +520,7 @@ const createMedia=createReactBlockSpec({type:'pageMedia',propSchema:{schemaVersi
   toExternalHTML:()=> <p>Vedhæftet undervisningsfil</p>,
 });
 const schema = BlockNoteSchema.create({
-  blockSpecs: {...defaultBlockSpecs, codeBlock:createNotionCodeBlock(), classRoster:createRoster(),holdPoll:createPoll(),knowledgeCheck:createKnowledgeCheck(),liveCourseActivity:createLiveActivity(),slideBreak:createSlideBreak(),learningGoal:createLearningGoal(),pageLink:createPageLink(),entityLink:createEntityLink(),holdGroup:createGroup(),pageMedia:createMedia(),mermaidDiagram:createMermaidDiagram(),callout:createCallout(),drawing:createDrawing()},
+  blockSpecs: {...defaultBlockSpecs, columnLayout:createColumnLayout(), layoutColumn:createLayoutColumn(), codeBlock:createNotionCodeBlock(), classRoster:createRoster(),holdPoll:createPoll(),knowledgeCheck:createKnowledgeCheck(),liveCourseActivity:createLiveActivity(),slideBreak:createSlideBreak(),learningGoal:createLearningGoal(),pageLink:createPageLink(),entityLink:createEntityLink(),holdGroup:createGroup(),pageMedia:createMedia(),mermaidDiagram:createMermaidDiagram(),callout:createCallout(),drawing:createDrawing()},
   inlineContentSpecs:{...defaultInlineContentSpecs,pageMention,studentMention,entityMention,customEmoji},
 });
 type Editor = BlockNoteEditor<typeof schema.blockSchema, typeof schema.inlineContentSchema, typeof schema.styleSchema>;
@@ -589,7 +593,7 @@ function openPresentation(session: Session) {
 function ConnectedEditor({session}:{session:Session}) {
   const aiReview=useMemo(()=>new NativeAiReview(session.doc),[session]);
   const editor=useCreateBlockNote(withCollaboration({
-    schema, dictionary:danish, extensions:[syntaxHighlighter,nativeAiReviewExtension(aiReview)],
+    schema, dictionary:danish, extensions:[syntaxHighlighter,nativeAiReviewExtension(aiReview),columnPresence({awareness:session.provider?.awareness ?? undefined})],
     collaboration:{fragment:session.doc.getXmlFragment('document-store'),provider:{awareness:session.provider?.awareness ?? undefined},user:{name:session.context.userName || 'Underviser',color:'#2452e8'},showCursorLabels:'activity'},
   }),[session]);
   session.editor=editor;
@@ -655,6 +659,7 @@ function ConnectedEditor({session}:{session:Session}) {
   const [aiAnchor,setAiAnchor]=useState<AiNativeTarget|null>(null);
   const aiLayoutRoot=useMemo(()=>session.element.closest<HTMLElement>('.notion-workspace'),[session]);
   const aiToolbarSlot=useMemo(()=>aiLayoutRoot?.querySelector<HTMLElement>('.notion-ai-toggle-slot')??null,[aiLayoutRoot]);
+  const columnToolbarSlot=useMemo(()=>aiLayoutRoot?.querySelector<HTMLElement>('.notion-column-toggle-slot')??null,[aiLayoutRoot]);
   const [layoutFocused,setLayoutFocused]=useState(()=>aiLayoutRoot?.dataset.focusMode==='true');
   useEffect(()=>{
     if(!aiLayoutRoot)return;
@@ -788,6 +793,14 @@ function ConnectedEditor({session}:{session:Session}) {
     } catch(error) {setEmojiInsertError(error instanceof Error?error.message:'Tegningen kunne ikke oprettes. Prøv igen.');}
   };
   const customItems=[
+    ...([2, 3] as const).map(count => ({
+      title: `${count} kolonner`,
+      subtext: count === 2 ? 'Placér to blokke ved siden af hinanden' : 'Fordel indholdet på tre kolonner',
+      aliases: ['kolonne', 'kolonner', 'layout', 'spalter', 'columns'],
+      group: 'Layout',
+      icon: <span className="notion-column-icon" data-count={count} aria-hidden="true" />,
+      onItemClick: () => { if (canEdit(session)) insertColumnLayout(editor, count); },
+    })),
     {title:'Tegning',aliases:['tegning','excalidraw','canvas','whiteboard'],group:'Medier',onItemClick:()=>{void insertDrawing();}},
     {title:'Link til indhold',subtext:'Find sider, personer, opgaver og andet indhold i LUP',aliases:['side','underside','link','reference','notesbog'],group:'Undervisning',onItemClick:()=>insert('entityLink')},
     {title:'Gemt gruppe',subtext:'Indsæt en gemt gruppe fra holdet',aliases:['gruppe','grupper'],group:'Undervisning',onItemClick:()=>insert('holdGroup')},
@@ -816,6 +829,17 @@ function ConnectedEditor({session}:{session:Session}) {
     {title:'Præsenter',subtext:'Vis dokumentet som slides',aliases:['præsenter','præsentation','slides','presentation'],group:'Visning',onItemClick:()=>openPresentation(session)},
   ].filter(item=>(!notebook || !['Gemt gruppe','Elever fra holdet','Afstemning fra holdet','Videnstjek','Slidegrænse','Emoji','AI','Præsenter'].includes(item.title)) && (session.context.holdId || !['Gemt gruppe','Elever fra holdet','Afstemning fra holdet'].includes(item.title)));
   return <OpenAiOnBlockProvider openOnBlock={notebook?null:openAi}>
+    {!session.readOnly && columnToolbarSlot && createPortal(
+      <label className="notion-column-launcher" title="Vælg kolonner til det aktuelle afsnit">
+        <span className="notion-column-icon" aria-hidden="true" />
+        <select aria-label="Vælg kolonnelayout" value="" disabled={!enabled} onChange={event => {
+          if (canEdit(session)) insertColumnLayout(editor, event.target.value === '3' ? 3 : 2);
+        }}>
+          <option value="" disabled>Kolonner</option>
+          <option value="2">2 kolonner</option>
+          <option value="3">3 kolonner</option>
+        </select>
+      </label>, columnToolbarSlot)}
     {!session.readOnly && !notebook && enabled && createEmoji && <input ref={colonFileInput} className="notion-emoji-file notion-emoji-colon-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" aria-label="Vælg emoji-billede fra kolonmenu" onChange={chooseColonFile} tabIndex={-1} />}
     {emojiInsertError && <p className="notion-editor-persistence-error" role="alert">{emojiInsertError}</p>}
     {!session.readOnly && !notebook && emojiOpen && <EmojiPicker id={emojiPanelId} emojis={emojis} onPick={placeEmoji} onClose={closeEmoji} onUpload={enabled ? createEmoji : undefined} onAnalyze={enabled ? analyzeEmoji : undefined} initialFile={emojiUploadFile} />}

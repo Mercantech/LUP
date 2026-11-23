@@ -83,6 +83,7 @@ else
                             @if (IsEditing) { <span class="notion-save-status @_status" role="status" title="@StatusLabel"><i aria-hidden="true"></i><span class="notion-save-label">@StatusLabel</span></span> }
                             else { <span class="notion-save-status saved"><i aria-hidden="true"></i><span class="notion-save-label">Udgivet @(_current.PublishedAtUtc?.ToLocalTime().ToString("d. MMM"))</span></span> }
                         }
+                        <span class="notion-column-toggle-slot"></span>
                         <span class="notion-ai-toggle-slot"></span>
                         @if (IsEditing)
                         {
