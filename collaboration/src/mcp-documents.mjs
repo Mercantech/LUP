@@ -14,7 +14,7 @@ const COMMON_ATTRIBUTES = new Set(['backgroundColor', 'textColor', 'textAlignmen
 const NODE_ATTRIBUTES = {
   blockContainer: ['id'], blockGroup: [], heading: ['level', 'isToggleable'], numberedListItem: ['start'], checkListItem: ['checked'],
   toggleListItem: ['isToggleable'], codeBlock: ['language'], callout: ['schemaVersion', 'tone', 'emojiId', 'emojiName'],
-  mermaidDiagram: ['schemaVersion', 'source'], learningGoal: ['schemaVersion'], columnLayout: ['layout'], tableRow: [],
+  mermaidDiagram: ['schemaVersion', 'source'], learningGoal: ['schemaVersion'], columnLayout: ['layout', 'widths'], tableRow: [],
   tableCell: ['colspan', 'rowspan', 'colwidth'], tableHeader: ['colspan', 'rowspan', 'colwidth'], tableParagraph: [],
   customEmoji: ['emojiId', 'name'], hardBreak: [],
 };
@@ -97,6 +97,16 @@ function describeEntry(entry, mode = 'block', includeAnchor = true) {
     fingerprint: mcpHash(serializeMcpXml(entry.node)), block: serializeMcpXml(entry.node) };
 }
 
+function columnWidthsError(widths, count) {
+  if (widths === undefined || widths === '') return null;
+  if (typeof widths === 'string' && (count === 2 || count === 3) && widths.length === count * 5 - 1) {
+    const parts = widths.split(',');
+    if (parts.length === count && parts.every(part => /^[1-9][0-9]{3}$/.test(part))
+      && parts.reduce((sum, part) => sum + Number(part), 0) === 10000) return null;
+  }
+  return 'Angiv én heltalsbredde pr. kolonne, adskilt med komma. Hver bredde skal være mindst 1000, og summen skal være 10000.';
+}
+
 // The browser may be midway through moving a block. Only reject MCP writes
 // that introduce a new layout problem, so unrelated text can still be edited.
 function columnStructureError(entry, index) {
@@ -106,6 +116,7 @@ function columnStructureError(entry, index) {
     const children = groupOf(entry.node)?.toArray() || [];
     if (children.length < 2 || children.length > 3 || children.some(child => contentOf(child)?.nodeName !== 'layoutColumn'))
       return 'Et kolonnelayout skal have to eller tre kolonner som underblokke.';
+    return columnWidthsError(entry.content.getAttribute('widths'), children.length);
   }
   return null;
 }
@@ -188,6 +199,10 @@ function validateXmlSchema(node, original = null, preservedChildren = null) {
     const elements = value.children.filter(child => child.kind === 'element');
     if (value.name === 'blockContainer') {
       if (typeof value.attributes.id !== 'string' || !value.attributes.id || value.attributes.id.length > 200 || value.children.some(child => child.kind !== 'element') || elements.length < 1 || elements.length > 2 || !CONTENT_TYPES.has(elements[0].name) || (elements[1] && elements[1].name !== 'blockGroup')) fail('invalid_block', 'En blok skal indeholde ét understøttet indholdsfelt og valgfri underblokke.');
+      if (elements[0].name === 'columnLayout') {
+        const error = columnWidthsError(elements[0].attributes.widths, elements[1]?.children.length ?? 0);
+        if (error) fail('invalid_column_layout', error);
+      }
     } else if (value.name === 'blockGroup') {
       if (value.children.some(child => child.kind !== 'element' || child.name !== 'blockContainer')) fail('invalid_block', 'En blokgruppe må kun indeholde blokke.');
     } else if (COLUMN_TYPES.has(value.name)) {

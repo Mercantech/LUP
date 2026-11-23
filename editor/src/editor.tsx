@@ -18,7 +18,7 @@ import { canonicalFingerprint, publishedDocumentFromBase64, applyReadOnlySnapsho
 import { pollUrl, pollCreateUrl, selectedMembers, splitSlides, pageUrl, studentUrl, collectPublicationAssetIds } from './document-utils.mjs';
 import { createMermaidDiagram, DEFAULT_MERMAID_SOURCE } from './mermaid-block';
 import { createCallout } from './callout-block';
-import { createColumnLayout, createLayoutColumn, insertColumnLayout } from './column-layout';
+import { createColumnLayout, createLayoutColumn, insertColumnLayout, insertColumnRow } from './column-layout';
 import { columnPresence } from './column-presence';
 import './column-layout.css';
 import { createNotionCodeBlock, syntaxHighlighter } from './code-block';
@@ -830,16 +830,11 @@ function ConnectedEditor({session}:{session:Session}) {
   ].filter(item=>(!notebook || !['Gemt gruppe','Elever fra holdet','Afstemning fra holdet','Videnstjek','Slidegrænse','Emoji','AI','Præsenter'].includes(item.title)) && (session.context.holdId || !['Gemt gruppe','Elever fra holdet','Afstemning fra holdet'].includes(item.title)));
   return <OpenAiOnBlockProvider openOnBlock={notebook?null:openAi}>
     {!session.readOnly && columnToolbarSlot && createPortal(
-      <label className="notion-column-launcher" title="Vælg kolonner til det aktuelle afsnit">
-        <span className="notion-column-icon" aria-hidden="true" />
-        <select aria-label="Vælg kolonnelayout" value="" disabled={!enabled} onChange={event => {
-          if (canEdit(session)) insertColumnLayout(editor, event.target.value === '3' ? 3 : 2);
-        }}>
-          <option value="" disabled>Kolonner</option>
-          <option value="2">2 kolonner</option>
-          <option value="3">3 kolonner</option>
-        </select>
-      </label>, columnToolbarSlot)}
+      <button type="button" className="notion-column-launcher" aria-label="Indsæt to kolonner"
+        title="Indsæt to kolonner" disabled={!enabled} onMouseDown={event => event.preventDefault()}
+        onClick={() => { if (canEdit(session)) insertColumnRow(editor); }}>
+        <span className="notion-column-icon" aria-hidden="true" /> Kolonner
+      </button>, columnToolbarSlot)}
     {!session.readOnly && !notebook && enabled && createEmoji && <input ref={colonFileInput} className="notion-emoji-file notion-emoji-colon-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" aria-label="Vælg emoji-billede fra kolonmenu" onChange={chooseColonFile} tabIndex={-1} />}
     {emojiInsertError && <p className="notion-editor-persistence-error" role="alert">{emojiInsertError}</p>}
     {!session.readOnly && !notebook && emojiOpen && <EmojiPicker id={emojiPanelId} emojis={emojis} onPick={placeEmoji} onClose={closeEmoji} onUpload={enabled ? createEmoji : undefined} onAnalyze={enabled ? analyzeEmoji : undefined} initialFile={emojiUploadFile} />}

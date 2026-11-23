@@ -146,10 +146,10 @@ revision and fingerprint must still match. Students read that snapshot through
 the authorized page context, without joining this service or receiving draft
 state. Only teachers with management access can authenticate to draft rooms.
 
-WebSocket clients must connect with `?schemaVersion=12`. Missing or older schema
+WebSocket clients must connect with `?schemaVersion=13`. Missing or older schema
 versions are rejected with `editor_version_mismatch` before authorization or
 document loading. Older editor tabs must reload to edit documents with the
-current block types and properties, including column layouts and their editable child blocks.
+current block types and properties, including custom column widths on notebook pages.
 
 ## Operational limits
 

@@ -192,7 +192,7 @@ test('template copies retain column widths, reading order and page-local media i
   const block = (id, content, children = []) => element('blockContainer', { id }, [
     content, ...(children.length ? [element('blockGroup', {}, children)] : [])
   ]);
-  const row = block('row', element('columnLayout', { layout: 'wideLeft' }), [
+  const row = block('row', element('columnLayout', { layout: 'wideLeft', widths: '7531,2469' }), [
     block('left', element('layoutColumn', {}), [block('caption', element('paragraph', {}, [new Y.XmlText('Først')]))]),
     block('right', element('layoutColumn', {}), [
       block('photo', element('pageMedia', { pageId: id, assetId: oldAsset, kind: 'image' })),
@@ -204,7 +204,7 @@ test('template copies retain column widths, reading order and page-local media i
   const copied = decode(copy.stateBase64);
   try {
     const copiedRow = copied.getXmlFragment('document-store').get(0).get(0);
-    assert.equal(copiedRow.get(0).getAttribute('layout'), 'wideLeft');
+    assert.deepEqual(copiedRow.get(0).getAttributes(), { layout: 'wideLeft', widths: '7531,2469' });
     assert.equal(copiedRow.get(1).length, 2);
     assert.deepEqual(copy.assetIds, [newAsset]);
     const contents = projectNotionContext({ stateBase64: copy.stateBase64 }).blocks;

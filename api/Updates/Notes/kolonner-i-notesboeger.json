@@ -1,6 +1,6 @@
 {
   "date": "2026-11-23",
   "title": "Sæt indhold side om side i notesbogen",
-  "description": "Vælg Kolonner på en notesbogsside, og skriv i to eller tre kolonner. Du kan give den ene side mere plads eller samle indholdet igen. På små skærme læses kolonnerne under hinanden.",
+  "description": "Tryk på Kolonner for at sætte indhold side om side. Træk skillelinjen for at justere bredden, eller tryk på Tilføj tredje kolonne. Du kan samle indholdet igen, og på små skærme læses kolonnerne under hinanden.",
   "authors": ["Mathias"]
 }
