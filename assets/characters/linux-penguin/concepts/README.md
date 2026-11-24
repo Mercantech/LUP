@@ -1,4 +1,15 @@
-# Fem koncepter til LUPs Linux-pingvin
+# Koncepter til LUPs Linux-pingvin
+
+## Anden runde · Håndtegnet 90’er-tegnefilm
+
+To af figurerne er gentegnet med kraftigere konturer, flade farver og mere bevægelse. Logdetektiven trækker på Darkwing Ducks teatralske detektivstemning, mens Terminalmekanikeren har det rundere udtryk fra en komisk eventyrtegneserie.
+
+| Forhåndsvisning | Variant i fuld størrelse | Oplagt brug i undervisningen |
+| --- | --- | --- |
+| <img src="06-logdetektiven-cel.png" width="140" alt="Sammenkrøbet pingvin i blå og lilla jakke holder en oplyst logstrimmel op"> | [Logdetektiven](06-logdetektiven-cel.png) | Følg sporene i en logfil. |
+| <img src="07-terminalmekanikeren-cel.png" width="140" alt="Smilende pingvin i orange vest tager et stort skridt og peger på sin håndterminal"> | [Terminalmekanikeren](07-terminalmekanikeren-cel.png) | Prøv din første terminalkommando. |
+
+## Første runde · Fem designretninger
 
 Koncepterne er første visuelle iteration til [issue #95](https://github.com/Mercantech/LUP/issues/95). Navnene her beskriver designretningerne. Alle fem har Tux' farver som fælles afsæt og giver Linux-guiden sin egen silhuet og rekvisit.
 
@@ -39,3 +50,23 @@ Style: Scandinavian layered cut-paper illustration, bold flat planes of deeply m
 ### Procespiloten
 
 Style: retrofuturistic animation cel with emphatic graphic silhouettes, clean flat cel shading and sleek organic angles. A spry wedge-shaped black and white penguin with swept-back feather tufts, a confident grin, golden feet, and a lifted translucent violet pilot visor above clear eyes. In one flipper it holds a small lilac process monitor with three simple colored horizontal bars at different lengths. Eyes and silhouette stay paramount. Deep aubergine shadows and small ultraviolet accents, evocative of classic sci-fi animation, an upbeat systems operator, full-body and clearly penguin.
+
+## Prompts til anden runde
+
+Kildeillustrationerne fra første runde blev brugt som billedreferencer i den indbyggede OpenAI ImageGen. Hver generation fik den fælles prompt efterfulgt af prompten til den enkelte figur. Begge resultater er transparente PNG-filer på 1254 × 1254 px.
+
+### Fælles prompt
+
+Use case: stylized-concept, image-to-image character design variation. Redraw the supplied original LUP Linux penguin as an expressive hand-drawn character from a kinetic Disney afternoon 2D TV action comedy circa 1991. Use the confident theatrics, animated acting, strong silhouette, thick-to-thin hand-inked contours, clean flat cel colors and deep graphic shadow shapes of that period. Keep the unmistakable original penguin anatomy and Tux color cue: round charcoal body with a genuinely white/off-white belly, short broad orange beak rather than a duck bill, orange webbed feet, penguin flippers, three crown feathers. This is an original Linux teaching mascot, not an existing show character. No broad-brimmed hat, superhero eye mask, replica costume, third-party logos or text labels. A single isolated full-body mascot, one dominant silhouette, preserve all feet and props with ample empty margin, square frame, true alpha-transparent background, no scene or cast shadow, no text or caption. High-end clean 2D production cel, not 3D rendering or realistic surface textures.
+
+### Logdetektiven
+
+[Billedreference](02-logdetektiven.png)
+
+Input image role: original character identity and teaching-prop reference. Take this Log Detective into a flamboyant action-noir cartoon direction inspired by the playful suspense and posing of Darkwing Duck. Preserve cobalt jacket, pen-like swept crown and Linux log as the core identifiers. Invent an off-center asymmetrical cobalt utility jacket with a high plum stand collar and one bright seam, pocket shape visible, no cape. A theatrical low crouch with flipper braced against one knee, comically narrowed eyes and one raised brow, answering a puzzling log error; the other flipper presents a single tiny inspection light visibly clipped to the curling log strip. Three broad abstract dark marks on that paper and one amber dot only. A deliberately shortened wedge-shaped orange beak distinct from a duck. Strong cobalt and violet shadow shapes with a small warm amber highlight from the light on the cheek and paper; no environmental effects. Make the original Linux detective feel like a fast, funny, slightly overdramatic protagonist caught mid-case.
+
+### Terminalmekanikeren
+
+[Billedreference](01-terminalmekanikeren.png)
+
+Input image role: original character identity, orange gilet and handheld terminal reference. Reimagine this Terminal Mechanic as the brighter and more comedic lead of a 1990s Disney hand-drawn TV adventure. Maintain short stocky body, loose rust-orange mechanics vest worn open, tiny stitched pocket details, black three-point crown, expressive eyebrows, white belly and sturdy amber handheld terminal. Make the face delightfully cheeky with one lifted brow, half-lidded eyes and a wide triangular penguin grin. Full body, lean into a springy forward step with one foot planted and the other slightly lifted, left flipper holds the old-school rugged terminal close at chest height and the other flipper gestures at its screen. Only display the graphic >_ on screen, no other lettering. Clean flat cel tones with dark petrol blue-black, rusty orange and mint screen, plus one clear solid shadow per form. Bold, rounded and squash-and-stretch cartoon acting, very distinct from the detective's narrower personality.
