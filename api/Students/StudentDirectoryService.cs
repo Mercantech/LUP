@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Mercantec.Tech.Api.Data;
 using Mercantec.Tech.Api.Data.Entities;
 using Mercantec.Tech.Api.Integrations.Lectio;
@@ -7,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mercantec.Tech.Api.Students;
 
-public sealed class StudentDirectoryService(AppDbContext db, LectioCollectorClient collector, ILogger<StudentDirectoryService> log, TimeProvider? clock = null)
+public sealed partial class StudentDirectoryService(AppDbContext db, LectioCollectorClient collector, ILogger<StudentDirectoryService> log, TimeProvider? clock = null)
 {
     private static readonly TimeZoneInfo SchoolTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Copenhagen");
     public async Task<StudentDirectoryResponse> ListAsync(string bearerToken, CancellationToken ct = default, Guid? requestingTeacher = null, bool includeTeacherOverrides = true)
@@ -205,19 +207,28 @@ public sealed class StudentDirectoryService(AppDbContext db, LectioCollectorClie
             if (!ValidLectioId(id) || !seen.Add(id!)) continue;
             var row = new Row { Key = LectioKey(id!), LectioId = id, DisplayName = Text(student, "name") ?? "Ukendt elev", ClassName = Text(student, "className") };
             if (Object(student, "workplace", out var workplace)) row.WorkplaceName = Text(workplace, "name");
-            // Only an explicit placement or a dated current school period establishes whereabouts.
-            var placement = Text(student, "placement") ?? Text(student, "currentPlacement");
-            if (placement is "school" or "workplace") row.Placement = placement;
-            if (Object(student, "workplace", out workplace) && Boolean(workplace, "isCurrent") == true) row.Placement = "workplace";
             var periods = new List<JsonElement>();
-            if (Object(student, "h6", out var h6)) periods.Add(h6);
-            if (student.TryGetProperty("schoolPeriods", out var array) && array.ValueKind == JsonValueKind.Array) periods.AddRange(array.EnumerateArray());
+            var hasFullPlan = student.TryGetProperty("schoolPeriods", out var array) && array.ValueKind == JsonValueKind.Array;
+            if (hasFullPlan)
+            {
+                periods.AddRange(array.EnumerateArray());
+                // No active school period means workplace. Missing or unreadable plans remain unknown.
+                if (periods.All(p => Date(p, "startDate") is DateOnly start
+                    && Date(p, "endDate") is DateOnly end && start <= end))
+                    row.Placement = "workplace";
+            }
+            else if (Object(student, "h6", out var h6))
+            {
+                // Older Collector versions expose only the final H5/H6 period.
+                // It can establish a current H5/H6 stay, but cannot rule out an earlier school period.
+                periods.Add(h6);
+            }
             foreach (var period in periods)
             {
                 if (Date(period, "startDate") is DateOnly start && Date(period, "endDate") is DateOnly end && start <= today && today <= end)
                 {
                     row.Placement = "school";
-                    row.CurrentSchoolPeriod = Text(period, "level") ?? Text(period, "name");
+                    row.CurrentSchoolPeriod = PeriodName(period);
                     break;
                 }
             }
@@ -227,7 +238,7 @@ public sealed class StudentDirectoryService(AppDbContext db, LectioCollectorClie
                 // Never equate an ended period with an exam/course having been passed.
                 var passed = periods.Where(p => Boolean(p, "passed") == true || Text(p, "status") == "passed")
                     .OrderByDescending(p => Date(p, "endDate")).FirstOrDefault();
-                row.LastPassedSchoolPeriod = Text(passed, "level") ?? Text(passed, "name");
+                row.LastPassedSchoolPeriod = PeriodName(passed);
             }
             result.Add(row);
         }
@@ -248,7 +259,27 @@ public sealed class StudentDirectoryService(AppDbContext db, LectioCollectorClie
         value = default;
         return el.ValueKind == JsonValueKind.Object && el.TryGetProperty(name, out value) && value.ValueKind == JsonValueKind.Object;
     }
-    private static DateOnly? Date(JsonElement el, string name) => DateOnly.TryParse(Text(el, name), out var date) ? date : null;
+    private static DateOnly? Date(JsonElement el, string name) => DateOnly.TryParseExact(Text(el, name),
+        ["yyyy-MM-dd", "dd-MM-yyyy", "d-M-yyyy"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
+
+    private static string? PeriodName(JsonElement period)
+    {
+        var level = Text(period, "level");
+        if (level is null && period.ValueKind == JsonValueKind.Object
+            && period.TryGetProperty("level", out var numeric) && numeric.ValueKind == JsonValueKind.Number
+            && numeric.TryGetInt32(out var number)
+            && number is >= 1 and <= 9)
+            level = $"H{number}";
+        else if (int.TryParse(level, NumberStyles.None, CultureInfo.InvariantCulture, out var value) && value is >= 1 and <= 9)
+            level = $"H{value}";
+        var name = level ?? Text(period, "name");
+        if (name is null) return null;
+        var match = MainPeriodName().Match(name);
+        return match.Success ? $"H{match.Groups["level"].Value}" : name;
+    }
+
+    [GeneratedRegex(@"(?<![A-Za-z0-9])H\s*(?<level>[1-9])\b|(?<!\d)(?<level>[1-9])\s*H\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex MainPeriodName();
 
     private sealed class Row
     {
