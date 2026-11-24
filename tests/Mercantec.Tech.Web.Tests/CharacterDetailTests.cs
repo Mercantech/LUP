@@ -101,7 +101,8 @@ public sealed class CharacterDetailTests
         Assert.Equal(24, page.FindAll(".character-gallery figure").Count);
 
         page.Render(parameters => parameters.Add(p => p.Slug, "vatson"));
-        Assert.Empty(page.FindAll(".character-gallery"));
+        Assert.Equal(2, page.FindAll(".character-gallery figure").Count);
+        Assert.All(page.FindAll(".character-gallery img"), image => Assert.StartsWith("/images/characters/vatson/teaching/", image.GetAttribute("src")));
         Assert.Equal(2, page.FindAll(".character-scenes figure").Count);
         Assert.All(page.FindAll(".character-scenes img"), image => Assert.StartsWith("/images/characters/vatson/scenes/", image.GetAttribute("src")));
         Assert.Equal(63, page.FindAll(".character-reactions figure").Count);
@@ -570,7 +571,7 @@ public sealed class CharacterDetailTests
 
         Assert.Equal("Docker", page.Find("h1").TextContent);
         Assert.Equal(4, page.FindAll(".character-appearance-picker button").Count);
-        Assert.Equal(48, page.FindAll(".character-reactions figure").Count);
+        Assert.Equal(52, page.FindAll(".character-reactions figure").Count);
         Assert.Equal(6, page.FindAll(".character-scenes figure").Count);
         Assert.Equal(3, page.FindAll(".character-animation-card").Count);
         Assert.Equal(16, page.FindAll(".character-gallery figure").Count);
