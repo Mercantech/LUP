@@ -1,5 +1,11 @@
 # Koncepter til LUPs Linux-pingvin
 
+## Tredje runde · Logdetektiven i modelervoks
+
+Logdetektiven er formet som en stopmotionfigur med synlige fingeraftryk, en rundere silhuet og et lille »noot noot«-næb. Den blå jakke, lilla krave og oplyste logstrimmel gør figuren genkendelig fra tegnefilmsudgaven.
+
+[<img src="08-logdetektiven-modelervoks.png" width="220" alt="Modelervokspingvin i blå jakke med høj lilla krave holder en lommelygte over en logstrimmel og spidser sit runde orange næb.">](08-logdetektiven-modelervoks.png)
+
 ## Anden runde · Håndtegnet 90’er-tegnefilm
 
 To af figurerne er gentegnet med kraftigere konturer, flade farver og mere bevægelse. Logdetektiven trækker på Darkwing Ducks teatralske detektivstemning, mens Terminalmekanikeren har det rundere udtryk fra en komisk eventyrtegneserie.
@@ -70,3 +76,9 @@ Input image role: original character identity and teaching-prop reference. Take 
 [Billedreference](01-terminalmekanikeren.png)
 
 Input image role: original character identity, orange gilet and handheld terminal reference. Reimagine this Terminal Mechanic as the brighter and more comedic lead of a 1990s Disney hand-drawn TV adventure. Maintain short stocky body, loose rust-orange mechanics vest worn open, tiny stitched pocket details, black three-point crown, expressive eyebrows, white belly and sturdy amber handheld terminal. Make the face delightfully cheeky with one lifted brow, half-lidded eyes and a wide triangular penguin grin. Full body, lean into a springy forward step with one foot planted and the other slightly lifted, left flipper holds the old-school rugged terminal close at chest height and the other flipper gestures at its screen. Only display the graphic >_ on screen, no other lettering. Clean flat cel tones with dark petrol blue-black, rusty orange and mint screen, plus one clear solid shadow per form. Bold, rounded and squash-and-stretch cartoon acting, very distinct from the detective's narrower personality.
+
+## Prompt til tredje runde
+
+[Logdetektivens tegnefilmsudgave](06-logdetektiven-cel.png) var billedreference i den indbyggede OpenAI ImageGen. Den nye illustration er en transparent PNG på 1254 × 1254 px.
+
+Use case: style-transfer of an existing original mascot. Input 1 is the exact LUP Linux Log Detective character reference. Redesign the provided drawing as a tangible, handmade plasticine penguin puppet photographed during a playful old-school stop-motion shoot. Use the chunky, rounded forms and expressive physical comedy of classic Pingu / "noot noot" clay animation as material and acting inspiration. It must still be unmistakably our source character: black chunky crown feathers swept asymmetrically (simplified to three thick soft sculpted feathers), cream white oval tummy, golden-orange webbed feet, golden-orange stubby beak, cobalt-blue detective jacket with broad high purple collar and thin mustard zipper, little inspection torch directed down at the curled off-white log strip held up on the right side of the image. The paper log is a padded sculpted clay ribbon with three dark indented strokes and one amber status dot. Keep the lowered theatrical sleuth crouch, one flipper braced on his hip, raised elbow holding up the log and a short chunky penguin beak puckered into a small playful O as though surprised at the clue. Eyes clearly aimed at the log, a mischievous eyebrow, rounded and sculptable proportions without sharp graphic spikes. He is an original penguin in his original detective outfit with accessories. Treat every surface including the jacket, eyes, flippers, tool and log as real hand-shaped clay, with little fingerprints, a few careful pressed seams and matte tactile relief. Soft diffused miniature-studio key light, warm little flashlight reflection on the log, soft real shading and gentle highlight, like a still photograph of an actual clay puppet rather than a smooth CGI figurine. One centered subject, full body and all props with generous absolute breathing room on every side, square frame, genuinely transparent alpha background and no detached ground shadow. No staging base, environment, second character, captions, watermarks or logos. Do not recreate a known Pingu character or pose.
