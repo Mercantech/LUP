@@ -1,0 +1,21 @@
+[Unit]
+Description=LUP Hjem.exe code runner gateway
+Requires=docker.service
+After=docker.service
+
+[Service]
+User=lup-home-runner
+SupplementaryGroups=docker
+WorkingDirectory=/opt/lup-home-runner
+EnvironmentFile=/etc/lup-home-runner.env
+ExecStart=/usr/bin/python3 /opt/lup-home-runner/worker.py
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

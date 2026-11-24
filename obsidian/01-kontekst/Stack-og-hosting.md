@@ -16,7 +16,7 @@ Faste rammer for Mercantec.tech. Detaljerede AI-workflows: [[Husregler-fra-Curso
 - **Backend / API:** .NET 10, ASP.NET Core, **controller pattern** (`api/`).
 - **Frontend:** Blazor WebAssembly **PWA** (`web/`), nginx i Docker.
 - **DB:** Postgres (`mercantec-tech-db`).
-- **Object storage:** S3 via **Silo**/MinIO-kompatibel (`pgsty/silo`, alias `mercantec-tech-minio`) til uploads og store assets uden for GitHub. Console: lokalt `:9001`, prod **`https://minio.mercantec.tech`** (S3 API ikke publiceret).
+- **Object storage:** S3 via **Silo**/MinIO-kompatibel (`pgsty/silo`, alias `mercantec-tech-minio`) til uploads og store assets uden for GitHub. I produktion går filadgang gennem LUPs API på det private net. Console findes lokalt på `:9001`.
 - **Alt Docker-klart** — env-baseret config.
 
 ## Auth
@@ -30,9 +30,9 @@ Se [[Auth-Mercantec]] (Mercantec Auth, PKCE, lokal logout).
 | **Prod** | **`https://mercantec.tech`** — **apex, uden subdomæne** |
 | **Alias** | **`https://lup.dk`** (+ `www.lup.dk`) — samme app/stack |
 | Platform | Dokploy (`deploy.mags.dk`) |
-| Net | `dokploy-network` + aliases `mercantec-tech-api` / `mercantec-tech-db` / `mercantec-tech-minio` |
+| Net | Privat projektbridge med aliases `mercantec-tech-api` / `mercantec-tech-db` / `mercantec-tech-minio`; web bruger også `dokploy-network` |
 | Web | Traefik → service `web` port **3000** (`mercantec.tech` + `lup.dk`) |
-| MinIO Console | Traefik → `minio.mercantec.tech` → service `minio` port **9001** |
+| Object storage | Privat API → `mercantec-tech-minio:9000`; produktionsoverlayet holder MinIO på projektets private net |
 | Secrets / CORS | Env pr. miljø — `Cors:SpaOrigins` inkl. `https://mercantec.tech`, `https://lup.dk`, `https://www.lup.dk` |
 
 Lokal: `docker compose -f docker-compose.yml -f docker-compose.local.yml up --build`

@@ -75,6 +75,10 @@ else
                 <div class="assignment-meta"><span>@HoldTime.QuestKind(_quest.Kind)</span><span>@(_quest.Required ? "Obligatorisk" : "Valgfri")</span>@if (!_quest.Published) { <span>Kladde</span> }</div>
                 <h2 id="quest-title">Opgaven</h2><p class="assignment-description">@_quest.Description</p>
                 <div class="assignment-facts"><span>@ModeLabel(_quest.SubmissionMode)</span><span>@(_quest.DeadlineUtc is DateTimeOffset deadline ? $"Frist {HoldTime.Display(deadline)} (dansk tid)" : "Ingen afleveringsfrist")</span></div>
+                @if (_quest.Published)
+                {
+                    <p class="assignment-help">@QuestRewards.GoldOnApproval guld pr. deltager ved første godkendelse.</p>
+                }
                 <div class="assignment-related"><a href="@WorkspaceHref("content")">Se holdets forløb</a><a href="@WorkspaceHref("groups")">Se mine grupper</a>@if (CanManage) { <a href="@WorkspaceHref("quests")">Redigér quest i holdcentralen</a> }</div>
             </section>
             @if (!ViewAs.IsActive)

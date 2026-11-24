@@ -1,6 +1,7 @@
 /* Local UI QA only. Synthetic credentials never leave the isolated browser. */
 const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os');
 const assert=require('node:assert/strict');
+const {homeGameFixture}=require('../release-news/home-game-fixture.cjs');
 function dependency(name){try{return require(name);}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules',name));}}
 const {chromium}=dependency('playwright');
 const base=process.env.LUP_QA_URL||'http://localhost:3000';
@@ -44,6 +45,7 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
         const reply=(status,value)=>route.fulfill({status,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(value)});
         if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,PUT,OPTIONS','access-control-allow-headers':'*'}});
         if(!account)return reply(401,{detail:'Log ind'});
+        if(url.pathname.endsWith('/me/home-game'))return reply(200,homeGameFixture());
         if(url.pathname.endsWith('/knowledge-checks')&&req.method()==='GET'){
           const publication=(id,title,topic)=>({id,quizId:id,title,topic,description:'En lokal testøvelse',estimatedMinutes:2,questionCount:1,isActive:true,feedbackMode:'after-submit',createdAtUtc:new Date().toISOString()});
           return reply(200,{owned:[],history:[],holds:[],publications:[
@@ -190,9 +192,9 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
   await page.getByRole('heading',{name:'LUP Arena',exact:true}).waitFor();
   assert.equal(await page.locator('input[type=file]').count(),0);
   assert.equal(await page.getByText('Rune Run Mini',{exact:true}).count(),0);
-  await visit('/apartment');await page.locator('.v2-home-sprite [data-avatar="bip01"]').waitFor();
+  await visit('/spil/hjem');await page.locator('.home-board [data-avatar-icon="bip01"]').waitFor();
   await visit('/profile');await page.locator('.profile-identity [data-avatar-icon="bip01"]').waitFor();
-  results.push('The old Rune Run address opens the public games catalog. The selected body follows the player in the apartment and the profile uses the matching face icon.');
+  results.push('The old Rune Run address opens the public games catalog. The selected avatar appears in Hjem.exe and the profile.');
   const secondDevice=await device(first),otherPage=observePage(await secondDevice.newPage());otherPage.setDefaultTimeout(90000);
   await otherPage.goto(base+'/profile/character');await otherPage.getByTestId('selected-avatar-name').waitFor();
   assert.equal(await otherPage.getByTestId('selected-avatar-name').textContent(),'BIP-01');
@@ -234,11 +236,10 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
   await page.reload();await ready();assert.equal(await page.getByTestId('avatar-gold').textContent(),'170');
   results.push('Existing scoped browser profile migrates once and is removed; browser gold changes cannot overwrite server balance.');
   await visit('/universe/shop');
-  await page.locator('.v4-product').filter({has:page.getByRole('heading',{name:'Bordlampe',exact:true})}).getByRole('button',{name:'Køb · 80 guld',exact:true}).click();
-  await page.waitForFunction(()=>document.body.innerText.includes('90 guld'));
+  assert.equal(await page.getByRole('link',{name:'Åbn butikken i Hjem.exe'}).getAttribute('href'),'/spil/hjem?vis=butik');
   await otherPage.reload();await otherPage.getByTestId('selected-avatar-name').waitFor();
-  assert.equal(await otherPage.getByTestId('avatar-gold').textContent(),'90');
-  results.push('Avatar and furniture purchases use the same server wallet across devices.');
+  assert.equal(await otherPage.getByTestId('avatar-gold').textContent(),'170');
+  results.push('The old furniture storefront opens Hjem.exe and the avatar wallet persists across devices.');
   await Promise.all([context.close(),secondDevice.close(),unrelated.close(),oldDevice.close()]);
 
   const fullAvatarDevice=await device(fullAvatarAccount),fullAvatarPage=observePage(await fullAvatarDevice.newPage());
@@ -544,10 +545,10 @@ const results=[];results.push=(...values)=>{console.log(...values);return Array.
   assert.ok(await fullAvatarPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${globalThis.__qaAvatar.name} collection has horizontal mobile overflow`);
   await fullAvatarPage.screenshot({path:path.join(output,`${globalThis.__qaAvatar.id}-mobile.png`),fullPage:true});
   await fullAvatarPage.setViewportSize({width:1440,height:1000});
-  for(const [route,selector] of [['/profile',`.profile-identity [data-avatar-icon="${globalThis.__qaAvatar.id}"]`],['/apartment',`.v2-home-sprite [data-avatar="${globalThis.__qaAvatar.id}"]`]]){
+  for(const [route,selector] of [['/profile',`.profile-identity [data-avatar-icon="${globalThis.__qaAvatar.id}"]`],['/spil/hjem',`.home-board [data-avatar-icon="${globalThis.__qaAvatar.id}"]`]]){
     await fullAvatarPage.goto(base+route,{waitUntil:'domcontentloaded'});await fullAvatarPage.locator(selector).waitFor();
   }
-  results.push(`${globalThis.__qaAvatar.name} selection follows two isolated devices and appears in the header, profile and apartment. Mobile and reduced motion pass.`);
+  results.push(`${globalThis.__qaAvatar.name} selection follows two isolated devices and appears in the header, profile and Hjem.exe. Mobile and reduced motion pass.`);
   await Promise.all([fullAvatarDevice.close(),fullAvatarSecondDevice.close()]);
   assert.deepEqual(failedAssets,[]);assert.deepEqual(errors,[]);
   const report={passed:true,results,browserErrors:errors,failedAssets,scope:'Isolated UI wiring test with shared API double across device contexts. Actual relational persistence and concurrency verified separately by AvatarProfileTests; no real accounts or external requests.'};

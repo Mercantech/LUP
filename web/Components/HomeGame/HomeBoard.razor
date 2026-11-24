@@ -1,0 +1,170 @@
+@using Mercantec.Tech.Contracts.HomeGame
+@using Mercantec.Tech.Web.HomeGame
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+
+<div class="room-stage @(Ghost is not null ? "with-placement" : "")">
+<div class="home-board-scroll">
+    <div class="room-shell @(ReduceMotion ? "motion-reduced" : "")" style="@GridStyle"
+         data-floor="@Layout.FloorStyle" data-wallpaper="@Layout.WallpaperStyle">
+        <div class="room-wall" role="group" aria-label="Bagvæg">
+            <div class="window-opening" style="@CellPosition(new(HomeCatalog.WindowEdge.X, 0))" aria-hidden="true">
+                <img src="images/home-workshop/window.webp" alt="" draggable="false" />
+            </div>
+            @foreach (var item in VisibleItems.Where(IsOnBackWall))
+            {
+                @WallPiece(item)
+            }
+            @if (MountingWall)
+            {
+                @foreach (var wall in MountableWalls.Where(wall => wall.Horizontal && wall.Y == 0))
+                {
+                    @MountPoint(wall)
+                }
+            }
+        </div>
+        <div class="home-board @(ReduceMotion ? "motion-reduced" : "") @(Ghost is not null ? "placing" : "")"
+             @ref="_board" role="group" aria-label="Boligens grid. Brug piletasterne til at skifte felt.">
+            <canvas class="light-map" @ref="_canvas" aria-hidden="true"></canvas>
+            @for (var y = 0; y < Layout.Grid.Rows; y++)
+            {
+                @for (var x = 0; x < Layout.Grid.Columns; x++)
+                {
+                    var cell = new HomeCell(x, y);
+                    _occupants.TryGetValue(cell, out var item);
+                    int? lux = _light.TryGetValue(cell, out var reading) ? reading : null;
+                    <button @key="cell" type="button" data-x="@x" data-y="@y" data-lux="@lux" tabindex="@(cell == Cursor ? 0 : -1)"
+                            class="@CellClass(cell)" aria-label="@CellLabel(cell, item, lux)"
+                            @onfocus="() => Visit.InvokeAsync(cell)" @onmouseover="() => Visit.InvokeAsync(cell)"
+                            @onclick="() => Activate.InvokeAsync(cell)" @onkeydown="args => OnKeyAsync(args, cell)">
+                        @if (Mode == "light" && lux is not null)
+                        {
+                            <span class="lux-value">@lux lux</span>
+                        }
+                    </button>
+                }
+            }
+            @foreach (var item in VisibleItems.Where(item => !IsOnBackWall(item)))
+            {
+                @if (item.Placement!.Wall is not null)
+                {
+                    @WallPiece(item)
+                }
+                else
+                {
+                    <div @key="item.Id" class="furniture @ObjectClass(item)" style="@ObjectStyle(item)"
+                         data-item-id="@item.Id" data-definition="@item.DefinitionId" data-rotation="@item.Placement.Rotation"
+                         data-powered="@PowerAttribute(item)" data-moisture="@Moisture(item)">
+                        <div class="floor-visual">
+                            @Art(item)
+                            @ItemHandle(item)
+                        </div>
+                    </div>
+                }
+            }
+            @if (MountingWall)
+            {
+                @foreach (var wall in MountableWalls.Where(wall => !wall.Horizontal || wall.Y != 0))
+                {
+                    @MountPoint(wall)
+                }
+            }
+            @if (Avatar is { } avatar)
+            {
+                <div class="resident" style="@ResidentStyle(avatar)" role="img" aria-label="@($"{Character.Name}, felt {avatar.X}, {avatar.Y}")"
+                     data-testid="home-resident" data-avatar-id="@Character.Id" data-activity="@AvatarActivity" data-cell-x="@avatar.X" data-cell-y="@avatar.Y"
+                     data-facing="@_facing" data-step="@(_animateStep ? "true" : "false")">
+                    @if (Character.SpriteAssetRoot is not null || Character.Id == AvatarCatalog.StarterId)
+                    {
+                        <AvatarSprite AvatarId="@Character.Id" Animation="@Animation" Mini="true" Paused="@ReduceMotion" />
+                    }
+                    else
+                    {
+                        <AvatarIcon AvatarId="@Character.Id" Size="96" Decorative="true" />
+                    }
+                </div>
+            }
+            @if (Mode == "light" && _reading is { } point)
+            {
+                <span class="reading-probe @(point.Cell.X >= Layout.Grid.Columns - 2 ? "near-right" : "") @(point.Cell.Y < 2 ? "near-top" : "")"
+                      style="@CellPosition(point.Cell)" data-lux="@point.Lux" data-reading-x="@point.Cell.X" data-reading-y="@point.Cell.Y"
+                      aria-label="@($"Lys ved bordet: {point.Lux} lux")"><span>@point.Lux lux</span></span>
+            }
+            <span class="entrance" style="@CellPosition(Layout.Grid.Entry)" aria-hidden="true"></span>
+        </div>
+    </div>
+</div>
+    @if (Ghost is not null && PlacementActions is not null)
+    {
+        <div class="placement-dock" data-testid="placement-actions">@PlacementActions</div>
+    }
+    else if (ShowItemActions && Selected is { Placement: not null } chosenItem && ItemActions is not null)
+    {
+        <HomeItemActions @key="chosenItem.Id" Item="chosenItem" Dismiss="DismissActions">@ItemActions(chosenItem)</HomeItemActions>
+    }
+</div>
+
+@code {
+    private RenderFragment WallPiece(HomeItem item) => @<div @key="item.Id"
+        class="furniture wall-piece @ObjectClass(item)" style="@ObjectStyle(item)"
+        data-edge="@WallFace(item.Placement!.Wall!.Value, item.Placement.Anchor)"
+        data-item-id="@item.Id" data-definition="@item.DefinitionId" data-rotation="@item.Placement.Rotation"
+        data-powered="@PowerAttribute(item)">
+        @Art(item)
+        @ItemHandle(item)
+    </div>;
+
+    private RenderFragment Art(HomeItem item) => @<text>
+        @if (item.DefinitionId == HomeCatalog.BlindId && IsOnBackWall(item))
+        {
+            <span class="blind-installation" aria-hidden="true"><span class="blind-cloth"></span><span class="blind-motor"></span></span>
+        }
+        else if (HomeRoomArt.Image(item.DefinitionId, IsPowered(item), item.Placement!.Rotation) is { } sprite)
+        {
+            <div class="object-drawing" aria-hidden="true">
+                <img class="object-art" src="@sprite" alt="" draggable="false" />
+                @if (item.DefinitionId == HomeCatalog.PlanterId && IsPowered(item))
+                {
+                    <span class="water-drop"></span>
+                }
+                @if (Ghost is not null)
+                {
+                    @MoistureReading(item)
+                }
+            </div>
+        }
+        else
+        {
+            <span class="wall-device" aria-hidden="true"><span class="device-signal">@DeviceMark(item.DefinitionId)</span></span>
+        }
+        @if (ShowDevices && IsProgrammable(item))
+        {
+            <span class="code-mark" aria-hidden="true">&lt;/&gt;</span>
+        }
+    </text>;
+
+    private RenderFragment ItemHandle(HomeItem item) => @<text>
+        @if (Ghost is null)
+        {
+            <button type="button" class="object-handle" title="@ObjectLabel(item)" aria-label="@ObjectLabel(item)"
+                    aria-pressed="@(Selected?.Id == item.Id ? "true" : "false")"
+                    aria-haspopup="@(ItemActions is null ? null : "dialog")"
+                    aria-expanded="@(ItemActions is null ? null : ShowItemActions && Selected?.Id == item.Id ? "true" : "false")"
+                    @onclick="() => InspectItemAsync(item)">@MoistureReading(item)</button>
+        }
+    </text>;
+
+    private RenderFragment MoistureReading(HomeItem item) => @<text>
+        @if (item.DefinitionId == HomeCatalog.MoistureId && Moisture(item) is int percent)
+        {
+            <span class="moisture-reading" aria-hidden="true">@percent<span>%</span></span>
+        }
+    </text>;
+
+    private RenderFragment MountPoint(HomeEdge edge) => @<button @key="edge" type="button" class="mount-point"
+        style="@CellPosition(WallCell(edge))" data-edge="@WallFace(edge, WallCell(edge))"
+        aria-label="@(edge == HomeCatalog.WindowEdge ? "Montér ved vinduet" : $"Montér på væggen ved felt {WallCell(edge).X}, {WallCell(edge).Y}")"
+        @onfocus="() => Visit.InvokeAsync(WallCell(edge))" @onclick="() => ChooseWallAsync(edge)">
+        <span aria-hidden="true"></span>
+    </button>;
+}

@@ -1,0 +1,97 @@
+@using Mercantec.Tech.Contracts.HomeGame
+@using Mercantec.Tech.Web.Demo
+
+<section class="resident-life" data-testid="resident-life" data-source="@Source" aria-label="Din beboer">
+    <div class="resident-summary">
+        <div>
+            <h2>@Name</h2>
+            <p>@ActivityText</p>
+            @if (Source == "run") { <span class="source">Kodekørsel</span> }
+        </div>
+        @if (Source == "replay")
+        {
+            <span class="source">Genafspilning</span>
+        }
+        else
+        {
+            <label>Aktivitet
+                <select data-testid="resident-intent" value="@Intent" disabled="@Disabled" @onchange="SelectIntent">
+                    <option value="auto">Vælger selv</option>
+                    <option value="read">Læs ved bordet</option>
+                    <option value="relax">Slap af</option>
+                    <option value="idle">Bliv stående</option>
+                    <option value="away">Gå hjemmefra</option>
+                </select>
+            </label>
+        }
+    </div>
+    @if (Snapshot?.Resident is { } resident)
+    {
+        <dl class="needs">
+            <div>
+                <dt id="resident-energy">Energi</dt>
+                <dd><meter data-need="energy" min="0" max="100" value="@resident.Energy" aria-labelledby="resident-energy"></meter><span>@resident.Energy %</span></dd>
+            </div>
+            <div>
+                <dt id="resident-inspiration">Inspiration</dt>
+                <dd><meter data-need="inspiration" min="0" max="100" value="@resident.Inspiration" aria-labelledby="resident-inspiration"></meter><span>@resident.Inspiration %</span></dd>
+            </div>
+        </dl>
+        @if (resident.IsAutonomous || resident.TargetAlias is not null || Source == "replay")
+        {
+            <p class="want" data-testid="resident-want" data-want="@resident.Want" data-target-alias="@resident.TargetAlias"
+               data-destination-x="@resident.Destination?.X" data-destination-y="@resident.Destination?.Y"><strong>@(resident.IsAutonomous ? "Ønske" : "Valgt aktivitet")</strong> @WantText(resident)</p>
+        }
+        <details>
+            <summary>Hvad hjælper?</summary>
+            <p>Et hvil giver energi. Figuren finder inspiration ved planten, ved vinduet og ved at læse. Ved bordet giver 300–600 lux mest inspiration.</p>
+        </details>
+    }
+    @if (Snapshot?.Message is { Length: > 0 } message && Snapshot.Activity is "idle" && Intent is "read" or "relax")
+    {
+        <p class="navigation-message">@message</p>
+    }
+</section>
+
+@code {
+    [Parameter] public HomeWorldSnapshot? Snapshot { get; set; }
+    [Parameter, EditorRequired] public HomeLayout Layout { get; set; } = default!;
+    [Parameter] public string? AvatarId { get; set; }
+    [Parameter] public string Source { get; set; } = "room";
+    [Parameter] public string Intent { get; set; } = "auto";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback<string> ChangeIntent { get; set; }
+
+    private string Name => AvatarCatalog.Find(AvatarId) is { Id: not AvatarCatalog.StarterId } avatar ? avatar.Name : "Din avatar";
+
+    private string ActivityText => Snapshot?.Activity switch
+    {
+        "walking" => "På vej",
+        "reading" => "Læser",
+        "relaxing" => "Slapper af",
+        "resting" => "Hviler",
+        "lookingOutside" => "Kigger ud ad vinduet",
+        "visitingPlant" => "Ser til planten",
+        "exploring" => "Ser sig omkring",
+        "away" => "Ude",
+        _ => "Hjemme"
+    };
+
+    private string WantText(HomeResidentState resident)
+    {
+        var target = resident.TargetAlias is { } alias
+            ? Layout.Items.FirstOrDefault(item => item.Alias == alias)?.Name : null;
+        return resident.Want switch
+        {
+            "read" => target is null ? "Læse ved et bord" : $"Læse ved {target}",
+            "rest" or "relax" => target is null ? "Få et hvil" : $"Hvile ved {target}",
+            "lookOutside" => "Kigge ud ad vinduet",
+            "visitPlant" => target is null ? "Se til planten" : $"Se til {target}",
+            "idle" => "Blive stående",
+            "away" or "leave" => "Gå hjemmefra",
+            _ => "Gå på opdagelse"
+        };
+    }
+
+    private Task SelectIntent(ChangeEventArgs args) => ChangeIntent.InvokeAsync(args.Value?.ToString() ?? "auto");
+}

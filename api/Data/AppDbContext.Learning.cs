@@ -8,6 +8,7 @@ public partial class AppDbContext
     public DbSet<FileAsset> FileAssets => Set<FileAsset>();
     public DbSet<CourseMaterial> CourseMaterials => Set<CourseMaterial>();
     public DbSet<LearningQuest> LearningQuests => Set<LearningQuest>();
+    public DbSet<QuestGoldAward> QuestGoldAwards => Set<QuestGoldAward>();
     public DbSet<LearningGroup> LearningGroups => Set<LearningGroup>();
     public DbSet<LearningGroupMember> LearningGroupMembers => Set<LearningGroupMember>();
     public DbSet<QuestSubmission> QuestSubmissions => Set<QuestSubmission>();
@@ -44,6 +45,13 @@ public partial class AppDbContext
             e.Property(x => x.Kind).HasMaxLength(12).HasDefaultValue("main").IsRequired();
             e.Property(x => x.Required).HasDefaultValue(true);
             e.HasOne<Hold>().WithMany().HasForeignKey(x => x.HoldId).OnDelete(DeleteBehavior.Restrict);
+        });
+        model.Entity<QuestGoldAward>(e =>
+        {
+            e.ToTable("quest_gold_awards", table =>
+                table.HasCheckConstraint("CK_quest_gold_awards_gold", "\"Gold\" > 0"));
+            e.HasKey(award => new { award.QuestId, award.UserSub });
+            e.HasIndex(award => award.UserSub);
         });
         model.Entity<LearningGroup>(e =>
         {
