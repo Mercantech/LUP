@@ -2,6 +2,12 @@ namespace Mercantec.Tech.Contracts;
 
 public sealed record LearningHold(Guid Id, string Name, bool CanManage);
 public sealed record LearningMember(Guid Id, Guid? UserSub, string DisplayName);
+
+public static class QuestRewards
+{
+    public const int GoldOnApproval = 20;
+}
+
 public sealed record QuestView(Guid Id, Guid HoldId, string Title, string Description, string SubmissionMode,
     bool Published, DateTimeOffset? DeadlineUtc, bool CanManage, string Kind = "main", Guid? GroupSetId = null, bool Required = true,
     QuestAudienceSettings? Audience = null, Guid? SeriesId = null, DateOnly? OccurrenceDate = null, Guid[]? AllowedGroupIds = null);

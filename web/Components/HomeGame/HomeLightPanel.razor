@@ -1,0 +1,40 @@
+@using System.Globalization
+@using Mercantec.Tech.Contracts.HomeGame
+
+<section class="light-panel" data-testid="light-panel" aria-labelledby="home-lux-title">
+    <header>
+        <h2 id="home-lux-title">Lys ved bordet</h2>
+        @if (Preview && Reading is not null) { <small>Forhåndsvisning</small> }
+    </header>
+    <div class="reading-value" data-testid="reading-lux" data-lux="@Reading?.Lux">
+        @if (Reading is { } value)
+        {
+            <strong>@value.Lux</strong><span>lux</span>
+        }
+        else
+        {
+            <span class="awaiting-light">@(HasDesk ? "Kør koden for at måle lyset." : "Placér et skrivebord for at måle lyset.")</span>
+        }
+    </div>
+    @if (Reading is { } sample)
+    {
+        <div class="lux-scale" aria-hidden="true">
+            <span class="reading-band"></span>
+            <i style="@($"left:{Math.Clamp(sample.Lux / 10d, 0, 100).ToString("0.0", CultureInfo.InvariantCulture)}%")"></i>
+        </div>
+        <div class="scale-labels" aria-hidden="true"><span>0</span><span>1.000 lux</span></div>
+        @if (Before is { } previous && sample.Cell == previous.Cell && sample.Lux != previous.Lux)
+        {
+            <p class="comparison" data-testid="light-change">Før <strong>@previous.Lux lux</strong></p>
+        }
+    }
+    <p class="outdoor">Udendørs <strong>@OutdoorLux lux</strong>@if (Reading is not null) { <span>Læseområde 300–600 lux</span> }</p>
+</section>
+
+@code {
+    [Parameter] public (HomeCell Cell, int Lux)? Reading { get; set; }
+    [Parameter] public (HomeCell Cell, int Lux)? Before { get; set; }
+    [Parameter] public int OutdoorLux { get; set; }
+    [Parameter] public bool Preview { get; set; }
+    [Parameter] public bool HasDesk { get; set; }
+}

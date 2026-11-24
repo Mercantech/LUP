@@ -23,22 +23,23 @@ Dokploy: domain på service **`web`**, port **3000**. For mercantec.tech / lup.d
 
 `lup.dk` er Traefik-labels på `web` (Host `lup.dk` eller `www.lup.dk`). Alternativt Dokploy MCP `domain-create` for begge hosts. DNS/Cloudflare skal pege apex + www til **samme origin/tunnel** som `mercantec.tech`.
 
+## Udgivelsesgren
+
+Vælg GitHubs `main` som produktionsgren i Dokploy. Udgivelsesobservatøren slår den kørende revision op i historikken for `main`. Efter en udgivelse sammenlignes revisionen i `/release.json` med `/api/platform-updates/deployment`.
+
 ## Netværk (påkrævet)
 
 Produktionsstakken **Mercantec.tech → Production** genbruger sin eksisterende private Docker-bridge. Tilføj `-f ./docker-compose.production.yml` efter `-f ./docker-compose.yml` i Dokploys Compose-kommando. Behold projektets navn, som bestemmer navnene på bridgen og datavolumenerne. Hvis bridgen har et særskilt navn, sæt `LUP_PRIVATE_NETWORK_NAME` til navnet på den bridge, produktionsdatabasen allerede bruger. Brug **Deploy** til at starte produktion, så Dokploy bruger kommandoen med begge Compose-filer.
 
-1. `default` er det private net for databasen, API'et og collaboration. Web og MinIO-konsollen bruger også `dokploy-network` til Traefik.
-2. Web bruger **`lup-api-internal`** til API’et. API’et finder databasen på **`mercantec-tech-db`** og objektlageret på **`mercantec-tech-minio`**.
-3. Nginx bruger Dockers DNS-resolver `127.0.0.11` til at slå `lup-api-internal:8080` op på projektnettet.
+1. `default` er det private net for databasen, API'et, collaboration og object storage. Web bruger også `dokploy-network` til Traefik.
+2. Aliaser på det private net er **`mercantec-tech-api`**, **`mercantec-tech-db`** og **`mercantec-tech-minio`**.
+3. Nginx bruger `resolver 127.0.0.11` og `set $upstream_api http://lup-api-internal:8080`.
 4. Connection string: `Host=mercantec-tech-db`
-5. Object storage: API → `http://mercantec-tech-minio:9000` (S3 path-style). MinIO credentials via Dokploy env (`MINIO_ROOT_*`, `MINIO_BUCKET`, `OBJECT_STORAGE_*`) — **ikke** i git.
+5. Object storage går fra API'et til `http://mercantec-tech-minio:9000` med S3 path-style. `MINIO_ROOT_USER` og `MINIO_ROOT_PASSWORD` skal være udfyldt i Dokploy. Produktionsoverlayet afviser tomme værdier før opstart og bruger de samme credentials i MinIO, initialisering, API og previewworker.
 6. Image: **`pgsty/silo`** (pinned tag i compose). Brug **ikke** `quay.io/minio/minio` / `quay.io/minio/mc` — Quay returnerer **401** (community-images fjernet).
-7. MinIO Console (admin UI):
-   - **Prod URL:** `https://minio.mercantec.tech` (subdomæne — apex forbliver appen)
-   - Kun port **9001** (Console) via Traefik på `dokploy-network`. S3 API **9000** eksponeres **ikke**.
-   - Compose sætter Traefik-labels + `MINIO_BROWSER_REDIRECT_URL`. Alternativt Dokploy MCP: `domain-create` → host `minio.mercantec.tech`, service `minio`, port `9001`, `certificateType` ift. Cloudflare-praksis, derefter `compose-deploy`.
-   - Login: `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` (stærk adgangskode i Dokploy — ikke default).
-   - Lokalt: http://localhost:9001 (med `docker-compose.local.yml`).
+7. Produktionsoverlayet tilslutter kun MinIO til det private net, sætter `traefik.enable=false` og fjerner arvede routerlabels og publicerede porte. Browseren henter filer gennem LUPs API med de eksisterende adgangskontroller og mediebilletter. Offentlige karakteroriginaler bruger den eksisterende katalogkontrollerede nginx/API-rute. MinIO Console kan tilgås lokalt på `http://localhost:9001` med `docker-compose.local.yml`.
+
+Behold produktionsprojektets navn og eksisterende datavolumener. PostgreSQL bruger `mercantec_tech_pg`, og MinIO bruger `mercantec_tech_minio` under samme Compose-projekt. Produktionsoverlayet ændrer kun adgangen til object storage.
 
 Proxyér **aldrig** til generisk `http://api:...` på det delte net.
 
@@ -56,7 +57,7 @@ Brug **Dokploy MCP** (ikke ad hoc curl):
 2. `compose-saveEnvironment` (`createEnvFile: true`) — `CORS_SPA_ORIGINS` skal inkludere `https://mercantec.tech;https://lup.dk;https://www.lup.dk` (+ lokale origins efter behov)
 3. `domain-create` → host **`mercantec.tech`**, service `web`, port 3000
 4. `domain-create` → host **`lup.dk`**, service `web`, port 3000 (og evt. `www.lup.dk`) — eller stol på Traefik-labels i compose
-5. (valgfrit hvis labels mangler) `domain-create` → host **`minio.mercantec.tech`**, service `minio`, port **9001**
+5. Kontroller, at Compose-kommandoen inkluderer `docker-compose.production.yml`, og at MinIO kun har det private net og `traefik.enable=false` i den effektive konfiguration.
 6. `compose-deploy`
 7. Fejl: `deployment-readLogs` / `compose-readLogs`
 

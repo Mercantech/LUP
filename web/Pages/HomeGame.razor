@@ -1,0 +1,48 @@
+@page "/spil/hjem"
+@page "/apartment"
+@page "/apartment/smart-home"
+@using Mercantec.Tech.Web.Components.HomeGame
+@inject AuthService Auth
+@inject ViewAsStudentContext ViewAs
+@implements IDisposable
+
+<PageTitle>Hjem.exe · LUP</PageTitle>
+
+@if (!Auth.IsInitialized)
+{
+    <p role="status">Indlæser Hjem.exe…</p>
+}
+else if (!Auth.IsAuthenticated)
+{
+    <p><a href="@Auth.LoginPath()">Log ind</a> for at åbne dit hjem.</p>
+}
+else if (ViewAs.IsActive)
+{
+    <p>Afslut elevvisning for at åbne dit eget hjem.</p>
+}
+else if (Auth.Subject is { Length: > 0 } subject)
+{
+    <HomeWorkshop Subject="@subject" InitialView="@ViewMode" @key="(subject, ViewMode)" />
+}
+else
+{
+    <p>Log ind igen for at åbne dit hjem.</p>
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "vis")] public string? ViewMode { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Auth.AuthStateChanged += Refresh;
+        ViewAs.Changed += Refresh;
+    }
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Auth.AuthStateChanged -= Refresh;
+        ViewAs.Changed -= Refresh;
+    }
+}

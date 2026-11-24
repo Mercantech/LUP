@@ -1,0 +1,46 @@
+using Mercantec.Tech.Contracts.HomeGame;
+
+namespace Mercantec.Tech.Web.HomeGame;
+
+public static class HomeRoomArt
+{
+    // First 12 SHA-256 digits of the sorted sha256sum manifest for the item sprites.
+    // Publish changed sprites under a new folder; open rooms may still use the old URLs.
+    private const string ArtDirectory = "images/home-workshop/0108ab341b3c";
+
+    public static string? Image(string definition, bool? powered = null, int rotation = 0)
+    {
+        var sprite = definition switch
+        {
+            HomeCatalog.DeskId => "desk",
+            HomeCatalog.SofaId => "sofa",
+            HomeCatalog.RugId => "rug",
+            HomeCatalog.LampId => "lamp",
+            HomeCatalog.BlindId => "blind",
+            HomeCatalog.ArmchairId => "armchair",
+            HomeCatalog.BookcaseId => "bookcase",
+            HomeCatalog.CoffeeTableId => "coffee-table",
+            HomeCatalog.CorkboardId => "pinboard",
+            HomeCatalog.SignId when powered is false => "flip-sign-moon",
+            HomeCatalog.SignId => "flip-sign",
+            HomeCatalog.PlanterId => "planter",
+            HomeCatalog.MoistureId => "soil-probe",
+            _ => null
+        };
+        if (sprite is null) return null;
+        var directional = definition is HomeCatalog.DeskId or HomeCatalog.SofaId or HomeCatalog.LampId
+            or HomeCatalog.ArmchairId or HomeCatalog.BookcaseId or HomeCatalog.CoffeeTableId
+            or HomeCatalog.PlanterId or HomeCatalog.MoistureId;
+        var angle = directional ? rotation : 0;
+        // The desk accessories, pump and lampshade have genuinely different
+        // near and far sides; a horizontal mirror would keep them at one end.
+        var view = angle switch
+        {
+            180 => "-back",
+            270 when definition is HomeCatalog.DeskId or HomeCatalog.PlanterId or HomeCatalog.LampId => "-side-reverse",
+            90 or 270 => "-side",
+            _ => ""
+        };
+        return $"{ArtDirectory}/{sprite}{view}.webp";
+    }
+}

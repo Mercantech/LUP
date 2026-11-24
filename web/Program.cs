@@ -34,6 +34,7 @@ else
 
 builder.Services.AddScoped<Mercantec.Tech.Web.Demo.LearningContext>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Avatars.IAvatarClient, Mercantec.Tech.Web.Avatars.AvatarClient>();
+builder.Services.AddScoped<Mercantec.Tech.Web.HomeGame.HomeGameClient>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Demo.DemoWorld>();
 builder.Services.AddScoped<Mercantec.Tech.Web.Courses.CourseTheoryDocumentLoader>();
 

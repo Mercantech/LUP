@@ -100,6 +100,11 @@ services:
       context: .
       dockerfile: api/Dockerfile
     environment:
+      HomeGame__Enabled: ${HOME_GAME_ENABLED:-false}
+      HomeGame__RunnerUrl: ${HOME_GAME_RUNNER_URL:-}
+      HomeGame__RunnerToken: ${HOME_GAME_RUNNER_TOKEN:-}
+      HomeGame__RunnerCertSha256: ${HOME_GAME_RUNNER_CERT_SHA256:-}
+      HomeGame__WorkerSlots: ${HOME_GAME_WORKER_SLOTS:-8}
       ASPNETCORE_URLS: http://+:8080
       DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE: "false"
       ConnectionStrings__Default: ${CONNECTION_STRING:-Host=mercantec-tech-db;Port=5432;Database=mercantec;Username=mercantec;Password=mercantec}
@@ -158,7 +163,9 @@ services:
         aliases:
           - mercantec-tech-api
           - lup-api-internal
+      home-runner-control: {}
     volumes:
+      - lup-home-game-connection:/run/lup-home-game:ro
       - mercantec_notion_key:/run/notion:ro
       - mercantec_updates_key:/run/lup-updates:ro
       - mercantec_updates_publications:/var/lib/lup-updates
@@ -389,6 +396,8 @@ services:
     restart: unless-stopped
 
 volumes:
+  lup-home-game-connection:
+    external: true
   mercantec_updates_key:
   mercantec_updates_publications:
   mercantec_updates_capture:
@@ -406,3 +415,6 @@ networks:
         - subnet: ${LUP_PRIVATE_SUBNET:-10.251.90.0/24}
   dokploy-network:
     external: true
+  home-runner-control:
+    external: true
+    name: ${HOME_GAME_CONTROL_NETWORK:-lup-home-runner-control}

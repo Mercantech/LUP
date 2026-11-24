@@ -2947,6 +2947,33 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("quest_audience_memberships", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.QuestGoldAward", b =>
+                {
+                    b.Property<Guid>("QuestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AwardedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FeedbackId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Gold")
+                        .HasColumnType("integer");
+
+                    b.HasKey("QuestId", "UserSub");
+
+                    b.HasIndex("UserSub");
+
+                    b.ToTable("quest_gold_awards", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_quest_gold_awards_gold", "\"Gold\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.QuestSubmission", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3411,6 +3438,145 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("wordle_schedule", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeBuildReceiptRow", b =>
+                {
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("StateJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserSub", "OperationId");
+
+                    b.ToTable("home_game_build_receipts", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeClassroomRow", b =>
+                {
+                    b.Property<Guid>("HoldId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SettingsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("HoldId");
+
+                    b.ToTable("home_game_classrooms", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeGameProfileRow", b =>
+                {
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StateJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserSub");
+
+                    b.ToTable("home_game_profiles", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_home_game_profiles_revision", "\"Revision\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeHelpRow", b =>
+                {
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DataJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("HoldId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserSub", "Id");
+
+                    b.HasIndex("HoldId");
+
+                    b.ToTable("home_game_help_requests", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeProgramRow", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SourceJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserSub");
+
+                    b.ToTable("home_game_programs", (string)null);
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeRunRow", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RunJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserSub")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserSub")
+                        .IsUnique()
+                        .HasDatabaseName("IX_home_game_runs_active")
+                        .HasFilter("\"Active\"");
+
+                    b.HasIndex("UserSub", "StartedAtUtc");
+
+                    b.ToTable("home_game_runs", (string)null);
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.AvatarItemOwnership", b =>
@@ -4184,6 +4350,51 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.HasOne("Mercantec.Tech.Api.Data.Entities.WordlePuzzle", null)
                         .WithMany()
                         .HasForeignKey("Date")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeBuildReceiptRow", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.HomeGame.HomeGameProfileRow", null)
+                        .WithMany()
+                        .HasForeignKey("UserSub")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeClassroomRow", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.Hold", null)
+                        .WithMany()
+                        .HasForeignKey("HoldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeHelpRow", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.Hold", null)
+                        .WithMany()
+                        .HasForeignKey("HoldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeProgramRow", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.HomeGame.HomeGameProfileRow", null)
+                        .WithMany()
+                        .HasForeignKey("UserSub")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.HomeGame.HomeRunRow", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.HomeGame.HomeGameProfileRow", null)
+                        .WithMany()
+                        .HasForeignKey("UserSub")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -1,7 +1,6 @@
 @page "/progress"
 @page "/progress/badges"
 @page "/profile/character"
-@page "/apartment"
 @page "/universe/shop"
 @page "/universe/unlocks"
 @page "/onboarding"
@@ -52,17 +51,14 @@ else if (PathKey == "profile/character")
         <AvatarEditor RequestedAvatarId="@RequestedAvatarId" @key="Auth.Subject" />
     }
 }
-else if (PathKey == "apartment")
-{
-    <header class="page-title"><div><h1>Dit eget lille sted</h1><p>Vælg et møbel i inventaret, og indret din 2D-lejlighed.</p></div><a class="secondary" href="/universe/shop">Find flere møbler</a></header><ApartmentView />
-}
 else if (PathKey == "universe/shop")
 {
-    <header class="page-title"><div><h1>Butik til dit univers</h1><p>Find møbler til dit rum. Nye figurer låser du op i avatarsamlingen.</p></div></header><ShopGallery />
+    <header class="page-title"><div><h1>Butikken i Hjem.exe</h1><p>Køb møbler og udstyr imens du indretter din avatars hjem.</p></div></header>
+    <div class="actions"><a class="action" href="/spil/hjem?vis=butik">Åbn butikken i Hjem.exe</a><a class="secondary" href="/profile/character">Min avatarsamling</a></div>
 }
 else if (PathKey == "universe/unlocks")
 {
-    <header class="page-title"><div><h1>Det næste, du kan låse op</h1><p>Se hvilke avatars og møbler dine fremskridt åbner for.</p></div><a class="secondary" href="/universe/shop">Til butikken</a></header>
+    <header class="page-title"><div><h1>Det næste, du kan låse op</h1><p>Se hvilke avatarer dine fremskridt åbner for.</p></div><a class="secondary" href="/spil/hjem">Se udstyret i Hjem.exe</a></header>
     <UnlockRoadmap />
     <section class="panel" style="margin-top:18px"><h2>Titler og ekstra profiltemaer</h2>@foreach (var unlock in DemoCatalog.Unlocks.Where(u => u.Type is "Titel" or "Tema")) { <div class="row"><span class="mark">@unlock.Level</span><div><h3>@unlock.Name</h3><p>@unlock.Type · level @unlock.Level · @(unlock.Open ? "Åben" : "Låst")</p></div></div> }</section>
 }
@@ -95,7 +91,6 @@ else
         "progress" => "Udvikling",
         "progress/badges" => "Mine badges",
         "profile/character" => "Avatar",
-        "apartment" => "Lejlighed",
         "universe/shop" => "Butik",
         "universe/unlocks" => "Oplåsninger",
         _ => "Onboarding"

@@ -1,0 +1,16 @@
+.teacher-home { display: grid; gap: .8rem; }
+.teacher-home label { display: grid; width: fit-content; max-width: 100%; gap: .22rem; }
+.teacher-home h2, .teacher-home h3 { margin-block: .15rem; }
+.teacher-home summary { cursor: pointer; font-weight: 650; padding-block: .4rem; }
+.teacher-home details > details { padding-inline-start: .7rem; }
+.teacher-controls { display: flex; flex-wrap: wrap; align-items: end; gap: .5rem; margin-block: .65rem; }
+.teacher-home select { max-width: 100%; }
+.teacher-home textarea, .teacher-home pre { max-width: 100%; width: min(42rem, 100%); font-family: ui-monospace, Consolas, monospace; overflow: auto; }
+.teacher-home pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: .65rem; background: #20343c; color: #e0f8ee; max-height: 23rem; }
+.teacher-table { overflow-x: auto; }
+.student-work { border-block: 1px solid var(--line, #ccd8d4); padding-block: .8rem; }
+.student-header { display: flex; justify-content: space-between; gap: .5rem; align-items: center; }
+.plain-reflection { white-space: pre-wrap; overflow-wrap: anywhere; }
+.student-questions { padding: 0; list-style: none; }
+.student-questions li { padding-block: .6rem; border-bottom: 1px solid var(--line, #ccd8d4); }
+.student-questions li small { margin-inline-start: .4rem; }

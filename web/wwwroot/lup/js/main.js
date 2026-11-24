@@ -325,7 +325,7 @@ const platformCatalog = () => {
         ["Mine badges", "/progress/badges", "De badges du har samlet."],
         ["Mine projekter", "/projects/mine", "Projekter du har lavet."],
         ["Min avatar", "/profile/character", "Din figur i universet."],
-        ["Min lejlighed", "/apartment", "Lejligheden mellem forløbene."],
+        ["Hjem.exe", "/spil/hjem", "Indret og programmér din avatars hjem."],
         ["Butik", "/universe/shop", "Brug guld i butikken."]
       ]
     ],

@@ -1,0 +1,397 @@
+// UI regression check. The API uses synthetic data, and runtime integration has its own tests.
+const assert = require("node:assert/strict");
+const path = require("node:path");
+const os = require("node:os");
+const fs = require("node:fs/promises");
+const { homeGameFixture, piece, point } = require("../release-news/home-game-fixture.cjs");
+
+function dependency(name) {
+    try { return require(name); }
+    catch { return require(path.join(os.homedir(), ".cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules", name)); }
+}
+
+const { chromium } = dependency("playwright");
+const base = process.env.LUP_QA_URL ?? "http://127.0.0.1:5319";
+const subject = "5d917801-9b74-4514-8d7b-13fca420e226";
+const teacherSubject = "79a2b803-e11a-4ae8-b606-9b7f816e7c63";
+const runId = "469f3838-456d-4201-ad66-7bd7a031af90";
+const versionId = "667101e8-910b-4ba3-b759-2606c6b7d4f6";
+const startedAtUtc = "2026-11-16T09:00:00Z";
+const state = homeGameFixture({ lampInStorage: true });
+const cells = state.layout.grid.rooms.living_room;
+const program = "import home\nhome.set(\"desk_lamp\", True)\n";
+const hostileLog = "<img src=x onerror=alert(1)>";
+let undo, run;
+
+function snapshot(tick) {
+    return {
+        tick, timeMs: tick * 100, avatarCell: tick ? point(6, 4) : point(0, 4), activity: tick ? "reading" : "idle",
+        daylightLux: 40, ambientLux: 40, avatarLux: tick ? 378 : 40, comfort: tick ? 100 : null, energyMicroJ: tick * 600000,
+        autoEnabled: true, poweredAliases: tick ? ["desk_lamp"] : [], sensors: [],
+        lastCommands: tick ? [{ alias: "desk_lamp", action: "setPower", value: true }] : [],
+        deviceCommits: tick ? [{ alias: "desk_lamp", action: "setPower", value: true, tick: 0, stateChanged: true }] : [],
+        lightMap: cells.map(cell => ({ cell, lux: cell.x === 6 && cell.y === 4 && tick ? 378 : 40 })),
+        message: tick ? "Avataren kan læse." : null, error: null
+    };
+}
+
+async function handler(route) {
+    const request = route.request();
+    const url = new URL(request.url());
+    const fromApi = url.pathname.startsWith("/api/");
+    if (!fromApi) {
+        // A returning browser or CDN can still hold the old module and stylesheet URLs.
+        if (url.pathname === "/js/home-game.js" && !url.search)
+            return route.fulfill({contentType: "text/javascript", body: "export function readDraft() { return null; }"});
+        if (url.pathname === "/Mercantec.Tech.Web.styles.css" && (!url.search || url.search === "?v=outlook-aftalevisning-20261119"))
+            return route.fulfill({contentType: "text/css", body: "/* previous room */"});
+        if (url.origin === base || url.protocol === "data:" || url.protocol === "blob:") return route.continue();
+        return route.fulfill({ status: 200, body: "" });
+    }
+    const headers = {
+        "access-control-allow-origin": base,
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-headers": "*"
+    };
+    const send = (json, status = 200) => route.fulfill({ status, headers, json });
+    if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+    if (!url.pathname.includes("/me/home-game")) {
+        if (url.pathname.endsWith("/me/avatars")) return send({
+            selectedAvatarId: state.selectedAvatarId, ownedAvatarIds: ["lupp", "bip01", "starter"], gold: state.gold, level: 1,
+            ownedItemIds: [], canImportLegacy: false, revision: 1, unlockProgress: []
+        });
+        return send([]);
+    }
+    assert.equal(request.headers()["x-lup-apartment-subject"], state.isTeacherSandbox ? teacherSubject : subject);
+    const endpoint = url.pathname.split("/me/home-game")[1];
+    const method = request.method();
+    const body = request.postDataJSON();
+    if (endpoint === "" && method === "GET") return send(state);
+    if (endpoint === "/build") {
+        assert.equal(body.revision, state.layout.revision);
+        const { action } = body;
+        const previous = structuredClone({ items: state.layout.items, gold: state.gold, floorStyle: state.layout.floorStyle, wallpaperStyle: state.layout.wallpaperStyle });
+        if (action.kind === "place" || action.kind === "rotate") {
+            state.layout.items.find(item => item.id === action.itemId).placement = action.placement;
+        } else if (action.kind === "buy") {
+            assert.equal(action.definitionId, "sofa_basic");
+            const goldPaid = state.isTeacherSandbox ? 0 : 90;
+            state.layout.items.push(piece("sofa", "sofa_basic", "sofa_basic", "Sofa", action.placement, { starter: false, goldPaid }));
+            state.gold -= goldPaid;
+        } else if (["floorStyle", "wallpaperStyle"].includes(action.kind)) {
+            state.layout[action.kind] = action.value;
+        } else if (action.kind === "undo") {
+            state.layout.items = undo.items;
+            state.gold = undo.gold;
+            state.layout.floorStyle = undo.floorStyle;
+            state.layout.wallpaperStyle = undo.wallpaperStyle;
+        } else throw new Error(`Unexpected build action ${action.kind}`);
+        undo = action.kind === "undo" ? null : previous;
+        state.canUndo = undo !== null;
+        state.layout.revision++;
+        if (run?.run.status === "paused") run.run.status = "cancelled";
+        return send(state);
+    }
+    if (endpoint === "/program") {
+        assert.equal(body.language, "python");
+        assert.equal(body.source, program);
+        assert.equal(body.revision, state.layout.revision);
+        state.drafts = [{ language: "python", source: program, versionId, hash: "fixture" }];
+        state.layout.revision++;
+        return send(state);
+    }
+    if (endpoint === "/runs") {
+        assert.equal(body.revision, state.layout.revision);
+        assert.equal(Boolean(body.assessment), false);
+        assert.equal(body.task ?? 0, 0);
+        run = {
+            run: {
+                id: runId, revision: state.layout.revision, programVersionId: versionId, language: "python", task: 0,
+                assessment: false, status: "running", startedAtUtc, programHash: "fixture", sdkVersion: "virtual-home-v1",
+                simulatorVersion: "hjem-v1", contentVersion: "hjem-pilot-v1"
+            },
+            sequence: 1, scenarioIndex: 0, scenarioIds: ["free"], speed: body.speed, snapshot: snapshot(0),
+            outcomes: [], logs: [hostileLog], goldAwarded: 0
+        };
+        state.lastRun = run.run;
+        return send(run, 202);
+    }
+    if (endpoint === `/runs/${runId}/step`) {
+        if (run.run.status !== "running" || body.afterSequence < run.sequence) return send(run);
+        run.sequence++;
+        const nextTick = Math.min(300, run.snapshot.tick + body.maxTicks);
+        run.snapshot = snapshot(nextTick);
+        if (nextTick >= 300) {
+            run.run.status = "completed";
+        }
+        return send(run);
+    }
+    if (endpoint === `/runs/${runId}/control`) {
+        run.run.status = body.action === "pause" ? "paused" : "running";
+        run.sequence++;
+        return send(run);
+    }
+    if (endpoint === `/runs/${runId}/replay`) return send({
+        run,
+        layout: state.layout,
+        scenarios: [{
+            id: "free", title: "Fri afprøvning", ticks: 300, free: true, seed: 0, version: 1,
+            events: [{ tick: 0, daylightLux: 40, ambientLux: 40, intention: "read", autoEnabled: true }],
+            windows: []
+        }],
+        events: [{ scenarioIndex: 0, tick: 0, commands: [{ alias: "desk_lamp", action: "setPower", value: true }],
+            waitMs: null, controllerCompleted: true }],
+        initialIntent: "read"
+    });
+    if (endpoint === `/runs/${runId}`) return send(run);
+    throw new Error(`Unexpected endpoint ${endpoint}`);
+}
+
+async function device(browser, sub, role, browserOptions = {}) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: "block", ...browserOptions });
+    await context.route("**/*", handler);
+    await context.addInitScript(({ sub, role }) => {
+        const encode = value => btoa(JSON.stringify(value)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+        const now = Math.floor(Date.now() / 1000);
+        const token = `${encode({ alg: "HS256", typ: "JWT" })}.${encode({
+            sub, name: "Hjem QA", role, iss: "local-test-only", iat: now, exp: now + 3600
+        })}.bG9jYWwtdGVzdA`;
+        sessionStorage.setItem("mt_access_token", token);
+        sessionStorage.setItem("mt_expires_at", String(now + 3600));
+        localStorage.setItem("lup-theme", "light");
+    }, { sub, role });
+    return context;
+}
+
+async function main() {
+    const output = process.env.LUP_QA_OUTPUT;
+    if (output) await fs.mkdir(output, { recursive: true });
+    const browser = await chromium.launch({
+        executablePath: process.env.LUP_QA_CHROME ?? "C:/Program Files/Google/Chrome/Application/chrome.exe",
+        headless: true
+    });
+    try {
+        const context = await device(browser, subject, "Student");
+        const page = await context.newPage();
+        page.setDefaultTimeout(60000);
+        const errors = [];
+        page.on("pageerror", error => errors.push(error.message));
+        page.on("dialog", async dialog => { errors.push(dialog.message()); await dialog.dismiss(); });
+        await page.goto(`${base}/apartment/smart-home`, { waitUntil: "domcontentloaded" });
+        await page.getByRole("heading", { name: "Hjem.exe" }).waitFor();
+        await page.getByRole("button", { name: "Indret", exact: true }).click();
+        const board = page.locator(".home-board");
+        await board.waitFor();
+        const tile = (x, y) => board.locator(`[data-x="${x}"][data-y="${y}"]`);
+        assert.equal(await board.locator("button[data-x][data-y]").count(), 120);
+        await board.locator('.resident[data-avatar-id="lupp"]').waitFor();
+        assert.equal(await board.locator(".resident").evaluate(node => getComputedStyle(node).position), "absolute");
+        const resident = page.getByTestId("home-resident");
+        const intent = page.getByTestId("resident-intent");
+        const locationOf = element => element.evaluate(node => [node.dataset.cellX, node.dataset.cellY].join(","));
+        const life = page.getByTestId("resident-life");
+        assert.equal(await life.getAttribute("data-source"), "room");
+        assert.equal(await intent.inputValue(), "auto");
+        assert.equal(await life.getByRole("meter").count(), 2);
+        const initialCell = await locationOf(resident);
+        await page.waitForFunction(cell => {
+            const { cellX, cellY } = document.querySelector('[data-testid="home-resident"]').dataset;
+            return cell !== [cellX, cellY].join(",");
+        }, initialCell);
+        await intent.selectOption("idle");
+        await resident.locator('.avatar-sheet[data-animation="idle"]').waitFor();
+        const idleCell = await locationOf(resident);
+        await page.reload({ waitUntil: "domcontentloaded" });
+        await resident.locator('.avatar-sheet[data-animation="idle"]').waitFor();
+        assert.equal(await intent.inputValue(), "idle");
+        assert.equal(await locationOf(resident), idleCell);
+        await intent.selectOption("auto");
+        await resident.locator('.avatar-sheet[data-animation="walk"]').waitFor();
+        await page.getByRole("button", { name: "Indret", exact: true }).click();
+        assert.equal(await page.locator(".task-label").count(), 0);
+        if (output) await page.screenshot({ path: path.join(output, "home-initial.png"), fullPage: true });
+        const { checkContextActions } = await import("./HomeGame.StagingQa/room-interactions.mjs");
+        await checkContextActions(page, "desk_basic", output);
+        const mobile = await device(browser, subject, "Student", {viewport:{width:375,height:667}, hasTouch:true, isMobile:true});
+        const touchPage = await mobile.newPage();
+        await touchPage.goto(`${base}/spil/hjem`, {waitUntil:"domcontentloaded"});
+        await touchPage.getByRole("button", {name:"Indret",exact:true}).tap();
+        await checkContextActions(touchPage, "desk_basic", output);
+        await mobile.close();
+        const desk = board.locator('[data-item-id="desk"]');
+        const deskState = () => state.layout.items.find(item => item.id === "desk").placement;
+        const menu = page.getByTestId("item-actions");
+        await desk.locator(".object-handle").click();
+        await menu.getByRole("button", {name:"Drej 90°",exact:true}).click();
+        await desk.and(page.locator('[data-rotation="90"]')).waitFor();
+        assert.equal(deskState().rotation, 90);
+        await menu.getByRole("button", {name:"Flyt",exact:true}).click();
+        await tile(9, 6).click();
+        await page.waitForFunction(() => document.querySelector('.furniture[data-item-id="desk"]:not(.ghost)')?.style.getPropertyValue('--x') === '9');
+        await page.reload({waitUntil:"domcontentloaded"});
+        await desk.and(page.locator('[data-rotation="90"]')).waitFor();
+        assert.deepEqual(deskState().anchor, point(9, 6));
+        // Restore the desk so the range and replay checks keep their original reading position.
+        await page.getByRole("button", {name:"Indret",exact:true}).click();
+        await page.getByRole("button", {name:"Fortryd",exact:true}).click();
+        await page.getByText("Seneste byggehandling fortrudt.").waitFor();
+        assert.deepEqual(deskState().anchor, point(6, 3));
+        await desk.locator(".object-handle").click();
+        for (const angle of [180, 270, 0]) {
+            await menu.getByRole("button", {name:"Drej 90°",exact:true}).click();
+            await desk.and(page.locator(`[data-rotation="${angle}"]`)).waitFor();
+        }
+        await page.keyboard.press("Escape");
+        await page.getByRole("button", {name:"Lager",exact:true}).click();
+        await page.getByRole("listitem").filter({hasText:"Gulvlampe"}).getByRole("button",{name:"Placér",exact:true}).click();
+        await tile(0, 4).focus();
+        for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowRight");
+        await page.keyboard.press("Enter");
+        await page.getByText("Indretningen er gemt.").waitFor();
+        assert.deepEqual(state.layout.items.find(item => item.id === "lamp").placement.anchor, point(5, 4));
+        assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("Inden for rækkevidde"));
+        await page.getByRole("button", { name: "Butik", exact: true }).click();
+        await page.locator(".items li[data-definition=sofa_basic]").getByRole("button").click();
+        await tile(6, 3).hover();
+        await page.getByText(/optager allerede feltet/i).waitFor();
+        assert.equal(await page.getByTestId("confirm-placement").isDisabled(), true);
+        assert.equal(state.gold, 100);
+        await tile(1, 1).click();
+        await tile(6, 3).hover();
+        assert.equal(state.gold, 100);
+        const purchase = page.getByTestId("confirm-placement");
+        assert.equal(await purchase.innerText(), "Placér · 90 guld");
+        await purchase.click();
+        await page.getByText("Køb og placering gemt. Din saldo er 10 guld.").waitFor();
+        assert.equal(state.gold, 10);
+        assert.deepEqual(state.layout.items.find(item => item.id === "sofa").placement.anchor, point(1, 1));
+        await page.getByRole("button", { name: "Fortryd" }).click();
+        await page.getByText("Seneste byggehandling fortrudt.").waitFor();
+        assert.equal(state.gold, 100);
+
+        await page.getByRole("button", { name: "Programmér", exact: true }).click();
+        await page.getByLabel("Controllerens program").fill(program);
+        await page.getByText("Gemt på LUP", { exact: true }).waitFor();
+        await page.reload({ waitUntil: "domcontentloaded" });
+        await page.getByRole("button", { name: "Programmér", exact: true }).click();
+        assert.equal(await page.getByLabel("Controllerens program").inputValue(), program);
+        await page.getByRole("button", { name: "Afprøv", exact: true }).click();
+        await intent.selectOption("idle");
+        await resident.locator('.avatar-sheet[data-animation="idle"]').waitFor();
+        const homeBeforeExperiment = await locationOf(resident);
+        await page.getByRole("combobox", {name:/^Hastighed/}).selectOption("4");
+        await page.getByRole("button", { name: "Kør kode", exact: true }).click();
+        await page.getByRole("button", { name: "Pause", exact: true }).click();
+        await page.getByRole("button", { name: "Genoptag", exact: true }).waitFor();
+        const pausedTick = run.snapshot.tick;
+        assert.equal(await life.getAttribute("data-source"), "run");
+        await life.getByText("Kodekørsel").waitFor();
+        await page.waitForTimeout(300);
+        assert.equal(run.snapshot.tick, pausedTick);
+        await page.getByRole("button", { name:"Genoptag", exact:true }).click();
+        await page.getByText("Forsøg gennemført", { exact: true }).waitFor();
+        assert.equal(run.run.status, "completed");
+        assert.equal(await life.getAttribute("data-source"), "room");
+        assert.equal(await locationOf(resident), homeBeforeExperiment);
+        assert.equal(state.gold, 100);
+        await page.getByText("Log (1)", { exact: true }).click();
+        assert.equal(await page.locator(".run-log").textContent(), hostileLog);
+        assert.equal(await page.locator(".run-log img").count(), 0);
+        assert.match(await page.getByTestId("reading-lux").innerText(), /378/);
+        assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("378 lux"));
+        if (output) await page.screenshot({ path: path.join(output, "home-result.png"), fullPage: true });
+        await page.getByRole("button", { name: "Genafspil forsøg" }).click();
+        assert.equal(await life.getAttribute("data-source"), "replay");
+        assert.equal(await life.getByRole("meter").count(), 0, "Archived runs without needs preserve the original recording");
+        await page.getByRole("slider", { name: /^Tick/ }).fill("300");
+        await life.getByText("Læser", { exact: true }).waitFor();
+        assert.ok((await tile(6, 4).getAttribute("aria-label")).includes("378 lux"));
+        await page.getByRole("button", { name: "Luk genafspilning" }).click();
+        assert.equal(await locationOf(resident), homeBeforeExperiment);
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await intent.selectOption("auto");
+        await resident.locator('.avatar-sheet[data-animation="walk"]').waitFor();
+        assert.equal(await resident.evaluate(node => getComputedStyle(node).transitionDuration), "0s");
+        assert.equal(await resident.locator(".avatar-sheet").evaluate(node => getComputedStyle(node).animationName), "none");
+        await board.waitFor({ state: "visible" });
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        await page.getByTestId("light-panel").waitFor({ state:"visible" });
+        await page.getByText("Vælg en genstand", {exact:true}).click();
+        await page.locator("[data-inspect-alias=desk_lamp]").click();
+        await page.getByTestId("device-off").click();
+        assert.equal(await page.getByTestId("device-inspector").locator(".device-state").innerText(), "Slukket");
+        await page.getByTestId("device-on").click();
+        assert.equal(await page.getByTestId("device-inspector").locator(".device-state").innerText(), "Tændt");
+        assert.match(await page.getByTestId("reading-lux").innerText(), /378/);
+        assert.ok(await board.isVisible());
+        if (output) await page.screenshot({ path: path.join(output, "home-mobile.png"), fullPage: true });
+        assert.deepEqual(errors, []);
+        await context.close();
+
+        Object.assign(state, homeGameFixture({ gold: 0, isTeacherSandbox: true, selectedAvatarId:"bip01" }));
+        for (const item of state.layout.items) item.placement = null;
+        state.layout.items.push(piece("blind-starter", "roller_blind", "mit_gardin", "Rullegardin"));
+        run = undo = null;
+        const teacher = await device(browser, teacherSubject, "Teacher");
+        const preview = await teacher.newPage();
+        preview.setDefaultTimeout(60000);
+        preview.on("pageerror", error => errors.push(error.message));
+        await preview.goto(`${base}/spil/hjem?vis=butik`, { waitUntil: "domcontentloaded" });
+        await preview.getByText("Prøvebolig for undervisere", { exact: true }).waitFor();
+        await preview.locator('.resident[data-avatar-id="bip01"]').waitFor();
+        await preview.getByTestId("resident-want").waitFor();
+        const emptyCell = await locationOf(preview.getByTestId("home-resident"));
+        await preview.waitForFunction(cell => {
+            const { cellX, cellY } = document.querySelector('[data-testid="home-resident"]').dataset;
+            return cell !== [cellX, cellY].join(",");
+        }, emptyCell);
+        assert.equal(await preview.locator(".task-label").count(), 0);
+        assert.equal(await preview.locator(".room-shell [data-item-id]").count(), 0);
+        await preview.getByRole("button", {name:"Gulv og tapet",exact:true}).click();
+        await preview.getByLabel("Gulv", {exact:true}).selectOption("slate");
+        await preview.locator(".room-shell[data-floor=slate]").waitFor();
+        await preview.getByLabel("Tapet", {exact:true}).selectOption("sage");
+        await preview.locator(".room-shell[data-wallpaper=sage]").waitFor();
+        await preview.getByRole("button",{name:"Lager",exact:true}).click();
+        await preview.locator(".items [data-definition=roller_blind]").getByRole("button",{name:"Placér",exact:true}).click();
+        await preview.getByTestId("confirm-placement").click();
+        await preview.locator(".room-shell [data-item-id=blind-starter]").waitFor();
+        await preview.getByRole("button",{name:"Lager",exact:true}).click();
+        await preview.locator(".items [data-definition=desk_basic]").getByRole("button",{name:"Placér",exact:true}).click();
+        await preview.locator('.home-board button[data-x="6"][data-y="3"]').click();
+        await preview.locator(".room-shell [data-item-id=desk]").waitFor();
+        await preview.getByText("Vælg en genstand", {exact:true}).click();
+        await preview.locator("[data-inspect-alias=mit_gardin]").click();
+        const readLux = async () => Number(await preview.getByTestId("reading-lux").getAttribute("data-lux"));
+        await preview.getByTestId("device-off").click();
+        const closedLux=await readLux();
+        await preview.getByTestId("device-on").click();
+        assert.ok(await readLux() > closedLux);
+        assert.match(await preview.locator(".outdoor").innerText(), /40 lux/);
+        await preview.getByTestId("device-inspector").getByText("Se kodeidé", {exact:true}).click();
+        assert.match(await preview.getByTestId("device-inspector").locator("pre").innerText(), /home\.set\("mit_gardin", True\)/);
+        await preview.getByRole("button",{name:"Butik",exact:true}).click();
+        await preview.locator(".items li[data-definition=sofa_basic]").getByRole("button", { name: "Tilføj gratis" }).click();
+        await preview.locator('.home-board [data-x="1"][data-y="1"]').click();
+        await preview.getByRole("button",{name:"Placér gratis",exact:true}).click();
+        await preview.getByText("Prøveudstyret er placeret.", { exact: true }).waitFor();
+        assert.equal(state.gold, 0);
+        assert.equal(state.layout.items.find(item => item.id === "sofa").goldPaid, 0);
+        assert.deepEqual(errors, []);
+        await teacher.close();
+        console.log("Hjem.exe browser: selected avatars, free simulation, keyboard placement, shared gold, mobile controls and teacher equipment passed.");
+    } catch (error) {
+        for (const context of browser.contexts()) {
+            for (const page of context.pages()) {
+                console.error("Home QA failed on", page.url(), await page.locator("h1, [role=alert], .home-loading").allTextContents());
+                if (output) await page.screenshot({ path: path.join(output, "home-failure.png") });
+            }
+        }
+        throw error;
+    } finally {
+        await browser.close();
+    }
+}
+
+main().catch(error => { console.error(error); process.exitCode = 1; });

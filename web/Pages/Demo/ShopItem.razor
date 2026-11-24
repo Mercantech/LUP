@@ -2,6 +2,7 @@
 @using Mercantec.Tech.Web.Demo
 @inject DemoWorld World
 @inject AuthService Auth
+@inject ViewAsStudentContext ViewAs
 @implements IDisposable
 
 <PageTitle>@(Item?.Name ?? "Butik")</PageTitle>
@@ -13,6 +14,10 @@
 else if (!Auth.IsAuthenticated)
 {
     <p>Du skal være logget ind. <a href="@Auth.LoginPath()">Log ind</a></p>
+}
+else if (ViewAs.IsActive)
+{
+    <p>Afslut elevvisning for at åbne din egen butik.</p>
 }
 else if (!World.AvatarProfileReady)
 {
@@ -27,6 +32,11 @@ else if (Item is null)
 {
     <header class="page-title"><div><h1>Varen findes ikke</h1><p>Gå tilbage til butikken, og vælg en anden vare.</p></div></header>
     <a href="/universe/shop">Tilbage til butikken</a>
+}
+else if (Item.Kind == "Møbler")
+{
+    <header class="page-title"><div><h1>@Item.Name</h1><p>Find inventar og udstyr i den nye boligbutik.</p></div></header>
+    <a class="action" href="/spil/hjem?vis=butik">Åbn butikken i Hjem.exe</a>
 }
 else
 {
@@ -50,12 +60,12 @@ else
             <div class="actions">
                 @if (owned && Item.Kind == "Tøj")
                 {
-                    <button type="button" class="secondary" disabled="@(World.EquippedId == Item.Id)" @onclick="() => World.Equip(Item.Id)">@(World.EquippedId == Item.Id ? "✓ På din avatar" : "Tag på")</button>
+                    <button type="button" class="secondary" disabled="@(World.EquippedId == Item.Id)" @onclick="Equip">@(World.EquippedId == Item.Id ? "✓ På din avatar" : "Tag på")</button>
                     <a class="secondary" href="/profile/character">Se min avatar</a>
                 }
                 else if (owned)
                 {
-                    <a class="secondary" href="/apartment">Se min lejlighed</a>
+                    <a class="action" href="/profile/character">Åbn avatarsamlingen</a>
                 }
                 else if (Item.Kind == "Tøj")
                 {
@@ -82,7 +92,11 @@ else
 
     private DemoGoods? Item => DemoWorld.Goods.FirstOrDefault(g => g.Id == ItemId);
 
-    protected override void OnInitialized() => Auth.AuthStateChanged += OnChanged;
+    protected override void OnInitialized()
+    {
+        Auth.AuthStateChanged += OnChanged;
+        ViewAs.Changed += OnChanged;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,14 +107,21 @@ else
 
     private async Task Buy()
     {
-        if (Item is not null)
-            await World.BuyAsync(Item.Id);
+        if (Auth.IsAuthenticated && !ViewAs.IsActive && Item is { Kind: "Møbler" } item)
+            await World.BuyAsync(item.Id);
+    }
+
+    private void Equip()
+    {
+        if (Auth.IsAuthenticated && !ViewAs.IsActive && Item is { Kind: "Tøj" } item)
+            World.Equip(item.Id);
     }
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
     public void Dispose()
     {
         Auth.AuthStateChanged -= OnChanged;
+        ViewAs.Changed -= OnChanged;
         World.Changed -= OnChanged;
     }
 }

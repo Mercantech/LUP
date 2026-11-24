@@ -1,0 +1,44 @@
+@page "/teacher/home-game"
+@page "/teacher/home-game/{HoldId:guid}"
+@using Mercantec.Tech.Web.Components.HomeGame
+@inject AuthService Auth
+@inject AuthRedirect Redirect
+@inject ViewAsStudentContext ViewAs
+@implements IDisposable
+
+<PageTitle>Hjem.exe for undervisere · LUP</PageTitle>
+
+@if (!Auth.IsInitialized)
+{
+    <p role="status">Indlæser…</p>
+}
+else if (!Auth.IsAuthenticated)
+{
+    <p><a href="@Auth.LoginPath()">Log ind</a> for at åbne holdets Hjem.exe.</p>
+}
+else if (Redirect.ShowsTeacherChrome && Auth.Subject is { Length: > 0 } subject)
+{
+    <HomeTeacherWorkshop Subject="@subject" InitialHold="@HoldId" @key="(subject, HoldId)" />
+}
+else
+{
+    <p>Denne side er for undervisere med adgang til et hold.</p>
+}
+
+@code {
+    [Parameter] public Guid? HoldId { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Auth.AuthStateChanged += Refresh;
+        ViewAs.Changed += Refresh;
+    }
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Auth.AuthStateChanged -= Refresh;
+        ViewAs.Changed -= Refresh;
+    }
+}
