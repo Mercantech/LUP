@@ -1,5 +1,22 @@
 # Koncepter til LUPs Linux-pingvin
 
+## Fjerde runde · Pip, Linux-sysadmin
+
+Pip rækker den ene vinge frem og viser med den anden, hvor tmux’ grønne statuslinje sidder på håndterminalen. Den rustfarvede kasket kan skiftes ud, når Pip skal introducere en anden Linux-distribution.
+
+[<img src="09-tmux-sysadmin.png" width="220" alt="Smilende modelvokspingvin med rustfarvet kasket, en åben vinge og en lille terminal med grøn statuslinje.">](09-tmux-sysadmin.png)
+
+[Åbn den lagdelte original i Krita eller GIMP](09-tmux-sysadmin.ora). Skift det øverste lag, **Kasket**, for at give Pip en ny hat. Laget **Pingvin med terminal** indeholder hele figuren med bart hoved. Begge lag har samme transparente lærred på 1440 × 1440 px.
+
+<details>
+<summary>Prompt til den indbyggede ImageGen</summary>
+
+Use case: stylized-concept. Create a production plate for ONE original Linux sysadmin teaching mascot for LUP, a handmade stop-motion clay penguin named Pip. Transparent RGBA background. The final illustration will consist of this one penguin wearing the one cap; for actual separate layers, sculpt the cap as a separate piece FLOATING just above his bare round head, directly aligned in the same exact x position, scale and orientation that he would wear it. There MUST be a continuous narrow band of fully transparent pixels between cap and head across the whole width; at least half a beak-height of clear air. This is an assembly source: no second character, no diagram, no callouts.
+Design like an auteur stop-motion puppet photographed on a miniature animation stage. Deep ink/blue-black plasticine chubby pear-shaped penguin, warm cream asymmetrical face patches and belly, orange ochre slightly crooked beak and squat broad warm feet. Very readable silhouette. Tiny genuine thumbprint ridges, slightly uneven hand-compressed stacked edges and mixed pigment, restrained, visibly soft oil clay. A seasoned, curious teacher, warmly amused: tilt at the neck, one mobile expressive brow arched, sharp engaged small pupils, mouth slightly open in a knowing sideways smile; one flipper gestures palm up toward the learner, the other cradles a single small charcoal pocket terminal tilted so we see its inset black screen, a little cream >_ prompt and a slim, unmistakable vivid tmux-green status strip along the screen BOTTOM. Focus remains on face and gesture. Optional minimal workwear, keep the classic belly and silhouette clean.
+His signature separate hat is a warm brick-orange railway engineer's peaked work cap made of clay, a soft off-centre pinched crown, a short upturned flared visor pointing just slightly to viewer's left, raised ochre seam and small unmarked brass side rivet, instantly legible and simple enough to swap for distro-themed hats later. Show its top and front only; its lower silhouette should naturally overlay the top of his head when translated straight down. No insignia, logo, labels or distro mark. Use an almost frontal three-quarter view with both eyes visible, same view and same soft upper-left studio light for the two pieces. Portrait canvas, generous clear edges, BOTH feet and top of cap fully inside frame. Character should fill canvas. No ground plane, no cast shadow on background, no border, no lettering outside screen, no scene, pure actual transparency.
+
+</details>
+
 ## Tredje runde · Logdetektiven i modelervoks
 
 Logdetektiven er formet som en stopmotionfigur med synlige fingeraftryk, en rundere silhuet og et lille »noot noot«-næb. Den blå jakke, lilla krave og oplyste logstrimmel gør figuren genkendelig fra tegnefilmsudgaven.
