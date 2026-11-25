@@ -1,0 +1,282 @@
+/* Hallmark · LUP Werewolf · illustrated playing cards on a village table. */
+/* The same printed face appears in the deck and in a player's private hand. */
+.social-play {
+    --sg-card-patina: color-mix(in srgb, var(--sg-frame) 28%, var(--sg-cream));
+    --sg-card-text: color-mix(in srgb, var(--sg-inkprint) 82%, var(--sg-cream));
+    --sg-card-keyline: color-mix(in srgb, var(--sg-frame) 58%, var(--sg-inkprint));
+    --sg-card-shadow: color-mix(in srgb, var(--sg-inkprint) 26%, transparent);
+}
+
+.social-play .sg-role-picker {
+    min-width: 0;
+    container: sg-deck / inline-size;
+}
+
+.social-play .sg-role-picker > legend {
+    width: 100%;
+    margin-bottom: .8rem;
+}
+
+.social-play .sg-role-tally {
+    float: right;
+    margin: .15rem 0 0 .5rem;
+    color: var(--sg-muted);
+    font-size: .875rem;
+    font-weight: 500;
+}
+
+.social-play .sg-roles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: clamp(.55rem, 2.35cqi, 1.1rem);
+}
+
+@container sg-deck (min-width: 34rem) {
+    .social-play .sg-roles {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.social-play .sg-role-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    align-items: stretch;
+    min-width: 0;
+    margin: 0;
+    padding: .34rem;
+    border: 1px solid var(--sg-card-keyline);
+    border-radius: .48rem;
+    background: var(--sg-card-patina);
+    box-shadow: 0 2px 0 var(--sg-card-shadow);
+    color: var(--sg-inkprint);
+}
+
+/* A narrow double keyline remains visible when a card is either selected or read-only. */
+.social-play .sg-role-card::before {
+    content: "";
+    position: absolute;
+    inset: .15rem;
+    pointer-events: none;
+    border: 1px solid var(--sg-frame);
+    border-radius: .33rem;
+}
+
+.social-play .sg-role-portrait {
+    position: relative;
+    display: block;
+    width: 100%;
+    align-self: start;
+    margin: 0;
+    border: 1px solid var(--sg-card-keyline);
+    border-radius: .14rem .14rem 0 0;
+    background: var(--sg-forest);
+}
+
+.social-play .sg-role-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: contain;
+}
+
+.social-play .sg-role-caption {
+    display: grid;
+    align-content: start;
+    gap: .33rem;
+    min-width: 0;
+    padding: clamp(.48rem, 1.65cqi, .85rem);
+    border: 1px solid var(--sg-card-keyline);
+    border-top: 0;
+    border-radius: 0 0 .14rem .14rem;
+    background: var(--sg-cream);
+    color: var(--sg-inkprint);
+}
+
+.social-play .sg-role-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .22rem;
+}
+
+.social-play .sg-role-title strong,
+.social-play .sg-revealed-role h3 {
+    min-width: 0;
+    font-family: var(--sg-display);
+    font-weight: 700;
+    line-height: 1.06;
+    color: var(--sg-inkprint);
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+.social-play .sg-role-title strong {
+    font-size: clamp(1.13rem, 4.25cqi, 1.7rem);
+}
+
+.social-play .sg-role-caption small,
+.social-play .sg-revealed-role p {
+    display: block;
+    font-size: clamp(.82rem, 2.3cqi, .95rem);
+    font-weight: 400;
+    line-height: 1.38;
+    color: var(--sg-card-text);
+    hyphens: auto;
+    overflow-wrap: break-word;
+}
+
+.social-play .sg-role-option {
+    cursor: pointer;
+}
+
+.social-play .sg-role-option > input[type=checkbox] {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+}
+
+.social-play .sg-role-mark {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: clamp(1.05rem, 3.75cqi, 1.5rem);
+    aspect-ratio: 1;
+    border: 1px solid var(--sg-card-keyline);
+    border-radius: 50%;
+    background: var(--sg-cream);
+    color: var(--sg-inkprint);
+}
+
+.social-play .sg-role-mark .ui-icon {
+    width: 70%;
+    height: 70%;
+    stroke-width: 2;
+}
+
+.social-play .sg-role-option[data-selected=true] {
+    border-color: var(--sg-forest);
+    background: var(--sg-forest);
+    box-shadow: 0 2px 0 var(--sg-card-shadow);
+}
+
+.social-play .sg-role-option[data-selected=true] .sg-role-caption {
+    background: var(--sg-forest);
+    border-color: var(--sg-frame);
+}
+
+.social-play .sg-role-option[data-selected=true] .sg-role-title strong,
+.social-play .sg-role-option[data-selected=true] .sg-role-caption small {
+    color: var(--sg-cream);
+}
+
+.social-play .sg-role-option[data-selected=true] .sg-role-mark {
+    border-color: var(--sg-cream);
+    background: var(--sg-cream);
+    color: var(--sg-forest);
+}
+
+.social-play .sg-role-option[data-selected=true] .sg-role-mark .ui-icon {
+    stroke-width: 3;
+}
+
+@media (hover: hover) {
+    .social-play .sg-role-option:hover:not(:has(input:disabled)) {
+        box-shadow: 0 0 0 1px var(--sg-card-keyline), 0 3px 0 var(--sg-card-shadow);
+    }
+}
+
+.social-play .sg-role-option:has(input:focus-visible) {
+    outline: 3px solid var(--sg-ink);
+    outline-offset: 3px;
+}
+
+.social-play .sg-role-option:has(input:disabled) {
+    cursor: wait;
+}
+
+.social-play .sg-private {
+    container: sg-hand / inline-size;
+}
+
+.social-play .sg-card-back {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: .97rem;
+    height: 1.32rem;
+    border: 3px double var(--sg-frame);
+    border-radius: .15rem;
+    background: var(--sg-forest);
+}
+
+.social-play .sg-card-back::before {
+    content: "";
+    width: .24rem;
+    aspect-ratio: 1;
+    transform: rotate(45deg);
+    background: var(--sg-cream);
+}
+
+.social-play .sg-private .sg-secret {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    align-items: start;
+    gap: 1rem;
+}
+
+.social-play .sg-revealed-role {
+    width: min(100%, 13.6rem);
+    padding: .44rem;
+    box-shadow: 0 3px 0 var(--sg-card-shadow), 0 8px 1rem var(--sg-card-shadow);
+}
+
+.social-play .sg-revealed-role .sg-role-caption {
+    gap: .45rem;
+    padding: .8rem;
+    text-align: center;
+}
+
+.social-play .sg-revealed-role h3 {
+    margin: 0;
+    font-size: clamp(1.8rem, 5.6cqi, 2.35rem);
+}
+
+.social-play .sg-revealed-role p {
+    margin: 0;
+    font-size: .925rem;
+}
+
+.social-play .sg-private-details {
+    display: grid;
+    align-content: start;
+    gap: .85rem;
+    min-width: 0;
+    width: 100%;
+}
+
+@container sg-hand (min-width: 34rem) {
+    .social-play .sg-private .sg-secret:has(.sg-private-details) {
+        grid-template-columns: minmax(0, 15.5rem) minmax(0, 1fr);
+        gap: clamp(1rem, 3cqi, 1.8rem);
+    }
+
+    .social-play .sg-revealed-role {
+        width: min(100%, 15.5rem);
+    }
+}
+
+@media (forced-colors: active) {
+    .social-play .sg-role-option:has(input:focus-visible) { outline-color: Highlight; }
+    .social-play .sg-role-mark { border-color: ButtonText; }
+    .social-play .sg-role-option[data-selected=true] .sg-role-mark { outline: 2px solid Highlight; }
+}

@@ -10,31 +10,31 @@
 <section class="sg-panel sg-private">
     <div class="sg-section-heading">
         <h2><UiIcon Name="lock" /> @Lang.T("Mit rollekort", "My role card")</h2>
-        <button type="button" class="sg-button" @onclick="TogglePrivate" aria-expanded="@_privateOpen" aria-controls="sg-private-info">
+        <button type="button" class="sg-button sg-card-toggle" @onclick="TogglePrivate"
+                aria-expanded="@(_privateOpen ? "true" : "false")" aria-controls="sg-private-info">
+            <span class="sg-card-back" aria-hidden="true"></span>
             @(_privateOpen ? Lang.T("Skjul kort", "Hide card") : Lang.T("Vis mit kort", "Show my card"))
         </button>
     </div>
     @if (_privateOpen)
     {
         <div id="sg-private-info" class="sg-secret">
-            <div class="sg-revealed-role">
-                @if (SocialRoles.Names.ContainsKey(Game.Role))
-                {
-                    <img class="sg-role-image" src="@SocialText.RoleImage(Game.Role)" alt="" width="320" height="400" />
-                }
-                <div>
-                    <h3>@Lang.Role(Game.Role)</h3>
-                    <p>@Lang.Rule(Game.Role)</p>
-                </div>
+            <div class="sg-role-card sg-revealed-role">
+                <WerewolfRoleFace Role="@Game.Role" Revealed="true" />
             </div>
-            @if (Game.PrivateMessages.Length > 0)
+            @if (Game.PrivateMessages.Length > 0 || Game.Phase == "night")
             {
-                <ul>@foreach (var message in PrivateMessages) { <li>@message</li> }</ul>
-            }
-            @if (Game.Phase == "night")
-            {
-                <WerewolfChoices Game="Game" Busy="Busy" Submit="Submit" />
-                @if (Game.Actions.Length == 0 && !Game.Finished) { <p>@Lang.T("Vent på, at natten går videre.", "Wait for the next part of the night.")</p> }
+                <div class="sg-private-details">
+                    @if (Game.PrivateMessages.Length > 0)
+                    {
+                        <ul>@foreach (var message in PrivateMessages) { <li>@message</li> }</ul>
+                    }
+                    @if (Game.Phase == "night")
+                    {
+                        <WerewolfChoices Game="Game" Busy="Busy" Submit="Submit" />
+                        @if (Game.Actions.Length == 0 && !Game.Finished) { <p>@Lang.T("Vent på, at natten går videre.", "Wait for the next part of the night.")</p> }
+                    }
+                </div>
             }
         </div>
     }

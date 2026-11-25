@@ -4,14 +4,24 @@
 @inject SocialGamesClient Client
 
 <PageTitle>@Lang.T("Opret Werewolf-lobby", "Create a Werewolf lobby") · LUP</PageTitle>
-<header class="sg-creation-header">
-    <img src="/images/social-games/werewolf.webp" alt="" width="1200" height="800" />
-    <div>
-        <h1>Werewolf</h1>
-        <p>@Lang.T("Vælg jeres rollekort, og invitér landsbyen. LUP er spilleder.", "Choose your role cards and invite the village. LUP runs the game.")</p>
+<WerewolfCover>
+    <h1>Werewolf</h1>
+    <p>@Lang.T("Ulvene vågner om natten. Landsbyen stemmer om dagen. Hvem stoler du på?", "The wolves wake at night. The village votes by day. Who do you trust?")</p>
+    <div class="sg-cover-actions">
+        @if (Auth.IsAuthenticated)
+        {
+            <button class="sg-button primary" @onclick="CreateAsync" disabled="@_busy"><UiIcon Name="plus" /> @(_busy ? Lang.T("Opretter…", "Creating…") : Lang.T("Opret lobby", "Create lobby"))</button>
+        }
+        else
+        {
+            <a class="sg-button primary" href="@Auth.LoginPath()">@Lang.T("Log ind og opret lobby", "Sign in to create a lobby")</a>
+        }
+        <a class="sg-cover-link" href="/games/social#sg-room-code">@Lang.T("Deltag med en kode", "Join with a code")</a>
+        <a class="sg-cover-link" href="/games/social/werewolf/cards"><UiIcon Name="book" /> @Lang.T("Kortgalleri", "Card gallery")</a>
     </div>
-</header>
-<div class="sg-create-grid @(Auth.IsAuthenticated ? null : "sg-create-guest")">
+    @if (_error is not null) { <p class="sg-error" role="alert">@Lang.Error(_error)</p> }
+</WerewolfCover>
+<div class="sg-create-grid">
     <div class="sg-create-cards">
         <WerewolfRolePicker Editable="@Auth.IsAuthenticated" Selected="_roles" ShowAll="true"
                             SelectionChanged="SelectRoles" Busy="@_busy" />
@@ -20,8 +30,13 @@
         <div class="sg-base-roles">
             <h2>@Lang.T("Grundroller", "Basic roles")</h2>
             <div>
-                <span><img src="@SocialText.RoleImage("wolf")" width="48" height="60" alt="" />@Lang.Role("wolf")</span>
-                <span><img src="@SocialText.RoleImage("villager")" width="48" height="60" alt="" />@Lang.Role("villager")</span>
+                @foreach (var role in BasicRoles)
+                {
+                    <figure>
+                        <img src="@SocialText.RoleImage(role)" width="480" height="600" alt="" />
+                        <figcaption>@Lang.Role(role)</figcaption>
+                    </figure>
+                }
             </div>
         </div>
         @if (Auth.IsAuthenticated)
@@ -33,22 +48,14 @@
                     <label><input type="radio" name="tempo" checked="@(!_timed)" @onchange="@(() => _timed = false)" /> @Lang.T("Fri tid", "No time limit")</label>
                 </div>
             </fieldset>
-            <button class="sg-button primary" @onclick="CreateAsync" disabled="@_busy"><UiIcon Name="plus" /> @(_busy ? Lang.T("Opretter…", "Creating…") : Lang.T("Opret lobby", "Create lobby"))</button>
         }
-        else
-        {
-            <a class="sg-button primary" href="@Auth.LoginPath()">@Lang.T("Log ind og opret lobby", "Sign in to create a lobby")</a>
-            <a class="sg-plain" href="/games/social">@Lang.T("Deltag med en kode", "Join with a code")</a>
-        }
-        @if (_error is not null)
-        {
-            <p class="sg-error" role="alert">@Lang.Error(_error)</p>
-        }
+        <div class="sg-table-size"><UiIcon Name="people" /> @Lang.T("5–40 spillere", "5–40 players")</div>
     </section>
 </div>
 
 @code {
     [CascadingParameter] public SocialGameLanguage Lang { get; set; } = new();
+    private static readonly string[] BasicRoles = ["wolf", "villager"];
     private bool _timed = true, _busy;
     private string[] _roles = ["seer"];
     private Exception? _error;

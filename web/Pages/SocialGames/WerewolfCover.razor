@@ -1,0 +1,8 @@
+<header class="sg-book-cover">
+    <img src="/images/social-games/werewolf.webp" width="1200" height="800" alt="" fetchpriority="high" />
+    <div class="sg-book-copy">@ChildContent</div>
+</header>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+}

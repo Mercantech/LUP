@@ -5,24 +5,26 @@
 </div>
 @if (Room.IsHost)
 {
-    <fieldset class="sg-fieldset" disabled="@Busy">
-        <legend>@Lang.T("Antal varulve", "Number of werewolves")</legend>
-        <div class="sg-choice-list">
-            <label><input type="checkbox" checked="@(Room.Settings.Wolves is null)" @onchange="ToggleSuggested" /> @Lang.T("Brug LUPs forslag", "Use LUP’s suggestion") (@Room.SuggestedWolves)</label>
-            @if (Room.Settings.Wolves.HasValue)
-            {
-                <label>@Lang.T("Dit antal", "Your number") <input type="number" class="sg-short" value="@Wolves" min="1" max="39" @onchange="SetWolves" /></label>
-            }
-        </div>
-    </fieldset>
     <WerewolfRolePicker Editable="true" Selected="Room.Settings.SpecialRoles" Busy="@Busy" SelectionChanged="ChangeRolesAsync" />
-    <fieldset class="sg-fieldset" disabled="@Busy">
-        <legend>@Lang.T("Tid til nattens valg", "Time for night actions")</legend>
-        <div class="sg-choice-list">
-            <label><input type="radio" name="lobby-tempo" checked="@Room.Settings.Timed" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = true }))" /> @Lang.T("60 sekunder", "60 seconds")</label>
-            <label><input type="radio" name="lobby-tempo" checked="@(!Room.Settings.Timed)" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = false }))" /> @Lang.T("Fri tid", "No time limit")</label>
-        </div>
-    </fieldset>
+    <div class="sg-deck-settings">
+        <fieldset class="sg-fieldset" disabled="@Busy">
+            <legend>@Lang.T("Antal varulve", "Number of werewolves")</legend>
+            <div class="sg-choice-list">
+                <label><input type="checkbox" checked="@(Room.Settings.Wolves is null)" @onchange="ToggleSuggested" /> @Lang.T("Brug LUPs forslag", "Use LUP’s suggestion") (@Room.SuggestedWolves)</label>
+                @if (Room.Settings.Wolves.HasValue)
+                {
+                    <label>@Lang.T("Dit antal", "Your number") <input type="number" class="sg-short" value="@Wolves" min="1" max="39" @onchange="SetWolves" /></label>
+                }
+            </div>
+        </fieldset>
+        <fieldset class="sg-fieldset" disabled="@Busy">
+            <legend>@Lang.T("Tid til nattens valg", "Time for night actions")</legend>
+            <div class="sg-choice-list">
+                <label><input type="radio" name="lobby-tempo" checked="@Room.Settings.Timed" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = true }))" /> @Lang.T("60 sekunder", "60 seconds")</label>
+                <label><input type="radio" name="lobby-tempo" checked="@(!Room.Settings.Timed)" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = false }))" /> @Lang.T("Fri tid", "No time limit")</label>
+            </div>
+        </fieldset>
+    </div>
 }
 else
 {

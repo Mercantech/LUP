@@ -1,18 +1,21 @@
 <fieldset class="sg-fieldset sg-role-picker" disabled="@Busy">
-    <legend>@Lang.T("Specialkort", "Special cards")</legend>
-    @if (Editable)
-    {
-        <p class="sg-role-tally">@Lang.T($"{Selected.Length} af {SocialRoles.Specials.Length} valgt", $"{Selected.Length} of {SocialRoles.Specials.Length} selected")</p>
-    }
+    <legend>
+        <span>@Lang.T("Specialkort", "Special cards")</span>
+        @if (Editable)
+        {
+            <span class="sg-role-tally">@Lang.T($"{Selected.Length} af {SocialRoles.Specials.Length} valgt", $"{Selected.Length} of {SocialRoles.Specials.Length} selected")</span>
+        }
+    </legend>
     <div class="sg-roles">
         @foreach (var role in SocialRoles.Specials)
         {
             if (Editable)
             {
-                <label @key="role" class="sg-role-card sg-role-option" data-selected="@(Selected.Contains(role) ? "true" : "false")">
+                var selected = Selected.Contains(role);
+                <label @key="role" class="sg-role-card sg-role-option" data-selected="@(selected ? "true" : "false")">
                     <input type="checkbox" value="@role" aria-label="@Lang.Role(role)" aria-describedby="@DescriptionId(role)"
-                           @bind:get="Selected.Contains(role)" @bind:set="@((bool enabled) => ToggleAsync(role, enabled))" />
-                    <WerewolfRoleFace Role="@role" DescriptionId="@DescriptionId(role)" />
+                           @bind:get="selected" @bind:set="@((bool enabled) => ToggleAsync(role, enabled))" />
+                    <WerewolfRoleFace Role="@role" DescriptionId="@DescriptionId(role)" Selected="selected" />
                 </label>
             }
             else if (ShowAll || Selected.Contains(role))

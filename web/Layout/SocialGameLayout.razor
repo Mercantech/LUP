@@ -4,7 +4,10 @@
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 
-<HeadContent><link rel="stylesheet" href="/css/lup-social-games.css" /></HeadContent>
+<HeadContent>
+    <link rel="stylesheet" href="/css/lup-social-games.css" />
+    <link rel="stylesheet" href="/css/lup-werewolf-cards.css" />
+</HeadContent>
 
 <div class="social-play" lang="@(_language.IsEnglish ? "en" : "da")">
     <div class="sg-toolbar">
@@ -16,7 +19,13 @@
             }
             else
             {
-                <a href="/games/social">@_language.T("Sociale spil", "Social games")</a><UiIcon Name="chevron" /><span aria-current="page">Werewolf</span>
+                <a href="/games/social">@_language.T("Sociale spil", "Social games")</a><UiIcon Name="chevron" />
+                @if (IsGallery)
+                {
+                    <a href="/games/social/werewolf">Werewolf</a><UiIcon Name="chevron" />
+                    <span aria-current="page">@_language.T("Kortgalleri", "Card gallery")</span>
+                }
+                else { <span aria-current="page">Werewolf</span> }
             }
         </nav>
         <div class="sg-languages" role="group" aria-label="@_language.T("Spilsprog", "Game language")">
@@ -34,7 +43,9 @@
     private SocialGameLanguage _language = new();
     private bool _selected;
 
-    private bool IsHub => Nav.ToAbsoluteUri(Nav.Uri).AbsolutePath.TrimEnd('/').Equals("/games/social", StringComparison.OrdinalIgnoreCase);
+    private string Path => new Uri(Nav.Uri).AbsolutePath.TrimEnd('/');
+    private bool IsHub => Path.Equals("/games/social", StringComparison.OrdinalIgnoreCase);
+    private bool IsGallery => Path.Equals("/games/social/werewolf/cards", StringComparison.OrdinalIgnoreCase);
 
     protected override async Task OnInitializedAsync()
     {
