@@ -273,3 +273,22 @@
         object-position: 65% 35%;
     }
 }
+
+.social-games-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: clamp(.85rem, 3vw, 2rem);
+    margin-block: 1.2rem;
+    border: 1px solid var(--rule);
+    border-radius: 1rem;
+    background: var(--paper);
+    overflow: clip;
+}
+.social-games-link img { width: clamp(5rem, 19vw, 15rem); height: auto; align-self: stretch; object-fit: cover; }
+.social-games-link div { padding: .85rem 1rem .85rem 0; }
+.social-games-link h2, .social-games-link p { margin: 0; }
+.social-games-link p { margin-top: .3rem; color: var(--muted); }
+.social-games-link a { color: var(--ink); }
+.social-games-link a::after { content: ""; position: absolute; inset: 0; }
+.social-games-link:focus-within { outline: 3px solid var(--blue); outline-offset: 3px; }

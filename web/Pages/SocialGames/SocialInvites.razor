@@ -1,0 +1,73 @@
+@inject SocialGamesClient Client
+@implements IDisposable
+
+<section class="sg-panel sg-invites" aria-labelledby="sg-invite-title">
+    <h2 id="sg-invite-title">Invitér fra LUP</h2>
+    <label for="sg-invite-query">Søg efter navn</label>
+    <input id="sg-invite-query" type="search" @bind="_query" @bind:event="oninput" @bind:after="SearchAsync" maxlength="100" autocomplete="off" />
+    @if (_loading) { <p class="sg-hint" role="status">Henter personer…</p> }
+    else if (_candidates.Length == 0 && _error is null)
+    {
+        <p class="sg-hint">@(_query.Length == 0 ? "Søg efter en LUP-bruger på tværs af hold." : "Ingen personer fundet.")</p>
+    }
+    else
+    {
+        <ul class="sg-candidates">
+            @foreach (var candidate in _candidates)
+            {
+                <li @key="candidate.UserSub">
+                    <div><strong>@candidate.Name</strong>@if (candidate.OwnHold) { <small>Dit hold</small> }</div>
+                    <button class="sg-button small" type="button" aria-label="@($"Invitér {candidate.Name}")"
+                        disabled="@(_sent.Contains(candidate.UserSub) || _sending.Contains(candidate.UserSub))" @onclick="@(() => InviteAsync(candidate))">
+                        @(_sent.Contains(candidate.UserSub) ? "Inviteret" : _sending.Contains(candidate.UserSub) ? "Sender…" : "Invitér")
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+    @if (_error is not null) { <p class="sg-error" role="alert">@_error</p> }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+    private bool _loading, _disposed;
+    private int _search;
+    private string _query = "";
+    private string? _error;
+    private SocialInviteCandidate[] _candidates = [];
+    private readonly HashSet<Guid> _sent = [], _sending = [];
+
+    protected override Task OnInitializedAsync() => SearchAsync();
+    private async Task SearchAsync()
+    {
+        var request = ++_search;
+        _loading = true;
+        _error = null;
+        try
+        {
+            if (_query.Length > 0) await Task.Delay(240);
+            if (_disposed || request != _search) return;
+            var found = await Client.CandidatesAsync(Code, _query.Trim());
+            if (!_disposed && request == _search) _candidates = found;
+        }
+        catch (Exception ex) when (SocialText.IsRequestError(ex))
+        {
+            if (!_disposed && request == _search) { _error = SocialText.Error(ex); _candidates = []; }
+        }
+        finally { if (!_disposed && request == _search) _loading = false; }
+    }
+
+    private async Task InviteAsync(SocialInviteCandidate candidate)
+    {
+        if (!_sending.Add(candidate.UserSub)) return;
+        _error = null;
+        try
+        {
+            await Client.InviteAsync(Code, candidate.UserSub);
+            _sent.Add(candidate.UserSub);
+        }
+        catch (Exception ex) when (SocialText.IsRequestError(ex)) { _error = SocialText.Error(ex); }
+        finally { _sending.Remove(candidate.UserSub); }
+    }
+    public void Dispose() => _disposed = true;
+}

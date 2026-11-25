@@ -16,6 +16,7 @@ public static class ActionCenterPresentation
     {
         if (item.Kind == "mention" && SafeMentionHref(item.Href))
             return item.Href + (item.Href!.Contains('?') ? "&" : "?") + $"noticeKind=mention&notice={item.ResourceId:D}";
+        if (item.Kind == "social-game-invite" && IsLobbyCode(item.State)) return $"/games/social/{item.State}";
         if (item.Kind == "gift") return $"/gifts/{item.ResourceId:D}";
         if (item.Kind is "notebook-comment" or "notebook-share" && item.TargetId is Guid document)
         {
@@ -36,6 +37,7 @@ public static class ActionCenterPresentation
     public static string KindLabel(ActionCenterItem item) => item.Kind switch
     {
         "poll" => "Afstemning",
+        "social-game-invite" => "Invitation til Werewolf",
         "gift" => "Uåbnet gave",
         "feedback" => "Feedback på din aflevering",
         "notebook-comment" => "Kommentar i notesbogen",
@@ -46,7 +48,8 @@ public static class ActionCenterPresentation
         "review" => item.Count == 1 ? "1 aflevering til vurdering" : $"{item.Count} afleveringer til vurdering",
         _ => item.State == "changes-requested" ? "Ret din aflevering" : item.State == "overdue" ? "Afleveringsfristen er overskredet" : "Du mangler at aflevere"
     };
-    public static string Icon(ActionCenterItem item) => item.Kind switch { "poll" => "chart", "review" => "check", "gift" => "gift", "feedback" or "notebook-comment" or "mention" => "message", "notebook-share" => "book", "calendar-change" => "calendar", _ => "target" };
+    public static string Icon(ActionCenterItem item) => item.Kind switch { "social-game-invite" => "people", "poll" => "chart", "review" => "check", "gift" => "gift", "feedback" or "notebook-comment" or "mention" => "message", "notebook-share" => "book", "calendar-change" => "calendar", _ => "target" };
+    public static bool IsLobbyCode(string? code) => code is { Length: 6 } && code.All(char.IsAsciiDigit);
     public static bool SafeMentionHref(string? href) => href is not null && !href.Any(char.IsControl) && !href.Contains('\\') &&
         (href.StartsWith("/notes/", StringComparison.Ordinal) || href.StartsWith("/notion/", StringComparison.Ordinal) || href.StartsWith("/notebook/", StringComparison.Ordinal));
     public static string DateLabel(DateTimeOffset deadline) => TimeZoneInfo.ConvertTime(deadline, Copenhagen).ToString("d. MMM yyyy 'kl.' HH:mm", Danish);

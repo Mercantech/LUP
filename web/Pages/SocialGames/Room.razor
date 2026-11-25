@@ -1,0 +1,137 @@
+@page "/games/social/{Code}"
+@inject AuthService Auth
+@inject NavigationManager Nav
+@inject SocialGamesClient Client
+@inject IJSRuntime JS
+@implements IDisposable
+
+<PageTitle>Werewolf @(RoomState?.Code ?? Code) · LUP</PageTitle>
+<SocialFrame>
+    @if (RoomState is null)
+    {
+        <div class="sg-setup">
+            <div class="sg-cover"><img src="/images/social-games/werewolf.webp" alt="" width="1200" height="800" /></div>
+            <section class="sg-setup-copy">
+                <h1>Deltag i Werewolf</h1>
+                @if (_loading)
+                {
+                    <p role="status">Åbner lobbyen…</p>
+                }
+                else if (_canJoin)
+                {
+                    <p>Lobby <strong class="sg-code">@Code</strong></p>
+                    <form class="sg-stack" @onsubmit="JoinAsync" @onsubmit:preventDefault>
+                        @if (!Auth.IsAuthenticated)
+                        {
+                            <label for="sg-nickname">Dit kaldenavn</label>
+                            <input id="sg-nickname" @bind="_nickname" @bind:event="oninput" autocomplete="nickname" maxlength="30" required />
+                        }
+                        <button type="submit" class="sg-button primary" disabled="@(_busy || (!Auth.IsAuthenticated && string.IsNullOrWhiteSpace(_nickname)))">
+                            @(Auth.IsAuthenticated ? "Deltag med min LUP-profil" : "Deltag som gæst")
+                        </button>
+                        @if (!Auth.IsAuthenticated)
+                        {
+                            <a class="sg-plain" href="@Auth.LoginPath()">Deltag med LUP-login</a>
+                        }
+                    </form>
+                }
+                @if (_error is not null) { <p class="sg-error" role="alert">@_error</p> }
+                @if (!_loading && !_canJoin)
+                {
+                    <div class="sg-inline">
+                        @if (_canRetry) { <button class="sg-button" @onclick="LoadRoomAsync">Prøv igen</button> }
+                        <a class="sg-plain" href="/games/social">Indtast en anden kode</a>
+                    </div>
+                }
+            </section>
+        </div>
+    }
+    else
+    {
+        var room = RoomState;
+        <header class="sg-room-heading">
+            <div>
+                <h1>Werewolf</h1>
+                <p>@(room.Game is null ? "Lobby" : "Spil") <strong class="sg-code">@room.Code</strong></p>
+            </div>
+            @if (room.Game is null)
+            {
+                <button type="button" class="sg-button" @onclick="CopyAsync">@(_copied ? "Link kopieret" : "Kopiér invitationslink")</button>
+            }
+        </header>
+        @if (_manualLink) {
+            <label for="sg-share-url">Kopiér dette link</label>
+            <input id="sg-share-url" type="url" readonly value="@InviteUrl" />
+        }
+        @if (_connectionLost) { <p class="sg-error" role="status">Forbindelsen er afbrudt. Forsøger at hente spillet igen…</p> }
+        @if (_error is not null) { <p class="sg-error" role="alert">@_error</p> }
+        <div class="sg-room-grid">
+            <div class="sg-stack sg-main">
+                @if (room.Game is { } game)
+                {
+                    <WerewolfRound Room="room" Busy="@_busy" Submit="ActAsync" />
+                }
+                else
+                {
+                    <section class="sg-panel" aria-labelledby="sg-deck-title">
+                        <h2 id="sg-deck-title">Kortfordeling</h2>
+                        <WerewolfDeck Room="room" Busy="@_busy" Change="ChangeSettingsAsync" />
+                        @if (room.IsHost)
+                        {
+                            @if (room.StartProblem is { } reason) { <p id="sg-start-hint" class="sg-hint">@reason</p> }
+                            <button class="sg-button primary" disabled="@(_busy || room.StartProblem is not null)" aria-describedby="@(room.StartProblem is null ? null : "sg-start-hint")" @onclick="StartAsync">
+                                Start spillet <UiIcon Name="arrow" />
+                            </button>
+                        }
+                        else { <p class="sg-hint" role="status">Værten starter spillet, når landsbyen er klar.</p> }
+                    </section>
+                }
+                @if (room.CanChat || room.Chat.Length > 0)
+                {
+                    <section class="sg-panel" aria-labelledby="sg-chat-title">
+                        <h2 id="sg-chat-title"><UiIcon Name="message" /> Fælles chat</h2>
+                        @if (room.CanChat)
+                        {
+                            <form class="sg-chat-compose" @onsubmit="SendChatAsync" @onsubmit:preventDefault>
+                                <label for="sg-chat-text">Din besked</label>
+                                <div class="sg-inline">
+                                    <input id="sg-chat-text" autocomplete="off" @bind="_chat" @bind:event="oninput" maxlength="500" />
+                                    <button type="submit" class="sg-button" disabled="@(_busy || string.IsNullOrWhiteSpace(_chat))">Send</button>
+                                </div>
+                            </form>
+                        }
+                        else { <p class="sg-hint">Du kan læse de fælles beskeder her.</p> }
+                        @if (room.Chat.Length == 0) { <p class="sg-hint">Ingen beskeder endnu.</p> }
+                        else
+                        {
+                            <ol class="sg-messages" aria-label="Beskeder, nyeste først">
+                                @foreach (var line in room.Chat.Reverse())
+                                {
+                                    <li @key="line.Id"><div><strong>@line.Sender</strong> <time datetime="@line.SentAt.ToString("O")">@line.SentAt.ToLocalTime().ToString("HH:mm")</time></div><p>@line.Text</p></li>
+                                }
+                            </ol>
+                        }
+                    </section>
+                }
+            </div>
+            <aside class="sg-stack sg-side">
+                <section class="sg-panel">
+                    <h2><UiIcon Name="people" /> Deltagere <span class="sg-count">@room.Players.Length</span></h2>
+                    <ul class="sg-roster">
+                        @foreach (var player in room.Players)
+                        {
+                            <li @key="player.Id" class="@(room.Game is { } g && !g.Alive.Contains(player.Id) ? "sg-eliminated" : null)">
+                                <span>@player.Name @if (player.Id == room.Me) { <strong>(dig)</strong> }</span>
+                                <small>@PlayerStatus(room, player)</small>
+                            </li>
+                        }
+                    </ul>
+                </section>
+                @if (room.IsHost && room.Game is null)
+                {
+                    <SocialInvites @key="room.Code" Code="@room.Code" />
+                }
+            </aside>
+        </div>
+    }
+</SocialFrame>

@@ -88,7 +88,7 @@ public sealed class ActionCenterService : IAsyncDisposable
         IsLoading = true; Error = null; Changed?.Invoke();
         try
         {
-            var path = _viewAs.IsActive ? $"me/actions?version=2&asUser={_viewAs.AuthSub!.Value:D}" : "me/actions?version=2";
+            var path = _viewAs.IsActive ? $"me/actions?version=2&asUser={_viewAs.AuthSub!.Value:D}" : "me/actions?version=2&socialGames=true";
             var result = await _http.GetFromJsonAsync<ActionCenterSnapshot>(path, ct);
             ct.ThrowIfCancellationRequested();
             if (result?.Items is null || result.Items.Any(i => !ValidItem(i)))
@@ -116,7 +116,7 @@ public sealed class ActionCenterService : IAsyncDisposable
     public async Task<bool> MarkReadAsync(IEnumerable<ActionCenterReadItem> requested)
     {
         if (_disposed || !_auth.IsInitialized || !_auth.IsAuthenticated || _viewAs.IsActive) return false;
-        var items = requested.Where(i => i.ResourceId != Guid.Empty && i.Kind is "feedback" or "notebook-comment" or "notebook-share" or "mention" or "calendar-change").Distinct().ToArray();
+        var items = requested.Where(i => i.ResourceId != Guid.Empty && i.Kind is "feedback" or "notebook-comment" or "notebook-share" or "mention" or "calendar-change" or "social-game-invite").Distinct().ToArray();
         if (items.Length == 0) return true;
         var identity = Identity;
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_life.Token);
@@ -138,6 +138,7 @@ public sealed class ActionCenterService : IAsyncDisposable
     private static bool ValidItem(ActionCenterItem? item)
     {
         if (item is null || item.Severity is not ("important" or "optional") || item.Count < 1 || item.ResourceId == Guid.Empty) return false;
+        if (item.Kind == "social-game-invite") return item.Severity == "optional" && ActionCenterPresentation.IsLobbyCode(item.State);
         if (item.Kind == "mention") return item.Severity == "optional" && item.TargetId is Guid targetId && targetId != Guid.Empty && ActionCenterPresentation.SafeMentionHref(item.Href);
         if (item.Kind is "gift" or "notebook-comment" or "notebook-share")
         {

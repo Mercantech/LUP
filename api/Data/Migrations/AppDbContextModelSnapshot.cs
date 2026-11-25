@@ -3305,6 +3305,79 @@ namespace Mercantec.Tech.Api.Data.Migrations
                     b.ToTable("reference_mention_events", (string)null);
                 });
 
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.SocialGameInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ReadAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecipientSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SenderName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientSub", "ReadAtUtc");
+
+                    b.HasIndex("RoomId", "RecipientSub")
+                        .IsUnique();
+
+                    b.ToTable("SocialGameInvitations");
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.SocialGameRoom", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("HostSub")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsStarted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("NextDeadlineUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StateJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("ExpiresAtUtc");
+
+                    b.HasIndex("NextDeadlineUtc");
+
+                    b.ToTable("social_game_rooms", (string)null);
+                });
+
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.StudentDirectoryDetails", b =>
                 {
                     b.Property<string>("Key")
@@ -4498,6 +4571,17 @@ namespace Mercantec.Tech.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Quest");
+                });
+
+            modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.SocialGameInvitation", b =>
+                {
+                    b.HasOne("Mercantec.Tech.Api.Data.Entities.SocialGameRoom", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("Mercantec.Tech.Api.Data.Entities.SubmissionDraftFile", b =>

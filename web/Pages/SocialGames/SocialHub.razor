@@ -1,0 +1,37 @@
+@page "/games/social"
+@inject NavigationManager Nav
+
+<PageTitle>Sociale spil · LUP</PageTitle>
+<SocialFrame IsHub="true">
+    <h1>Sociale spil</h1>
+    <article class="sg-feature">
+        <img src="/images/social-games/werewolf.webp" alt="En ulv ser ud over en landsby i måneskin." width="1200" height="800" fetchpriority="high" />
+        <div class="sg-feature-copy">
+            <h2>Werewolf</h2>
+            <p>Ulvene gemmer sig blandt jer. Hvem stoler landsbyen på, når solen står op?</p>
+            <a class="sg-button primary" href="/games/social/werewolf">Spil Werewolf <UiIcon Name="arrow" /></a>
+        </div>
+    </article>
+    <section class="sg-code-entry" aria-labelledby="sg-have-code">
+        <div>
+            <h2 id="sg-have-code">Har du en lobbykode?</h2>
+            <p>Deltag med dit LUP-login eller som gæst.</p>
+        </div>
+        <form @onsubmit="OpenRoom" @onsubmit:preventDefault>
+            <label for="sg-room-code">Lobbykode</label>
+            <div class="sg-inline">
+                <input id="sg-room-code" class="sg-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6 cifre" autocomplete="off" spellcheck="false" @bind="_code" @bind:event="oninput" required />
+                <button class="sg-button" type="submit" disabled="@(!HasCode)">Deltag</button>
+            </div>
+        </form>
+    </section>
+</SocialFrame>
+
+@code {
+    private string _code = "";
+    private bool HasCode => _code.Length == 6 && _code.All(char.IsAsciiDigit);
+    private void OpenRoom()
+    {
+        if (HasCode) Nav.NavigateTo($"/games/social/{_code}");
+    }
+}

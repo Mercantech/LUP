@@ -12,7 +12,7 @@ namespace Mercantec.Tech.Api.Controllers;
 public sealed class ActionCenterController(AppDbContext db, CourseAccess access) : ControllerBase
 {
     [HttpGet, ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public async Task<IActionResult> Get([FromQuery] Guid? asUser, CancellationToken ct, [FromQuery] int version = 1)
+    public async Task<IActionResult> Get([FromQuery] Guid? asUser, CancellationToken ct, [FromQuery] int version = 1, [FromQuery] bool socialGames = false)
     {
         if (UserClaims.GetSub(User) is not Guid subject || subject == Guid.Empty) return Unauthorized();
         var teacher = UserClaims.IsTeacher(User);
@@ -28,7 +28,19 @@ public sealed class ActionCenterController(AppDbContext db, CourseAccess access)
         if (preview && scope.Length == 0) return NotFound();
         var snapshot = await new ActionCenterBuilder(db).BuildAsync(target, scope, teacher && !preview, ct, version: version, includeGifts: !preview, includeNews: !preview);
         if (version == 2 && !preview)
+        {
             snapshot = snapshot with { Items = [.. snapshot.Items, .. await new Mercantec.Tech.Api.References.ReferenceService(db).MentionsAsync(User, ct)] };
+            // Older web clients validate each notification kind before displaying the snapshot.
+            if (socialGames)
+            {
+                var invitations = await db.SocialGameInvitations.AsNoTracking()
+                    .Where(i => i.RecipientSub == subject && i.ReadAtUtc == null && !i.Room.IsStarted && i.Room.ExpiresAtUtc > DateTime.UtcNow)
+                    .Select(i => new { i.Id, i.SenderName, i.Room.Code }).ToListAsync(ct);
+                var gameItems = invitations.Select(i => new ActionCenterItem("social-game-invite", "optional", null, null,
+                    null, i.Id, null, i.SenderName + " inviterer dig til Werewolf", "", null, State: i.Code));
+                snapshot = snapshot with { Items = [.. snapshot.Items, .. gameItems] };
+            }
+        }
         return Ok(snapshot);
     }
     [HttpPost("read"), ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -39,6 +51,13 @@ public sealed class ActionCenterController(AppDbContext db, CourseAccess access)
         var teacher = UserClaims.IsTeacher(User);
         var holds = teacher ? access.AccessibleHolds(User, true) : db.Hold.Where(h => h.Memberships.Any(m => m.UserSub == subject));
         var scope = await holds.AsNoTracking().Select(h => new ActionCenterHold(h.Id, h.ForloebId, h.Name)).ToArrayAsync(ct);
+        var inviteIds = request.Items.Where(item => item.Kind == "social-game-invite").Select(item => item.ResourceId).ToArray();
+        if (inviteIds.Length > 0)
+        {
+            var invitations = await db.SocialGameInvitations.Where(i => i.RecipientSub == subject && inviteIds.Contains(i.Id) && i.ReadAtUtc == null).ToListAsync(ct);
+            foreach (var invitation in invitations) invitation.ReadAtUtc = DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
+        }
         await new ActionCenterNews(db).AcknowledgeAsync(subject, request.Items, scope, teacher, ct);
         await new Mercantec.Tech.Api.References.ReferenceService(db).AcknowledgeMentionsAsync(User, request.Items, ct);
         return NoContent();

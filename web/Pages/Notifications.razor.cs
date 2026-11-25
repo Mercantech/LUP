@@ -20,10 +20,10 @@ public partial class Notifications : IDisposable
     private static string OpenLabel(ActionCenterItem item) => item.Kind switch
     {
         "poll" => "Svar", "review" => "Giv feedback", "gift" => "Åbn gave", "feedback" => "Læs feedback",
-        "notebook-comment" or "notebook-share" or "mention" => "Åbn notesbog", "calendar-change" => "Åbn kalender",
+        "notebook-comment" or "notebook-share" or "mention" => "Åbn notesbog", "calendar-change" => "Åbn kalender", "social-game-invite" => "Åbn lobby",
         _ => "Åbn opgave"
     };
-    private Task Open(ActionCenterItem item) => item.Kind == "calendar-change" ? Actions.MarkReadAsync(item.Kind, item.ResourceId) : Task.CompletedTask;
+    private Task Open(ActionCenterItem item) => item.Kind is "calendar-change" or "social-game-invite" ? Actions.MarkReadAsync(item.Kind, item.ResourceId) : Task.CompletedTask;
     protected override void OnInitialized() { Actions.Changed += StatusChanged; }
     protected override Task OnAfterRenderAsync(bool firstRender) => firstRender ? Actions.EnsureAsync() : Task.CompletedTask;
     private Task Refresh() => Actions.RefreshAsync(force: true);

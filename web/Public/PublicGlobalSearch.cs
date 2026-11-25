@@ -63,6 +63,7 @@ public static class PublicGlobalSearch
     private static IEnumerable<GlobalSearchHit> GameHits()
     {
         yield return new(Category.Games, "Spiloversigt", "Spil", GamesCatalog.Path, "LUP", "Arena, daglige spil og klassiske spil.");
+        yield return new(Category.Games, "Spil", "Sociale spil og Werewolf", "/games/social", "LUP", "Opret en lobby til Werewolf eller deltag med en kode.");
         yield return new(Category.Games, "Spil", "LUP Arena", "/games/arena", "LUP", "Træn mod computeren eller spil online med venner.");
         yield return new(Category.Games, "Vejledning", "Arduino Oplà-guide", GamesCatalog.GuidePath, "Spil");
         foreach (var game in DailyGameProgressCatalog.Games)

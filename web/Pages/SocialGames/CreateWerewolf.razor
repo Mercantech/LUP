@@ -1,0 +1,53 @@
+@page "/games/social/werewolf"
+@inject AuthService Auth
+@inject NavigationManager Nav
+@inject SocialGamesClient Client
+
+<PageTitle>Opret Werewolf-lobby · LUP</PageTitle>
+<SocialFrame>
+    <div class="sg-setup">
+        <div class="sg-cover"><img src="/images/social-games/werewolf.webp" alt="" width="1200" height="800" /></div>
+        <section class="sg-setup-copy">
+            <h1>Werewolf</h1>
+            <p>Opret en lobby, invitér landsbyen, og vælg jeres rollekort. LUP er spilleder, så du kan spille med.</p>
+            @if (Auth.IsAuthenticated)
+            {
+                <fieldset class="sg-fieldset" disabled="@_busy">
+                    <legend>Tid til nattens valg</legend>
+                    <div class="sg-choice-list">
+                        <label><input type="radio" name="tempo" checked="@_timed" @onchange="@(() => _timed = true)" /> 60 sekunder pr. valg</label>
+                        <label><input type="radio" name="tempo" checked="@(!_timed)" @onchange="@(() => _timed = false)" /> Fri tid</label>
+                    </div>
+                </fieldset>
+                <button class="sg-button primary" @onclick="CreateAsync" disabled="@_busy"><UiIcon Name="plus" /> @(_busy ? "Opretter…" : "Opret lobby")</button>
+            }
+            else
+            {
+                <a class="sg-button primary" href="@Auth.LoginPath()">Log ind og opret lobby</a>
+                <a class="sg-plain" href="/games/social">Deltag med en kode</a>
+            }
+            @if (_error is not null)
+            {
+                <p class="sg-error" role="alert">@_error</p>
+            }
+        </section>
+    </div>
+</SocialFrame>
+
+@code {
+    private bool _timed = true, _busy;
+    private string? _error;
+    private async Task CreateAsync()
+    {
+        if (_busy) return;
+        _busy = true;
+        _error = null;
+        try
+        {
+            var room = await Client.CreateAsync(new(["seer"], null, _timed));
+            Nav.NavigateTo($"/games/social/{Uri.EscapeDataString(room.Code)}");
+        }
+        catch (Exception ex) when (SocialText.IsRequestError(ex)) { _error = SocialText.Error(ex); }
+        finally { _busy = false; }
+    }
+}

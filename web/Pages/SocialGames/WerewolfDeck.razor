@@ -1,0 +1,70 @@
+<div class="sg-deck-counts" aria-label="Kort i bunken">
+    <div><strong>@Wolves</strong><span>Varulve</span></div>
+    <div><strong>@Room.Settings.SpecialRoles.Length</strong><span>Specialkort</span></div>
+    <div><strong>@Villagers</strong><span>Landsbyboere</span></div>
+</div>
+@if (Room.IsHost)
+{
+    <fieldset class="sg-fieldset" disabled="@Busy">
+        <legend>Antal varulve</legend>
+        <div class="sg-choice-list">
+            <label><input type="checkbox" checked="@(Room.Settings.Wolves is null)" @onchange="ToggleSuggested" /> Brug LUPs forslag (@Room.SuggestedWolves)</label>
+            @if (Room.Settings.Wolves.HasValue)
+            {
+                <label>Dit antal <input type="number" class="sg-short" value="@Wolves" min="1" max="39" @onchange="SetWolves" /></label>
+            }
+        </div>
+    </fieldset>
+    <fieldset class="sg-fieldset" disabled="@Busy">
+        <legend>Specialkort</legend>
+        <div class="sg-roles">
+            @foreach (var key in SocialRoles.Specials)
+            {
+                <label class="sg-role-option">
+                    <input type="checkbox" checked="@Room.Settings.SpecialRoles.Contains(key)" @onchange="@(e => ToggleRole(key, e))" />
+                    <span><strong>@SocialRoles.Names[key]</strong><small>@SocialText.RoleRule(key)</small></span>
+                </label>
+            }
+        </div>
+    </fieldset>
+    <fieldset class="sg-fieldset" disabled="@Busy">
+        <legend>Tid til nattens valg</legend>
+        <div class="sg-choice-list">
+            <label><input type="radio" name="lobby-tempo" checked="@Room.Settings.Timed" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = true }))" /> 60 sekunder</label>
+            <label><input type="radio" name="lobby-tempo" checked="@(!Room.Settings.Timed)" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = false }))" /> Fri tid</label>
+        </div>
+    </fieldset>
+}
+else
+{
+    <dl class="sg-settings-summary">
+        <dt>Specialkort</dt><dd>@(Room.Settings.SpecialRoles.Length == 0 ? "Ingen" : string.Join(", ", Room.Settings.SpecialRoles.Select(key => SocialRoles.Names[key])))</dd>
+        <dt>Nattens valg</dt><dd>@(Room.Settings.Timed ? "60 sekunder" : "Fri tid")</dd>
+    </dl>
+}
+@if (Room.Settings.SpecialRoles.Contains("thief"))
+{
+    <p class="sg-hint">Med tyven blandes to ekstra landsbyboerkort i bunken. To tilfældige kort bliver liggende til tyvens valg.</p>
+}
+
+@code {
+    [Parameter, EditorRequired] public SocialRoomView Room { get; set; } = default!;
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback<SocialGameSettings> Change { get; set; }
+
+    private int Wolves => Room.Settings.Wolves ?? Room.SuggestedWolves;
+    private int Villagers => Math.Max(0, Room.Players.Length - Wolves - Room.Settings.SpecialRoles.Length)
+        + (Room.Settings.SpecialRoles.Contains("thief") ? 2 : 0);
+
+    private Task ToggleSuggested(ChangeEventArgs change) =>
+        Change.InvokeAsync(Room.Settings with { Wolves = change.Value is true ? null : Room.SuggestedWolves });
+    private Task SetWolves(ChangeEventArgs change) => int.TryParse(change.Value?.ToString(), out var value) && value > 0
+        ? Change.InvokeAsync(Room.Settings with { Wolves = value }) : Task.CompletedTask;
+
+    private Task ToggleRole(string key, ChangeEventArgs change)
+    {
+        var selected = Room.Settings.SpecialRoles.ToHashSet();
+        if (change.Value is true) selected.Add(key); else selected.Remove(key);
+        return Change.InvokeAsync(Room.Settings with { SpecialRoles = SocialRoles.Specials.Where(selected.Contains).ToArray() });
+    }
+}

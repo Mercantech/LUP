@@ -5,6 +5,7 @@ using Mercantec.Tech.Api.Integrations.Lectio;
 using Mercantec.Tech.Api.Integrations.OpenAI;
 using Mercantec.Tech.Api.Ai.EditorRuns;
 using Mercantec.Tech.Api.KnowledgeChecks;
+using Mercantec.Tech.Api.SocialGames;
 using Mercantec.Tech.Api.Services;
 using Mercantec.Tech.Api.Storage;
 using Mercantec.Tech.Api.Storage.CharacterOriginals;
@@ -43,6 +44,7 @@ if (builder.Configuration.GetValue<bool>("PreviewConverter:Only"))
 
 builder.Services.AddControllers();
 builder.Services.AddLiveQuiz();
+builder.Services.AddSocialGames();
 builder.Services.AddWordle();
 builder.Services.AddSingleton<Mercantec.Tech.Api.Updates.PlatformUpdatesFeed>();
 builder.Services.Configure<Mercantec.Tech.Api.Updates.Automation.PlatformUpdatesAutomationOptions>(

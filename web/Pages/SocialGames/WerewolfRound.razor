@@ -1,0 +1,54 @@
+<section class="sg-phase @(Game.Phase == "night" ? "sg-night" : null)" aria-label="Spillets fase">
+    <div class="sg-phase-name">
+        <h2>@SocialText.Phase(Game.Phase)</h2>
+        @if (Game.Round > 0 && !Game.Finished) { <span>Runde @Game.Round</span> }
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Game.PublicMessage)) { <p aria-live="polite">@Game.PublicMessage</p> }
+    @if (Game.Finished && !string.IsNullOrEmpty(Game.Result) && Game.Result != Game.PublicMessage) { <p class="sg-outcome">@Game.Result</p> }
+</section>
+
+<section class="sg-panel sg-private">
+    <div class="sg-section-heading">
+        <h2><UiIcon Name="lock" /> Mit rollekort</h2>
+        <button type="button" class="sg-button" @onclick="TogglePrivate" aria-expanded="@_privateOpen" aria-controls="sg-private-info">
+            @(_privateOpen ? "Skjul kort" : "Vis mit kort")
+        </button>
+    </div>
+    @if (_privateOpen)
+    {
+        <div id="sg-private-info" class="sg-secret">
+            <h3>@SocialRoles.Names.GetValueOrDefault(Game.Role, Game.Role)</h3>
+            <p>@SocialText.RoleRule(Game.Role)</p>
+            @if (Game.PrivateMessages.Length > 0)
+            {
+                <ul>@foreach (var message in Game.PrivateMessages) { <li>@message</li> }</ul>
+            }
+            @if (Game.Phase == "night")
+            {
+                <WerewolfChoices Game="Game" Busy="Busy" Submit="Submit" />
+                @if (Game.Actions.Length == 0 && !Game.Finished) { <p>Vent på, at natten går videre.</p> }
+            }
+        </div>
+    }
+    else if (Game.Phase == "night")
+    {
+        <p class="sg-hint">Åbn dit kort for at se dine hemmelige beskeder og valg.</p>
+    }
+</section>
+@if (Game.Phase != "night" && Game.Actions.Length > 0)
+{
+    <section class="sg-panel"><WerewolfChoices Game="Game" Busy="Busy" Submit="Submit" /></section>
+}
+@if (Game.Finished)
+{
+    <a class="sg-button" href="/games/social">Til spilhubben</a>
+}
+
+@code {
+    [Parameter, EditorRequired] public SocialRoomView Room { get; set; } = default!;
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback<SocialGameActionRequest> Submit { get; set; }
+    private WerewolfView Game => Room.Game!;
+    private bool _privateOpen;
+    private void TogglePrivate() => _privateOpen = !_privateOpen;
+}

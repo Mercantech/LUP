@@ -10,7 +10,7 @@ public static class PublicPageAccess
         var path = relativePath.Split('?', '#')[0].Trim('/');
         if (path is "" or "login" or "auth/callback" or "privacy" or "help" or "sources" or "extension"
             or "arena" or "games" or "games/arena" or "games/wordle" or "games/avatar-demo" or "games/mine" or "games/upload"
-            or "games/dagens-ord" or "games/taljagt" or "games/fremskridt"
+            or "games/social" or "games/social/werewolf" or "games/dagens-ord" or "games/taljagt" or "games/fremskridt"
             or "spil" or "library" or "search" or "explore/modules" or "subjects" or "badges" or "explore/projects" or "courses/template" or "lup" or "characters")
             return true;
 
@@ -20,6 +20,7 @@ public static class PublicPageAccess
         return parts switch
         {
             ["courses", "template", _] => true,
+            ["games", "social", var code] when code.Length == 6 && code.All(char.IsAsciiDigit) => true,
             ["subjects", _] or ["subjects", _, _] => true,
             ["badges", _] => true,
             ["explore", "projects", _] => true,

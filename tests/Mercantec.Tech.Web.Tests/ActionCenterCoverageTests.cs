@@ -23,7 +23,7 @@ public sealed class ActionCenterCoverageTests
         await using var context = await LearningUiTestContext.CreateAsync(api);
         var service = context.Services.GetRequiredService<ActionCenterService>();
         await service.EnsureAsync();
-        Assert.Equal("me/actions?version=2", api.LastGet);
+        Assert.Equal("me/actions?version=2&socialGames=true", api.LastGet);
         Assert.Equal(ActionCenterStatus.Optional, service.Status);
         Assert.Equal($"/gifts/{gift.ResourceId}", ActionCenterPresentation.Href(Assert.Single(service.Items)));
         Assert.Equal("Uåbnet gave", ActionCenterPresentation.KindLabel(gift));
