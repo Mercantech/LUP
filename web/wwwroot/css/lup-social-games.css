@@ -83,13 +83,56 @@
 .social-play .sg-room-grid { display: grid; grid-template-columns: minmax(0,1.6fr) minmax(0,.85fr); gap: 1rem; align-items: start; }
 .social-play .sg-panel, .social-play .sg-phase { min-width: 0; display: grid; gap: .9rem; padding: clamp(1rem,2.4vw,1.45rem); border: 1px solid var(--sg-rule); border-radius: 1rem; background: var(--sg-paper); }
 .social-play .sg-panel > h2, .social-play .sg-section-heading h2 { display: flex; align-items: center; gap: .5rem; }
-.social-play .sg-roles { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .35rem .95rem; }
-.social-play .sg-role-option { display: flex; align-items: start; gap: .5rem; padding: .4rem 0; cursor: pointer; }
-.social-play .sg-role-option input { margin-top: .2rem; }
-.social-play .sg-role-option small, .social-play .sg-candidates small { display: block; line-height: 1.35; color: var(--sg-muted); font-weight: 400; }
-.social-play .sg-deck-counts { display: flex; border-block: 1px solid var(--sg-rule); padding: .85rem 0; }
-.social-play .sg-deck-counts div { display: grid; gap: .12rem; flex: 1; }
-.social-play .sg-deck-counts strong { font-size: 1.6rem; line-height: 1.1; }
+.social-play .sg-creation-header { position: relative; isolation: isolate; overflow: clip; margin-bottom: 1.5rem; border-radius: 1rem; background: var(--sg-forest); color: var(--sg-moon); }
+.social-play .sg-creation-header img { position: absolute; z-index: -2; inset: 0 0 0 auto; width: 68%; height: 100%; object-fit: cover; object-position: center 34%; }
+.social-play .sg-creation-header::before { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg,var(--sg-forest) 12%,color-mix(in srgb,var(--sg-forest) 87%,transparent) 39%,transparent 77%); }
+.social-play .sg-creation-header > div { display: grid; align-content: center; gap: .45rem; min-height: clamp(8rem,13vw,11rem); padding: 1.25rem clamp(1.15rem,3vw,2.25rem); }
+.social-play .sg-creation-header h1 { color: var(--sg-moon); }
+.social-play .sg-creation-header p { max-width: 32ch; color: var(--sg-moon); }
+.social-play .sg-create-grid { display: grid; align-items: start; grid-template-columns: minmax(0,2.1fr) minmax(15.5rem,.9fr); gap: clamp(1rem,3vw,2rem); }
+.social-play .sg-create-cards, .social-play .sg-role-picker { min-width: 0; }
+.social-play .sg-role-picker { container-type: inline-size; }
+.social-play .sg-create-cards legend { font-size: 1.35rem; }
+.social-play .sg-role-tally { margin-top: -.3rem; margin-bottom: .65rem; color: var(--sg-muted); font-size: .9rem; }
+.social-play .sg-roles { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .7rem; }
+.social-play .sg-role-card { position: relative; min-width: 0; display: grid; grid-template-rows: auto 1fr; border: 1px solid var(--sg-rule); border-radius: .7rem; background: var(--sg-paper); color: var(--sg-ink); }
+.social-play .sg-role-portrait { display: block; margin: .22rem .22rem 0; background: var(--sg-forest); overflow: clip; border-radius: .45rem; }
+.social-play .sg-role-image { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
+.social-play .sg-role-caption { display: grid; align-content: start; gap: .22rem; padding: .55rem .65rem .7rem; overflow-wrap: anywhere; }
+.social-play .sg-role-caption strong { font-size: 1.05rem; line-height: 1.2; }
+.social-play .sg-role-caption small, .social-play .sg-candidates small { display: block; line-height: 1.35; color: var(--sg-muted); font-weight: 400; }
+.social-play .sg-role-option { cursor: pointer; }
+.social-play .sg-role-option > input[type=checkbox] { position: absolute; z-index: 1; top: .55rem; right: .55rem; width: 1.25rem; height: 1.25rem; margin: 0; box-shadow: 0 0 0 3px var(--sg-paper); border-radius: .15rem; }
+.social-play .sg-role-option[data-selected=true] { border-color: var(--sg-accent); box-shadow: 0 0 0 2px var(--sg-accent); background: var(--sg-tint); }
+.social-play .sg-role-option:hover { border-color: var(--sg-accent); }
+.social-play .sg-role-option:has(input:focus-visible) { outline: 3px solid var(--sg-accent); outline-offset: 4px; }
+.social-play .sg-role-option:has(input:disabled) { cursor: wait; }
+.social-play .sg-base-roles { display: grid; gap: .65rem; }
+.social-play .sg-base-roles > div { display: flex; flex-wrap: wrap; gap: .6rem 1rem; }
+.social-play .sg-base-roles span, .social-play .sg-deck-counts > div { display: flex; align-items: center; gap: .45rem; min-width: 0; }
+.social-play .sg-base-roles span { font-size: .9rem; font-weight: 650; }
+.social-play .sg-base-roles img, .social-play .sg-deck-counts img { width: 2.25rem; height: auto; aspect-ratio: 4 / 5; flex: none; border-radius: .3rem; }
+.social-play .sg-deck-counts { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .55rem .85rem; border-block: 1px solid var(--sg-rule); padding: .65rem 0; }
+.social-play .sg-deck-counts span { display: grid; gap: .05rem; }
+.social-play .sg-deck-counts strong { font-size: 1.4rem; line-height: 1.1; color: var(--sg-ink); }
+.social-play .sg-revealed-role { display: grid; grid-template-columns: minmax(4rem,8.5rem) minmax(0,1fr); align-items: center; gap: clamp(.8rem,3vw,1.5rem); }
+.social-play .sg-revealed-role img { border-radius: .55rem; }
+.social-play .sg-revealed-role h3 { margin-bottom: .4rem; font-size: clamp(1.4rem,4vw,2.3rem); }
+.social-play .sg-revealed-role p { max-width: 38ch; }
+@container (min-width: 36rem) {
+    .social-play .sg-roles { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .social-play .sg-role-card { grid-template-columns: clamp(5rem,14cqi,6.8rem) minmax(0,1fr); grid-template-rows: auto; align-items: center; }
+    .social-play .sg-role-portrait { align-self: start; margin: .22rem 0 .22rem .22rem; }
+    .social-play .sg-role-caption { padding: .65rem; overflow-wrap: normal; }
+    .social-play .sg-role-option > input[type=checkbox] { left: .55rem; right: auto; }
+}
+@container (min-width: 52rem) {
+    .social-play .sg-roles { grid-template-columns: repeat(3,minmax(0,1fr)); }
+    .social-play .sg-role-card { grid-template-columns: 5.8rem minmax(0,1fr); }
+}
+@container (max-width: 28rem) {
+    .social-play .sg-roles { grid-template-columns: repeat(2,minmax(0,1fr)); gap: .65rem; }
+}
 .social-play .sg-deck-counts span, .social-play .sg-hint, .social-play .sg-count { font-size: .9rem; color: var(--sg-muted); }
 .social-play input.sg-short { width: 5rem; }
 .social-play .sg-settings-summary { display: grid; grid-template-columns: auto 1fr; gap: .45rem .75rem; }
@@ -117,7 +160,8 @@
 .social-play .sg-messages li { padding: .5rem 0; border-top: 1px solid var(--sg-rule); overflow-wrap: anywhere; }
 .social-play .sg-messages time { color: var(--sg-muted); font-size: .8rem; }
 @media (max-width: 45rem) {
-    .social-play .sg-room-grid, .social-play .sg-setup { grid-template-columns: minmax(0,1fr); }
+    .social-play .sg-room-grid, .social-play .sg-setup, .social-play .sg-create-grid { grid-template-columns: minmax(0,1fr); }
+    .social-play .sg-create-guest .sg-create-controls { grid-row: 1; }
     .social-play .sg-cover { min-height: 9rem; max-height: 11rem; }
     .social-play .sg-cover img { object-position: center 39%; }
 }
@@ -127,5 +171,10 @@
     .social-play .sg-feature-copy { min-height: 22rem; padding: 1.3rem; gap: .6rem; }
     .social-play .sg-feature-copy h2 { font-size: 2.7rem; }
     .social-play .sg-code-entry form { width: 100%; }
-    .social-play .sg-roles { grid-template-columns: minmax(0,1fr); }
+    .social-play .sg-deck-counts .sg-special-count { font-size: .85rem; }
+    .social-play .sg-deck-counts img { width: 1.65rem; }
+    .social-play .sg-creation-header > div { min-height: 8.5rem; }
+    .social-play .sg-creation-header p { max-width: 21ch; }
+    .social-play .sg-creation-header::before { background: linear-gradient(90deg,var(--sg-forest) 21%,color-mix(in srgb,var(--sg-forest) 85%,transparent) 54%,transparent 90%); }
+    .social-play .sg-revealed-role { grid-template-columns: minmax(4.5rem,30%) minmax(0,1fr); }
 }

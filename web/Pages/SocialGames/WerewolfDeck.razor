@@ -1,7 +1,7 @@
 <div class="sg-deck-counts" aria-label="Kort i bunken">
-    <div><strong>@Wolves</strong><span>Varulve</span></div>
-    <div><strong>@Room.Settings.SpecialRoles.Length</strong><span>Specialkort</span></div>
-    <div><strong>@Villagers</strong><span>Landsbyboere</span></div>
+    <div><img src="@SocialText.RoleImage("wolf")" alt="" width="56" height="70" /><span><strong>@Wolves</strong> Varulve</span></div>
+    <div><img src="@SocialText.RoleImage("villager")" alt="" width="56" height="70" /><span><strong>@Villagers</strong> Landsbyboere</span></div>
+    <div class="sg-special-count"><span><strong>@Room.Settings.SpecialRoles.Length</strong> Specialkort</span></div>
 </div>
 @if (Room.IsHost)
 {
@@ -15,18 +15,7 @@
             }
         </div>
     </fieldset>
-    <fieldset class="sg-fieldset" disabled="@Busy">
-        <legend>Specialkort</legend>
-        <div class="sg-roles">
-            @foreach (var key in SocialRoles.Specials)
-            {
-                <label class="sg-role-option">
-                    <input type="checkbox" checked="@Room.Settings.SpecialRoles.Contains(key)" @onchange="@(e => ToggleRole(key, e))" />
-                    <span><strong>@SocialRoles.Names[key]</strong><small>@SocialText.RoleRule(key)</small></span>
-                </label>
-            }
-        </div>
-    </fieldset>
+    <WerewolfRolePicker Editable="true" Selected="Room.Settings.SpecialRoles" Busy="@Busy" SelectionChanged="ChangeRolesAsync" />
     <fieldset class="sg-fieldset" disabled="@Busy">
         <legend>Tid til nattens valg</legend>
         <div class="sg-choice-list">
@@ -37,8 +26,8 @@
 }
 else
 {
+    <WerewolfRolePicker Selected="Room.Settings.SpecialRoles" />
     <dl class="sg-settings-summary">
-        <dt>Specialkort</dt><dd>@(Room.Settings.SpecialRoles.Length == 0 ? "Ingen" : string.Join(", ", Room.Settings.SpecialRoles.Select(key => SocialRoles.Names[key])))</dd>
         <dt>Nattens valg</dt><dd>@(Room.Settings.Timed ? "60 sekunder" : "Fri tid")</dd>
     </dl>
 }
@@ -61,10 +50,6 @@ else
     private Task SetWolves(ChangeEventArgs change) => int.TryParse(change.Value?.ToString(), out var value) && value > 0
         ? Change.InvokeAsync(Room.Settings with { Wolves = value }) : Task.CompletedTask;
 
-    private Task ToggleRole(string key, ChangeEventArgs change)
-    {
-        var selected = Room.Settings.SpecialRoles.ToHashSet();
-        if (change.Value is true) selected.Add(key); else selected.Remove(key);
-        return Change.InvokeAsync(Room.Settings with { SpecialRoles = SocialRoles.Specials.Where(selected.Contains).ToArray() });
-    }
+    private Task ChangeRolesAsync(string[] roles) =>
+        Change.InvokeAsync(Room.Settings with { SpecialRoles = roles });
 }

@@ -5,11 +5,26 @@
 
 <PageTitle>Opret Werewolf-lobby · LUP</PageTitle>
 <SocialFrame>
-    <div class="sg-setup">
-        <div class="sg-cover"><img src="/images/social-games/werewolf.webp" alt="" width="1200" height="800" /></div>
-        <section class="sg-setup-copy">
+    <header class="sg-creation-header">
+        <img src="/images/social-games/werewolf.webp" alt="" width="1200" height="800" />
+        <div>
             <h1>Werewolf</h1>
-            <p>Opret en lobby, invitér landsbyen, og vælg jeres rollekort. LUP er spilleder, så du kan spille med.</p>
+            <p>Vælg jeres rollekort, og invitér landsbyen. LUP er spilleder.</p>
+        </div>
+    </header>
+    <div class="sg-create-grid @(Auth.IsAuthenticated ? null : "sg-create-guest")">
+        <div class="sg-create-cards">
+            <WerewolfRolePicker Editable="@Auth.IsAuthenticated" Selected="_roles" ShowAll="true"
+                                SelectionChanged="SelectRoles" Busy="@_busy" />
+        </div>
+        <section class="sg-panel sg-create-controls" aria-label="Lobbyindstillinger">
+            <div class="sg-base-roles">
+                <h2>Grundroller</h2>
+                <div>
+                    <span><img src="@SocialText.RoleImage("wolf")" width="48" height="60" alt="" />Varulv</span>
+                    <span><img src="@SocialText.RoleImage("villager")" width="48" height="60" alt="" />Landsbyboer</span>
+                </div>
+            </div>
             @if (Auth.IsAuthenticated)
             {
                 <fieldset class="sg-fieldset" disabled="@_busy">
@@ -36,7 +51,10 @@
 
 @code {
     private bool _timed = true, _busy;
+    private string[] _roles = ["seer"];
     private string? _error;
+    private void SelectRoles(string[] roles) => _roles = roles;
+
     private async Task CreateAsync()
     {
         if (_busy) return;
@@ -44,7 +62,7 @@
         _error = null;
         try
         {
-            var room = await Client.CreateAsync(new(["seer"], null, _timed));
+            var room = await Client.CreateAsync(new(_roles, null, _timed));
             Nav.NavigateTo($"/games/social/{Uri.EscapeDataString(room.Code)}");
         }
         catch (Exception ex) when (SocialText.IsRequestError(ex)) { _error = SocialText.Error(ex); }

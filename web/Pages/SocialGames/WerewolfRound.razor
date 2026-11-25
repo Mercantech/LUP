@@ -17,8 +17,16 @@
     @if (_privateOpen)
     {
         <div id="sg-private-info" class="sg-secret">
-            <h3>@SocialRoles.Names.GetValueOrDefault(Game.Role, Game.Role)</h3>
-            <p>@SocialText.RoleRule(Game.Role)</p>
+            <div class="sg-revealed-role">
+                @if (SocialRoles.Names.ContainsKey(Game.Role))
+                {
+                    <img class="sg-role-image" src="@SocialText.RoleImage(Game.Role)" alt="" width="320" height="400" />
+                }
+                <div>
+                    <h3>@SocialRoles.Names.GetValueOrDefault(Game.Role, Game.Role)</h3>
+                    <p>@SocialText.RoleRule(Game.Role)</p>
+                </div>
+            </div>
             @if (Game.PrivateMessages.Length > 0)
             {
                 <ul>@foreach (var message in Game.PrivateMessages) { <li>@message</li> }</ul>
