@@ -7,7 +7,12 @@
 <div class="sg-gallery">
     <header class="sg-gallery-intro">
         <h1>@Lang.T("Kortgalleri", "Card gallery")</h1>
-        <p>@Lang.T("Åbn et rollekort for at se illustrationen og bladre i samlingen.", "Open a role card to see its illustration and browse the collection.")</p>
+        <p>@Lang.T("Hvad gør du, når du trækker et bestemt kort? Åbn rollen og se dit mål, hvornår du handler, og et eksempel fra spillebordet.", "What do you do when you draw a particular card? Open the role to see your goal, when to act and an example from the table.")</p>
+        <details class="sg-gallery-primer">
+            <summary>@Lang.T("Ny i Werewolf? Sådan foregår en runde", "New to Werewolf? How a round works")</summary>
+            <p>@Lang.T("Alle får en hemmelig rolle. Om natten kalder spillederen på de roller, der skal gøre noget. I LUP får du dit valg på skærmen. Om dagen diskuterer de levende spillere, hvem de mistænker, og stemmer om, hvem der skal ud.", "Everyone gets a secret role. At night the moderator calls on the roles that have something to do. In LUP your choice appears on screen. By day the living players discuss whom they suspect and vote on whom to eliminate.")</p>
+            <p>@Lang.T("Landsbyen prøver at finde alle ulvene. Ulvene kender hinanden og forsøger at overleve sammen. Nogle kort giver dig dit eget mål. Det står under “Dit mål”, når du åbner kortet.", "The village tries to find all the wolves. The wolves know one another and try to survive together. Some cards give you a goal of your own. Open a card and read “Your goal” to see what you are playing for.")</p>
+        </details>
         <nav aria-label="@Lang.T("Kortserier", "Card collections")">
             @foreach (var series in Series)
             {
@@ -27,9 +32,10 @@
                 @foreach (var card in series.Cards)
                 {
                     <li>
-                        <button type="button" aria-haspopup="dialog" class="sg-gallery-card" @onclick="() => Open(card)">
+                        <button type="button" aria-haspopup="dialog" class="sg-gallery-card" aria-labelledby="@($"card-{card.Key}")" aria-describedby="@($"hint-{card.Key}")" @onclick="() => Open(card)">
                             <img src="@card.Image" width="480" height="600" alt="" loading="lazy" decoding="async" />
-                            <span>@card.Name(Lang)</span>
+                            <span class="sg-gallery-name" id="@($"card-{card.Key}")">@card.Name(Lang)</span>
+                            <small id="@($"hint-{card.Key}")">@card.Summary(Lang)</small>
                         </button>
                     </li>
                 }
@@ -40,25 +46,45 @@
 
 @if (_selected is { } selected)
 {
+    var guide = WerewolfCardGuide.For(selected.Key);
     <dialog @ref="_dialog" class="sg-gallery-viewer" aria-labelledby="sg-gallery-viewer-title"
             @onkeydown="BrowseWithKeys" @onclose="Clear">
-        <header>
-            <span>@CurrentSeries.Name(Lang)</span>
+        <header class="sg-guide-bar">
+            <span>@(CurrentSeries.Id == "bonus" ? Lang.T("Bonuskort · Kommende i LUP", "Bonus cards · Coming to LUP") : CurrentSeries.Name(Lang))</span>
             <form method="dialog"><button type="submit" autofocus>@Lang.T("Luk", "Close") <UiIcon Name="close" /></button></form>
         </header>
-        <figure>
-            <img src="@selected.Image" width="480" height="600" alt="@Lang.T(selected.DanishArt, selected.EnglishArt)" />
-            <figcaption aria-live="polite">
-                <h2 id="sg-gallery-viewer-title">@selected.Name(Lang)</h2>
-                @if (selected.IsPlayable)
+        <div class="sg-guide-scroll" @ref="_readingArea" @key="selected.Key" tabindex="0" role="region" aria-labelledby="sg-gallery-viewer-title"
+             @onkeydown="BrowseReadingArea" @onkeydown:stopPropagation>
+            <div class="sg-guide-page">
+                <div class="sg-guide-title">
+                    <h2 id="sg-gallery-viewer-title">@selected.Name(Lang)</h2>
+                    <p>@selected.Summary(Lang)</p>
+                </div>
+                <img class="sg-guide-art" src="@selected.Image" width="480" height="600" alt="@Lang.T(selected.DanishArt, selected.EnglishArt)" />
+                <dl class="sg-guide-rules">
+                    <dt>@Lang.T("Dit mål", "Your goal")</dt>
+                    <dd>@guide.Goal.In(Lang)</dd>
+                    <dt>@Lang.T("Hvornår handler du?", "When do you act?")</dt>
+                    <dd>@guide.Timing.In(Lang)</dd>
+                    <dt>@Lang.T("Sådan spiller du kortet", "How to play the card")</dt>
+                    <dd>@guide.Rules.In(Lang)</dd>
+                </dl>
+                <section class="sg-guide-example" aria-labelledby="sg-guide-example-heading">
+                    <h3 id="sg-guide-example-heading">@Lang.T("Eksempel fra spillebordet", "Example from the table")</h3>
+                    <p>@guide.Example.In(Lang)</p>
+                    <WerewolfSeatingExample Card="@selected.Key" />
+                </section>
+                @if (guide.RulebookPage is int page)
                 {
-                    <p>@Lang.Rule(selected.Key)</p>
+                    <a class="sg-guide-source" href="@($"{WerewolfCardGuide.RulebookUrl}#page={page}")" target="_blank" rel="noopener">
+                        @Lang.T($"Karakters · Regelhæfte på nederlandsk, side {page} (PDF)", $"Karakters · Dutch rulebook, page {page} (PDF)")
+                    </a>
                 }
-            </figcaption>
-        </figure>
+            </div>
+        </div>
         <footer>
             <button type="button" @onclick="() => Move(-1)"><UiIcon Name="chevron" /> @Lang.T("Forrige", "Previous")</button>
-            <span>@(_position + 1) / @AllCards.Length</span>
+            <span aria-live="polite" aria-atomic="true"><span class="sg-sr-only">@selected.Name(Lang), </span>@(_position + 1) / @AllCards.Length</span>
             <button type="button" @onclick="() => Move(1)">@Lang.T("Næste", "Next") <UiIcon Name="chevron" /></button>
         </footer>
     </dialog>
@@ -70,9 +96,9 @@
     private int _position = -1;
     private GalleryCard? _selected => _position >= 0 ? AllCards[_position] : null;
     private CardSeries CurrentSeries => Series.Single(series => series.Cards.Contains(AllCards[_position]));
-    private ElementReference _dialog;
+    private ElementReference _dialog, _readingArea;
     private Task<IJSObjectReference>? _module;
-    private bool _openPending, _disposed;
+    private bool _openPending, _focusReadingArea, _disposed;
 
     private void Open(GalleryCard card)
     {
@@ -82,6 +108,11 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_focusReadingArea && _selected is not null)
+        {
+            _focusReadingArea = false;
+            await _readingArea.FocusAsync(preventScroll: true);
+        }
         if (!_openPending) return;
         _openPending = false;
         _module ??= JS.InvokeAsync<IJSObjectReference>("import", "./js/modal-dialog.js").AsTask();
@@ -91,6 +122,13 @@
 
     private void Move(int step) => _position = (_position + step + AllCards.Length) % AllCards.Length;
     private void Clear() => _position = -1;
+
+    private void BrowseReadingArea(KeyboardEventArgs e)
+    {
+        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return;
+        _focusReadingArea = true;
+        BrowseWithKeys(e);
+    }
 
     private void BrowseWithKeys(KeyboardEventArgs e)
     {

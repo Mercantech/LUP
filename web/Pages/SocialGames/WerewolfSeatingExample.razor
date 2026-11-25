@@ -1,0 +1,36 @@
+@if (Sketches.TryGetValue(Card, out var sketch))
+{
+    <figure class="sg-seat-sketch">
+        <figcaption>@sketch.Caption.In(Lang)</figcaption>
+        <ol>
+            @foreach (var seat in sketch.Seats)
+            {
+                <li><strong>@seat.Name.In(Lang)</strong><span>@seat.Caption.In(Lang)</span></li>
+            }
+        </ol>
+    </figure>
+}
+
+@code {
+    [CascadingParameter] public SocialGameLanguage Lang { get; set; } = new();
+    [Parameter, EditorRequired] public string Card { get; set; } = "";
+
+    private sealed record Seat(GuideText Name, GuideText Caption);
+    private sealed record Sketch(GuideText Caption, Seat[] Seats);
+
+    private static readonly Dictionary<string, Sketch> Sketches = new()
+    {
+        ["fox"] = new(new("De tre pladser, ræven undersøger", "The three seats the Fox checks"),
+            [new(new("Asta", "Asta"), new("Nabo", "Neighbour")),
+             new(new("Bo", "Bo"), new("Peg her", "Point here")),
+             new(new("Liv", "Liv"), new("Nabo", "Neighbour"))]),
+        ["bear-tamer"] = new(new("De levende naboer, bjørnen reagerer på", "The living neighbours the bear can sense"),
+            [new(new("Liv", "Liv"), new("Venstre nabo", "Left neighbour")),
+             new(new("Titus", "Titus"), new("Med bjørnen", "With the bear")),
+             new(new("Omar", "Omar"), new("Højre nabo", "Right neighbour"))]),
+        ["rusty-sword-knight"] = new(new("Følg pladserne fra ridderen mod ridderens venstre hånd", "Follow the seats from the Knight towards the Knight’s left"),
+            [new(new("Ridderen", "Knight"), new("Start her", "Start here")),
+             new(new("Liv", "Liv"), new("Landsbyboer", "Villager")),
+             new(new("Omar", "Omar"), new("Første ulv", "First wolf"))])
+    };
+}

@@ -15,8 +15,8 @@
 
 .sg-gallery-intro h1,
 .sg-gallery-heading h2,
-.sg-gallery-card span,
-.sg-gallery-viewer figcaption h2 {
+.sg-gallery-name,
+.sg-guide-title h2 {
     min-width: 0;
     overflow-wrap: break-word;
     color: var(--sg-inkprint);
@@ -24,8 +24,12 @@
 }
 
 .sg-gallery-intro h1 { font-size: clamp(2.5rem, 8cqi, 5rem); line-height: 1; }
-.sg-gallery-intro h1, .sg-gallery-heading h2, .sg-gallery-viewer figcaption h2 { text-wrap: balance; }
+.sg-gallery-intro h1, .sg-gallery-heading h2, .sg-guide-title h2 { text-wrap: balance; }
 .sg-gallery-intro p { margin-block: .65rem 1rem; }
+.sg-gallery-primer { max-width: 64ch; margin-block: .75rem; }
+.sg-gallery-primer summary { width: fit-content; padding-block: .4rem; cursor: pointer; font-weight: 600; color: var(--sg-forest); }
+.sg-gallery-primer summary:focus-visible { outline: 2px solid var(--sg-forest); outline-offset: 2px; }
+.sg-gallery-primer p { line-height: 1.55; }
 .sg-gallery-intro nav { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }
 .sg-gallery-intro a {
     display: inline-flex; align-items: center; gap: .35rem; min-height: 2.75rem;
@@ -46,16 +50,19 @@
 
 .sg-gallery-card {
     width: 100%; display: grid; justify-items: start; gap: .5rem; padding: 0;
-    border: 0; background: none; color: inherit; text-align: left; cursor: zoom-in;
+    border: 0; background: none; color: inherit; text-align: left; cursor: pointer;
 }
 .sg-gallery-card img {
     width: 100%; height: auto; aspect-ratio: 4 / 5; display: block; object-fit: contain;
     border: 1px solid var(--sg-frame); border-radius: .22rem;
 }
-.sg-gallery-card span {
+.sg-gallery-name {
     font-size: clamp(1.05rem, 2.45cqi, 1.5rem); font-weight: 700; line-height: 1.15;
 }
-.sg-gallery-card:hover span { text-decoration: underline; text-underline-offset: .18em; }
+.sg-gallery-card small {
+    font-size: .94rem; line-height: 1.45; color: var(--sg-inkprint);
+}
+.sg-gallery-card:hover .sg-gallery-name { text-decoration: underline; text-underline-offset: .18em; }
 .sg-gallery-card:hover img { outline: 1px solid var(--sg-forest); }
 .sg-gallery-card:active img { outline: 3px solid var(--sg-forest); }
 .sg-gallery :is(button, a):focus-visible, .sg-gallery-viewer button:focus-visible {
@@ -63,15 +70,19 @@
 }
 
 .sg-gallery-viewer {
-    width: min(29rem, calc(100% - 1.25rem)); max-height: calc(100dvh - 1.25rem);
-    padding: .8rem clamp(.85rem, 3vw, 1.25rem); margin: auto;
+    width: min(63rem, calc(100% - 1.25rem)); max-width: none; max-height: calc(100dvh - 1.25rem);
+    padding: 0; margin: auto; overflow: hidden;
     background: var(--sg-cream); color: var(--sg-inkprint); border: 3px double var(--sg-frame);
 }
+.sg-gallery-viewer[open] { display: flex; flex-direction: column; }
 .sg-gallery-viewer::backdrop { background: color-mix(in srgb, var(--sg-forest) 86%, transparent); }
-.sg-gallery-viewer header, .sg-gallery-viewer footer {
-    display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+.sg-guide-bar, .sg-gallery-viewer footer {
+    display: flex; flex: none; align-items: center; justify-content: space-between; gap: .5rem;
+    padding: .4rem clamp(.7rem, 3vw, 1.5rem);
 }
-.sg-gallery-viewer header > span, .sg-gallery-viewer footer > span { font-size: .9rem; }
+.sg-guide-bar { border-bottom: 1px solid var(--sg-frame); }
+.sg-guide-bar > span { font-weight: 600; }
+.sg-gallery-viewer footer { border-top: 1px solid var(--sg-frame); font-variant-numeric: tabular-nums; }
 .sg-gallery-viewer button {
     display: inline-flex; align-items: center; justify-content: center; gap: .4em;
     min-height: 2.75rem; padding: .3rem .65rem; border: 1px solid var(--sg-frame);
@@ -81,15 +92,43 @@
 .sg-gallery-viewer button:active { outline: 2px solid var(--sg-forest); }
 .sg-gallery-viewer button ::deep svg { width: .95em; height: .95em; }
 .sg-gallery-viewer footer button:first-child ::deep svg { transform: rotate(180deg); }
-.sg-gallery-viewer figure { margin: .65rem 0; }
-.sg-gallery-viewer figure img {
-    display: block; max-width: 100%; width: auto; height: min(57dvh, 31rem); margin: auto;
-    aspect-ratio: 4 / 5; object-fit: contain;
+.sg-guide-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.sg-guide-scroll:focus-visible { outline: 2px solid var(--sg-forest); outline-offset: -3px; }
+.sg-guide-page {
+    display: grid; grid-template-columns: minmax(0, 32%) minmax(0, 1fr);
+    grid-template-areas: "art title" "art rules" "example example" "source source";
+    align-items: start; gap: 1.1rem clamp(1.25rem, 3vw, 2.25rem);
+    padding: clamp(1rem, 3vw, 2rem); line-height: 1.55; overflow-wrap: break-word;
 }
-.sg-gallery-viewer figcaption { padding-top: .7rem; }
-.sg-gallery-viewer figcaption h2 { font-size: clamp(1.45rem, 5vw, 2rem); }
-.sg-gallery-viewer figcaption p { margin-block-start: .25rem; }
-.sg-gallery-viewer footer { padding-top: .7rem; border-top: 1px solid var(--sg-frame); }
+.sg-guide-art {
+    grid-area: art; display: block; width: 100%; height: auto; aspect-ratio: 4 / 5;
+    border: 3px double var(--sg-frame); border-radius: .25rem;
+}
+.sg-guide-title { grid-area: title; }
+.sg-guide-title h2 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.08; margin: 0 0 .45rem; }
+.sg-guide-title p, .sg-guide-rules, .sg-guide-rules dd, .sg-guide-example p { margin: 0; }
+.sg-guide-title p { font-size: 1.12rem; }
+.sg-guide-rules { grid-area: rules; }
+.sg-guide-rules dt, .sg-guide-example h3 {
+    font: 600 1.25rem/1.25 var(--sg-display); color: var(--sg-inkprint);
+    margin: 0 0 .25rem;
+}
+.sg-guide-rules dd + dt { margin-top: 1rem; }
+.sg-guide-example {
+    grid-area: example; padding: 1rem clamp(.8rem, 2vw, 1.4rem);
+    border-inline-start: .24rem solid var(--sg-frame); background: #eae4cc;
+}
+.sg-guide-source { grid-area: source; width: fit-content; color: var(--sg-forest); text-underline-offset: .2em; font-size: .9rem; }
+.sg-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (max-width: 40rem) {
+    .sg-guide-page {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 32%); gap: 1rem .75rem;
+        grid-template-areas: "title art" "rules rules" "example example" "source source";
+    }
+    .sg-guide-title { align-self: center; }
+    .sg-guide-title p { font-size: 1rem; }
+}
 
 @container (max-width: 43rem) {
     .sg-gallery .sg-gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
