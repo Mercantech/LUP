@@ -84,6 +84,7 @@ public sealed partial class WerewolfGame
     private void ResolveNight(DateTimeOffset now)
     {
         ReturnToNight = false;
+        AnnouncedDeaths = [];
         PublicMessage = WolfTarget.HasValue || PoisonTarget.HasValue
             ? $"Det er morgen efter nat {Round}."
             : $"Det er morgen efter nat {Round}. Alle overlevede natten.";

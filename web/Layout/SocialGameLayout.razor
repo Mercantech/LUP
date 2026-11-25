@@ -1,0 +1,56 @@
+@inherits LayoutComponentBase
+@layout MainLayout
+@using Mercantec.Tech.Web.Pages.SocialGames
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<HeadContent><link rel="stylesheet" href="/css/lup-social-games.css" /></HeadContent>
+
+<div class="social-play" lang="@(_language.IsEnglish ? "en" : "da")">
+    <div class="sg-toolbar">
+        <nav aria-label="@_language.T("Brødkrumme", "Breadcrumb")" class="sg-crumbs">
+            <a href="/games">@_language.T("Spil", "Games")</a><UiIcon Name="chevron" />
+            @if (IsHub)
+            {
+                <span aria-current="page">@_language.T("Sociale spil", "Social games")</span>
+            }
+            else
+            {
+                <a href="/games/social">@_language.T("Sociale spil", "Social games")</a><UiIcon Name="chevron" /><span aria-current="page">Werewolf</span>
+            }
+        </nav>
+        <div class="sg-languages" role="group" aria-label="@_language.T("Spilsprog", "Game language")">
+            <button type="button" lang="da" aria-pressed="@(_language.IsEnglish ? "false" : "true")" @onclick="() => SelectAsync(false)">Dansk</button>
+            <button type="button" lang="en" aria-pressed="@(_language.IsEnglish ? "true" : "false")" @onclick="() => SelectAsync(true)">English</button>
+        </div>
+    </div>
+    <CascadingValue Value="_language">
+        @Body
+    </CascadingValue>
+</div>
+
+@code {
+    private const string StorageKey = "lup.social-games.language";
+    private SocialGameLanguage _language = new();
+    private bool _selected;
+
+    private bool IsHub => Nav.ToAbsoluteUri(Nav.Uri).AbsolutePath.TrimEnd('/').Equals("/games/social", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var stored = await JS.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+            if (!_selected && stored == "en") _language = new(true);
+        }
+        catch (JSException) { /* Browser storage is optional. */ }
+    }
+
+    private async Task SelectAsync(bool english)
+    {
+        _selected = true;
+        _language = new(english);
+        try { await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, english ? "en" : "da"); }
+        catch (JSException) { /* Keep the choice while this layout is open. */ }
+    }
+}

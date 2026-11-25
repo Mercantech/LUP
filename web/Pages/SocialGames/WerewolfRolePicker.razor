@@ -1,8 +1,8 @@
 <fieldset class="sg-fieldset sg-role-picker" disabled="@Busy">
-    <legend>Specialkort</legend>
+    <legend>@Lang.T("Specialkort", "Special cards")</legend>
     @if (Editable)
     {
-        <p class="sg-role-tally">@Selected.Length af @SocialRoles.Specials.Length valgt</p>
+        <p class="sg-role-tally">@Lang.T($"{Selected.Length} af {SocialRoles.Specials.Length} valgt", $"{Selected.Length} of {SocialRoles.Specials.Length} selected")</p>
     }
     <div class="sg-roles">
         @foreach (var role in SocialRoles.Specials)
@@ -10,7 +10,7 @@
             if (Editable)
             {
                 <label @key="role" class="sg-role-card sg-role-option" data-selected="@(Selected.Contains(role) ? "true" : "false")">
-                    <input type="checkbox" value="@role" aria-label="@SocialRoles.Names[role]" aria-describedby="@DescriptionId(role)"
+                    <input type="checkbox" value="@role" aria-label="@Lang.Role(role)" aria-describedby="@DescriptionId(role)"
                            @bind:get="Selected.Contains(role)" @bind:set="@((bool enabled) => ToggleAsync(role, enabled))" />
                     <WerewolfRoleFace Role="@role" DescriptionId="@DescriptionId(role)" />
                 </label>
@@ -25,11 +25,12 @@
     </div>
     @if (!Editable && !ShowAll && Selected.Length == 0)
     {
-        <p class="sg-hint">Ingen specialkort i denne runde.</p>
+        <p class="sg-hint">@Lang.T("Ingen specialkort i denne runde.", "No special cards in this round.")</p>
     }
 </fieldset>
 
 @code {
+    [CascadingParameter] public SocialGameLanguage Lang { get; set; } = new();
     [Parameter, EditorRequired] public string[] Selected { get; set; } = [];
     [Parameter] public bool Editable { get; set; }
     [Parameter] public bool ShowAll { get; set; }

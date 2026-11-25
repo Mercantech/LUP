@@ -12,9 +12,10 @@ public sealed record SocialRoomView(string Code, Guid Me, bool IsHost, SocialPla
     WerewolfView? Game, SocialChatLine[] Chat, bool CanChat);
 public sealed record WerewolfOption(string Value, string Label);
 public sealed record WerewolfAction(string Key, string Label, int MinChoices, int MaxChoices, WerewolfOption[] Options);
+public sealed record WerewolfNarration(string PublicMessage, string[] PrivateMessages, string? Result);
 public sealed record WerewolfView(int PhaseId, string Phase, int Round, string Role, Guid[] Alive,
     string PublicMessage, string[] PrivateMessages, DateTimeOffset? Deadline, WerewolfAction[] Actions,
-    bool Finished, string? Result);
+    bool Finished, string? Result, WerewolfNarration? English = null);
 public sealed record SocialInviteCandidate(Guid UserSub, string Name, bool OwnHold);
 public sealed record SocialInviteRequest(Guid UserSub);
 

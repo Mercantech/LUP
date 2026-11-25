@@ -1,26 +1,26 @@
-<div class="sg-deck-counts" aria-label="Kort i bunken">
-    <div><img src="@SocialText.RoleImage("wolf")" alt="" width="56" height="70" /><span><strong>@Wolves</strong> Varulve</span></div>
-    <div><img src="@SocialText.RoleImage("villager")" alt="" width="56" height="70" /><span><strong>@Villagers</strong> Landsbyboere</span></div>
-    <div class="sg-special-count"><span><strong>@Room.Settings.SpecialRoles.Length</strong> Specialkort</span></div>
+<div class="sg-deck-counts" aria-label="@Lang.T("Kort i bunken", "Cards in the deck")">
+    <div><img src="@SocialText.RoleImage("wolf")" alt="" width="56" height="70" /><span><strong>@Wolves</strong> @(Wolves == 1 ? Lang.Role("wolf") : Lang.T("Varulve", "Werewolves"))</span></div>
+    <div><img src="@SocialText.RoleImage("villager")" alt="" width="56" height="70" /><span><strong>@Villagers</strong> @(Villagers == 1 ? Lang.Role("villager") : Lang.T("Landsbyboere", "Villagers"))</span></div>
+    <div class="sg-special-count"><span><strong>@Room.Settings.SpecialRoles.Length</strong> @(Room.Settings.SpecialRoles.Length == 1 ? Lang.T("Specialkort", "Special card") : Lang.T("Specialkort", "Special cards"))</span></div>
 </div>
 @if (Room.IsHost)
 {
     <fieldset class="sg-fieldset" disabled="@Busy">
-        <legend>Antal varulve</legend>
+        <legend>@Lang.T("Antal varulve", "Number of werewolves")</legend>
         <div class="sg-choice-list">
-            <label><input type="checkbox" checked="@(Room.Settings.Wolves is null)" @onchange="ToggleSuggested" /> Brug LUPs forslag (@Room.SuggestedWolves)</label>
+            <label><input type="checkbox" checked="@(Room.Settings.Wolves is null)" @onchange="ToggleSuggested" /> @Lang.T("Brug LUPs forslag", "Use LUP’s suggestion") (@Room.SuggestedWolves)</label>
             @if (Room.Settings.Wolves.HasValue)
             {
-                <label>Dit antal <input type="number" class="sg-short" value="@Wolves" min="1" max="39" @onchange="SetWolves" /></label>
+                <label>@Lang.T("Dit antal", "Your number") <input type="number" class="sg-short" value="@Wolves" min="1" max="39" @onchange="SetWolves" /></label>
             }
         </div>
     </fieldset>
     <WerewolfRolePicker Editable="true" Selected="Room.Settings.SpecialRoles" Busy="@Busy" SelectionChanged="ChangeRolesAsync" />
     <fieldset class="sg-fieldset" disabled="@Busy">
-        <legend>Tid til nattens valg</legend>
+        <legend>@Lang.T("Tid til nattens valg", "Time for night actions")</legend>
         <div class="sg-choice-list">
-            <label><input type="radio" name="lobby-tempo" checked="@Room.Settings.Timed" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = true }))" /> 60 sekunder</label>
-            <label><input type="radio" name="lobby-tempo" checked="@(!Room.Settings.Timed)" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = false }))" /> Fri tid</label>
+            <label><input type="radio" name="lobby-tempo" checked="@Room.Settings.Timed" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = true }))" /> @Lang.T("60 sekunder", "60 seconds")</label>
+            <label><input type="radio" name="lobby-tempo" checked="@(!Room.Settings.Timed)" @onchange="@(() => Change.InvokeAsync(Room.Settings with { Timed = false }))" /> @Lang.T("Fri tid", "No time limit")</label>
         </div>
     </fieldset>
 }
@@ -28,15 +28,16 @@ else
 {
     <WerewolfRolePicker Selected="Room.Settings.SpecialRoles" />
     <dl class="sg-settings-summary">
-        <dt>Nattens valg</dt><dd>@(Room.Settings.Timed ? "60 sekunder" : "Fri tid")</dd>
+        <dt>@Lang.T("Nattens valg", "Night actions")</dt><dd>@(Room.Settings.Timed ? Lang.T("60 sekunder", "60 seconds") : Lang.T("Fri tid", "No time limit"))</dd>
     </dl>
 }
 @if (Room.Settings.SpecialRoles.Contains("thief"))
 {
-    <p class="sg-hint">Med tyven blandes to ekstra landsbyboerkort i bunken. To tilfældige kort bliver liggende til tyvens valg.</p>
+    <p class="sg-hint">@Lang.T("Med tyven blandes to ekstra landsbyboerkort i bunken. To tilfældige kort bliver liggende til tyvens valg.", "With the thief in play, two extra villager cards are shuffled into the deck. Two random cards are left for the thief to choose from.")</p>
 }
 
 @code {
+    [CascadingParameter] public SocialGameLanguage Lang { get; set; } = new();
     [Parameter, EditorRequired] public SocialRoomView Room { get; set; } = default!;
     [Parameter] public bool Busy { get; set; }
     [Parameter] public EventCallback<SocialGameSettings> Change { get; set; }

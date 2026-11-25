@@ -8,10 +8,13 @@ namespace Mercantec.Tech.Web.Pages.SocialGames;
 
 public partial class Room
 {
+    [CascadingParameter] public SocialGameLanguage Lang { get; set; } = new();
     [Parameter] public string Code { get; set; } = "";
     private SocialRoomView? RoomState;
     private CancellationTokenSource _scope = new();
-    private string? _route, _error;
+    private string? _route;
+    private Exception? _error;
+    private bool InvalidCode => Code.Length != 6 || !Code.All(char.IsAsciiDigit);
     private string _nickname = "", _chat = "";
     private bool _loading, _busy, _canJoin, _canRetry, _connectionLost, _manualLink, _copied;
     private int _generation;
@@ -35,10 +38,9 @@ public partial class Room
         var token = _scope.Token;
         _error = null;
         _canJoin = _canRetry = false;
-        if (Code.Length != 6 || !Code.All(char.IsAsciiDigit))
+        if (InvalidCode)
         {
             _loading = false;
-            _error = "Lobbykoden skal bestå af seks cifre.";
             return;
         }
 
@@ -57,7 +59,7 @@ public partial class Room
             else
             {
                 _canRetry = ex is not SocialRoomException { Status: HttpStatusCode.NotFound };
-                _error = SocialText.Error(ex);
+                _error = ex;
             }
         }
         finally { if (!token.IsCancellationRequested) _loading = false; }
@@ -87,7 +89,7 @@ public partial class Room
                     if (ex is SocialRoomException { Status: HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized or HttpStatusCode.NotFound })
                     {
                         RoomState = null;
-                        _error = SocialText.Error(ex);
+                        _error = ex;
                         _canRetry = true;
                         await InvokeAsync(StateHasChanged);
                         return;
@@ -117,7 +119,7 @@ public partial class Room
         }
         catch (Exception ex) when (SocialText.IsRequestError(ex))
         {
-            if (!token.IsCancellationRequested) _error = SocialText.Error(ex);
+            if (!token.IsCancellationRequested) _error = ex;
             return false;
         }
         finally { if (!token.IsCancellationRequested) _busy = false; }
@@ -151,10 +153,10 @@ public partial class Room
         _manualLink = !_copied;
     }
 
-    private static string PlayerStatus(SocialRoomView room, SocialPlayer player)
+    private string PlayerStatus(SocialRoomView room, SocialPlayer player)
     {
-        if (room.Game is { } game && !game.Alive.Contains(player.Id)) return "Ude";
-        return player.IsGuest ? "Gæst" : "LUP";
+        if (room.Game is { } game && !game.Alive.Contains(player.Id)) return Lang.T("Ude", "Eliminated");
+        return player.IsGuest ? Lang.T("Gæst", "Guest") : "LUP";
     }
 
     public void Dispose()

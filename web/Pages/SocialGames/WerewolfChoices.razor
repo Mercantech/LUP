@@ -2,20 +2,20 @@
 {
     @if (Game.Deadline is DateTimeOffset deadline)
     {
-        <p class="sg-hint">Tid tilbage <strong>@(Math.Max(0, (int)Math.Ceiling((deadline - DateTimeOffset.UtcNow).TotalSeconds))) sek.</strong></p>
+        <p class="sg-hint">@Lang.T("Tid tilbage", "Time remaining") <strong>@(Math.Max(0, (int)Math.Ceiling((deadline - DateTimeOffset.UtcNow).TotalSeconds))) @Lang.T("sek.", "s")</strong></p>
     }
     @foreach (var action in Game.Actions)
     {
         var selected = Values(action.Key);
         @if (action.Options.Length == 0)
         {
-            <button @key="action.Key" class="sg-button" type="button" disabled="@Busy" @onclick="@(() => ApplyAsync(action))">@action.Label</button>
+            <button @key="action.Key" class="sg-button" type="button" disabled="@Busy" @onclick="@(() => ApplyAsync(action))">@Lang.Server(action.Label)</button>
         }
         else
         {
             <fieldset @key="action.Key" class="sg-action sg-fieldset" disabled="@Busy">
-                <legend>@action.Label</legend>
-                @if (action.MinChoices > 1) { <p class="sg-hint">Vælg @action.MinChoices forskellige muligheder.</p> }
+                <legend>@Lang.Server(action.Label)</legend>
+                @if (action.MinChoices > 1) { <p class="sg-hint">@Lang.T($"Vælg {action.MinChoices} forskellige muligheder.", $"Choose {action.MinChoices} different options.")</p> }
                 <div class="sg-options">
                     @foreach (var option in action.Options)
                     {
@@ -23,17 +23,18 @@
                             <input type="@(action.MaxChoices == 1 ? "radio" : "checkbox")" name="@($"sg-{Game.PhaseId}-{action.Key}")"
                                 checked="@selected.Contains(option.Value)" @onchange="@(e => Choose(action, option.Value, e))"
                                 disabled="@(!selected.Contains(option.Value) && action.MaxChoices > 1 && selected.Count >= action.MaxChoices)" />
-                            @option.Label
+                            @(action.Key == "steal" ? Lang.Server(option.Label) : option.Label)
                         </label>
                     }
                 </div>
-                <button type="button" class="sg-button primary" disabled="@(selected.Count < action.MinChoices || selected.Count > action.MaxChoices || Busy)" @onclick="@(() => ApplyAsync(action))">Bekræft valg</button>
+                <button type="button" class="sg-button primary" disabled="@(selected.Count < action.MinChoices || selected.Count > action.MaxChoices || Busy)" @onclick="@(() => ApplyAsync(action))">@Lang.T("Bekræft valg", "Confirm choice")</button>
             </fieldset>
         }
     }
 }
 
 @code {
+    [CascadingParameter] public SocialGameLanguage Lang { get; set; } = new();
     [Parameter, EditorRequired] public WerewolfView Game { get; set; } = default!;
     [Parameter] public bool Busy { get; set; }
     [Parameter] public EventCallback<SocialGameActionRequest> Submit { get; set; }

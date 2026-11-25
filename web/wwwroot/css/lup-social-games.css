@@ -30,7 +30,12 @@
 .social-play p { line-height: 1.5; }
 .social-play :is(a,button,input,summary):focus-visible { outline: 3px solid var(--sg-accent); outline-offset: 3px; }
 .social-play button:disabled { opacity: .62; cursor: not-allowed; }
-.social-play .sg-crumbs { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; margin-bottom: 1rem; color: var(--sg-muted); font-size: .9rem; }
+.social-play .sg-toolbar { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; margin-bottom: 1rem; }
+.social-play .sg-crumbs { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; color: var(--sg-muted); font-size: .9rem; }
+.social-play .sg-languages { display: inline-flex; margin-inline-start: auto; padding: .15rem; gap: .1rem; border: 1px solid var(--sg-rule); border-radius: .65rem; background: var(--sg-paper); }
+.social-play .sg-languages button { min-height: 2.25rem; padding-inline: .65rem; border: 0; border-radius: .45rem; background: transparent; color: var(--sg-ink); font: inherit; font-size: .88rem; cursor: pointer; }
+.social-play .sg-languages button[aria-pressed=true] { background: var(--sg-ink); color: var(--sg-paper); font-weight: 700; }
+.social-play .sg-languages button:hover { text-decoration: underline; }
 .social-play .sg-crumbs a, .social-play .sg-plain { color: var(--sg-accent); text-underline-offset: .16em; }
 .social-play .sg-crumbs .ui-icon { width: .8rem; height: .8rem; }
 .social-play .sg-button {

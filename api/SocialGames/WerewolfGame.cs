@@ -27,6 +27,9 @@ public sealed partial class WerewolfGame
     public string Step { get; set; } = "thief";
     public DateTimeOffset? DeadlineUtc { get; set; }
     public string PublicMessage { get; set; } = "Den første nat er begyndt.";
+    // IDs preserve the boundaries of names in announcements, even when a name contains sentence punctuation.
+    // Earlier rooms have only the Danish text of the announcement.
+    public List<Guid>? AnnouncedDeaths { get; set; }
     public string? Result { get; set; }
     public Guid? ProtectedLastNight { get; set; }
     public Guid? ProtectedTonight { get; set; }
@@ -70,6 +73,7 @@ public sealed partial class WerewolfGame
         var game = new WerewolfGame
         {
             Timed = settings.Timed,
+            AnnouncedDeaths = [],
             Seats = players.Select((p, i) => new WerewolfSeat(p.Id, p.Name, deck[i])).ToArray(),
             Spares = deck.Skip(players.Count).ToArray()
         };
@@ -124,6 +128,7 @@ public sealed partial class WerewolfGame
     {
         var ranks = Votes.Values.GroupBy(id => id).OrderByDescending(g => g.Count()).ToArray();
         ReturnToNight = true;
+        AnnouncedDeaths = [];
         if (ranks.Length > 1 && ranks[0].Count() == ranks[1].Count())
             PublicMessage = "Stemmerne stod lige. Ingen blev stemt ud.";
         else
@@ -160,6 +165,7 @@ public sealed partial class WerewolfGame
         var player = Seats[index];
         Seats[index] = player with { Alive = false };
         PublicMessage += $" {player.Name} ({SocialRoles.Names[player.Role]}) er ude.";
+        AnnouncedDeaths?.Add(id);
         if (player.Role == "hunter" && cause is "wolf" or "vote" or "love") PendingHunter = id;
         if (Lovers.Contains(id)) Eliminate(Lovers.Single(partner => partner != id), "love");
     }

@@ -1,33 +1,32 @@
 @page "/games/social"
 @inject NavigationManager Nav
 
-<PageTitle>Sociale spil · LUP</PageTitle>
-<SocialFrame IsHub="true">
-    <h1>Sociale spil</h1>
-    <article class="sg-feature">
-        <img src="/images/social-games/werewolf.webp" alt="En ulv ser ud over en landsby i måneskin." width="1200" height="800" fetchpriority="high" />
-        <div class="sg-feature-copy">
-            <h2>Werewolf</h2>
-            <p>Ulvene gemmer sig blandt jer. Hvem stoler landsbyen på, når solen står op?</p>
-            <a class="sg-button primary" href="/games/social/werewolf">Spil Werewolf <UiIcon Name="arrow" /></a>
+<PageTitle>@Lang.T("Sociale spil", "Social games") · LUP</PageTitle>
+<h1>@Lang.T("Sociale spil", "Social games")</h1>
+<article class="sg-feature">
+    <img src="/images/social-games/werewolf.webp" alt="@Lang.T("En ulv ser ud over en landsby i måneskin.", "A wolf looks out over a moonlit village.")" width="1200" height="800" fetchpriority="high" />
+    <div class="sg-feature-copy">
+        <h2>Werewolf</h2>
+        <p>@Lang.T("Ulvene gemmer sig blandt jer. Hvem stoler landsbyen på, når solen står op?", "The wolves are hiding among you. Who will the village trust at sunrise?")</p>
+        <a class="sg-button primary" href="/games/social/werewolf">@Lang.T("Spil Werewolf", "Play Werewolf") <UiIcon Name="arrow" /></a>
+    </div>
+</article>
+<section class="sg-code-entry" aria-labelledby="sg-have-code">
+    <div>
+        <h2 id="sg-have-code">@Lang.T("Har du en lobbykode?", "Have a lobby code?")</h2>
+        <p>@Lang.T("Deltag med dit LUP-login eller som gæst.", "Join with your LUP account or as a guest.")</p>
+    </div>
+    <form @onsubmit="OpenRoom" @onsubmit:preventDefault>
+        <label for="sg-room-code">@Lang.T("Lobbykode", "Lobby code")</label>
+        <div class="sg-inline">
+            <input id="sg-room-code" class="sg-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="@Lang.T("6 cifre", "6 digits")" autocomplete="off" spellcheck="false" @bind="_code" @bind:event="oninput" required />
+            <button class="sg-button" type="submit" disabled="@(!HasCode)">@Lang.T("Deltag", "Join")</button>
         </div>
-    </article>
-    <section class="sg-code-entry" aria-labelledby="sg-have-code">
-        <div>
-            <h2 id="sg-have-code">Har du en lobbykode?</h2>
-            <p>Deltag med dit LUP-login eller som gæst.</p>
-        </div>
-        <form @onsubmit="OpenRoom" @onsubmit:preventDefault>
-            <label for="sg-room-code">Lobbykode</label>
-            <div class="sg-inline">
-                <input id="sg-room-code" class="sg-code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6 cifre" autocomplete="off" spellcheck="false" @bind="_code" @bind:event="oninput" required />
-                <button class="sg-button" type="submit" disabled="@(!HasCode)">Deltag</button>
-            </div>
-        </form>
-    </section>
-</SocialFrame>
+    </form>
+</section>
 
 @code {
+    [CascadingParameter] public SocialGameLanguage Lang { get; set; } = new();
     private string _code = "";
     private bool HasCode => _code.Length == 6 && _code.All(char.IsAsciiDigit);
     private void OpenRoom()

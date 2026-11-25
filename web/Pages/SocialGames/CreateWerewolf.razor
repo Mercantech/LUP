@@ -3,56 +3,55 @@
 @inject NavigationManager Nav
 @inject SocialGamesClient Client
 
-<PageTitle>Opret Werewolf-lobby · LUP</PageTitle>
-<SocialFrame>
-    <header class="sg-creation-header">
-        <img src="/images/social-games/werewolf.webp" alt="" width="1200" height="800" />
-        <div>
-            <h1>Werewolf</h1>
-            <p>Vælg jeres rollekort, og invitér landsbyen. LUP er spilleder.</p>
-        </div>
-    </header>
-    <div class="sg-create-grid @(Auth.IsAuthenticated ? null : "sg-create-guest")">
-        <div class="sg-create-cards">
-            <WerewolfRolePicker Editable="@Auth.IsAuthenticated" Selected="_roles" ShowAll="true"
-                                SelectionChanged="SelectRoles" Busy="@_busy" />
-        </div>
-        <section class="sg-panel sg-create-controls" aria-label="Lobbyindstillinger">
-            <div class="sg-base-roles">
-                <h2>Grundroller</h2>
-                <div>
-                    <span><img src="@SocialText.RoleImage("wolf")" width="48" height="60" alt="" />Varulv</span>
-                    <span><img src="@SocialText.RoleImage("villager")" width="48" height="60" alt="" />Landsbyboer</span>
-                </div>
-            </div>
-            @if (Auth.IsAuthenticated)
-            {
-                <fieldset class="sg-fieldset" disabled="@_busy">
-                    <legend>Tid til nattens valg</legend>
-                    <div class="sg-choice-list">
-                        <label><input type="radio" name="tempo" checked="@_timed" @onchange="@(() => _timed = true)" /> 60 sekunder pr. valg</label>
-                        <label><input type="radio" name="tempo" checked="@(!_timed)" @onchange="@(() => _timed = false)" /> Fri tid</label>
-                    </div>
-                </fieldset>
-                <button class="sg-button primary" @onclick="CreateAsync" disabled="@_busy"><UiIcon Name="plus" /> @(_busy ? "Opretter…" : "Opret lobby")</button>
-            }
-            else
-            {
-                <a class="sg-button primary" href="@Auth.LoginPath()">Log ind og opret lobby</a>
-                <a class="sg-plain" href="/games/social">Deltag med en kode</a>
-            }
-            @if (_error is not null)
-            {
-                <p class="sg-error" role="alert">@_error</p>
-            }
-        </section>
+<PageTitle>@Lang.T("Opret Werewolf-lobby", "Create a Werewolf lobby") · LUP</PageTitle>
+<header class="sg-creation-header">
+    <img src="/images/social-games/werewolf.webp" alt="" width="1200" height="800" />
+    <div>
+        <h1>Werewolf</h1>
+        <p>@Lang.T("Vælg jeres rollekort, og invitér landsbyen. LUP er spilleder.", "Choose your role cards and invite the village. LUP runs the game.")</p>
     </div>
-</SocialFrame>
+</header>
+<div class="sg-create-grid @(Auth.IsAuthenticated ? null : "sg-create-guest")">
+    <div class="sg-create-cards">
+        <WerewolfRolePicker Editable="@Auth.IsAuthenticated" Selected="_roles" ShowAll="true"
+                            SelectionChanged="SelectRoles" Busy="@_busy" />
+    </div>
+    <section class="sg-panel sg-create-controls" aria-label="@Lang.T("Lobbyindstillinger", "Lobby settings")">
+        <div class="sg-base-roles">
+            <h2>@Lang.T("Grundroller", "Basic roles")</h2>
+            <div>
+                <span><img src="@SocialText.RoleImage("wolf")" width="48" height="60" alt="" />@Lang.Role("wolf")</span>
+                <span><img src="@SocialText.RoleImage("villager")" width="48" height="60" alt="" />@Lang.Role("villager")</span>
+            </div>
+        </div>
+        @if (Auth.IsAuthenticated)
+        {
+            <fieldset class="sg-fieldset" disabled="@_busy">
+                <legend>@Lang.T("Tid til nattens valg", "Time for night actions")</legend>
+                <div class="sg-choice-list">
+                    <label><input type="radio" name="tempo" checked="@_timed" @onchange="@(() => _timed = true)" /> @Lang.T("60 sekunder pr. valg", "60 seconds per action")</label>
+                    <label><input type="radio" name="tempo" checked="@(!_timed)" @onchange="@(() => _timed = false)" /> @Lang.T("Fri tid", "No time limit")</label>
+                </div>
+            </fieldset>
+            <button class="sg-button primary" @onclick="CreateAsync" disabled="@_busy"><UiIcon Name="plus" /> @(_busy ? Lang.T("Opretter…", "Creating…") : Lang.T("Opret lobby", "Create lobby"))</button>
+        }
+        else
+        {
+            <a class="sg-button primary" href="@Auth.LoginPath()">@Lang.T("Log ind og opret lobby", "Sign in to create a lobby")</a>
+            <a class="sg-plain" href="/games/social">@Lang.T("Deltag med en kode", "Join with a code")</a>
+        }
+        @if (_error is not null)
+        {
+            <p class="sg-error" role="alert">@Lang.Error(_error)</p>
+        }
+    </section>
+</div>
 
 @code {
+    [CascadingParameter] public SocialGameLanguage Lang { get; set; } = new();
     private bool _timed = true, _busy;
     private string[] _roles = ["seer"];
-    private string? _error;
+    private Exception? _error;
     private void SelectRoles(string[] roles) => _roles = roles;
 
     private async Task CreateAsync()
@@ -65,7 +64,7 @@
             var room = await Client.CreateAsync(new(_roles, null, _timed));
             Nav.NavigateTo($"/games/social/{Uri.EscapeDataString(room.Code)}");
         }
-        catch (Exception ex) when (SocialText.IsRequestError(ex)) { _error = SocialText.Error(ex); }
+        catch (Exception ex) when (SocialText.IsRequestError(ex)) { _error = ex; }
         finally { _busy = false; }
     }
 }

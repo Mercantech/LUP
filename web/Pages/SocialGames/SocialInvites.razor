@@ -2,38 +2,43 @@
 @implements IDisposable
 
 <section class="sg-panel sg-invites" aria-labelledby="sg-invite-title">
-    <h2 id="sg-invite-title">Invitér fra LUP</h2>
-    <label for="sg-invite-query">Søg efter navn</label>
+    <h2 id="sg-invite-title">@Lang.T("Invitér fra LUP", "Invite LUP users")</h2>
+    <label for="sg-invite-query">@Lang.T("Søg efter navn", "Search by name")</label>
     <input id="sg-invite-query" type="search" @bind="_query" @bind:event="oninput" @bind:after="SearchAsync" maxlength="100" autocomplete="off" />
-    @if (_loading) { <p class="sg-hint" role="status">Henter personer…</p> }
+    @if (_loading) { <p class="sg-hint" role="status">@Lang.T("Henter personer…", "Loading people…")</p> }
     else if (_candidates.Length == 0 && _error is null)
     {
-        <p class="sg-hint">@(_query.Length == 0 ? "Søg efter en LUP-bruger på tværs af hold." : "Ingen personer fundet.")</p>
+        <p class="sg-hint">@(_query.Length == 0 ? Lang.T("Søg efter en LUP-bruger på tværs af hold.", "Search for a LUP user in any class.") : Lang.T("Ingen personer fundet.", "No people found."))</p>
     }
     else
     {
         <ul class="sg-candidates">
             @foreach (var candidate in _candidates)
             {
+                var invited = _sent.Contains(candidate.UserSub);
+                var sending = _sending.Contains(candidate.UserSub);
+                var label = invited ? Lang.T("Inviteret", "Invited")
+                    : sending ? Lang.T("Sender…", "Sending…") : Lang.T("Invitér", "Invite");
                 <li @key="candidate.UserSub">
-                    <div><strong>@candidate.Name</strong>@if (candidate.OwnHold) { <small>Dit hold</small> }</div>
-                    <button class="sg-button small" type="button" aria-label="@($"Invitér {candidate.Name}")"
-                        disabled="@(_sent.Contains(candidate.UserSub) || _sending.Contains(candidate.UserSub))" @onclick="@(() => InviteAsync(candidate))">
-                        @(_sent.Contains(candidate.UserSub) ? "Inviteret" : _sending.Contains(candidate.UserSub) ? "Sender…" : "Invitér")
+                    <div><strong>@candidate.Name</strong>@if (candidate.OwnHold) { <small>@Lang.T("Dit hold", "Your class")</small> }</div>
+                    <button class="sg-button small" type="button" aria-label="@(invited || sending ? $"{candidate.Name} – {label}" : $"{label} {candidate.Name}")"
+                        disabled="@(invited || sending)" @onclick="@(() => InviteAsync(candidate))">
+                        @label
                     </button>
                 </li>
             }
         </ul>
     }
-    @if (_error is not null) { <p class="sg-error" role="alert">@_error</p> }
+    @if (_error is not null) { <p class="sg-error" role="alert">@Lang.Error(_error)</p> }
 </section>
 
 @code {
+    [CascadingParameter] public SocialGameLanguage Lang { get; set; } = new();
     [Parameter, EditorRequired] public string Code { get; set; } = "";
     private bool _loading, _disposed;
     private int _search;
     private string _query = "";
-    private string? _error;
+    private Exception? _error;
     private SocialInviteCandidate[] _candidates = [];
     private readonly HashSet<Guid> _sent = [], _sending = [];
 
@@ -52,7 +57,7 @@
         }
         catch (Exception ex) when (SocialText.IsRequestError(ex))
         {
-            if (!_disposed && request == _search) { _error = SocialText.Error(ex); _candidates = []; }
+            if (!_disposed && request == _search) { _error = ex; _candidates = []; }
         }
         finally { if (!_disposed && request == _search) _loading = false; }
     }
@@ -66,7 +71,7 @@
             await Client.InviteAsync(Code, candidate.UserSub);
             _sent.Add(candidate.UserSub);
         }
-        catch (Exception ex) when (SocialText.IsRequestError(ex)) { _error = SocialText.Error(ex); }
+        catch (Exception ex) when (SocialText.IsRequestError(ex)) { _error = ex; }
         finally { _sending.Remove(candidate.UserSub); }
     }
     public void Dispose() => _disposed = true;
