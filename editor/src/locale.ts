@@ -1,12 +1,12 @@
 import { en } from '@blocknote/core/locales';
 
 const titles: Record<string, [string, string, string]> = {
-  heading: ['Overskrift 1', 'Stor overskrift', 'Overskrifter'], heading_2: ['Overskrift 2', 'Overskrift til afsnit', 'Overskrifter'], heading_3: ['Overskrift 3', 'Mindre overskrift', 'Overskrifter'],
-  heading_4: ['Overskrift 4', 'Underafsnit', 'Overskrifter'], heading_5: ['Overskrift 5', 'Underafsnit', 'Overskrifter'], heading_6: ['Overskrift 6', 'Underafsnit', 'Overskrifter'],
-  toggle_heading: ['Foldbar overskrift 1', 'Fold afsnittet sammen', 'Overskrifter'], toggle_heading_2: ['Foldbar overskrift 2', 'Fold afsnittet sammen', 'Overskrifter'], toggle_heading_3: ['Foldbar overskrift 3', 'Fold afsnittet sammen', 'Overskrifter'],
-  quote: ['Citat', 'Fremhæv et citat', 'Indhold'], toggle_list: ['Foldbar liste', 'Skjul eller vis underpunkter', 'Indhold'], numbered_list: ['Nummereret liste', 'Punkter i rækkefølge', 'Indhold'], bullet_list: ['Punktliste', 'Liste med punkter', 'Indhold'], check_list: ['Tjekliste', 'Liste med afkrydsning', 'Indhold'], paragraph: ['Tekst', 'Et almindeligt tekstafsnit', 'Indhold'],
-  code_block: ['Kodeblok', 'Indsæt kildekode', 'Indhold'], page_break: ['Sideskift', 'Opdel dokumentet ved udskrift', 'Indhold'], divider: ['Skillelinje', 'Adskil afsnit', 'Indhold'],
-  table: ['Tabel', 'En simpel tabel med redigerbare celler', 'Layout'], image: ['Billede', 'Indsæt et billede fra en URL', 'Medier'], video: ['Video', 'Indsæt en video fra en URL', 'Medier'], audio: ['Lyd', 'Indsæt lyd fra en URL', 'Medier'], file: ['Fil', 'Indsæt et link til en fil', 'Medier'], emoji: ['Emoji', 'Find og indsæt en emoji', 'Indhold'],
+  heading: ['Overskrift 1', 'Stor overskrift', 'Tekst'], heading_2: ['Overskrift 2', 'Overskrift til afsnit', 'Tekst'], heading_3: ['Overskrift 3', 'Mindre overskrift', 'Tekst'],
+  heading_4: ['Overskrift 4', 'Underafsnit', 'Tekst'], heading_5: ['Overskrift 5', 'Underafsnit', 'Tekst'], heading_6: ['Overskrift 6', 'Underafsnit', 'Tekst'],
+  toggle_heading: ['Foldbar overskrift 1', 'Fold afsnittet sammen', 'Tekst'], toggle_heading_2: ['Foldbar overskrift 2', 'Fold afsnittet sammen', 'Tekst'], toggle_heading_3: ['Foldbar overskrift 3', 'Fold afsnittet sammen', 'Tekst'],
+  quote: ['Citat', 'Fremhæv et citat', 'Tekst'], toggle_list: ['Foldbar liste', 'Skjul eller vis underpunkter', 'Tekst'], numbered_list: ['Nummereret liste', 'Punkter i rækkefølge', 'Tekst'], bullet_list: ['Punktliste', 'Liste med punkter', 'Tekst'], check_list: ['Tjekliste', 'Liste med afkrydsning', 'Tekst'], paragraph: ['Tekst', 'Et almindeligt tekstafsnit', 'Tekst'],
+  code_block: ['Kodeblok', 'Indsæt kildekode', 'Tekst'], page_break: ['Sideskift', 'Opdel dokumentet ved udskrift', 'Layout'], divider: ['Skillelinje', 'Adskil afsnit', 'Layout'],
+  table: ['Tabel', 'En simpel tabel med redigerbare celler', 'Layout'], image: ['Billede fra URL', 'Vis et billede fra et link', 'Medier og links'], video: ['Video fra URL', 'Vis en video fra et link', 'Medier og links'], audio: ['Lyd fra URL', 'Afspil lyd fra et link', 'Medier og links'], file: ['Fil fra URL', 'Indsæt et link til en fil', 'Medier og links'], emoji: ['Emoji i teksten', 'Vælg en emoji direkte ved markøren', 'Medier og links'],
 };
 export const danish = {
   ...en,
