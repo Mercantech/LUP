@@ -3,7 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { createPortal } from 'react-dom';
 import { NativeAiLauncher } from './ai-native-launcher';
 import { BlockNoteSchema, defaultBlockSpecs, defaultInlineContentSpecs, trackPosition, type BlockNoteEditor } from '@blocknote/core';
-import { filterSuggestionItems, insertOrUpdateBlockForSlashMenu, SuggestionMenu } from '@blocknote/core/extensions';
+import { insertOrUpdateBlockForSlashMenu, SuggestionMenu } from '@blocknote/core/extensions';
 import { TextSelection } from 'prosemirror-state';
 import { withCollaboration } from '@blocknote/core/yjs';
 import { createReactBlockSpec, createReactInlineContentSpec, FormattingToolbar, FormattingToolbarController, getDefaultReactEmojiPickerItems, getDefaultReactSlashMenuItems, getFormattingToolbarItems, GridSuggestionMenuController, SideMenu, SideMenuController, SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
@@ -34,6 +34,7 @@ import { EmojiCatalog, EmojiReload, EmojiCreate, EmojiAnalyze, CustomEmojiImage,
 import { analyzePlatformEmoji, uploadPlatformEmoji } from './emoji-upload.mjs';
 import { EmojiSuggestionMenu } from './emoji-suggestion-menu';
 import { ReferenceSuggestionMenu } from './reference-suggestion-menu';
+import { SlashCommandMenu } from './slash-command-menu';
 import { captureEmojiQuery, resolveEmojiQuery } from './emoji-query-target.mjs';
 import { createDrawing } from './drawing-block';
 import { DrawingEnvironmentProvider, requestCreateDrawing, requestOpenDrawing, collectDrawingPublicationData, type DrawingEnvironment } from './drawing-context';
@@ -801,32 +802,32 @@ function ConnectedEditor({session}:{session:Session}) {
       icon: <span className="notion-column-icon" data-count={count} aria-hidden="true" />,
       onItemClick: () => { if (canEdit(session)) insertColumnLayout(editor, count); },
     })),
-    {title:'Tegning',aliases:['tegning','excalidraw','canvas','whiteboard'],group:'Medier',onItemClick:()=>{void insertDrawing();}},
-    {title:'Link til indhold',subtext:'Find sider, personer, opgaver og andet indhold i LUP',aliases:['side','underside','link','reference','notesbog'],group:'Undervisning',onItemClick:()=>insert('entityLink')},
-    {title:'Gemt gruppe',subtext:'Indsæt en gemt gruppe fra holdet',aliases:['gruppe','grupper'],group:'Undervisning',onItemClick:()=>insert('holdGroup')},
-    {title:'Upload video',subtext:notebook?'Tilføj MP4 eller WebM til siden':'Del MP4 eller WebM med holdet ved udgivelse',aliases:['video','upload'],group:'Medier',onItemClick:()=>insert('pageMedia','video')},
-    {title:'Upload billede',subtext:'Tilføj et billede fra din computer',aliases:['billede','foto','image'],group:'Medier',onItemClick:()=>insert('pageMedia','image')},
-    ...(allowsImageGeneration(session) ? [{title:'Generér billede med AI',subtext:'Brug sidens indhold eller beskriv en illustration',aliases:['generer billede','ai-billede','illustration','image'],group:'Medier',onItemClick:()=>{
+    {title:'Tegning',subtext:'Tegn på et fælles lærred',aliases:['tegning','excalidraw','canvas','whiteboard'],group:'Medier og links',icon:<span aria-hidden="true">✎</span>,onItemClick:()=>{void insertDrawing();}},
+    {title:'Link til indhold',subtext:'Find sider, personer, opgaver og andet indhold i LUP',aliases:['side','underside','link','reference','notesbog'],group:'Medier og links',icon:<span aria-hidden="true">↗</span>,onItemClick:()=>insert('entityLink')},
+    {title:'Gemt gruppe',subtext:'Indsæt en gemt gruppe fra holdet',aliases:['gruppe','grupper'],group:'Hold',icon:<span aria-hidden="true">◉</span>,onItemClick:()=>insert('holdGroup')},
+    {title:'Upload video',subtext:notebook?'Tilføj MP4 eller WebM til siden':'Del MP4 eller WebM med holdet ved udgivelse',aliases:['video','upload'],group:'Medier og links',icon:<span aria-hidden="true">▷</span>,onItemClick:()=>insert('pageMedia','video')},
+    {title:'Upload billede',subtext:'Tilføj et billede fra din computer',aliases:['billede','foto','image'],group:'Medier og links',icon:<span aria-hidden="true">▧</span>,onItemClick:()=>insert('pageMedia','image')},
+    ...(allowsImageGeneration(session) ? [{title:'Generér billede med AI',subtext:'Brug sidens indhold eller beskriv en illustration',aliases:['generer billede','ai-billede','illustration','image'],group:'AI',icon:<span aria-hidden="true">✦</span>,onItemClick:()=>{
       const block=insert('pageMedia','image');
       if (block) { session.imageGeneratorBlock=block.id; session.render(); }
     }}] : []),
-    {title:'Upload lyd',subtext:'Tilføj MP3, WAV eller OGG',aliases:['lyd','audio'],group:'Medier',onItemClick:()=>insert('pageMedia','audio')},
-    {title:'Upload fil',subtext:'PDF, dokument, ZIP eller mediefil',aliases:['fil','vedhæftning','upload'],group:'Medier',onItemClick:()=>insert('pageMedia')},
-    {title:'Emoji',subtext:'Vælg en emoji eller tilføj din egen',aliases:['emoji','emojis','smiley'],group:'Medier',onItemClick:openEmoji},
-    {title:'Elever fra holdet',subtext:'Indsæt en levende elevliste',aliases:['elever','klasse','hold','students'],group:'Undervisning',icon:<span aria-hidden="true">◉</span>,onItemClick:()=>insert('classRoster')},
-    {title:'Afstemning fra holdet',subtext:'Kobl en eksisterende afstemning på siden',aliases:['afstemning','poll','stemning'],group:'Undervisning',icon:<span aria-hidden="true">▥</span>,onItemClick:()=>insert('holdPoll')},
+    {title:'Upload lyd',subtext:'Tilføj MP3, WAV eller OGG',aliases:['lyd','audio'],group:'Medier og links',icon:<span aria-hidden="true">♪</span>,onItemClick:()=>insert('pageMedia','audio')},
+    {title:'Upload fil',subtext:'PDF, dokument, ZIP eller mediefil',aliases:['fil','vedhæftning','upload'],group:'Medier og links',icon:<span aria-hidden="true">▤</span>,onItemClick:()=>insert('pageMedia')},
+    {title:'Emoji',subtext:'Åbn LUPs emojivælger eller upload din egen',aliases:['emoji','emojis','smiley'],group:'Medier og links',icon:<span aria-hidden="true">☺</span>,onItemClick:openEmoji},
+    {title:'Elever fra holdet',subtext:'Indsæt en levende elevliste',aliases:['elever','klasse','hold','students'],group:'Hold',icon:<span aria-hidden="true">◉</span>,onItemClick:()=>insert('classRoster')},
     ...(!notebook && session.context.holdId ? liveKinds.map(item => ({
       title: item.title, subtext: item.description, aliases: ['live', item.kind], group: 'Liveaktiviteter',
       icon: <span aria-hidden="true">{item.icon}</span>, onItemClick: () => insert('liveCourseActivity', item.kind),
     })) : []),
-    {title:'Videnstjek',subtext:'Lad eleven svare direkte på siden',aliases:['videnstjek','quiz','spørgsmål'],group:'Undervisning',onItemClick:()=>insert('knowledgeCheck')},
-    {title:'Slidegrænse',subtext:'Start næste slide i præsentationen',aliases:['slide','slides','præsentation'],group:'Undervisning',icon:<span aria-hidden="true">▱</span>,onItemClick:()=>insert('slideBreak')},
-    {title:'Læringsmål',subtext:'Fremhæv målet for aktiviteten',aliases:['læringsmål','mål','learning'],group:'Undervisning',icon:<span aria-hidden="true">◎</span>,onItemClick:()=>insert('learningGoal')},
-    {title:'Diagram',subtext:'Mermaid flowchart, sequence m.m.',aliases:['diagram','mermaid','flowchart','graf'],group:'Undervisning',icon:<span aria-hidden="true">◈</span>,onItemClick:()=>insert('mermaidDiagram')},
-    {title:'LaTeX-formel',subtext:'Skriv en matematisk formel med LaTeX',aliases:['latex','tex','formel','matematik','math','ligning'],group:'Undervisning',icon:<span aria-hidden="true">∑</span>,onItemClick:()=>insert('codeBlock')},
-    {title:'Callout',subtext:'Fremhæv info, tip, advarsel eller vigtigt',aliases:['callout','info','tip','advarsel','note'],group:'Undervisning',icon:<span aria-hidden="true">▣</span>,onItemClick:()=>insert('callout')},
-    {title:'AI',subtext:'Generér blokke, omskriv tekst eller lav et diagram',aliases:['ai','openai','hjælp','assistent'],group:'Undervisning',icon:<span aria-hidden="true">✦</span>,onItemClick:()=>openAi()},
-    {title:'Præsenter',subtext:'Vis dokumentet som slides',aliases:['præsenter','præsentation','slides','presentation'],group:'Visning',onItemClick:()=>openPresentation(session)},
+    {title:'Afstemning fra holdet',subtext:'Kobl en eksisterende afstemning på siden',aliases:['afstemning','poll','stemning'],group:'Liveaktiviteter',icon:<span aria-hidden="true">↗</span>,onItemClick:()=>insert('holdPoll')},
+    {title:'Videnstjek',subtext:'Lad eleven svare direkte på siden',aliases:['videnstjek','quiz','spørgsmål'],group:'Hold',icon:<span aria-hidden="true">✓</span>,onItemClick:()=>insert('knowledgeCheck')},
+    {title:'Slidegrænse',subtext:'Start næste slide i præsentationen',aliases:['slide','slides','præsentation'],group:'Præsentation',icon:<span aria-hidden="true">▱</span>,onItemClick:()=>insert('slideBreak')},
+    {title:'Læringsmål',subtext:'Fremhæv målet for aktiviteten',aliases:['læringsmål','mål','learning'],group:notebook?'Tekst':'Hold',icon:<span aria-hidden="true">◎</span>,onItemClick:()=>insert('learningGoal')},
+    {title:'Diagram',subtext:'Mermaid flowchart, sequence m.m.',aliases:['diagram','mermaid','flowchart','graf'],group:'Layout',icon:<span aria-hidden="true">◈</span>,onItemClick:()=>insert('mermaidDiagram')},
+    {title:'LaTeX-formel',subtext:'Skriv en matematisk formel med LaTeX',aliases:['latex','tex','formel','matematik','math','ligning'],group:'Tekst',icon:<span aria-hidden="true">∑</span>,onItemClick:()=>insert('codeBlock')},
+    {title:'Callout',subtext:'Fremhæv info, tip, advarsel eller vigtigt',aliases:['callout','info','tip','advarsel','note'],group:'Tekst',icon:<span aria-hidden="true">▣</span>,onItemClick:()=>insert('callout')},
+    {title:'AI',subtext:'Generér blokke, omskriv tekst eller lav et diagram',aliases:['ai','openai','hjælp','assistent'],group:'AI',icon:<span aria-hidden="true">✦</span>,onItemClick:()=>openAi()},
+    {title:'Præsenter',subtext:'Vis dokumentet som slides',aliases:['præsenter','præsentation','slides','presentation'],group:'Præsentation',icon:<span aria-hidden="true">▷</span>,onItemClick:()=>openPresentation(session)},
   ].filter(item=>(!notebook || !['Gemt gruppe','Elever fra holdet','Afstemning fra holdet','Videnstjek','Slidegrænse','Emoji','AI','Præsenter'].includes(item.title)) && (session.context.holdId || !['Gemt gruppe','Elever fra holdet','Afstemning fra holdet'].includes(item.title)));
   return <OpenAiOnBlockProvider openOnBlock={notebook?null:openAi}>
     {!session.readOnly && columnToolbarSlot && createPortal(
@@ -846,7 +847,12 @@ function ConnectedEditor({session}:{session:Session}) {
       {!session.readOnly && <>
         <FormattingToolbarController formattingToolbar={() => <FormattingToolbar><NotionBlockTypeSelect />{getFormattingToolbarItems().filter((item) => item.key !== 'blockTypeSelect')}{!notebook && <button type="button" className="native-ai-selection-button" onMouseDown={event=>event.preventDefault()} onClick={()=>openAi()} disabled={!enabled}>✦ AI</button>}</FormattingToolbar>} />
         <SideMenuController sideMenu={(props) => <SideMenu {...props} dragHandleMenu={NotionDragHandleMenu} />} />
-        <SuggestionMenuController triggerCharacter="/" getItems={async query=>filterSuggestionItems([...customItems,...getDefaultReactSlashMenuItems(editor)],query)} />
+        <SlashCommandMenu commands={[
+          ...getDefaultReactSlashMenuItems(editor)
+            .filter(item => !notebook || item.title !== danish.slash_menu.emoji.title)
+            .sort((a, b) => Number(b.title === danish.slash_menu.paragraph.title) - Number(a.title === danish.slash_menu.paragraph.title)),
+          ...customItems,
+        ]} />
         <SuggestionMenuController triggerCharacter="@" suggestionMenuComponent={ReferenceSuggestionMenu} getItems={async (query):Promise<{title:string;subtext:string;group:string;onItemClick:()=>void}[]>=>{
           try {
             const result=await referenceSearch?.search(query);
