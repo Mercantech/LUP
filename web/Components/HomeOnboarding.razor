@@ -2,6 +2,14 @@
 @inject IJSRuntime Js
 @implements IAsyncDisposable
 
+@if (PreviewAudience is not null)
+{
+    <button type="button" class="secondary" disabled="@_loading" aria-haspopup="dialog" @onclick="LoadAsync">@(_loading ? "Henter guide…" : TriggerLabel)</button>
+}
+@if (_loadFailed)
+{
+    <p role="alert">Guiden kunne ikke hentes. Prøv at åbne den igen.</p>
+}
 @if (_steps.Length > 0)
 {
     var step = _steps[_stepIndex];
@@ -9,11 +17,16 @@
             aria-describedby="onboarding-text" @onclose="DismissAsync">
         <div class="onboarding-mark" aria-hidden="true"><UiIcon Name="book" /></div>
         <div aria-live="polite">
+            <p class="onboarding-progress">Trin @(_stepIndex + 1) af @_steps.Length</p>
             <h2 id="onboarding-title">@step.Title</h2>
             <p id="onboarding-text">@step.Text</p>
         </div>
         <form method="dialog">
-            <button class="secondary" type="submit">Spring over</button>
+            <button class="secondary" type="submit">@(PreviewAudience is null ? "Spring over" : "Luk guiden")</button>
+            @if (_stepIndex > 0)
+            {
+                <button class="secondary" type="button" @onclick="() => _stepIndex--">Tilbage</button>
+            }
             @if (_stepIndex + 1 < _steps.Length)
             {
                 <button class="action" type="button" autofocus @onclick="() => _stepIndex++">Næste</button>
@@ -35,6 +48,8 @@
 
 @code {
     [Parameter, EditorRequired] public Guid Subject { get; set; }
+    [Parameter] public string? PreviewAudience { get; set; }
+    [Parameter] public string TriggerLabel { get; set; } = "Se onboarding";
 
     private const string Endpoint = "me/onboarding";
     private OnboardingStepDto[] _steps = [];
@@ -45,18 +60,29 @@
     private bool _disposed;
     private bool _saving;
     private bool _saveFailed;
+    private bool _loading;
+    private bool _loadFailed;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => PreviewAudience is null ? LoadAsync() : Task.CompletedTask;
+
+    private async Task LoadAsync()
     {
+        _loading = true;
+        _loadFailed = false;
+        _stepIndex = 0;
+        _openAttempted = false;
         try
         {
-            var steps = await Http.GetFromJsonAsync<OnboardingStepDto[]>(Endpoint);
+            var url = PreviewAudience is null ? Endpoint : $"{Endpoint}?preview={Uri.EscapeDataString(PreviewAudience)}";
+            var steps = await Http.GetFromJsonAsync<OnboardingStepDto[]>(url);
             if (!_disposed) _steps = steps ?? [];
+            _loadFailed = PreviewAudience is not null && _steps.Length == 0;
         }
         catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or System.Text.Json.JsonException)
         {
-            // Onboarding is optional, so the home page stays usable when the API is unavailable.
+            _loadFailed = PreviewAudience is not null;
         }
+        finally { _loading = false; }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -66,7 +92,7 @@
         _openAttempted = true;
         try
         {
-            var module = await Js.InvokeAsync<IJSObjectReference>("import", "./js/modal-dialog.js");
+            var module = _module ?? await Js.InvokeAsync<IJSObjectReference>("import", "./js/modal-dialog.js");
             if (_disposed)
             {
                 await module.DisposeAsync();
@@ -81,6 +107,7 @@
             if (!_disposed)
             {
                 _steps = [];
+                _loadFailed = PreviewAudience is not null;
                 StateHasChanged();
             }
         }
@@ -91,7 +118,7 @@
         if (_disposed || _steps.Length == 0) return;
 
         _steps = [];
-        await SaveDismissalAsync();
+        if (PreviewAudience is null) await SaveDismissalAsync();
     }
 
     private async Task SaveDismissalAsync()

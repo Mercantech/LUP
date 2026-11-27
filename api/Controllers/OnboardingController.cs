@@ -15,14 +15,19 @@ public sealed class OnboardingController(AppDbContext db) : ControllerBase
 {
     [HttpGet]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public async Task<ActionResult<OnboardingStepDto[]>> Get(CancellationToken ct)
+    public async Task<ActionResult<OnboardingStepDto[]>> Get(CancellationToken ct, [FromQuery] string? preview = null)
     {
         if (UserClaims.GetSub(User) is not Guid sub || sub == Guid.Empty) return Unauthorized();
 
-        if (await db.OnboardingDismissals.AnyAsync(x => x.UserSub == sub, ct))
+        if (preview is not null && !UserClaims.IsTeacher(User)) return Forbid();
+        if (preview is not null && preview != OnboardingStep.Student && preview != OnboardingStep.Teacher)
+            return BadRequest();
+
+        if (preview is null && await db.OnboardingDismissals.AnyAsync(x => x.UserSub == sub, ct))
             return Array.Empty<OnboardingStepDto>();
 
         var audience = UserClaims.IsTeacher(User) ? OnboardingStep.Teacher : OnboardingStep.Student;
+        audience = preview ?? audience;
         return await db.OnboardingSteps
             .Where(x => x.Audience == audience)
             .OrderBy(x => x.SortOrder)
