@@ -6,6 +6,7 @@ namespace Mercantec.Tech.Api.Data;
 
 public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    public DbSet<AccountBadge> AccountBadges => Set<AccountBadge>();
     public DbSet<Forloeb> Forloeb => Set<Forloeb>();
     public DbSet<Hold> Hold => Set<Hold>();
     public DbSet<HoldFavorite> HoldFavorites => Set<HoldFavorite>();
@@ -34,6 +35,15 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         ConfigureSocialInvitations(modelBuilder);
         ConfigureActionCenter(modelBuilder);
         ConfigureOnboarding(modelBuilder);
+        modelBuilder.Entity<AccountBadge>(e =>
+        {
+            e.ToTable("account_badges");
+            e.HasIndex(x => new { x.UserSub, x.BadgeId, x.Rank }).IsUnique();
+            e.HasIndex(x => new { x.HoldId, x.Status });
+            e.Property(x => x.Evidence).HasMaxLength(700);
+            e.Property(x => x.BadgeId).HasMaxLength(64);
+            e.Property(x => x.Status).HasMaxLength(16);
+        });
         ConfigureLearning(modelBuilder);
         ConfigureGroupSets(modelBuilder);
         ConfigureHoldCalendar(modelBuilder);

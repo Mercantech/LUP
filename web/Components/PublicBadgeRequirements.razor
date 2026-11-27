@@ -1,4 +1,6 @@
 @using Mercantec.Tech.Web.Public
+@inject AuthService Auth
+@inject ViewAsStudentContext ViewAs
 @if (PublicCatalog.FindBadge(BadgeId) is { } badge)
 {
     <nav class="breadcrumbs" aria-label="Brødkrummer"><a href="/library?category=badges">Oversigt</a><span>›</span><a href="/badges">Badges og krav</a><span>›</span><span aria-current="page">@badge.Name</span></nav>
@@ -6,7 +8,7 @@
     <div class="cols"><article class="panel"><h2>@(badge.Special ? "Krav" : "Krav for hvert niveau")</h2>
         @if (badge.Special)
         {
-            <p>@badge.Description</p><p>Kriterierne aftales med underviseren.</p>
+            <p>@badge.Description</p>
         }
         else
         {
@@ -15,7 +17,10 @@
                 <section class="v2-rank"><span class="rank-dot">@(i + 1)</span><div><h3>@DemoCatalog.RankNames[i]</h3><p>@DemoCatalog.RankCriteria[i]</p></div></section>
             }
         }
-    </article><aside class="panel"><BadgeMark Rank="1" Icon="@badge.Icon" /><h2>@badge.Topic</h2><a href="/subjects">Find fag og emner</a>@if (badge.Id is "hawaii" or "friday") { <p>@(badge.Id == "hawaii" ? "Hawaii-badget giver adgang til at købe Hawaii-skjorten med guld." : "Fancy Friday giver adgang til at købe Fancy Friday-sættet med guld.")</p> }</aside></div>
+    @if (badge.Automatic) { <p>Du får automatisk badget og en notifikation, når kravet er opfyldt.</p> }
+        else if (Auth.IsAuthenticated && !ViewAs.IsActive) { <BadgeApplicationPanel @key="(Auth.Subject, badge.Id)" Badge="badge" /> }
+        else if (!Auth.IsAuthenticated) { <a class="secondary" href="@Auth.LoginPath()">Log ind for at anmode</a> }
+    </article><aside class="panel"><BadgeEmblem Badge="badge" /><h2>@badge.Topic</h2><a href="/subjects">Find fag og emner</a>@if (badge.Id is "hawaii" or "friday") { <p>@(badge.Id == "hawaii" ? "Hawaii-badget giver adgang til at købe Hawaii-skjorten med guld." : "Fancy Friday giver adgang til at købe Fancy Friday-sættet med guld.")</p> }</aside></div>
 }
 else
 {

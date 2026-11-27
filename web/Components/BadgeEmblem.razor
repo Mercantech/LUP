@@ -1,0 +1,18 @@
+<span class="emblem @Palette" aria-hidden="true">
+    <svg viewBox="0 0 100 108" focusable="false">
+        <path class="tails" d="M27 62 21 104 37 97 48 106 51 73 59 105 68 96 82 101 73 62Z"/>
+        <path class="rim" d="M50 3 79 13 96 38 92 65 74 86 50 95 26 86 8 65 4 38 21 13Z"/>
+        <path class="face" d="M50 10 74 19 89 40 85 61 69 80 50 87 31 80 15 61 11 40 26 19Z"/>
+        <path class="inlay" d="m50 16 21 8 12 18-3 17-14 16-16 6-16-6-14-16-3-17 12-18Z"/>
+        <path class="spark" d="m50 19 2 4 4 2-4 2-2 4-2-4-4-2 4-2ZM27 45l2 3-2 3-2-3Zm46 0 2 3-2 3-2-3Z"/>
+        <path class="stripe" d="m38 69 12 5 12-5"/>
+    </svg>
+    <span class="symbol"><UiIcon Name="@Badge.Icon" /></span>
+</span>
+@code {
+    [Parameter, EditorRequired] public BadgeDefinition Badge { get; set; } = null!;
+    private string Palette => Badge.Topic switch {
+        "Game Design" => "violet", "Arduino & IoT" => "teal", "Fællesskab" => "rose",
+        "Quests" or "Ordspil" => "gold", "Database" or "Samarbejde" => "jade", _ => "blue"
+    };
+}

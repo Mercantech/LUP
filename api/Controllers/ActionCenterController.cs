@@ -12,7 +12,7 @@ namespace Mercantec.Tech.Api.Controllers;
 public sealed class ActionCenterController(AppDbContext db, CourseAccess access) : ControllerBase
 {
     [HttpGet, ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public async Task<IActionResult> Get([FromQuery] Guid? asUser, CancellationToken ct, [FromQuery] int version = 1, [FromQuery] bool socialGames = false)
+    public async Task<IActionResult> Get([FromQuery] Guid? asUser, CancellationToken ct, [FromQuery] int version = 1, [FromQuery] bool socialGames = false, [FromQuery] bool badges = false)
     {
         if (UserClaims.GetSub(User) is not Guid subject || subject == Guid.Empty) return Unauthorized();
         var teacher = UserClaims.IsTeacher(User);
@@ -31,6 +31,14 @@ public sealed class ActionCenterController(AppDbContext db, CourseAccess access)
         {
             snapshot = snapshot with { Items = [.. snapshot.Items, .. await new Mercantec.Tech.Api.References.ReferenceService(db).MentionsAsync(User, ct)] };
             // Older web clients validate each notification kind before displaying the snapshot.
+            if (badges)
+            {
+                var earned = await db.AccountBadges.Where(b => b.UserSub == subject && b.Status == "earned" && !b.NoticeRead)
+                    .Select(b => new { b.Id, b.BadgeId, b.Rank }).ToArrayAsync(ct);
+                var notices = earned.Select(b => new ActionCenterItem("badge-award", "optional", null, null, null, b.Id, null,
+                    BadgeCatalog.Find(b.BadgeId)?.Name ?? b.BadgeId, BadgeCatalog.Find(b.BadgeId)?.Levels > 1 ? $"Niveau {b.Rank}" : "Mine badges", null, State: b.BadgeId));
+                snapshot = snapshot with { Items = [.. snapshot.Items, .. notices] };
+            }
             if (socialGames)
             {
                 var invitations = await db.SocialGameInvitations.AsNoTracking()
@@ -51,6 +59,10 @@ public sealed class ActionCenterController(AppDbContext db, CourseAccess access)
         var teacher = UserClaims.IsTeacher(User);
         var holds = teacher ? access.AccessibleHolds(User, true) : db.Hold.Where(h => h.Memberships.Any(m => m.UserSub == subject));
         var scope = await holds.AsNoTracking().Select(h => new ActionCenterHold(h.Id, h.ForloebId, h.Name)).ToArrayAsync(ct);
+        var badgeIds = request.Items.Where(i => i.Kind == "badge-award").Select(i => i.ResourceId).ToArray();
+        if (badgeIds.Length > 0)
+            await db.AccountBadges.Where(b => b.UserSub == subject && b.Status == "earned" && badgeIds.Contains(b.Id))
+                .ExecuteUpdateAsync(s => s.SetProperty(b => b.NoticeRead, true), ct);
         var inviteIds = request.Items.Where(item => item.Kind == "social-game-invite").Select(item => item.ResourceId).ToArray();
         if (inviteIds.Length > 0)
         {

@@ -92,7 +92,7 @@ public sealed class PublicContentTests
     public void PublicBadgeContractDoesNotContainPersonalAwardFields()
     {
         Assert.NotEmpty(PublicCatalog.Badges);
-        var names = typeof(PublicBadge).GetProperties().Select(p => p.Name).ToArray();
+        var names = typeof(Mercantec.Tech.Contracts.BadgeDefinition).GetProperties().Select(p => p.Name).ToArray();
         Assert.DoesNotContain("Rank", names);
         Assert.DoesNotContain("Owner", names);
         Assert.DoesNotContain("UserSub", names);

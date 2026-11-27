@@ -43,12 +43,11 @@ public static class PublicCatalog
     ];
 
     // Public definitions omit personal ranks, ownership and award history.
-    public static IReadOnlyList<PublicBadge> Badges { get; } = DemoCatalog.Badges
-        .Select(b => new PublicBadge(b.Id, b.Name, b.Topic, b.Desc, b.Icon, b.Special)).ToArray();
+    public static IReadOnlyList<Mercantec.Tech.Contracts.BadgeDefinition> Badges => Mercantec.Tech.Contracts.BadgeCatalog.All;
 
     public static PublicSubject? FindSubject(string? id) => Subjects.FirstOrDefault(s => s.Id == id);
     public static PublicProject? FindProject(string? id) => Projects.FirstOrDefault(p => p.Id == id);
-    public static PublicBadge? FindBadge(string? id) => Badges.FirstOrDefault(b => b.Id == id);
+    public static Mercantec.Tech.Contracts.BadgeDefinition? FindBadge(string? id) => Badges.FirstOrDefault(b => b.Id == id);
 
     public static IEnumerable<LearningContent.Lesson> Lessons(PublicSubject subject) =>
         subject.LessonSubject is null ? [] : LearningContent.Lessons.Where(l => l.Subject == subject.LessonSubject);
@@ -98,7 +97,7 @@ public sealed record PublicProject(string Id, string Name, string Category, stri
     public string Path => "/explore/projects/" + Id;
     public bool IsDemo => true;
 }
-public sealed record PublicBadge(string Id, string Name, string Topic, string Description, string Icon, bool Special);
+
 public sealed record PublicSearchHit(string Kind, string Title, string Description, string Href)
 {
     public string SearchTerms { get; init; } = "";

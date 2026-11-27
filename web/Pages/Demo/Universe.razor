@@ -31,7 +31,7 @@ else if (PathKey == "progress")
 }
 else if (PathKey == "progress/badges")
 {
-    <header class="page-title"><div><h1>Mine badges</h1><p>Din samling af faglige fremskridt.</p></div><a class="secondary" href="/badges">Se hele kataloget</a></header><BadgeGallery OwnedOnly="true" />
+    <header class="page-title"><div><h1>Mine badges</h1><p>Din samling af faglige fremskridt.</p></div><a class="secondary" href="/badges">Se hele kataloget</a></header>@if (!ViewAs.IsActive) { <BadgeGallery @key="Auth.Subject" /> } else { <p>Badgesamlingen er personlig.</p> }
 }
 else if (PathKey == "profile/character")
 {

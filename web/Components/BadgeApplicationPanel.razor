@@ -1,0 +1,47 @@
+@inject HttpClient Http
+@if (!_open)
+{
+    <button class="action" @onclick="Load">Se status og anmod om badge</button>
+}
+else if (_data is null && !_error) { <p role="status">Henter din status…</p> }
+else if (_data is not null)
+{
+    var entries = _data.Entries.Where(e => e.BadgeId == Badge.Id);
+    var rank = entries.Where(e => e.Status == "earned").Select(e => e.Rank).DefaultIfEmpty(0).Max();
+    @if (rank > 0) { <p><strong>✓ Opnået@(Badge.Levels > 1 ? $" · {DemoCatalog.RankNames[rank - 1]}" : "")</strong></p> }
+    @if (entries.Any(e => e.Status == "pending")) { <p role="status">Din anmodning afventer underviserens vurdering.</p> }
+    else if (rank < Badge.Levels && _data.Holds.Length > 0) {
+        @if (entries.Any(e => e.Status == "declined")) { <p>Din seneste anmodning blev afslået. Du kan sende en ny begrundelse.</p> }
+        <h3>@(Badge.Levels > 1 ? $"Anmod om niveau {rank + 1} · {DemoCatalog.RankNames[rank]}" : "Anmod om badget")</h3>
+        <label class="field">Hold<select @bind="_hold">@foreach (var hold in _data.Holds) { <option value="@hold.Id">@hold.Name</option> }</select></label>
+        <label class="field">Hvad har du gjort?<textarea maxlength="700" rows="3" @bind="_evidence" placeholder="Beskriv dit arbejde, så din underviser kan vurdere det."></textarea></label>
+        <button class="action" disabled="@_busy" @onclick="() => Apply(rank + 1)">Send anmodning</button>
+    }
+    else if (rank < Badge.Levels) { <p>Du skal være tilknyttet et hold for at anmode en underviser.</p> }
+}
+@if (_error) { <p role="alert">@_message</p><button class="secondary" @onclick="Load">Hent status igen</button> }
+@code {
+    [Parameter, EditorRequired] public BadgeDefinition Badge { get; set; } = null!;
+    private BadgeCollection? _data;
+    private Guid _hold;
+    private string _evidence = "", _message = "";
+    private bool _open, _error, _busy;
+    private async Task Load() {
+        _open = true; _error = false;
+        try {
+            _data = await Http.GetFromJsonAsync<BadgeCollection>("badges/mine");
+            _hold = _data?.Holds.FirstOrDefault()?.Id ?? Guid.Empty;
+        } catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException) { Fail("Din status kunne ikke hentes."); }
+    }
+    private void Fail(string message) { _error = true; _message = message; }
+    private async Task Apply(int rank) {
+        if (string.IsNullOrWhiteSpace(_evidence)) { Fail("Skriv kort, hvad du har gjort."); return; }
+        _busy = true; _error = false;
+        try {
+            using var result = await Http.PostAsJsonAsync($"badges/{Badge.Id}/requests", new BadgeApplication(_hold, rank, _evidence));
+            if (result.IsSuccessStatusCode) { _evidence = ""; await Load(); }
+            else Fail("Anmodningen kunne ikke sendes. Hent din status og prøv igen.");
+        } catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException) { Fail("Forbindelsen blev afbrudt. Hent din status igen."); }
+        finally { _busy = false; }
+    }
+}

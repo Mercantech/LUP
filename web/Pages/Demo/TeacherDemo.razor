@@ -4,6 +4,7 @@
 @using Mercantec.Tech.Web.Demo
 @inject NavigationManager Nav
 @inject AuthService Auth
+@inject ViewAsStudentContext ViewAs
 @inject AuthRedirect Redirect
 @inject DemoWorld World
 @implements IDisposable
@@ -51,14 +52,7 @@ else if (PathKey == "teacher/content")
 }
 else if (PathKey == "teacher/badges")
 {
-    <header class="page-title"><div><h1>Tildel badges</h1><p>Emne, niveau og et kort grundlag.</p></div></header>
-    <form class="panel">
-        <label class="field">Elev<select disabled><option>Alex Jensen</option></select></label>
-        <label class="field">Badge<select disabled><option>Core Loop</option></select></label>
-        <label class="field">Niveau<select disabled><option>2 · Mellem</option></select></label>
-        <label class="field">Grundlag<textarea disabled>Alex forklarede core loop med Rune Run.</textarea></label>
-        <button type="button" class="action" disabled>Tildel</button>
-    </form>
+    @if (!ViewAs.IsActive) { <BadgeReviews @key="Auth.Subject" /> }
 }
 
 @code {
