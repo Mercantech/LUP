@@ -56,6 +56,7 @@ builder.Services.AddSingleton<Mercantec.Tech.Api.Updates.Automation.PlatformUpda
 builder.Services.AddScoped<Mercantec.Tech.Api.Updates.Automation.PlatformUpdatesAutomationAnalyzer>();
 builder.Services.AddNotionMcp();
 // Arena rooms and simulation share a single authoritative process.
+builder.Services.AddSingleton<Mercantec.Tech.Api.Rlgl.RlglRooms>();
 builder.Services.AddSingleton<Mercantec.Tech.Api.Arena.ArenaRoomService>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<Mercantec.Tech.Api.Arena.ArenaRoomService>());
 builder.Services.Configure<Mercantec.Tech.Api.HomeGame.HomeGameOptions>(builder.Configuration.GetSection("HomeGame"));
