@@ -31,7 +31,9 @@ public sealed class OnboardingTests : IAsyncLifetime
         await using (var db = OpenDatabase())
         {
             var firstSession = For(db, account, role);
-            var step = Assert.Single((await firstSession.Get(default)).Value!);
+            var steps = (await firstSession.Get(default)).Value!;
+            Assert.Equal(4, steps.Length);
+            var step = steps[0];
             Assert.Equal("Velkommen til LUP", step.Title);
             Assert.Contains(expectedText, step.Text);
             Assert.IsType<NoContentResult>(await firstSession.Dismiss(new(account), default));
@@ -41,7 +43,7 @@ public sealed class OnboardingTests : IAsyncLifetime
         await using var nextDatabase = OpenDatabase();
         Assert.Empty((await For(nextDatabase, account, role).Get(default)).Value!);
         Assert.Empty((await For(nextDatabase, account, "Admin").Get(default)).Value!);
-        Assert.Single((await For(nextDatabase, Guid.NewGuid(), role).Get(default)).Value!);
+        Assert.Equal(4, (await For(nextDatabase, Guid.NewGuid(), role).Get(default)).Value!.Length);
         Assert.Equal(1, await nextDatabase.OnboardingDismissals.CountAsync());
     }
 
@@ -61,8 +63,25 @@ public sealed class OnboardingTests : IAsyncLifetime
         var student = For(db, Guid.NewGuid(), "Student");
         Assert.IsType<ConflictResult>(await student.Dismiss(new(Guid.NewGuid()), default));
         Assert.Equal(new[] { "Find rundt i LUP", "Velkommen til LUP" },
-            (await student.Get(default)).Value!.Select(step => step.Title));
+            (await student.Get(default)).Value!.Take(2).Select(step => step.Title));
         Assert.Empty(await db.OnboardingDismissals.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Teacher_preview_preserves_dismissal_and_enforces_role_access()
+    {
+        await using var db = OpenDatabase();
+        var account = Guid.NewGuid();
+        var teacher = For(db, account, "Teacher");
+        Assert.Equal(4, (await teacher.Get(default, "student")).Value!.Length);
+        Assert.Empty(await db.OnboardingDismissals.ToListAsync());
+        await teacher.Dismiss(new(account), default);
+        Assert.Empty((await teacher.Get(default)).Value!);
+        Assert.Contains("Mine handlinger", (await teacher.Get(default, "student")).Value![0].Text);
+        Assert.Contains("Til opfølgning", (await teacher.Get(default, "teacher")).Value![0].Text);
+        Assert.Single(await db.OnboardingDismissals.ToListAsync());
+        Assert.IsType<ForbidResult>((await For(db, Guid.NewGuid(), "Student").Get(default, "teacher")).Result);
+        Assert.IsType<BadRequestResult>((await teacher.Get(default, "unknown")).Result);
     }
 
     private AppDbContext OpenDatabase() => new(new DbContextOptionsBuilder<AppDbContext>().UseSqlite(_connection).Options);

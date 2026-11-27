@@ -33,6 +33,17 @@ else
         <a href="/teacher/tools#opsaetning">Opsætning</a>
     </nav>
     <div class="teacher-tools-sections">
+        @if (Guid.TryParse(Auth.Subject, out var subject))
+        {
+            <section aria-labelledby="onboarding-tools-title">
+                <h2 id="onboarding-tools-title">Onboarding</h2>
+                <p>Gennemgå velkomsten til LUP, eller vis eleverne, hvordan de kommer i gang.</p>
+                <div class="actions">
+                    <HomeOnboarding @key="(subject, true)" Subject="subject" PreviewAudience="teacher" TriggerLabel="Se onboarding for undervisere" />
+                    <HomeOnboarding @key="(subject, false)" Subject="subject" PreviewAudience="student" TriggerLabel="Se onboarding for elever" />
+                </div>
+            </section>
+        }
         <section class="teacher-tools-holds" id="holdvaerktoejer" aria-labelledby="teacher-hold-tools-title">
             <div class="teacher-hold-tools-header">
                 <div>

@@ -26,6 +26,7 @@
 
 .home-onboarding h2 { margin: 0; font-size: 1.5rem; }
 .home-onboarding p { margin: .5rem 0 0; line-height: 1.55; }
+.home-onboarding .onboarding-progress { color: var(--muted); margin: 0 0 .5rem; font-size: .875rem; }
 
 .home-onboarding form,
 .onboarding-save {
