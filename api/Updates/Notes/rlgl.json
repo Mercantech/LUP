@@ -1,0 +1,5 @@
+{
+  "date": "2026-11-27",
+  "title": "Red Light, Green Light med Arduino",
+  "description": "Opret et spilrum, tilslut Arduino Oplà-spillere og følg deres signalstyrke på en fælles løbebane. Underviseren styrer lys, målgrænse og nye runder."
+}
