@@ -1,3 +1,8 @@
-.emblem{--edge:#17365e;--gem:#3875a9;--shine:#caeaff;display:inline-grid;position:relative;width:5.8rem;aspect-ratio:100/108;flex:none;filter:drop-shadow(0 3px 2px #1420332b)}
-.violet{--edge:#453462;--gem:#8053a2;--shine:#f1dcff}.teal{--edge:#184750;--gem:#258793;--shine:#bfedf0}.rose{--edge:#71354b;--gem:#b85c74;--shine:#ffdfdf}.gold{--edge:#6b4525;--gem:#bb853c;--shine:#fff2bb}.jade{--edge:#235348;--gem:#438469;--shine:#d2f6d9}
-.emblem svg{width:100%;height:100%}.tails{fill:var(--edge)}.rim{fill:var(--shine);stroke:var(--edge);stroke-width:2}.face{fill:var(--gem);stroke:var(--edge);stroke-width:1.5}.inlay{fill:none;stroke:var(--shine);stroke-width:1}.spark{fill:var(--shine)}.stripe{fill:none;stroke:var(--shine);stroke-linecap:round;stroke-width:2}.symbol{position:absolute;top:30%;left:34%;width:32%;height:28%;color:white;display:grid;place-items:center}.symbol ::deep svg{width:100%;height:100%;filter:drop-shadow(0 1px 1px var(--edge))}
+.emblem {
+    display: block;
+    width: 5.8rem;
+    max-width: 100%;
+    height: auto;
+    flex: none;
+    filter: drop-shadow(0 2px 2px #14203328);
+}

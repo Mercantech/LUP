@@ -1,5 +1,5 @@
 <a class="collectible" id="@(Entry?.Status == "earned" ? "badge-" + Badge.Id : null)" href="/badges/@Badge.Id">
-    <BadgeEmblem Badge="Badge" />
+    <BadgeEmblem Badge="Badge" Rank="@(Entry?.Rank ?? 1)" />
     <div><small>@Badge.Topic</small><h2>@Badge.Name</h2>
         <p>@(Entry?.Evidence ?? Badge.Description)</p>
         <strong>@Caption</strong>

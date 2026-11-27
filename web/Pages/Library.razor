@@ -133,7 +133,7 @@
             <div class="library-badges">
                 @foreach (var badge in PublicCatalog.Badges)
                 {
-                    <a class="library-badge" href="@("/badges/" + badge.Id)"><span class="library-badge-mark"><UiIcon Name="@badge.Icon" /></span><span><span class="library-badge-topic">@badge.Topic</span><strong>@badge.Name</strong><small>@badge.Description</small><span class="library-badge-requirements">@(badge.Automatic ? "Automatisk badge" : badge.Special ? "Underviserens godkendelse" : "Krav for fem niveauer")</span></span><span class="library-chevron" aria-hidden="true">›</span></a>
+                    <a class="library-badge" href="@("/badges/" + badge.Id)"><span class="library-badge-art"><BadgeEmblem Badge="badge" /></span><span><span class="library-badge-topic">@badge.Topic</span><strong>@badge.Name</strong><small>@badge.Description</small><span class="library-badge-requirements">@(badge.Automatic ? "Automatisk badge" : badge.Special ? "Underviserens godkendelse" : "Krav for fem niveauer")</span></span><span class="library-chevron" aria-hidden="true">›</span></a>
                 }
             </div>
         }

@@ -6,7 +6,7 @@ else if (_requests.Length == 0) { <p>Ingen badgeanmodninger venter på dig.</p> 
 else {
     @foreach (var request in _requests) {
         var badge = BadgeCatalog.Find(request.BadgeId)!;
-        <article class="panel" @key="request.Id"><BadgeEmblem Badge="badge" /><h2>@badge.Name @(badge.Levels > 1 ? $"· {DemoCatalog.RankNames[request.Rank - 1]}" : "")</h2>
+        <article class="panel" @key="request.Id"><BadgeEmblem Badge="badge" Rank="request.Rank" /><h2>@badge.Name @(badge.Levels > 1 ? $"· {DemoCatalog.RankNames[request.Rank - 1]}" : "")</h2>
             <p><strong>@request.Student</strong> · @request.Hold</p><p>@request.Evidence</p>
             <p><a href="/badges/@badge.Id">Se kriterierne for @badge.Name</a></p>
             <div class="actions"><button class="action" disabled="@_busy" @onclick="() => Decide(request.Id, true)">Godkend</button><button class="secondary" disabled="@_busy" @onclick="() => Decide(request.Id, false)">Afslå</button></div>

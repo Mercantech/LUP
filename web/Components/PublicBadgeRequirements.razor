@@ -12,9 +12,9 @@
         }
         else
         {
-            @for (var i = 0; i < DemoCatalog.RankNames.Length; i++)
+            @for (var i = 0; i < badge.Levels; i++)
             {
-                <section class="v2-rank"><span class="rank-dot">@(i + 1)</span><div><h3>@DemoCatalog.RankNames[i]</h3><p>@DemoCatalog.RankCriteria[i]</p></div></section>
+                <section class="v2-rank badge-level"><BadgeEmblem Badge="badge" Rank="@(i + 1)" /><div><h3>Niveau @(i + 1) · @DemoCatalog.RankNames[i]</h3><p>@DemoCatalog.RankCriteria[i]</p></div></section>
             }
         }
     @if (badge.Automatic) { <p>Du får automatisk badget og en notifikation, når kravet er opfyldt.</p> }

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 124" width="120" height="124">
+<defs><linearGradient id="metal" x2=".77" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#e4f4ff"/><stop offset=".35" stop-color="#627c99"/><stop offset=".52" stop-color="#e4f4ff"/><stop offset="1" stop-color="#627c99"/></linearGradient><linearGradient id="enamel" x2=".45" y2="1"><stop stop-color="#aaa4d3"/><stop offset="1" stop-color="#404668"/></linearGradient></defs>
+<path d="M60 14 94 28 103 53 96 84 80 102 60 112 40 102 24 84 17 53 26 28Z" fill="url(#metal)" stroke="#323843" stroke-width="2.3"/>
+<path d="M60 14 94 28 103 53 96 84 80 102 60 112 40 102 24 84 17 53 26 28Z" transform="translate(60 61) scale(.88) translate(-60 -61)" fill="url(#enamel)" stroke="#404668" stroke-width="2"/>
+<path d="M60 14 94 28 103 53 96 84 80 102 60 112 40 102 24 84 17 53 26 28Z" transform="translate(60 61) scale(.80) translate(-60 -61)" fill="none" stroke="#e4f4ff" stroke-width="1.1" opacity=".75"/>
+<g transform="translate(28 25)" stroke="#293541" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="10" width="51" height="38" rx="5" fill="#ebf2e8"/><path fill="#78a9ce" d="M5 17q0-7 5-7h41q5 0 5 7v4H5z"/><path d="M11 16h1m5 0h1m5 0h1"/><path fill="#a2cabd" d="M11 27h11v15H11z"/><path d="M27 29h18m-18 6h10" fill="none"/><path fill="#ffce7b" d="m39 33 18 11-8 2-3 10z"/></g>
+<g fill="#e4f4ff"><path d="M56 85.5l3 3-3 3-3-3Z"/><path d="M64 85.5l3 3-3 3-3-3Z"/></g></svg>
