@@ -120,7 +120,7 @@
         if (_disposed) return Task.CompletedTask;
         return InvokeAsync(() =>
         {
-            _snapshot = System.Text.Json.JsonSerializer.Deserialize<Snapshot>(json, new(System.Text.Json.JsonSerializerDefaults.Web));
+            _snapshot = System.Text.Json.JsonSerializer.Deserialize<Snapshot>(json, System.Text.Json.JsonSerializerOptions.Web);
             _status = "Live";
             StateHasChanged();
         });
