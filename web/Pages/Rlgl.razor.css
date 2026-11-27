@@ -1,0 +1,13 @@
+.rlgl { max-width: 1050px; margin:auto; padding: 24px; }
+.controls { display:flex; flex-wrap:wrap; gap:12px; align-items:end; margin:16px 0; }
+.controls label { display:grid; gap:5px; }
+.rlgl input,.rlgl button { padding:10px 14px; border:1px solid #87929e; border-radius:8px; font:inherit; }
+.rlgl button { cursor:pointer; }
+.rlgl code { overflow-wrap:anywhere; }
+.light { padding:24px; text-align:center; font-weight:800; font-size:clamp(24px,4vw,48px); border-radius:12px; color:white; background:#475569; }
+.light.green { background:#166534; } .light.red { background:#991b1b; }
+.scale { display:flex; justify-content:space-between; margin:20px 0 8px; }
+.lane { padding:12px; border:1px solid #87929e66; border-radius:10px; margin:10px 0; }
+.lane > div:first-child { display:flex; justify-content:space-between; }
+.track { background:#64748b44; border-right:5px dashed #64748b; height:28px; margin:10px 0; border-radius:5px; overflow:hidden; }
+.progress { height:100%; background:#15803d; transition:width .4s ease; }
