@@ -1,0 +1,8 @@
+<img class="emblem" src="@Source" alt="" width="120" height="124" />
+@code {
+    [Parameter, EditorRequired] public BadgeDefinition Badge { get; set; } = null!;
+    [Parameter] public int Rank { get; set; } = 1;
+    private string Source => Badge.Levels == 1
+        ? $"images/badges/{Badge.Id}.svg"
+        : $"images/badges/{Badge.Id}-{Math.Clamp(Rank, 1, Badge.Levels)}.svg";
+}

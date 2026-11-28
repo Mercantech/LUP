@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 124" width="120" height="124">
+<defs><linearGradient id="metal" x2=".77" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#e4f4ff"/><stop offset=".35" stop-color="#627c99"/><stop offset=".52" stop-color="#e4f4ff"/><stop offset="1" stop-color="#627c99"/></linearGradient><linearGradient id="enamel" x2=".45" y2="1"><stop stop-color="#ac88cb"/><stop offset="1" stop-color="#513675"/></linearGradient></defs>
+<path d="M60 14 94 28 103 53 96 84 80 102 60 112 40 102 24 84 17 53 26 28Z" fill="url(#metal)" stroke="#323843" stroke-width="2.3"/>
+<path d="M60 14 94 28 103 53 96 84 80 102 60 112 40 102 24 84 17 53 26 28Z" transform="translate(60 61) scale(.88) translate(-60 -61)" fill="url(#enamel)" stroke="#513675" stroke-width="2"/>
+<path d="M60 14 94 28 103 53 96 84 80 102 60 112 40 102 24 84 17 53 26 28Z" transform="translate(60 61) scale(.80) translate(-60 -61)" fill="none" stroke="#e4f4ff" stroke-width="1.1" opacity=".75"/>
+<g transform="translate(28 25)" stroke="#293541" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path fill="#e8cdff" d="M10 30C8 9 35 2 49 17l5-5 2 17-17-2 5-5C32 10 18 18 18 29Z"/><path fill="#ffcd72" d="M54 35c1 20-25 28-40 13l-5 5-2-17 17 2-5 5c11 11 27 4 27-9z"/><path fill="#fff6dc" d="m28 24 13 8-13 8z"/></g>
+<g fill="#e4f4ff"><path d="M56 85.5l3 3-3 3-3-3Z"/><path d="M64 85.5l3 3-3 3-3-3Z"/></g></svg>

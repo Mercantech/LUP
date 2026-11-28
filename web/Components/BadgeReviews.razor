@@ -1,0 +1,38 @@
+@inject HttpClient Http
+<header class="page-title"><div><h1>Badgeanmodninger</h1><p>Vurdér anmodninger fra elever på dine hold.</p></div><a class="secondary" href="/teacher/tools">Underviserværktøjer</a></header>
+@if (_error) { <p role="alert">Anmodningerne kunne ikke opdateres.</p><button class="secondary" @onclick="Load">Prøv igen</button> }
+else if (_requests is null) { <p role="status">Henter anmodninger…</p> }
+else if (_requests.Length == 0) { <p>Ingen badgeanmodninger venter på dig.</p> }
+else {
+    @foreach (var request in _requests) {
+        var badge = BadgeCatalog.Find(request.BadgeId)!;
+        <article class="panel" @key="request.Id"><BadgeEmblem Badge="badge" Rank="request.Rank" /><h2>@badge.Name @(badge.Levels > 1 ? $"· {DemoCatalog.RankNames[request.Rank - 1]}" : "")</h2>
+            <p><strong>@request.Student</strong> · @request.Hold</p><p>@request.Evidence</p>
+            <p><a href="/badges/@badge.Id">Se kriterierne for @badge.Name</a></p>
+            <div class="actions"><button class="action" disabled="@_busy" @onclick="() => Decide(request.Id, true)">Godkend</button><button class="secondary" disabled="@_busy" @onclick="() => Decide(request.Id, false)">Afslå</button></div>
+        </article>
+    }
+}
+<p role="status">@_message</p>
+@code {
+    private BadgeReview[]? _requests;
+    private bool _error, _busy;
+    private string _message = "";
+    protected override Task OnInitializedAsync() => Load();
+    private async Task Load() {
+        _error = false;
+        try { _requests = await Http.GetFromJsonAsync<BadgeReview[]>("badges/requests"); }
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException) { _error = true; }
+    }
+    private async Task Decide(Guid id, bool approve) {
+        _busy = true; _message = "";
+        try {
+            using var response = await Http.PostAsJsonAsync($"badges/requests/{id}/decision", new BadgeDecision(approve));
+            if (response.IsSuccessStatusCode) _message = approve ? "Badget er tildelt. Eleven får en notifikation." : "Anmodningen er afslået.";
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound) _message = "Anmodningen er ikke længere til vurdering.";
+            else { _error = true; return; }
+            await Load();
+        } catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException) { _error = true; }
+        finally { _busy = false; }
+    }
+}

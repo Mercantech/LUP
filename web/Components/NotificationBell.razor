@@ -105,7 +105,7 @@
     private async Task FollowLink(ActionCenterItem item)
     {
         FollowLink();
-        if (item.Kind is "calendar-change" or "social-game-invite") await Actions.MarkReadAsync(item.Kind, item.ResourceId);
+        if (item.Kind is "calendar-change" or "social-game-invite" or "badge-award") await Actions.MarkReadAsync(item.Kind, item.ResourceId);
     }
     private async Task Close(bool returnFocus)
     {

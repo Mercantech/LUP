@@ -1,0 +1,7 @@
+.v2-rank.badge-level {
+    grid-template-columns: 3.75rem minmax(0, 1fr);
+    align-items: center;
+}
+.badge-level ::deep .emblem {
+    width: 3.75rem;
+}

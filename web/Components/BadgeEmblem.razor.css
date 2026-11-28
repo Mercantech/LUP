@@ -1,0 +1,8 @@
+.emblem {
+    display: block;
+    width: 5.8rem;
+    max-width: 100%;
+    height: auto;
+    flex: none;
+    filter: drop-shadow(0 2px 2px #14203328);
+}

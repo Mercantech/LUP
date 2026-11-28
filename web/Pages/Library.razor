@@ -133,14 +133,14 @@
             <div class="library-badges">
                 @foreach (var badge in PublicCatalog.Badges)
                 {
-                    <a class="library-badge" href="@("/badges/" + badge.Id)"><span class="library-badge-mark"><UiIcon Name="@badge.Icon" /></span><span><span class="library-badge-topic">@badge.Topic</span><strong>@badge.Name</strong><small>@badge.Description</small><span class="library-badge-requirements">@(badge.Special ? "Særlige krav og oplåsning" : "Krav for fem niveauer")</span></span><span class="library-chevron" aria-hidden="true">›</span></a>
+                    <a class="library-badge" href="@("/badges/" + badge.Id)"><span class="library-badge-art"><BadgeEmblem Badge="badge" /></span><span><span class="library-badge-topic">@badge.Topic</span><strong>@badge.Name</strong><small>@badge.Description</small><span class="library-badge-requirements">@(badge.Automatic ? "Automatisk badge" : badge.Special ? "Underviserens godkendelse" : "Krav for fem niveauer")</span></span><span class="library-chevron" aria-hidden="true">›</span></a>
                 }
             </div>
         }
     </div>
     @if (Auth.IsAuthenticated)
     {
-        <details class="library-examples"><summary>Eksempelsider</summary><div class="library-example-content"><p>Visninger med eksempeldata.</p><label class="field">Eksempelforløb<select value="@CourseContext.CourseId" @onchange="SetExampleCourse"><option value="h3">H3 · 2026</option><option value="game">Game Design</option><option value="">Intet eksempelforløb</option></select></label><nav class="library-example-links" aria-label="Eksempelsider"><a href="/learning">Forløbseksempler</a><a href="/calendar">Eksempeluge</a><a href="/quests">Questeksempler</a></nav>@if (Redirect.ShowsTeacherChrome) { <nav class="library-example-links" aria-label="Eksempelsider for undervisere"><a href="/teacher/reviews">Eksempel på vurdering</a><a href="/teacher/students">Eksempel på elevoversigt</a><a href="/teacher/content">Eksempel på fagligt indhold</a><a href="/teacher/badges">Eksempel på badgetildeling</a></nav> }</div></details>
+        <details class="library-examples"><summary>Eksempelsider</summary><div class="library-example-content"><p>Visninger med eksempeldata.</p><label class="field">Eksempelforløb<select value="@CourseContext.CourseId" @onchange="SetExampleCourse"><option value="h3">H3 · 2026</option><option value="game">Game Design</option><option value="">Intet eksempelforløb</option></select></label><nav class="library-example-links" aria-label="Eksempelsider"><a href="/learning">Forløbseksempler</a><a href="/calendar">Eksempeluge</a><a href="/quests">Questeksempler</a></nav>@if (Redirect.ShowsTeacherChrome) { <nav class="library-example-links" aria-label="Eksempelsider for undervisere"><a href="/teacher/reviews">Eksempel på vurdering</a><a href="/teacher/students">Eksempel på elevoversigt</a><a href="/teacher/content">Eksempel på fagligt indhold</a></nav> }</div></details>
     }
 </div>
 @code {

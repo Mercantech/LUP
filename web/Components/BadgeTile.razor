@@ -1,0 +1,17 @@
+<a class="collectible" id="@(Entry?.Status == "earned" ? "badge-" + Badge.Id : null)" href="/badges/@Badge.Id">
+    <BadgeEmblem Badge="Badge" Rank="@(Entry?.Rank ?? 1)" />
+    <div><small>@Badge.Topic</small><h2>@Badge.Name</h2>
+        <p>@(Entry?.Evidence ?? Badge.Description)</p>
+        <strong>@Caption</strong>
+        @if (Entry is not null) { <time datetime="@Entry.UpdatedUtc.ToString("yyyy-MM-dd")">@Entry.UpdatedUtc.ToLocalTime().ToString("d. MMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("da-DK"))</time> }
+    </div>
+</a>
+@code {
+    [Parameter, EditorRequired] public BadgeDefinition Badge { get; set; } = null!;
+    [Parameter] public BadgeEntry? Entry { get; set; }
+    private string Caption => Entry?.Status switch {
+        "earned" => Badge.Levels > 1 ? $"Opnået · {DemoCatalog.RankNames[Entry.Rank - 1]}" : "✓ Opnået",
+        "pending" => "Afventer underviser", "declined" => "Afslået · Se krav",
+        _ => Badge.Automatic ? "Optjen automatisk" : "Anmod hos underviser"
+    };
+}

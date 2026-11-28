@@ -1,0 +1,1 @@
+.badge-shelf{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:.85rem;margin:.9rem 0 2rem}
